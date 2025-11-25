@@ -1,0 +1,43 @@
+<script setup lang="ts">
+import PhoneIcon from 'vue-material-design-icons/Phone.vue';
+import VideoOutlineIcon from 'vue-material-design-icons/VideoOutline.vue';
+import MinusIcon from 'vue-material-design-icons/Minus.vue';
+import CloseIcon from 'vue-material-design-icons/Close.vue';
+import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue';
+
+interface Props {
+  title: string;
+  avatar: string;
+}
+
+defineProps<Props>();
+
+const emit = defineEmits<{
+  phone: [];
+  video: [];
+  minimize: [];
+  close: [];
+}>();
+</script>
+
+<template>
+  <header class="flex items-center justify-between p-3 border-b border-gray-200 bg-white shadow-sm">
+    <div class="flex items-center space-x-2 min-w-0">
+      <div class="relative shrink-0">
+        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center border-2 border-gray-200">
+          <span class="text-xl">{{ avatar }}</span>
+        </div>
+      </div>
+      <div class="flex flex-col min-w-0">
+        <span class="font-bold text-gray-800 text-lg truncate">{{ title }}</span>
+      </div>
+      <ChevronDownIcon :size="20" class="text-gray-400 shrink-0" />
+    </div>
+    <div class="flex space-x-3 text-gray-500 shrink-0">
+      <PhoneIcon :size="20" class="hover:text-purple-600 cursor-pointer" @click="emit('phone')" />
+      <VideoOutlineIcon :size="20" class="hover:text-purple-600 cursor-pointer" @click="emit('video')" />
+      <MinusIcon :size="20" class="hover:text-purple-600 cursor-pointer" @click="emit('minimize')" />
+      <CloseIcon :size="20" class="hover:text-purple-600 cursor-pointer" @click="emit('close')" />
+    </div>
+  </header>
+</template>

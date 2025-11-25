@@ -1,0 +1,44 @@
+@import 'tailwindcss';
+body {
+  line-height: 1.6;
+  font-family: 'Segoe UI Historic', 'Segoe UI', Helvetica, Arial, sans-serif;
+
+  font-size: 15px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+/* Base scrollbar hidden by default */
+.scrollbar-hidden::-webkit-scrollbar {
+  width: 8px;
+}
+
+
+.scrollbar-hidden::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 114, 128, 0); /* fully transparent */
+  border-radius: 9999px;
+  transition: background-color 0.3s; /* fade transition */
+}
+
+.scrollbar-hidden::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+/* Show scrollbar with fade */
+.scrollbar-visible::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 114, 128, 0.5);
+  border-radius: 9999px;
+  transition: background-color 0.3s; /* fade transition */
+}
+
+/* Firefox support */
+.scrollbar-hidden {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(107, 114, 128, 0) transparent;
+}
+
+.scrollbar-visible {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(107, 114, 128, 0.5) transparent;
+}
