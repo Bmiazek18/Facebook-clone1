@@ -37,10 +37,9 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue';
-import { Story } from '../types/Story';
+import type { Story } from '../types/Story';
 
-const props = defineProps<{
+defineProps<{
   story: Story;
 }>();
 </script>

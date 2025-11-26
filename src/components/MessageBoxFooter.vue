@@ -367,12 +367,12 @@ onUnmounted(() => {
   <footer class="p-2 border-t border-gray-200 bg-white shrink-0">
     <!-- Media Preview -->
     <div v-if="selectedImageUrl || selectedGifUrl" class="p-2 mb-2 bg-gray-100 rounded-lg flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <img :src="selectedImageUrl || selectedGifUrl || ''" :alt="selectedGifUrl ? 'Podgląd GIFa' : 'Podgląd obrazu'" class="w-10 h-10 object-cover rounded" />
-        <span class="text-xs text-gray-600 truncate">{{ selectedGifUrl ? 'Wybrany GIF' : 'Gotowe do wysłania' }}</span>
+        <div class="flex items-center space-x-2">
+        <img :src="selectedImageUrl || selectedGifUrl || ''" :alt="selectedGifUrl ? $t('post.selectedGif') : $t('post.selectedImage')" class="w-10 h-10 object-cover rounded" />
+        <span class="text-xs text-gray-600 truncate">{{ selectedGifUrl ? $t('post.selectedGif') : $t('post.readyToSend') }}</span>
       </div>
       <button @click="clearMediaSelection" class="text-red-500 hover:text-red-700 text-sm font-semibold">
-        Usuń
+        {{ $t('common.delete') }}
       </button>
     </div>
 

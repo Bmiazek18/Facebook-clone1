@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { toRefs } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import VideoImage from 'vue-material-design-icons/VideoImage.vue'
 import Image from 'vue-material-design-icons/Image.vue'
 import EmoticonOutline from 'vue-material-design-icons/EmoticonOutline.vue'
+
+useI18n()
 
 const props = defineProps({
   image: String,
@@ -31,19 +34,19 @@ const { image, placeholder } = toRefs(props)
         class="flex items-center justify-center hover:bg-[#F2F2F2] w-full rounded-lg cursor-pointer"
       >
         <VideoImage :size="35" fillColor="#F12848" />
-        <div class="text-[#6F7275] font-bold">Live video</div>
+        <div class="text-[#6F7275] font-bold">{{ $t('post.addPhoto') }}</div>
       </button>
       <button
         class="flex items-center justify-center hover:bg-[#F2F2F2] w-full rounded-lg cursor-pointer"
       >
         <Image :size="35" fillColor="#43BE62" />
-        <div class="text-[#6F7275] font-bold">Photo/video</div>
+        <div class="text-[#6F7275] font-bold">{{ $t('post.addPhoto') }}</div>
       </button>
       <button
         class="flex items-center justify-center hover:bg-[#F2F2F2] w-full rounded-lg cursor-pointer"
       >
         <EmoticonOutline :size="35" fillColor="#F8B927" />
-        <div class="text-[#6F7275] font-bold">Feeling/activity</div>
+        <div class="text-[#6F7275] font-bold">{{ $t('post.addFeeling') }}</div>
       </button>
     </div>
   </div>

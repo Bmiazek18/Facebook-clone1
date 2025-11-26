@@ -85,7 +85,7 @@ const comments = [
 
 
           <div class="sticky top-0 bg-white z-10 p-4 border-b flex items-center justify-center relative">
-              <h2 class="text-xl font-bold">Post</h2>
+              <h2 class="text-xl font-bold">{{ $t('post.title') }}</h2>
               <button
                   @click="closeModal"
                   class="absolute right-4 text-gray-500 hover:bg-gray-200 rounded-full p-2"
@@ -122,7 +122,7 @@ const comments = [
                          <div class="flex items-center gap-1">
                             <ThumbUp fillColor="#1D72E2" :size="16" class="mt-[-1px]"/> {{ postData.likesCount }}
                          </div>
-                         <span class="cursor-pointer hover:underline">{{ postData.commentsCount }} Komentarze</span>
+                         <span class="cursor-pointer hover:underline">{{ $t('comments.count', { count: postData.commentsCount }) }}</span>
                     </div>
 
                     <div class="flex items-center justify-around py-1 font-bold text-[#65686C] border-y border-gray-200">
@@ -130,10 +130,10 @@ const comments = [
                             <ReactionButton/>
                         </button>
                         <button class="flex items-center justify-center h-[38px] hover:bg-[#F2F2F2] w-full rounded-lg mx-1 cursor-pointer">
-                            <MessageOutline :size="18" fillColor="#65686C" class="mr-1" /> Komentarz
+                            <MessageOutline :size="18" fillColor="#65686C" class="mr-1" /> {{ $t('actions.comment') }}
                         </button>
                         <button class="flex items-center justify-center h-[38px] hover:bg-[#F2F2F2] w-full rounded-lg mx-1 cursor-pointer">
-                            <ShareIcon :size="18" fillColor="#65686C" class="mr-1" /> Udostępnij
+                            <ShareIcon :size="18" fillColor="#65686C" class="mr-1" /> {{ $t('actions.share') }}
                         </button>
                     </div>
                 </div>
@@ -149,8 +149,8 @@ const comments = [
                             </div>
 
                             <div class="flex items-center ml-2 space-x-2 text-xs font-semibold text-gray-500 mt-1">
-                                <span class="cursor-pointer hover:underline">Lubię to!</span>
-                                <span class="cursor-pointer hover:underline">Odpowiedz</span>
+                                <span class="cursor-pointer hover:underline">{{ $t('reaction.like') }}</span>
+                                <span class="cursor-pointer hover:underline">{{ $t('actions.reply') }}</span>
                                 <span>{{ comment.date }}</span>
                                 <div v-if="comment.likesCount > 0" class="flex items-center ml-1">
                                     <ThumbUp fillColor="#1D72E2" :size="12" class="mt-[-2px]"/>
@@ -161,7 +161,7 @@ const comments = [
                             <div v-if="comment.replies.length > 0" class="mt-3">
 
                                 <div class="text-blue-500 font-bold text-sm cursor-pointer mb-3">
-                                    Wyświetl wszystkie {{ comment.replies.length }} odpowiedzi
+                                    {{ $t('comments.viewAllReplies', { count: comment.replies.length }) }}
                                 </div>
 
                                 <div v-for="reply in comment.replies.slice(0, 1)" :key="reply.id" class="flex mt-2">
@@ -174,8 +174,8 @@ const comments = [
                                         </div>
 
                                         <div class="flex items-center ml-2 space-x-2 text-xs font-semibold text-gray-500 mt-1">
-                                            <span class="cursor-pointer hover:underline">Lubię to!</span>
-                                            <span class="cursor-pointer hover:underline">Odpowiedz</span>
+                                            <span class="cursor-pointer hover:underline">{{ $t('reaction.like') }}</span>
+                                            <span class="cursor-pointer hover:underline">{{ $t('actions.reply') }}</span>
                                             <span>{{ reply.date }}</span>
                                             <div v-if="reply.likesCount > 0" class="flex items-center ml-1">
                                                 <ThumbUp fillColor="#1D72E2" :size="12" class="mt-[-2px]"/>
@@ -203,9 +203,9 @@ const comments = [
                         <div class="relative flex-grow">
                             <input
                                 type="text"
-                                placeholder="Odpowiedz Sportowiec..."
+                                :placeholder="$t('comments.replyPlaceholder', { name: postData.userName })"
                                 class="w-full border-none bg-gray-100 p-2 pr-12 rounded-full text-sm focus:ring-blue-500 focus:border-blue-500"
-                            >
+                            />
                             <div class="absolute inset-y-0 right-0 flex items-center pr-2 space-x-1">
                                 <button class="text-gray-500 hover:text-gray-700">😊</button>
                                 <button class="text-gray-500 hover:text-gray-700">📸</button>

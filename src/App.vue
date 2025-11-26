@@ -28,7 +28,7 @@ import ProfileIcon from './components/ProfileIcon.vue'
 import MessageBox from './components/MessageBox.vue'
 
 
-import PostModal from './components/PostModal.vue'
+
 import { useChatStore } from './stores/counter'
 
 const chatStore = useChatStore()

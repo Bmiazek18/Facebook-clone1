@@ -12,7 +12,7 @@
 
             <button
                 class="absolute -top-10 right-0 p-2 text-white rounded-full hover:bg-white/10 z-50"
-                aria-label="Zamknij"
+                :aria-label="$t('common.close')"
             >
                 <Close :size="28" fillColor="#FFFFFF" />
             </button>
@@ -101,7 +101,7 @@
                                 <ThumbUp fillColor="#1D72E2" :size="16" class="mr-1"/> {{ postData.mainLikesCount }}
                             </div>
                             <div class="flex items-center">
-                                <span class="cursor-pointer hover:underline">{{ postData.mainCommentsCount }} Komentarze</span>
+                                <span class="cursor-pointer hover:underline">{{ $t('comments.count', { count: postData.mainCommentsCount }) }}</span>
                                 </div>
                     </div>
                     <div class="flex items-center justify-between py-2 px-4  text-gray-500 text-sm font-semibold">
@@ -112,18 +112,18 @@
                             </div>
                             <div class="flex items-center">
                                 <CommentTextMultiple :size="20" fillColor="#65686C" class="mr-1" />
-                                <span>Komentarz</span>
+                                <span>{{ $t('actions.comment') }}</span>
                             </div>
                         </div>
                         <div class="flex items-center">
                             <Share :size="20" fillColor="#65686C" class="mr-1" />
-                            <span>Wyślij</span>
+                            <span>{{ $t('actions.send') }}</span>
                         </div>
                     </div>
                     <div class="flex justify-between items-center pt-3 mb-2">
                         <span class="font-bold text-gray-700 text-sm">{{ postData.commentsHeader }}</span>
                         <button class="text-blue-500 text-xs font-semibold hover:underline">
-                            Wszystkie komentarze
+                            {{ $t('comments.viewAll') }}
                         </button>
                     </div>
 
@@ -141,9 +141,9 @@
                     <div class="flex-grow relative">
                         <input
                             type="text"
-                            placeholder="Napisz komentarz..."
+                            :placeholder="$t('comments.placeholder')"
                             class="w-full border-none bg-gray-100 p-2 rounded-full text-sm pr-16 focus:ring-blue-500 focus:border-blue-500"
-                        >
+                        />
                         <div class="absolute inset-y-0 right-0 pr-2 flex items-center space-x-1">
                             <button class="p-1 rounded-full hover:bg-gray-200">
                                 <EmoticonOutline :size="20" fillColor="#65686C" />
@@ -169,7 +169,7 @@ import ThumbUp from 'vue-material-design-icons/ThumbUp.vue'
 import Earth from 'vue-material-design-icons/Earth.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import Minus from 'vue-material-design-icons/Minus.vue'
-import Tag from 'vue-material-design-icons/Tag.vue'
+
 import ArrowExpand from 'vue-material-design-icons/ArrowExpand.vue'
 // DODANY NOWY IMPORT IKONY
 import ArrowCollapse from 'vue-material-design-icons/ArrowCollapse.vue'

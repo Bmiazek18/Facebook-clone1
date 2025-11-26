@@ -4,14 +4,14 @@
 class="flex"
 
       >
-      <ThumbUpOutline fillColor="#65686C" :size="18"/> Lubie to!
+      <ThumbUpOutline fillColor="#65686C" :size="18"/> {{ $t('actions.like') }}
       </button>
 
 
     <!-- Reaction box -->
     <div class="reaction-box" :class="{ visible: isVisible }">
       <div
-        v-for="(reaction, i) in reactions"
+        v-for="reaction in reactions"
         :key="reaction.name"
         class="reaction-item"
       >
@@ -27,16 +27,27 @@ class="flex"
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ThumbUpOutline from 'vue-material-design-icons/ThumbUpOutline.vue'
-const reactions = [
-  { name: 'like', label: 'Like',src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f44d/512.gif" },
-  { name: 'love', label: 'Love',src:"https://fonts.gstatic.com/s/e/notoemoji/latest/2764_fe0f/512.gif" },
-  { name: 'haha', label: 'Haha',src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f606/512.gif"},
-  { name: 'wow', label: 'Wow',src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f62f/512.gif" },
-  { name: 'sad', label: 'Sad' ,src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f622/512.gif"},
-  { name: 'angry', label: 'Angry',src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f621/512.gif" }
+
+const { t } = useI18n()
+
+const reactionConfigs = [
+  { name: 'like', labelKey: 'reaction.like', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f44d/512.gif" },
+  { name: 'love', labelKey: 'reaction.love', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/2764_fe0f/512.gif" },
+  { name: 'haha', labelKey: 'reaction.haha', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f606/512.gif"},
+  { name: 'wow', labelKey: 'reaction.wow', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f62f/512.gif" },
+  { name: 'sad', labelKey: 'reaction.sad', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f622/512.gif"},
+  { name: 'angry', labelKey: 'reaction.angry', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f621/512.gif" }
 ]
+
+const reactions = computed(() =>
+  reactionConfigs.map(config => ({
+    ...config,
+    label: t(config.labelKey)
+  }))
+)
 const isVisible = ref(false);
 
 const { start: startHideTimer, stop: stopHideTimer } = useTimeoutFn(() => {

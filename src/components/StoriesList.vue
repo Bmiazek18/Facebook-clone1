@@ -38,10 +38,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import StoryCard from './StoryCard.vue';
 import AddStoryCard from './AddStoryCard.vue';
-import { Story } from '../types/Story';
+import type {Story}  from '../types/Story';
 import {useCarousel} from '../composables/useCarousel';
 
 // --- IMPORT IKON ---

@@ -1,10 +1,9 @@
-<script setup>
+<script setup lang="ts">
 
 import CreatePostBox from '@/components/CreatePostBox.vue';
 
 
 import Camera from 'vue-material-design-icons/Camera.vue'
-import Pen from 'vue-material-design-icons/Pen.vue'
 import ImageWithGradient from '@/components/ImageWithGradient.vue';
 
 import Check from 'vue-material-design-icons/Check.vue'
@@ -101,15 +100,15 @@ src="https://picsum.photos/id/142/2000/320"
                                 "
                             >
                                 <button class="flex items-center px-4 py-2 font-bold">
-                                    <Message class="-ml-2 mr-1" :size="22"/> Wyślij wiadomość
+                                    <Message class="-ml-2 mr-1" :size="22"/> {{ $t('profile.message') }}
                                 </button>
                             </a>
                         </div>
                     </div>
 
                     <div class="flex items-center w-full border-t h-[50px] py-[4px]">
-                        <button class="w-[85px]">
-                            <div
+                                <button class="w-[85px]">
+                                <div
                                 class="
                                     flex
                                     items-center
@@ -124,27 +123,27 @@ src="https://picsum.photos/id/142/2000/320"
                                     cursor-pointer
                                 "
                             >
-                                Posty
+                                {{ $t('profile.tabs.posts') }}
                             </div>
                             <div class="border-b-4 border-b-blue-400 rounded-md"></div>
                         </button>
                         <button class="flex items-center text-[15px] justify-center h-[48px] p-1 hover:bg-[#F2F2F2] w-[100px] font-bold rounded-lg mx-1 cursor-pointer">
-                            Informacje
+                            {{ $t('profile.tabs.info') }}
                         </button>
                         <button class="flex items-center text-[15px] justify-center h-[48px] p-1 hover:bg-[#F2F2F2] w-[85px] font-bold rounded-lg mx-1 cursor-pointer">
-                            Znajomi
+                            {{ $t('profile.tabs.friends') }}
                         </button>
                         <button class="flex items-center text-[15px] justify-center h-[48px] p-1 hover:bg-[#F2F2F2] w-[85px] font-bold rounded-lg mx-1 cursor-pointer">
-                            Zdjęcia
+                            {{ $t('profile.tabs.photos') }}
                         </button>
                         <button class="flex items-center text-[15px] justify-center h-[48px] p-1 hover:bg-[#F2F2F2] w-[110px] font-bold rounded-lg mx-1 cursor-pointer">
-                            Zamelodowania
+                            {{ $t('profile.tabs.checkins') }}
                         </button>
                         <button class="flex items-center text-[15px] justify-center h-[48px] p-1 hover:bg-[#F2F2F2] w-[70px] font-bold rounded-lg mx-1 cursor-pointer">
-                            Sport
+                            {{ $t('profile.tabs.sports') }}
                         </button>
                         <button class="flex items-center text-[15px] justify-center h-[48px] p-1 hover:bg-[#F2F2F2] w-[90px] font-bold rounded-lg mx-1 cursor-pointer">
-                            Więcej
+                            {{ $t('common.more') }}
                         </button>
                     </div>
                 </div>

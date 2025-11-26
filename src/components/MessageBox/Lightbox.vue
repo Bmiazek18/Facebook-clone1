@@ -93,7 +93,7 @@ watch(() => props.startIndex, (newIndex) => {
     <header class="w-full flex justify-between items-center p-3 text-white relative z-10">
       <button @click="close" class="flex items-center space-x-1 text-lg hover:text-gray-300 transition">
         <CloseIcon :size="24" />
-        <span>Zamknij</span>
+        <span>{{ $t('common.close') }}</span>
       </button>
       <div class="flex space-x-3">
 

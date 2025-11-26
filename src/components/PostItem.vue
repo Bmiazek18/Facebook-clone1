@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue' // Dodajemy ref
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import Earth from 'vue-material-design-icons/Earth.vue'
 import ThumbUp from 'vue-material-design-icons/ThumbUp.vue'
@@ -8,6 +9,8 @@ import Close from 'vue-material-design-icons/Close.vue'
 import MessageOutline from 'vue-material-design-icons/MessageOutline.vue'
 import ShareIcon from 'vue-material-design-icons/ShareVariant.vue'
 import ReactionButton from './ReactionButton.vue'
+
+useI18n()
 
 // --- Dodany stan ładowania ---
 const isLoading = ref(false)
@@ -97,13 +100,13 @@ const openPostModal = () => {
             class="flex items-center justify-center h-[38px]  hover:bg-[#F2F2F2] w-full rounded-lg mx-1 cursor-pointer"
           >
           <MessageOutline :size="18" fillColor="#65686C"  />
-            Kommentarz
+            {{ $t('home.comment') }}
           </button>
             <button
             class="flex items-center justify-center h-[38px]  hover:bg-[#F2F2F2] w-full rounded-lg mx-1 cursor-pointer"
           >
           <ShareIcon :size="18" fillColor="#65686C" />
-            Udostepnij
+            {{ $t('actions.share') }}
           </button>
             </div>
         </div>

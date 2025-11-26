@@ -1,7 +1,10 @@
 <template>
   <div class="max-w-[360px] mx-auto bg-white  h-full ">
     <header class="p-4 flex justify-between items-center sticky top-0 bg-white z-10">
-      <h1 class="text-2xl font-bold text-gray-900">Czaty</h1>
+      <div class="flex items-center space-x-2">
+        <h1 class="text-2xl font-bold text-gray-900">{{ $t('header.title') }}</h1>
+        <LanguageSwitcher />
+      </div>
       <div class="flex space-x-3 text-gray-700">
         <DotsHorizontalIcon class="h-6 w-6 cursor-pointer" />
         <ArrowExpandIcon class="h-6 w-6 cursor-pointer" />
@@ -14,7 +17,7 @@
         <MagnifyIcon class="h-5 w-5 text-gray-500 mx-2 shrink-0" />
         <input
           type="text"
-          placeholder="Szukaj w Messengerze"
+          :placeholder="$t('common.search')"
           class="w-full bg-gray-100 border-none p-0 focus:ring-0 placeholder-gray-500 text-sm"
         />
       </div>
@@ -26,14 +29,14 @@
         :class="{'bg-blue-500 text-white font-semibold': activeTab === 'all', 'bg-gray-200 text-gray-800': activeTab !== 'all'}"
         class="py-1 px-3 rounded-full text-sm transition duration-150"
       >
-        Wszystkie
+        {{ $t('chat.allChats') }}
       </button>
       <button
         @click="activeTab = 'unread'"
         :class="{'bg-blue-500 text-white font-semibold': activeTab === 'unread', 'bg-gray-200 text-gray-800': activeTab !== 'unread'}"
         class="py-1 px-3 rounded-full text-sm transition duration-150"
       >
-        Nieprzeczytane
+        {{ $t('chat.unread') }}
       </button>
       <DotsHorizontalIcon class="h-5 w-5 text-gray-500 self-center ml-auto cursor-pointer" />
     </div>
@@ -44,8 +47,8 @@
           <ChatOutlineIcon class="h-6 w-6 text-gray-700" />
         </div>
         <div class="grow">
-          <p class="font-normal text-gray-900">Nowa wiadomość w folderze Inne</p>
-          <p class="text-sm text-gray-500">Od: Alan Va</p>
+          <p class="font-normal text-gray-900">{{ $t('chat.newMessage') }}</p>
+          <p class="text-sm text-gray-500">{{ $t('chat.from') }} Alan Va</p>
         </div>
         <ChevronRightIcon class="h-6 w-6 text-gray-500 ml-auto" />
       </a>
@@ -78,9 +81,16 @@
                 <img v-for="(avatar, index) in chat.extraAvatars" :key="index" :src="avatar" class="inline-block h-5 w-5 rounded-full ring-2 ring-white bg-gray-300" />
             </div>
             <div v-if="chat.unread" class="w-2 h-2 bg-blue-500  rounded-full shrink-0"></div>
-<div @click="handleClick2(chat.id)" class="group-hover:flex hover:bg-gray-200 hidden absolute shadow-md right-8 border bg-white border-gray-300 items-center justify-center w-9 h-9 rounded-full"><DotsHorizontalIcon class=" cursor-pointer" /></div>
+
             <HandRightIcon v-if="chat.isPinch" class="h-5 w-5 text-gray-500" />
-            <ContexMenu v-if="chat.id == visible" />
+            <VDropdown :distance="30" @show="() => setDropdownOpen(chat.id, true)" @hide="() => setDropdownOpen(chat.id, false)">
+              <div :class="['group-hover:flex hover:bg-gray-200  absolute right-3 top-1/2 -translate-y-1/2 shadow-md border bg-white border-gray-300 items-center justify-center w-9 h-9 rounded-full', openDropdowns[chat.id] ? 'flex' : 'hidden']">
+                <DotsHorizontalIcon class="cursor-pointer" />
+              </div>
+              <template #popper>
+                <ContexMenu/>
+              </template>
+            </VDropdown>
           </div>
         </button>
       </li>
@@ -88,7 +98,7 @@
 
     <div class="px-4 pt-3 pb-4">
         <a href="#" class="block w-full text-center py-2 text-blue-500 font-semibold hover:underline">
-            Pokaż wszystko w Messengerze
+            {{ $t('chat.openMessenger') }}
         </a>
     </div>
   </div>
@@ -105,6 +115,7 @@ import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
 import ChatOutlineIcon from 'vue-material-design-icons/ChatOutline.vue';
 import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
 import ContexMenu from './contexMenu.vue';
+import LanguageSwitcher from './LanguageSwitcher.vue';
 
 
 // 2. INTERFEJSY TYPÓW DANYCH
@@ -265,7 +276,13 @@ const rawChats: Chat[] = [
 ];
 
 const chats: Ref<Chat[]> = ref(rawChats);
-const visible = ref<number|null>(null);
+
+// track which dropdown is open per chat id so the trigger stays visible when popper is active
+const openDropdowns = ref<Record<number, boolean>>({});
+const setDropdownOpen = (id: number, value: boolean) => {
+  openDropdowns.value[id] = value;
+};
+
 // 4. LOGIKA FILTROWANIA (Computed Property)
 const filteredChats = computed(() => {
   if (activeTab.value === 'unread') {
@@ -274,10 +291,7 @@ const filteredChats = computed(() => {
   // Pomijamy sekcję "Inne" w głównej liście (jest renderowana oddzielnie)
   return chats.value;
 });
-const handleClick2 = (chatId: number): void => {
-  visible.value=chatId;
-  // Tutaj dodasz logikę routingu do konwersacji
-};
+
 // 5. OBSŁUGA KLIKNIĘĆ
 const handleClick = (chatId: number): void => {
   console.log(`Przechodzę do czatu ID: ${chatId}`);

@@ -1,7 +1,7 @@
 <template>
   <div class="w-[360px] mx-auto bg-white  h-full ">
     <header class="pt-2 pb-0 px-3 border-gray-100 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-gray-900">Powiadomienia</h1>
+      <h1 class="text-2xl font-bold text-gray-900">{{ $t('notifications_page.title') }}</h1>
       <DotsHorizontalIcon class="h-6 w-6 text-gray-500 cursor-pointer" />
     </header>
 
@@ -11,21 +11,21 @@
         :class="{'bg-blue-100 text-blue-700 font-semibold': activeTab === 'all', 'text-gray-700': activeTab !== 'all'}"
         class="py-1 px-3 rounded-full text-sm transition duration-150"
       >
-        Wszystkie
+        {{ $t('notifications_page.all') }}
       </button>
       <button
         @click="activeTab = 'unread'"
         :class="{'bg-blue-100 text-blue-700 font-semibold': activeTab === 'unread', 'text-gray-700': activeTab !== 'unread'}"
         class="py-1 px-3 rounded-full text-sm transition duration-150"
       >
-        Nieprzeczytane
+        {{ $t('notifications_page.unread') }}
       </button>
     </div>
 
     <div class="p-3">
       <div class="flex justify-between items-center mb-3">
-        <h2 class="text-lg font-semibold text-gray-900">Wcześniejsze</h2>
-        <button class="text-blue-500 font-medium text-sm hover:underline">Wyświetl wszystko</button>
+        <h2 class="text-lg font-semibold text-gray-900">{{ $t('notifications_page.earlier') }}</h2>
+        <button class="text-blue-500 font-medium text-sm hover:underline">{{ $t('notifications_page.viewAll') }}</button>
       </div>
 
       <ul class="space-y-1">
@@ -55,7 +55,7 @@
 
       <div class="pt-4 mt-2  border-gray-100">
         <button class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-semibold text-gray-800 transition duration-150">
-          Zobacz wcześniejsze powiadomienia
+          {{ $t('notifications_page.viewEarlier') }}
         </button>
       </div>
     </div>
@@ -63,18 +63,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref, computed } from 'vue';
+import { ref, type Ref, computed, type DefineComponent } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 // 1. IMPORT KOMPONENTÓW IKON Z BIBLIOTEKI
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
 import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue'; // Ikona Grupy (niebieska)
 import BellIcon from 'vue-material-design-icons/Bell.vue'; // Ikona Dzwonka (czarna/szara)
 
+// i18n
+useI18n()
+
 // 2. INTERFEJSY TYPÓW DANYCH
 interface Notification {
   id: number;
   avatarUrl: string;
-  typeIcon: any; // Komponent Ikony (AccountGroupIcon, BellIcon, etc.)
+  typeIcon: DefineComponent; // Komponent Ikony (AccountGroupIcon, BellIcon, etc.)
   message: string; // Treść powiadomienia (może zawierać HTML/bold)
   timeAgo: string;
   unread: boolean;

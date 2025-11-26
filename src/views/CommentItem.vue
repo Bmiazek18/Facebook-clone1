@@ -8,8 +8,8 @@
             </div>
             <div class="flex items-center space-x-3 ml-1 text-xs text-gray-500 mt-1">
                 <span class="font-semibold cursor-pointer hover:underline">{{ comment.time }}</span>
-                <span class="font-semibold cursor-pointer hover:underline">Lubię to!</span>
-                <span class="font-semibold cursor-pointer hover:underline">Odpowiedz</span>
+                <span class="font-semibold cursor-pointer hover:underline">{{ $t('actions.like') }}!</span>
+                <span class="font-semibold cursor-pointer hover:underline">{{ $t('actions.reply') }}</span>
                 <template v-if="comment.likes > 0">
                     <div class="flex items-center ml-2">
                         <ThumbUp fillColor="#1D72E2" :size="12" class="mr-0.5"/>
@@ -21,7 +21,7 @@
             <div v-if="comment.repliesCount > 0" class="mt-2 ml-4">
                 <button class="flex items-center text-blue-500 text-sm font-semibold hover:underline">
                     <ChevronDown :size="16" fillColor="#1D72E2" class="mr-1" />
-                    Wyświetl wszystkie {{ comment.repliesCount }} odpowiedzi
+                    {{ $t('comments.loadMore') }} {{ comment.repliesCount }} {{ $t('comments.loadMore') }}
                 </button>
             </div>
         </div>
@@ -30,8 +30,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ThumbUp from 'vue-material-design-icons/ThumbUp.vue'
 import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
+
+useI18n()
 
 interface Comment {
     id: number;

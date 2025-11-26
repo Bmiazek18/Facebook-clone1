@@ -19,9 +19,9 @@
 
       <div class="flex items-center text-sm text-gray-600 ">
         <AccountGroupIcon :size="16" class="mr-1 text-blue-500" />
-        <span v-if="person.commonFriends > 1">{{ person.commonFriends }} wspólnych znajomych</span>
-        <span v-else-if="person.commonFriends === 1">{{'1 wspólny znajomy' }}</span>
-        <span v-else class="text-gray-400">Brak wspólnych znajomych</span>
+        <span v-if="person.commonFriends > 1">{{ person.commonFriends }} {{ $t('profile.commonFriends') }}</span>
+        <span v-else-if="person.commonFriends === 1">{{ $t('profile.oneCommonFriend') }}</span>
+        <span v-else class="text-gray-400">{{ $t('profile.noCommonFriends') }}</span>
       </div>
 
       <button
@@ -34,17 +34,20 @@
       >
         <span v-if="!person.isFriend" class="flex items-center justify-center">
              <AccountPlusIcon :size="20" class="mr-1" fillColor="white" />
-            Dodaj znajomego
+            {{ $t('profile.addFriend') }}
         </span>
-        <span v-else>Znajomy</span>
+        <span v-else>{{ $t('profile.isFriend') }}</span>
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
-import { Person } from '../types/Person';
+import { useI18n } from 'vue-i18n';
+import type { Person } from '../types/Person';
+
+// i18n
+useI18n()
 
 // --- IMPORT NOWYCH IKON ---
 import AccountPlusIcon from 'vue-material-design-icons/AccountPlus.vue';
@@ -52,11 +55,11 @@ import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 
 
-const props = defineProps<{
+defineProps<{
   person: Person;
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
   (e: 'remove', id: number): void;
 }>();
 </script>

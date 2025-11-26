@@ -10,7 +10,7 @@
       class="w-full mt-3 py-2 px-3 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-800 transition duration-150"
     >
       <AccountSearchIcon class="mr-2 h-5 w-5 text-gray-600" />
-      Zobacz wszystkie profile
+  {{ $t('profile_menu.viewAllProfiles') }}
     </button>
 </div>
     <div class="my-3  border-gray-200"></div>
@@ -27,7 +27,7 @@
             <component :is="item.iconComponent" class="text-xl " />
           </span>
 
-          <span class="">{{ item.label }}</span>
+          <span class="">{{ $t(item.labelKey) }}</span>
 
           <span class="ml-auto flex items-center">
             <ChevronRightIcon
@@ -44,17 +44,18 @@
     <div class="my-3  border-gray-200"></div>
 
     <div class="px-2 text-xs text-gray-500 leading-tight">
-      <a href="#" class="hover:underline">Prywatność</a> ·
-      <a href="#" class="hover:underline">Regulamin</a> ·
-      <a href="#" class="hover:underline">Reklama</a> ·
-      <a href="#" class="hover:underline">Opcje reklam</a>
-      <p class="mt-0.5">· <a href="#" class="hover:underline">Pliki cookie</a> · <a href="#" class="hover:underline">Więcej</a></p>
+      <a href="#" class="hover:underline">{{ $t('common.privacy') }}</a> ·
+      <a href="#" class="hover:underline">{{ $t('common.terms') }}</a> ·
+      <a href="#" class="hover:underline">{{ $t('common.advertising') }}</a> ·
+      <a href="#" class="hover:underline">{{ $t('common.adOptions') }}</a>
+      <p class="mt-0.5">· <a href="#" class="hover:underline">{{ $t('common.cookies') }}</a> · <a href="#" class="hover:underline">{{ $t('common.more') }}</a></p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref } from 'vue';
+import { ref, type Ref, type DefineComponent } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 // 1. IMPORT IKONY STRZAŁKI
 import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
@@ -67,11 +68,14 @@ import CommentProcessingOutlineIcon from 'vue-material-design-icons/CommentProce
 import LogoutIcon from 'vue-material-design-icons/Logout.vue';
 import AccountSearchIcon from 'vue-material-design-icons/AccountSearch.vue';
 
+// i18n
+useI18n()
+
 // 2. AKTUALIZACJA INTERFEJSU
 interface MenuItem {
   name: string;
-  label: string;
-  iconComponent: any;
+  labelKey: string;
+  iconComponent: DefineComponent;
   arrowIcon?: boolean; // Nowa opcjonalna flaga dla ikony strzałki
 
 }
@@ -80,31 +84,31 @@ interface MenuItem {
 const menuItems: Ref<MenuItem[]> = ref([
   {
     name: 'settings',
-    label: 'Ustawienia i prywatność',
+    labelKey: 'profile_menu.settings',
     iconComponent: CogIcon,
     arrowIcon: true, // Teraz używamy flagi true/false
   },
   {
     name: 'help',
-    label: 'Pomoc i wsparcie',
+    labelKey: 'profile_menu.help',
     iconComponent: HelpCircleOutlineIcon,
     arrowIcon: true,
   },
   {
     name: 'display',
-    label: 'Wyświetlanie i ułatwienia dostępu',
+    labelKey: 'profile_menu.display',
     iconComponent: WeatherNightIcon,
     arrowIcon: true,
   },
   {
     name: 'feedback',
-    label: 'Przekaż opinię',
+    labelKey: 'profile_menu.feedback',
     iconComponent: CommentProcessingOutlineIcon,
 
   },
   {
     name: 'logout',
-    label: 'Wyloguj się',
+    labelKey: 'profile_menu.logout',
     iconComponent: LogoutIcon,
 
   },

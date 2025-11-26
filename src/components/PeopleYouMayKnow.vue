@@ -4,7 +4,7 @@
     <div class="flex justify-between items-center mb-4">
       <div class="flex items-center text-gray-800">
         <AccountGroupIcon :size="24" class="mr-2" fillColor="#4B5563" />
-        <h2 class="text-xl font-bold">Osoby, które możesz znać</h2>
+        <h2 class="text-xl font-bold">{{ $t('home.peopleYouMayKnow') }}</h2>
       </div>
       <button class="text-gray-500 hover:text-gray-700">
         <DotsVerticalIcon :size="24" />
@@ -38,7 +38,7 @@
           class="flex flex-col items-center justify-center p-4 cursor-pointer w-49 h-72 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-200 bg-gray-50 flex-shrink-0 mr-3"
         >
           <PlusCircleIcon :size="32" class="text-blue-600 mb-2" fillColor="#2563EB" />
-          <span class="text-blue-600 font-semibold text-sm">Pokaż wszystkich</span>
+          <span class="text-blue-600 font-semibold text-sm">{{ $t('home.showAll') }}</span>
         </div>
         <div class="flex-shrink-0" style="width: 0.75rem;"></div>
       </div>
@@ -53,7 +53,7 @@
 
       <div class="text-center mt-2">
         <button class="text-blue-600 font-medium py-1 px-4 rounded hover:bg-blue-50 transition duration-150">
-          Pokaż wszystkich
+          {{ $t('home.showAll') }}
         </button>
       </div>
     </div>
@@ -62,9 +62,13 @@
 
 <script setup lang="ts">
 import { ref, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import Card from './PeopleYouMayKnowCard.vue';
-import { Person } from '../types/Person';
+import type { Person } from '../types/Person';
 import {useCarousel} from '../composables/useCarousel';
+
+// i18n
+useI18n()
 
 // --- IMPORT IKON (bez zmian) ---
 import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
@@ -107,7 +111,7 @@ const people = ref<Person[]>(initialPeople);
 // --- METODY KOMPONENTU ---
 
 const removeCard = (id: number) => {
-    people.value = people.value.filter(p => p.id !== id);
+    people.value = people.value.filter((p: Person) => p.id !== id);
     nextTick(() => {
         checkScrollState();
     });

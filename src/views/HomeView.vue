@@ -8,6 +8,7 @@ import PeopleYouMayKnow from '../components/PeopleYouMayKnow.vue'
 import StoriesList from '../components/StoriesList.vue'
 import { ref } from 'vue'
 import { useVirtualList } from '@vueuse/core'
+import { useI18n } from 'vue-i18n'
 import Magnify from 'vue-material-design-icons/Magnify.vue'
 import TelevisionPlay from 'vue-material-design-icons/TelevisionPlay.vue'
 import StorefrontOutline from 'vue-material-design-icons/StorefrontOutline.vue'
@@ -18,6 +19,8 @@ import ClockTimeTwoOutline from 'vue-material-design-icons/ClockTimeTwoOutline.v
 import Restore from 'vue-material-design-icons/Restore.vue'
 import PostItemSceleton from '@/components/PostItemSceleton.vue'
 import PostModal from '@/components/PostModal.vue'
+
+const { t } = useI18n()
 const isModalOpen = ref(false)
 
 const isLoading = ref(true)
@@ -48,13 +51,13 @@ const { list: virtualPosts, containerProps } = useVirtualList(
   { itemHeight: rowHeight }
 )
 const menuItems = [
-  { icon: AccountMultiple, label: 'Friends', bgColor: '#1B74E4' },
-  { icon: Flag, label: 'Pages', bgColor: '#EAB308' },
-  { icon: ClockTimeTwoOutline, label: 'Most Recent', bgColor: '#10B981' },
-  { icon: AccountGroup, label: 'Groups', bgColor: '#9333EA' },
-  { icon: StorefrontOutline, label: 'Marketplace', bgColor: '#F97316' },
-  { icon: TelevisionPlay, label: 'Watch', bgColor: '#EF4444' },
-  { icon: Restore, label: 'Memories', bgColor: '#3B82F6' }
+  { icon: AccountMultiple, label: 'home.friends', bgColor: '#1B74E4' },
+  { icon: Flag, label: 'home.pages', bgColor: '#EAB308' },
+  { icon: ClockTimeTwoOutline, label: 'home.mostRecent', bgColor: '#10B981' },
+  { icon: AccountGroup, label: 'home.groups', bgColor: '#9333EA' },
+  { icon: StorefrontOutline, label: 'home.marketplace', bgColor: '#F97316' },
+  { icon: TelevisionPlay, label: 'home.watch', bgColor: '#EF4444' },
+  { icon: Restore, label: 'home.memories', bgColor: '#3B82F6' }
 ]
 </script>
 
@@ -90,7 +93,7 @@ const menuItems = [
                   <component :is="item.icon" :size="22" fillColor="white" />
                 </div>
                 <span class="text-[15px] text-gray-800 font-bold pl-3">
-                  {{ item.label }}
+                  {{ $t(item.label) }}
                 </span>
               </button>
             </div>
@@ -106,7 +109,7 @@ const menuItems = [
 
               <CreatePostBox
                 :image="'https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg'"
-                :placeholder="'What\'s on your mind Bartek?'"
+                :placeholder="$t('home.whatsOnYourMind')"
               />
           <StoriesList/>
 
@@ -138,17 +141,17 @@ const menuItems = [
           <div class="max-w-[340px] min-w-[250px] ml-auto sticky top-[72px]">
             <HoverScrollbar>
             <div class=" max-h-[calc(100vh-72px)] pr-2">
-              <div class="font-semibold border-b border-b-gray-300">Birthdays</div>
+              <div class="font-semibold border-b border-b-gray-300">{{ $t('home.birthday') }}</div>
 
               <div class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg cursor-pointer">
                 <span class="text-2xl">🎁</span>
                 <p class="text-gray-800 text-sm">
-                  <span class="font-semibold">Bartosz Miazek</span> ma dziś urodziny.
+                  <span class="font-semibold">Bartosz Miazek</span> {{ $t('home.birthday') }}.
                 </p>
               </div>
 
               <div class="flex items-center justify-between border-b border-b-gray-300">
-                <div class="font-semibold">Contacts</div>
+                <div class="font-semibold">{{ $t('home.contact') }}</div>
                 <div class="flex items-center">
                   <div class="p-2 hover:bg-gray-300 rounded-full cursor-pointer">
                     <VideoImage :size="23" fillColor="#050505" />

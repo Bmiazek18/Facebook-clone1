@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { renderGrid, Gif as GiphyGif } from '@giphy/js-components';
 import { GiphyFetch } from '@giphy/js-fetch-api';
+
+// i18n
+useI18n()
 
 type DebounceFunction = (...args: any[]) => void;
 
@@ -71,7 +75,7 @@ const makeGrid = (targetEl: HTMLElement): { remove: () => void } => {
     };
 };
 
-const onGifClick = (gif: GiphyGif, e: MouseEvent) => {
+const onGifClick = (gif: typeof GiphyGif, e: MouseEvent) => {
     e.preventDefault();
     const url = gif.images.fixed_height.url;
 
@@ -109,12 +113,12 @@ const clearGridAndFetchGifs = (): void => {
     <div class="flex flex-col hidden bottom-18 items-center justify-center w-[280px] h-[350px] bg-white shadow-lg rounded-2xl border p-4">
 
         <div v-if="previewGifUrl" class="w-full mb-3 p-2 bg-indigo-50 border border-indigo-200 rounded-lg flex flex-col items-center">
-            <span class="text-xs text-indigo-700 mb-1">Wybrano GIF:</span>
+            <span class="text-xs text-indigo-700 mb-1">{{ $t('post.gifSelected') }}</span>
             <img :src="previewGifUrl" alt="Selected GIF" class="max-h-20 w-auto rounded" />
             <button
                 @click="previewGifUrl = null"
                 class="mt-1 text-xs text-red-500 hover:text-red-700">
-                Usuń
+                {{ $t('common.delete') }}
             </button>
         </div>
 
