@@ -4,6 +4,7 @@ import SchoolIcon from 'vue-material-design-icons/School.vue'
 import SendIcon from 'vue-material-design-icons/Send.vue'
 import AccountPlusIcon from 'vue-material-design-icons/AccountPlus.vue'
 import CloseIcon from 'vue-material-design-icons/Close.vue'
+import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue'
 </script>
 
 <template>
@@ -77,9 +78,7 @@ import CloseIcon from 'vue-material-design-icons/Close.vue'
             <button
               class="p-2 text-sm font-semibold rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition"
             >
-              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M12 7a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z" />
-              </svg>
+              <DotsHorizontalIcon :size="20" />
             </button>
           </div>
 

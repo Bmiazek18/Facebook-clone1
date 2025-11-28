@@ -18,7 +18,7 @@
             </button>
 
             <div
-                class="bg-theme-bg flex flex-col items-center justify-center relative"
+                class="bg-black flex flex-col items-center justify-center relative"
                 :class="{
                     // Jeśli pełny ekran: zajmij całą szerokość, pełne zaokrąglenie w lewo, bez zaokrągleń w prawo
                     'flex-grow w-full min-w-[50%] rounded-l-lg': !isFullScreen,

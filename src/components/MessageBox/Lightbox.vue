@@ -84,7 +84,7 @@ watch(() => props.startIndex, (newIndex) => {
 </script>
 <template>
   <Teleport to="body">
-  <div  class="fixed inset-0 z-99999 flex flex-col items-center justify-between bg-black bg-opacity-100">
+  <div  class="fixed inset-0 z-99999 flex flex-col items-center justify-between bg-black ">
 
     <div class="absolute inset-0 z-0 blur-background"
          :style="{ backgroundImage: currentMedia?.imageUrl ? `url(${currentMedia.imageUrl})` : 'none' }">

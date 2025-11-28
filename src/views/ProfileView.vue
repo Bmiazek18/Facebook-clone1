@@ -13,8 +13,8 @@ import Message from 'vue-material-design-icons/Message.vue'
 
 <template>
 
-        <div class="w-full min-h-[100vh] pb-20 bg-[#F1F2F5]">
-            <div class="w-full bg-white">
+        <div class="w-full min-h-screen pb-20 bg-theme-bg">
+            <div class="w-full bg-theme-bg-secondary">
               <ImageWithGradient class="rounded-b-xl"/>
                 <div class="max-w-[1250px]  mx-auto pb-1">
 
@@ -23,7 +23,7 @@ import Message from 'vue-material-design-icons/Message.vue'
                         <div class="flex md:flex-row flex-col gap-4 md:-mt-6 -mt-16 items-center">
                             <div class="relative">
                                 <img
-                                    class="rounded-full w-[165px] h-[165px] border-white border-4"
+                                    class="rounded-full w-[165px] h-[165px] border-theme-border border-4"
 src="https://picsum.photos/id/142/2000/320"
                                 >
                                 <button
@@ -34,10 +34,10 @@ src="https://picsum.photos/id/142/2000/320"
                                 </button>
                             </div>
                             <div class="md:mt-4 text-center md:text-left -mt-3">
-                                <div class="text-[28px] font-extrabold pt-1">
+                                <div class="text-[28px] text-theme-text font-extrabold pt-1">
                                    Wiktoria Szerszeń
                                 </div>
-                                <div class="text-[17px] font-bold text-gray-600 mb-1.5 text-center md:text-left">525 znajomi · 79 wspólnych znajomych</div>
+                                <div class="text-[17px] font-bold text-theme-text-secondary mb-1.5 text-center md:text-left">525 znajomi · 79 wspólnych znajomych</div>
                                 <div class="flex md:justify-start justify-center md:-ml-1">
                                     <img
                                         class="rounded-full -ml-1 z-[10] w-[40px] h-[40px] border-white border-2"
@@ -106,7 +106,7 @@ src="https://picsum.photos/id/142/2000/320"
                         </div>
                     </div>
 
-                    <div class="flex items-center w-full border-t h-[50px] py-[4px]">
+                    <div class="flex items-center w-full border-t h-[50px] text-theme-text-secondary py-[4px]">
                                 <button class="w-[85px]">
                                 <div
                                 class="
@@ -152,8 +152,8 @@ src="https://picsum.photos/id/142/2000/320"
             <div class="flex-cols md:flex w-full max-w-[1250px] justify-between h-[calc(100%-56px)] md:px-0 px-2 mx-auto">
 
                 <div id="LeftSection" class="w-full md:w-5/12 mt-4 mr-4">
-                    <div class="bg-white p-3 rounded-lg shadow-lg">
-                        <div class="font-extrabold pb-2 text-xl">Intro</div>
+                    <div class="bg-theme-bg-secondary p-3 rounded-lg shadow-lg">
+                        <div class="font-extrabold pb-2 text-theme-text text-xl">Intro</div>
                         <div class="pb-5">
                             <button class="w-full bg-gray-200 hover:bg-gray-300 rounded-lg p-2 font-bold">
                                 Add bio
@@ -176,8 +176,8 @@ src="https://picsum.photos/id/142/2000/320"
                         </div>
                     </div>
 
-                    <div class="bg-white p-3 mt-4 rounded-lg shadow-lg">
-                        <div class="font-extrabold pb-2 text-xl">Photos</div>
+                    <div class="bg-theme-bg-secondary p-3 mt-4 rounded-lg shadow-lg">
+                        <div class="font-extrabold pb-2 text-theme-text text-xl">Photos</div>
                         <div class="flex flex-wrap items-center justify-start w-full">
 
 

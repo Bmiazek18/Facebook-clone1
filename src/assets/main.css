@@ -1,8 +1,7 @@
 @import "tailwindcss";
-
+@custom-variant dark (&:where(.dark, .dark *));
 /* Define semantic color tokens as CSS variables */
 :root {
-  /* Light mode (default) */
   --color-bg: #F1F2F5;
   --color-bg-secondary: #FFFFFF;
   --color-text: #050505;
@@ -20,7 +19,9 @@
   --color-border: #3A3D42;
   --color-hover: #35373D;
 }
-
+@theme {
+  --breakpoint-3xl: 120rem;
+}
 /* Semantic utility classes using CSS variables */
 .bg-theme-bg {
   background-color: var(--color-bg);

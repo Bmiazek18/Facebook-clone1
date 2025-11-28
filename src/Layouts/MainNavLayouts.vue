@@ -50,9 +50,9 @@ onClickOutside(target, () => {
     class="fixed z-1 w-full flex items-center justify-between top-0 h-14  bg-theme-bg-secondary shadow-md"
   >
     <div id="NavLeft" class="flex items-center justify-start w-[260px]">
-      <a class="pl-3 min-w-[55px]">
+      <RouterLink to="/" class="pl-3 min-w-[55px]">
         <img class="w-10" src="../assets/images/FacebookLogoCircle.png" />
-      </a>
+      </RouterLink>
       <div class="flex items-center justify-center bg-[#EFF2F5] dark:bg-gray-800 p-1 rounded-full h-10 ml-2">
         <Magnify class="p-1" :size="22" fillColor="#64676B" />
         <input

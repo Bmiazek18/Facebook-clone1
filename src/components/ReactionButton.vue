@@ -1,5 +1,5 @@
 <template>
-  <div class="reaction-wrapper flex justify-center" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
+  <div class="reaction-wrapper flex justify-center " @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
    <button
 class="flex"
 
@@ -9,11 +9,11 @@ class="flex"
 
 
     <!-- Reaction box -->
-    <div class="reaction-box" :class="{ visible: isVisible }">
+    <div class="reaction-box bg-theme-bg-secondary" :class="{ visible: isVisible }">
       <div
         v-for="reaction in reactions"
         :key="reaction.name"
-        class="reaction-item"
+        class="reaction-item "
       >
         <div class="icon-wrapper">
           <div class="reaction-icon" :class="reaction.name" v-tooltip="reaction.label">
@@ -86,7 +86,7 @@ import { useTimeoutFn } from '@vueuse/core';
 .like-btn {
   width: 60px;
   height: 30px;
-  background-color: #d0d0d0;
+
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -104,10 +104,10 @@ import { useTimeoutFn } from '@vueuse/core';
   display: flex;
   gap: 6px;
   padding: 6px 10px;
-  background: #fff;
+
   border-radius: 24px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  border: 1px solid #ddd;
+
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;

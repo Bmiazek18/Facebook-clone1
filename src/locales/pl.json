@@ -190,11 +190,11 @@
     "viewAllProfiles": "Zobacz wszystkie profile"
   },
   "reaction": {
-    "like": "Lubię to",
-    "love": "Kocham",
+    "like": "Lubię to!",
+    "love": "Super",
     "haha": "Haha",
     "wow": "Wow",
-    "sad": "Przykro",
-    "angry": "Złość"
+    "sad": "Przykro mi",
+    "angry": "Wrr"
   }
 }

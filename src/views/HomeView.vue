@@ -66,7 +66,7 @@ const menuItems = [
 <template>
   <div class="w-full bg-theme-bg text-theme-text min-h-screen">
       <div
-        class="grid grid-cols-[2fr_5fr_2fr] w-full max-w-[1500px] mt-14 mx-auto px-4 "
+        class="grid grid-cols-[2fr_5fr_2fr] w-full 3xl:max-w-[1500px] max-w-full  mt-14 mx-auto px-4 "
       >
         <div id="LeftSection" class="hidden lg:block">
           <div class="max-w-[320px] pr-4 sticky top-[72px]">
