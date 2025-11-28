@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-100">
+  <div class="bg-gray-100 dark:bg-gray-800">
 
 
     <div class="relative">
@@ -7,7 +7,7 @@
       <button
         v-if="!isStart"
         @click="scrollLeft"
-        class="absolute top-1/2 z-30 left-0 transform -translate-y-1/2 p-2 bg-white rounded-full shadow-lg border hover:bg-gray-200 transition duration-150 z-10"
+        class="absolute top-1/2 z-30 left-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg border dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-150 z-10"
         style="margin-left: 64.5px;"
       >
         <ChevronLeftIcon :size="24" fillColor="#4B5563" />
@@ -15,7 +15,7 @@
 
       <div
         ref="carouselRef"
-        class="flex overflow-x-auto pb-4 scrollbar-hide "
+        class="flex overflow-x-auto bg-theme-bg scrollbar-hide "
 
       >
         <AddStoryCard class="mr-4"/>
@@ -27,7 +27,7 @@
       <button
         v-if="!isEnd"
         @click="scrollRight"
-        class="absolute top-1/2 z-30 right-0 transform -translate-y-1/2 p-2 bg-white rounded-full shadow-lg border hover:bg-gray-200 transition duration-150 z-10"
+        class="absolute top-1/2 z-30 right-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg border dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-150 z-10"
         style="margin-right: 64.5px;"
       >
         <ChevronRightIcon :size="24" fillColor="#4B5563" />

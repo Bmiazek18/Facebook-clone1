@@ -271,16 +271,16 @@ onUnmounted(() => {
 </script>
 <template>
   <div class=" flex items-center relative justify-center py-4 px-2">
-    <div class="w-full max-w-[328px] h-[455px] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+    <div class="w-full max-w-[328px] h-[455px] bg-theme-bg-secondary rounded-xl shadow-2xl flex flex-col overflow-hidden">
             <MessageBoxHeader title="Alan, Jacek" :users="['Alan', 'Jacek']" />
 
-      <main ref="chatContainer" class="flex flex-col grow p-4 space-y-4 overflow-y-auto custom-scrollbar ">
+      <main ref="chatContainer" class="flex flex-col grow p-4 space-y-4 overflow-y-auto custom-scrollbar bg-theme-bg-secondary">
         <div v-for="(message, index) in messages" :key="message.id" >
-          <div v-if="getDisplayTime(index)" class="text-xs text-gray-500 text-center my-2 select-none">{{ getDisplayTime(index) }}</div>
+          <div v-if="getDisplayTime(index)" class="text-xs text-theme-text-secondary text-center my-2 select-none">{{ getDisplayTime(index) }}</div>
           <div  class="flex items-end "
                :class="{ 'justify-start': message.sender === 'other', 'justify-end': message.sender === 'me' }" >
             <div v-if="message.sender === 'other' && !isEmojiOnly(message.content)"
-                 class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center mr-2 relative self-start flex-shrink-0">
+                 class="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mr-2 relative self-start flex-shrink-0">
               <span class="text-base">😊</span>
             </div>
             <div
@@ -288,13 +288,9 @@ onUnmounted(() => {
             class="max-w-[90%] w-full flex flex-col"
                  :class="{ 'items-start': message.sender === 'other', 'items-end': message.sender === 'me' }">
               <div v-if="message.isReply"
-                   class="mb-0 p-2 rounded-lg max-w-full"
-                   :class="{
-                        'bg-white border border-gray-200 text-gray-800 border-l-4 border-gray-400': message.sender === 'me',
-                        'bg-white border border-gray-200 text-gray-800 border-l-4 border-gray-400': message.sender === 'other'
-                   }">
-                    <p class="text-xs font-semibold text-gray-600">{{ message.replyToSender }} odpowiedział Ci</p>
-                    <p class="text-sm text-gray-500 line-clamp-3 truncate">{{ message.replyToContentSnippet }}</p>
+                   class="mb-0 p-2 rounded-lg max-w-full bg-theme-bg-secondary border border-theme-border text-theme-text border-l-4">
+                    <p class="text-xs font-semibold text-theme-text-secondary">{{ message.replyToSender }} odpowiedział Ci</p>
+                    <p class="text-sm text-theme-text-secondary line-clamp-3 truncate">{{ message.replyToContentSnippet }}</p>
               </div>
 
               <div v-if="isEmojiOnly(message.content) "
@@ -358,7 +354,7 @@ onUnmounted(() => {
     </div>
 </div>
 
-                    <span class="text-xs font-semibold shrink-0" :class="{ 'text-white': message.sender === 'other', 'text-white': message.sender === 'me' }">
+                    <span class="text-xs font-semibold shrink-0 text-white">
                         <template v-if="audioStates[message.id]?.isPlaying">
         {{ formatSeconds(audioStates[message.id]?.currentTime || 0) }}
     </template>
@@ -382,7 +378,7 @@ onUnmounted(() => {
                    class="relative p-3 text-sm rounded-xl shadow-md break-words max-w-[62%]"
                    :class="{
                         'bg-purple-600 text-white rounded-tl-none': message.sender === 'other',
-                        'bg-white text-gray-800 border border-gray-200 rounded-br-none': message.sender === 'me'
+                        'bg-theme-bg-secondary text-theme-text border border-theme-border rounded-br-none': message.sender === 'me'
                    }">
 
 
@@ -390,11 +386,11 @@ onUnmounted(() => {
                 <p >{{ message.content }}</p>
 
                 <div v-if="message.sender === 'other' && message.isReply"
-                     class="absolute -bottom-1.5 -left-2 w-5 h-5 bg-blue-100 rounded-full border-2 border-white flex items-center justify-center shadow">
+                     class="absolute -bottom-1.5 -left-2 w-5 h-5 bg-blue-100 dark:bg-blue-900 rounded-full border-2 border-white dark:border-gray-600 flex items-center justify-center shadow">
                     <span class="text-xs">😊</span>
                 </div>
                 <div v-if="message.sender === 'me'"
-                     class="absolute -bottom-2.5 -right-2.5 w-5 h-5 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-md">
+                     class="absolute -bottom-2.5 -right-2.5 w-5 h-5 bg-theme-bg border border-theme-border rounded-full flex items-center justify-center shadow-md">
                     <ThumbUpIcon :size="14" class="text-blue-500" />
                 </div>
               </div>

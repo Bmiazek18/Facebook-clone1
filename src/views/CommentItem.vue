@@ -2,11 +2,11 @@
     <div class="flex items-start mb-4">
         <img class="rounded-full w-8 h-8 mr-2 flex-shrink-0" :src="commentAvatarUrl" :alt="comment.user + ' Avatar'">
         <div>
-            <div class="bg-gray-100 rounded-xl p-2 max-w-[280px] inline-block">
+            <div class="bg-theme-bg-secondary rounded-xl p-2  text-theme-text max-w-[280px] inline-block">
                 <span class="font-semibold text-sm">{{ comment.user }}</span>
                 <p class="text-sm">{{ comment.text }}</p>
             </div>
-            <div class="flex items-center space-x-3 ml-1 text-xs text-gray-500 mt-1">
+            <div class="flex items-center space-x-3 ml-1 text-xs text-theme-text-secondary mt-1">
                 <span class="font-semibold cursor-pointer hover:underline">{{ comment.time }}</span>
                 <span class="font-semibold cursor-pointer hover:underline">{{ $t('actions.like') }}!</span>
                 <span class="font-semibold cursor-pointer hover:underline">{{ $t('actions.reply') }}</span>

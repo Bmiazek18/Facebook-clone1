@@ -3,7 +3,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 overflow-y-auto"
     >
         <div
-            class="bg-white shadow-2xl w-full relative flex h-full "
+            class="bg-theme-bg-secondary shadow-2xl w-full relative flex h-full "
             :class="{
                 'rounded-lg': !isFullScreen,
                 'max-h-full': isFullScreen
@@ -11,14 +11,14 @@
         >
 
             <button
-                class="absolute -top-10 right-0 p-2 text-white rounded-full hover:bg-white/10 z-50"
+                class="absolute -top-10 right-0 p-2 text-theme-text rounded-full hover:bg-theme-hover z-50"
                 :aria-label="$t('common.close')"
             >
                 <Close :size="28" fillColor="#FFFFFF" />
             </button>
 
             <div
-                class="bg-black flex flex-col items-center justify-center relative"
+                class="bg-theme-bg flex flex-col items-center justify-center relative"
                 :class="{
                     // Jeśli pełny ekran: zajmij całą szerokość, pełne zaokrąglenie w lewo, bez zaokrągleń w prawo
                     'flex-grow w-full min-w-[50%] rounded-l-lg': !isFullScreen,
@@ -76,7 +76,7 @@
 
             <div
                 v-if="!isFullScreen"
-                class="w-full max-w-md flex flex-col min-w-[350px] border-l border-gray-200"
+                class="w-full max-w-md flex flex-col min-w-[350px] "
             >
                 <HoverScrollbar class="flex-grow p-4 overflow-y-auto">
                     <div class="p-4 ">
@@ -84,19 +84,19 @@
                             <div class="flex items-center">
                                 <img class="rounded-full w-10 h-10 mr-3" src="https://picsum.photos/40/40?random=10" alt="Avatar">
                                 <div>
-                                    <div class="font-extrabold text-[15px]">{{ postData.userName }}</div>
-                                    <div class="flex items-center font-semibold text-[13px] text-gray-500">
+                                    <div class="font-extrabold text-[15px] text-theme-text">{{ postData.userName }}</div>
+                                    <div class="flex items-center font-semibold text-[13px] text-theme-text-secondary">
                                         {{ postData.date }} <Earth class="ml-1" :size="15" fillColor="#64676B"/>
                                     </div>
                                 </div>
                             </div>
-                            <button class="text-gray-500 hover:bg-gray-100 rounded-full p-2">
+                            <button class="text-theme-text-secondary hover:bg-theme-hover rounded-full p-2">
                                 <DotsHorizontal :size="20" fillColor="#65686C" />
                             </button>
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between pb-3 border-b text-gray-500 text-sm font-semibold">
+                    <div class="flex items-center justify-between pb-3 border-b text-theme-text-secondary text-sm font-semibold">
                             <div class="flex items-center">
                                 <ThumbUp fillColor="#1D72E2" :size="16" class="mr-1"/> {{ postData.mainLikesCount }}
                             </div>
@@ -104,7 +104,7 @@
                                 <span class="cursor-pointer hover:underline">{{ $t('comments.count', { count: postData.mainCommentsCount }) }}</span>
                                 </div>
                     </div>
-                    <div class="flex items-center justify-between py-2 px-4  text-gray-500 text-sm font-semibold">
+                    <div class="flex items-center justify-between py-2 px-4  text-theme-text-secondary text-sm font-semibold">
                         <div class="flex items-center space-x-4">
                             <div class="flex items-center">
 
@@ -132,11 +132,11 @@
                             v-for="comment in postData.comments"
                             :key="comment.id"
                             :comment="comment"
-                        />
+                        />ś
                     </div>
                 </HoverScrollbar>
 
-                <div class="p-4 border-t flex items-center bg-white sticky bottom-0">
+                <div class="p-4 border-t flex items-center bg-theme-bg-secondary sticky bottom-0">
                     <img class="rounded-full w-8 h-8 mr-2 flex-shrink-0" src="https://picsum.photos/40/40?random=11" alt="Twój Avatar">
                     <div class="flex-grow relative">
                         <input

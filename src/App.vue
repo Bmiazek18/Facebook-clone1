@@ -26,11 +26,13 @@ import 'floating-vue/dist/style.css'
 
 import ProfileIcon from './components/ProfileIcon.vue'
 import MessageBox from './components/MessageBox.vue'
-
-
+import { useTheme } from './composables/useTheme'
 
 import { useChatStore } from './stores/counter'
 
 const chatStore = useChatStore()
+
+// Initialize theme on app mount
+useTheme()
 
 </script>

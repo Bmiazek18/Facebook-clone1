@@ -1,14 +1,14 @@
 <template>
-  <div class="w-[360px] mx-auto bg-white  h-full ">
-    <header class="pt-2 pb-0 px-3 border-gray-100 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-gray-900">{{ $t('notifications_page.title') }}</h1>
-      <DotsHorizontalIcon class="h-6 w-6 text-gray-500 cursor-pointer" />
+  <div class="w-[360px] mx-auto bg-theme-bg-secondary  h-full ">
+    <header class="pt-2 pb-0 px-3 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-theme-text">{{ $t('notifications_page.title') }}</h1>
+      <DotsHorizontalIcon class="h-6 w-6 text-theme-text-secondary cursor-pointer" />
     </header>
 
-    <div class="flex px-3 pt-2  border-gray-100 space-x-2">
+    <div class="flex px-3 pt-2 space-x-2">
       <button
         @click="activeTab = 'all'"
-        :class="{'bg-blue-100 text-blue-700 font-semibold': activeTab === 'all', 'text-gray-700': activeTab !== 'all'}"
+        :class="{'bg-blue-100 text-blue-700 font-semibold': activeTab === 'all', 'text-theme-text-secondary': activeTab !== 'all'}"
         class="py-1 px-3 rounded-full text-sm transition duration-150"
       >
         {{ $t('notifications_page.all') }}
@@ -24,7 +24,7 @@
 
     <div class="p-3">
       <div class="flex justify-between items-center mb-3">
-        <h2 class="text-lg font-semibold text-gray-900">{{ $t('notifications_page.earlier') }}</h2>
+        <h2 class="text-lg font-semibold text-theme-text">{{ $t('notifications_page.earlier') }}</h2>
         <button class="text-blue-500 font-medium text-sm hover:underline">{{ $t('notifications_page.viewAll') }}</button>
       </div>
 
@@ -43,10 +43,10 @@
           </div>
 
           <div class="grow text-sm">
-            <p class="text-gray-800 leading-snug" :class="{'font-medium': notification.unread, 'font-normal': !notification.unread}">
+            <p class="text-theme-text leading-snug" :class="{'font-medium': notification.unread, 'font-normal': !notification.unread}">
               <span v-html="notification.message"></span>
             </p>
-            <span class="text-xs text-gray-500">{{ notification.timeAgo }}</span>
+            <span class="text-xs text-theme-text-secondary">{{ notification.timeAgo }}</span>
           </div>
 
           <div v-if="notification.unread" class="w-3 h-3 bg-blue-500 rounded-full shrink-0 ml-3 mt-1.5"></div>

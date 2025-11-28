@@ -19,8 +19,10 @@ import ClockTimeTwoOutline from 'vue-material-design-icons/ClockTimeTwoOutline.v
 import Restore from 'vue-material-design-icons/Restore.vue'
 import PostItemSceleton from '@/components/PostItemSceleton.vue'
 import PostModal from '@/components/PostModal.vue'
+import { useTheme } from '@/composables/useTheme'
 
 const { t } = useI18n()
+const { isDark } = useTheme()
 const isModalOpen = ref(false)
 
 const isLoading = ref(true)
@@ -62,20 +64,20 @@ const menuItems = [
 </script>
 
 <template>
-  <div class="w-full bg-[#F1F2F5] min-h-screen">
+  <div class="w-full bg-theme-bg text-theme-text min-h-screen">
       <div
         class="grid grid-cols-[2fr_5fr_2fr] w-full max-w-[1500px] mt-14 mx-auto px-4 "
       >
         <div id="LeftSection" class="hidden lg:block">
           <div class="max-w-[320px] pr-4 sticky top-[72px]">
             <a
-              class="flex items-center justify-start w-full cursor-pointer hover:bg-[#E5E6E9] p-2 rounded-md"
+              class="flex items-center justify-start w-full cursor-pointer hover:bg-theme-hover p-2 rounded-md"
             >
               <img
                 class="rounded-full ml-1 min-w-[38px] max-h-[38px]"
                 src="https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg?stp=cp0_dst-jpg_s40x40_tt6&amp;_nc_cat=104&amp;ccb=1-7&amp;_nc_sid=e99d92&amp;_nc_ohc=-o822DQWa_kQ7kNvwEBBrQN&amp;_nc_oc=Adk7CLzzn6vvAFCclTDzM32DkA0bnwHJCU8V-LZ-6Rgt046578D_zYBPKIpVqrH_jqSITUodiSom9HftYGfou-YR&amp;_nc_zt=24&amp;_nc_ht=scontent-waw2-1.xx&amp;_nc_gid=hWinwIkg4qpusDkFaBv_tg&amp;oh=00_AfhegpWXzJqTqkSqYk4lk-AflwjwvP0sVVYiWvBV-lyexg&amp;oe=6917A7AC"
               />
-              <div class="text-[15px] text-gray-800 font-semibold pl-3">
+              <div class="text-[15px] text-theme-text font-medium pl-3">
                 Bartosz Miazek
               </div>
             </a>
@@ -84,7 +86,7 @@ const menuItems = [
               <button
                 v-for="item in menuItems"
                 :key="item.label"
-                class="flex items-center w-full hover:bg-[#E5E6E9] rounded-md p-3 transition"
+                class="flex items-center w-full hover:bg-theme-hover rounded-md p-3 transition"
               >
                 <div
                   class="flex items-center justify-center w-9 h-9 rounded-full"
@@ -92,7 +94,7 @@ const menuItems = [
                 >
                   <component :is="item.icon" :size="22" fillColor="white" />
                 </div>
-                <span class="text-[15px] text-gray-800 font-bold pl-3">
+                <span class="text-[15px] text-theme-text font-medium pl-3">
                   {{ $t(item.label) }}
                 </span>
               </button>
@@ -141,33 +143,33 @@ const menuItems = [
           <div class="max-w-[340px] min-w-[250px] ml-auto sticky top-[72px]">
             <HoverScrollbar>
             <div class=" max-h-[calc(100vh-72px)] pr-2">
-              <div class="font-semibold border-b border-b-gray-300">{{ $t('home.birthday') }}</div>
+              <div class="font-semibold border-b border-b-theme-border text-theme-text">{{ $t('home.birthday') }}</div>
 
-              <div class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              <div class="flex items-center gap-2 p-2 hover:bg-theme-hover rounded-lg cursor-pointer">
                 <span class="text-2xl">🎁</span>
-                <p class="text-gray-800 text-sm">
-                  <span class="font-semibold">Bartosz Miazek</span> {{ $t('home.birthday') }}.
+                <p class="text-theme-text text-sm">
+                  <span class="font-semibold">Bartosz Miazek</span> {{ $t('home.birthdayHas') }}.
                 </p>
               </div>
 
-              <div class="flex items-center justify-between border-b border-b-gray-300">
-                <div class="font-semibold">{{ $t('home.contact') }}</div>
+              <div class="flex items-center justify-between border-b border-b-theme-border">
+                <div class="font-semibold text-theme-text">{{ $t('home.contact') }}</div>
                 <div class="flex items-center">
-                  <div class="p-2 hover:bg-gray-300 rounded-full cursor-pointer">
-                    <VideoImage :size="23" fillColor="#050505" />
+                  <div class="p-2 hover:bg-theme-hover rounded-full cursor-pointer">
+                    <VideoImage :size="23" :fillColor="isDark ? '#E4E6EB' : '#050505'" />
                   </div>
-                  <div class="p-2 hover:bg-gray-300 rounded-full cursor-pointer">
-                    <Magnify :size="23" fillColor="#050505" />
+                  <div class="p-2 hover:bg-theme-hover rounded-full cursor-pointer">
+                    <Magnify :size="23" :fillColor="isDark ? '#E4E6EB' : '#050505'" />
                   </div>
-                  <div class="p-2 hover:bg-gray-300 rounded-full cursor-pointer">
-                    <DotsHorizontal :size="23" fillColor="#050505" />
+                  <div class="p-2 hover:bg-theme-hover rounded-full cursor-pointer">
+                    <DotsHorizontal :size="23" :fillColor="isDark ? '#E4E6EB' : '#050505'" />
                   </div>
                 </div>
               </div>
 
-              <div v-for="n in 30" :key="n" class="flex items-center justify-start cursor-pointer hover:bg-[#E5E6E9] py-2 rounded-md">
+              <div v-for="n in 30" :key="n" class="flex items-center justify-start cursor-pointer hover:bg-theme-hover py-2 rounded-md">
                 <img class="rounded-full ml-1 min-w-[38px] max-h-[38px]" :src="`https://picsum.photos/id/${140 + (n % 10)}/300/320`" />
-                <div class="text-[15px] text-gray-800 font-extrabold pl-3">Contact {{ n }}</div>
+                <div class="text-[15px] text-theme-text font-medium pl-3">Contact {{ n }}</div>
               </div>
             </div>
             </HoverScrollbar>

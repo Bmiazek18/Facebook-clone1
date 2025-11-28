@@ -1,7 +1,58 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+
+/* Define semantic color tokens as CSS variables */
+:root {
+  /* Light mode (default) */
+  --color-bg: #F1F2F5;
+  --color-bg-secondary: #FFFFFF;
+  --color-text: #050505;
+  --color-text-secondary: #65676B;
+  --color-border: #CED0D4;
+  --color-hover: #E5E6E9;
+}
+
+.dark {
+  /* Dark mode overrides */
+  --color-bg: #1C1E21;
+  --color-bg-secondary: #252729;
+  --color-text: #E4E6EB;
+  --color-text-secondary: #b0b3b8;
+  --color-border: #3A3D42;
+  --color-hover: #35373D;
+}
+
+/* Semantic utility classes using CSS variables */
+.bg-theme-bg {
+  background-color: var(--color-bg);
+}
+
+.bg-theme-bg-secondary {
+  background-color: var(--color-bg-secondary);
+}
+
+.text-theme-text {
+  color: var(--color-text);
+}
+
+.text-theme-text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.border-theme-border {
+  border-color: var(--color-border);
+}
+
+.border-b-theme-border {
+  border-bottom-color: var(--color-border);
+}
+
+.hover\:bg-theme-hover:hover {
+  background-color: var(--color-hover);
+}
+
 body {
   line-height: 1.6;
-  font-family: 'Segoe UI Historic', 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-family: ' system-ui, -apple-system, BlinkMacSystemFont, ".SFNSText-Regular", sans-serif;'
 
   font-size: 15px;
   text-rendering: optimizeLegibility;

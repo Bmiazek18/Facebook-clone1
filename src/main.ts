@@ -1,5 +1,15 @@
 import './assets/main.css'
 
+// Initialize theme BEFORE rendering Vue app to avoid white flash
+const savedTheme = localStorage.getItem('theme')
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+
+if (savedTheme === 'dark' || (savedTheme === null && prefersDark)) {
+  document.documentElement.classList.add('dark')
+} else {
+  document.documentElement.classList.remove('dark')
+}
+
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createI18n } from 'vue-i18n'
@@ -9,6 +19,8 @@ import en from './locales/en.json'
 import App from './App.vue'
 import router from './router'
 import FloatingVue from 'floating-vue'
+
+
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)

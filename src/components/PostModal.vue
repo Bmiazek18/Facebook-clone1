@@ -79,7 +79,7 @@ const comments = [
 
     <div
         @click.self="closeModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-gray-200/80 "
+        class="fixed inset-0 z-50 flex items-center justify-center bg-theme-bg "
     >
       <HoverScrollbar class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 my-8 relative flex flex-col max-h-[98vh]">
 

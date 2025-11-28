@@ -14,6 +14,7 @@ const router = createRouter({
       name: 'profile',
       component: ProfileView,
     },
+
 {
       path: '/photo',
       name: 'photo',
