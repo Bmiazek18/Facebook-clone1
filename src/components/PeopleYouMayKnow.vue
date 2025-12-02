@@ -1,8 +1,8 @@
 <template>
-  <div class="py-4 pl-4 bg-white rounded-lg shadow-md max-w-4xl mx-auto">
+  <div class="py-4 pl-4 bg-theme-bg-secondary rounded-lg shadow-md max-w-4xl mx-auto">
 
     <div class="flex justify-between items-center mb-4">
-      <div class="flex items-center text-gray-800">
+      <div class="flex items-center text-theme-text">
         <AccountGroupIcon :size="24" class="mr-2" fillColor="#4B5563" />
         <h2 class="text-xl font-bold">{{ $t('home.peopleYouMayKnow') }}</h2>
       </div>

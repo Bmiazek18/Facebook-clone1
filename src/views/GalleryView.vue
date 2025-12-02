@@ -76,7 +76,7 @@
 
             <div
                 v-if="!isFullScreen"
-                class="w-full max-w-md flex flex-col min-w-[350px] "
+                class="w-full max-w-md flex flex-col min-w-[370px] "
             >
                 <HoverScrollbar class="flex-grow p-4 overflow-y-auto">
                     <div class="p-4 ">
@@ -128,11 +128,13 @@
                     </div>
 
                     <div class="pt-3">
-                        <CommentItem
-                            v-for="comment in postData.comments"
+                          <CommentItem
+                            v-for="comment in comments"
                             :key="comment.id"
                             :comment="comment"
-                        />ś
+                            :isReply="false"
+:depth="0"
+                        />
                     </div>
                 </HoverScrollbar>
 
@@ -183,7 +185,7 @@ import CameraOutline from 'vue-material-design-icons/CameraOutline.vue'
 import HoverScrollbar from '@/components/HoverScrollbar.vue'
 import ReactionButton from '@/components/ReactionButton.vue'
 // DODANY IMPORT KOMPONENTU
-import CommentItem from './CommentItem.vue'
+import CommentItem from '../components/commentItem.vue'
 
 
 // DODANA ZMIENNA STANU
@@ -324,62 +326,71 @@ const postData = {
     mainLikesCount: 9,
     mainCommentsCount: 18,
     commentsHeader: "Najtrafniejsze",
-    comments: [
-        {
-            id: 1,
-            user: "Sajmon Tuszyński",
-            text: "A na kogo chcesz napadać czarny jest to się nada Xd 😂",
-            likes: 12,
-            repliesCount: 0,
-            reaction: '😂',
-            time: "1 dzień"
-        },
-        {
-            id: 2,
-            user: "Piotr Wilk",
-            text: "Ja miałem go na N na początku, ale dałem go na skrzydło. Tam sprawdza się znacznie lepiej, a na N zdecydowanie lepiej gra mi się Gyokeresem.",
-            likes: 2,
-            repliesCount: 6,
-            reaction: '',
-            time: "2 dni"
-        },
-        {
-            id: 3,
-            user: "Dawid Libera",
-            text: "Jeśli chodzi o wychodzenie za plecy to daje rade mimo braku roli + na wysuniętym napastniku ale jeśli chodzi o wykończenie z tym ma trochę problem",
-            likes: 0,
-            repliesCount: 3,
-            reaction: '',
-            time: "2 dni"
-        },
-        {
-            id: 4,
-            user: "Nowasielski Konrad",
-            text: "Sprzedałem, kupiłem Owajrana i wciąga go nosem",
-            likes: 0,
-            repliesCount: 0,
-            reaction: '',
-            time: "2 dni"
-        },
-        {
-            id: 5,
-            user: "Testowy User",
-            text: "To jest dodatkowy komentarz, aby sprawdzić scrollowanie.",
-            likes: 5,
-            repliesCount: 1,
-            reaction: '👍',
-            time: "1 dzień"
-        },
-        {
-            id: 6,
-            user: "Inny User",
-            text: "Jeszcze jeden komentarz, trochę dłuższy, żeby zajął więcej miejsca w dymku.",
-            likes: 0,
-            repliesCount: 0,
-            reaction: '',
-            time: "3 dni"
-        }
-    ]
+
 }
+const comments: Comment[] = [ // Dodano inferencję typu
+    {
+        id: 1,
+        userName: "Marek Kowalski",
+        text: "Super inicjatywa! Wsparcie dla sędziów jest kluczowe. Oby tak dalej!",
+        date: "5 min",
+        likesCount: 2,
+        avatarSrc: "https://picsum.photos/40/40?random=3",
+        replies: []
+    },
+    {
+        id: 2,
+        userName: "Anna Zając",
+        text: "Świetnie! Zgadzam się z komunikacją. Ostatnio było z tym kiepsko. 💪",
+        date: "3 min",
+        likesCount: 5,
+        avatarSrc: "https://picsum.photos/40/40?random=4",
+        replies: [
+            {
+                id: 21,
+                userName: "Jan Nowak",
+                text: "Dokładnie, transparentność jest najważniejsza!",
+                date: "2 min",
+                likesCount: 1,
+                avatarSrc: "https://picsum.photos/40/40?random=6",
+                replies: [ // Dodano trzecie zagnieżdżenie dla testu
+                     {
+                        id: 211,
+                        userName: "Komentator Rekurencyjny",
+                        text: "To działa! Trzeci poziom komentarzy.",
+                        date: "1 min",
+                        likesCount: 0,
+                        avatarSrc: "https://picsum.photos/40/40?random=8",
+                        replies: [{id: 211,
+                        userName: "Komentator Rekurencyjny",
+                        text: "To działa! 4 poziom komentarzy.",
+                        date: "1 min",
+                        likesCount: 0,
+                        avatarSrc: "https://picsum.photos/40/40?random=8",
+                        replies: []}]
+                    }
+                ]
+            },
+            {
+                id: 22,
+                userName: "Tester",
+                text: "Popieram, jest nadzieja na poprawę.",
+                date: "1 min",
+                likesCount: 0,
+                avatarSrc: "https://picsum.photos/40/40?random=7",
+                replies: []
+            }
+        ]
+    },
+    {
+        id: 3,
+        userName: "Sportowiec",
+        text: "Kto będzie sędziował mecz ligowy w ten weekend?",
+        date: "1 min",
+        likesCount: 0,
+        avatarSrc: "https://picsum.photos/40/40?random=5",
+        replies: []
+    }
+]
 
 </script>

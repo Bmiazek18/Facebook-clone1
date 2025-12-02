@@ -7,6 +7,10 @@ import MessageOutline from 'vue-material-design-icons/MessageOutline.vue'
 import ShareIcon from 'vue-material-design-icons/ShareVariant.vue'
 import HoverScrollbar from './HoverScrollbar.vue'
 import ReactionButton from './ReactionButton.vue'
+// 1. IMPORT NOWEGO KOMPONENTU
+import CommentItem from './CommentItem.vue'
+// IMPORT INTERFEJSU KOMENTARZA DO UŻYCIA W DANYCH
+import type { Comment } from './CommentItem.vue'
 
 const emit = defineEmits(['close'])
 
@@ -14,19 +18,19 @@ const closeModal = () => {
     emit('close')
 }
 
-// Przykładowe dane dla postu (commentsCount: 3)
+// Przykładowe dane dla postu
 const postData = {
     userName: "Kolegium Sędziów Opolskiego Związku Piłki Nożnej",
     date: "10 min",
     text: "✅ Niedziela siatkarska z dużą kontrolą sędziów z 2 stref! (...) Wspieramy! Będziemy kontrolować! Będziemy dbać o rzetelność i będziemy dbać o dobrą komunikację w zespole we współpracy. 😉",
     likesCount: 9,
-    commentsCount: 3, // Zmieniono na 3
+    commentsCount: 3,
     imageSrc: "https://picsum.photos/600/350?random=1",
     avatarSrc: "https://picsum.photos/40/40?random=2"
 }
 
-// Przykładowe komentarze, w tym zagnieżdżone odpowiedzi
-const comments = [
+// Przykładowe komentarze, teraz muszą być zgodne z typem Comment
+const comments: Comment[] = [ // Dodano inferencję typu
     {
         id: 1,
         userName: "Marek Kowalski",
@@ -50,7 +54,24 @@ const comments = [
                 text: "Dokładnie, transparentność jest najważniejsza!",
                 date: "2 min",
                 likesCount: 1,
-                avatarSrc: "https://picsum.photos/40/40?random=6"
+                avatarSrc: "https://picsum.photos/40/40?random=6",
+                replies: [ // Dodano trzecie zagnieżdżenie dla testu
+                     {
+                        id: 211,
+                        userName: "Komentator Rekurencyjny",
+                        text: "To działa! Trzeci poziom komentarzy.",
+                        date: "1 min",
+                        likesCount: 0,
+                        avatarSrc: "https://picsum.photos/40/40?random=8",
+                        replies: [{id: 211,
+                        userName: "Komentator Rekurencyjny",
+                        text: "To działa! 4 poziom komentarzy.",
+                        date: "1 min",
+                        likesCount: 0,
+                        avatarSrc: "https://picsum.photos/40/40?random=8",
+                        replies: []}]
+                    }
+                ]
             },
             {
                 id: 22,
@@ -58,7 +79,8 @@ const comments = [
                 text: "Popieram, jest nadzieja na poprawę.",
                 date: "1 min",
                 likesCount: 0,
-                avatarSrc: "https://picsum.photos/40/40?random=7"
+                avatarSrc: "https://picsum.photos/40/40?random=7",
+                replies: []
             }
         ]
     },
@@ -76,10 +98,9 @@ const comments = [
 </script>
 
 <template>
-
     <div
         @click.self="closeModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-gray-200/80 dark:bg-black/80"
+        class="fixed inset-0 z-55 flex items-center justify-center bg-gray-200/80 dark:bg-black/80"
     >
         <div class="bg-theme-bg-secondary rounded-lg shadow-2xl w-full max-w-2xl mx-4 my-8 relative flex flex-col max-h-[98vh]">
 
@@ -139,73 +160,24 @@ const comments = [
                         </div>
                     </div>
 
-                    <div class="px-4 py-4">
-                        <div v-for="comment in comments" :key="comment.id" class="flex mt-4">
-                            <img class="rounded-full w-8 h-8 mr-2 mt-1" :src="comment.avatarSrc" :alt="comment.userName + ' Avatar'">
-
-                            <div class="flex-grow">
-                                <div class="bg-gray-100 dark:bg-[#333333] p-2 rounded-xl">
-                                    <span class="font-extrabold text-[13px] text-theme-text hover:underline cursor-pointer">{{ comment.userName }}</span>
-                                    <p class="text-[15px] text-theme-text">{{ comment.text }}</p>
-                                </div>
-
-                                <div class="flex items-center ml-2 space-x-2 text-xs font-semibold text-gray-500 mt-1">
-                                    <span class="cursor-pointer hover:underline">{{ $t('reaction.like') }}</span>
-                                    <span class="cursor-pointer hover:underline">{{ $t('actions.reply') }}</span>
-                                    <span>{{ comment.date }}</span>
-                                    <div v-if="comment.likesCount > 0" class="flex items-center ml-1">
-                                        <ThumbUp fillColor="#1D72E2" :size="12" class="mt-[-2px]"/>
-                                        <span>{{ comment.likesCount }}</span>
-                                    </div>
-                                </div>
-
-                                <div v-if="comment.replies.length > 0" class="mt-3">
-
-                                    <div class="text-blue-500 font-bold text-sm cursor-pointer mb-3">
-                                        {{ $t('comments.viewAllReplies', { count: comment.replies.length }) }}
-                                    </div>
-
-                                    <div v-for="reply in comment.replies.slice(0, 1)" :key="reply.id" class="flex mt-2">
-                                        <img class="rounded-full w-8 h-8 mr-2 mt-1" :src="reply.avatarSrc" :alt="reply.userName + ' Reply Avatar'">
-
-                                        <div class="flex-grow">
-                                            <div class="bg-gray-100 p-2 rounded-xl dark:bg-[#333333]">
-                                                <span class="font-extrabold text-[13px] text-theme-text hover:underline cursor-pointer">{{ reply.userName }}</span>
-                                                <p class="text-[15px] text-theme-text">{{ reply.text }}</p>
-                                            </div>
-
-                                            <div class="flex items-center ml-2 space-x-2 text-xs font-semibold text-gray-500 mt-1">
-                                                <span class="cursor-pointer hover:underline">{{ $t('reaction.like') }}</span>
-                                                <span class="cursor-pointer hover:underline">{{ $t('actions.reply') }}</span>
-                                                <span>{{ reply.date }}</span>
-                                                <div v-if="reply.likesCount > 0" class="flex items-center ml-1">
-                                                    <ThumbUp fillColor="#1D72E2" :size="12" class="mt-[-2px]"/>
-                                                    <span>{{ reply.likesCount }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="p-4">
+                        <CommentItem
+                            v-for="comment in comments"
+                            :key="comment.id"
+                            :comment="comment"
+                            :isReply="false"
+:depth="0"
+                        />
                     </div>
-
                     <div class="p-4 border-t border-theme-border">
                         <div class="flex items-start">
-
-                            <div class="relative w-8 flex justify-center mr-2 mt-[-4px]">
-                                <div class="h-full w-0.5 bg-gray-300"></div>
-
-                                <div class="absolute top-4 w-4 h-0.5 bg-gray-300 left-1/2 -ml-2"></div>
-                            </div>
-
                             <div class="flex items-center flex-grow">
                                 <img class="rounded-full w-8 h-8 mr-2" :src="postData.avatarSrc" alt="Twój Avatar">
                                 <div class="relative flex-grow">
                                     <input
                                         type="text"
                                         :placeholder="$t('comments.replyPlaceholder', { name: postData.userName })"
-                                        class="w-full border-none bg-gray-100 p-2 pr-12 rounded-full text-sm focus:ring-blue-500 focus:border-blue-500"
+                                        class="w-full border-none bg-gray-100 dark:bg-[#333333] p-2 pr-12 rounded-full text-sm focus:ring-blue-500 focus:border-blue-500"
                                     />
                                     <div class="absolute inset-y-0 right-0 flex items-center pr-2 space-x-1">
                                         <button class="text-gray-500 hover:text-gray-700">😊</button>

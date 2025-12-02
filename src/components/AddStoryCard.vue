@@ -18,7 +18,7 @@
       >
       </div>
 
-    <div class="absolute inset-x-0 bottom-0 h-[30%] bg-white pt-4 flex flex-col items-center justify-start z-50
+    <div class="absolute inset-x-0 bottom-0 h-[30%] bg-theme-bg-secondary pt-4 flex flex-col items-center justify-start z-50
     group-hover:bg-gray-200 transition-colors duration-300 ease-in-out">
       <button
         class="
@@ -34,8 +34,8 @@
 
           transition-colors
           mt-[-30px]
-          z-40
-          ring-4 ring-white
+
+          ring-4 ring-theme-bg-secondary
           p-0
         "
         aria-label="Utwórz relację"
@@ -53,7 +53,7 @@
         </svg>
       </button>
 
-      <p class="text-black text-center text-xs font-semibold leading-tight pt-1">
+      <p class="text-theme-text text-center text-xs font-semibold leading-tight pt-1">
         Utwórz<br />relację
       </p>
     </div>

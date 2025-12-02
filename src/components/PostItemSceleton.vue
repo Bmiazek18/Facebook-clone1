@@ -1,5 +1,5 @@
 <template>
-    <div  class="w-full bg-white rounded-lg my-4 shadow-md">
+    <div  class="w-full bg-theme-bg rounded-lg my-4 shadow-md">
 
         <div class="animate-pulse p-4">
             <div class="flex items-center mb-4">

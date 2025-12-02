@@ -13,53 +13,88 @@ import FacebookMessenger from 'vue-material-design-icons/FacebookMessenger.vue'
 import Bell from 'vue-material-design-icons/Bell.vue'
 
 import { onClickOutside } from '@vueuse/core'
-// Zakładamy, że te komponenty są dostępne:
+
 import ProfileMenu from '@/components/ProfileMenu.vue'
 import NotificationMenu from '@/components/NotificationMenu.vue'
 import MessageMenu from '@/components/MessageMenu.vue'
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
+import { useTheme } from '@/composables/useTheme'
+import ContactList from '@/components/ContactList.vue' // Upewnij się, że ścieżka jest poprawna
 
-// Definicja typu dla aktywnego menu
 type ActiveMenuType = 'profile' | 'notifications' | 'message' | null;
 
 const target = useTemplateRef<HTMLElement>('target')
+// Ref do kontenera wyszukiwania, aby onClickOutside działało poprawnie
+const searchContainerRef = useTemplateRef<HTMLElement>('searchContainer')
 
-// Zmieniamy flagę boolean na zmienną przechowującą stan (nazwę aktywnego menu lub null)
+// Zmienna stanu dla aktywnego menu bocznego
 const activeMenu = ref<ActiveMenuType>(null)
+
+// Nowa zmienna stanu dla wyświetlania listy kontaktów (rozwijanie pod wyszukiwarką)
+const isSearchFocused = ref(false)
 
 // Funkcja przełączająca menu
 const toggleMenu = (menuName: ActiveMenuType) => {
-  // Jeśli kliknięto to samo menu, zamknij je (ustaw na null).
+  // Zamknij listę wyszukiwania, jeśli otwierasz inne menu
+  isSearchFocused.value = false;
+
   if (activeMenu.value === menuName) {
     activeMenu.value = null
   } else {
-    // W przeciwnym razie, ustaw nowe menu jako aktywne.
     activeMenu.value = menuName
   }
 }
 
-// onClickOutside zamyka aktywne menu
+const {isDark} = useTheme()
+
+// Zamykanie menu po kliknięciu poza obszarem
 onClickOutside(target, () => {
   activeMenu.value = null
+})
+
+// Zamykanie listy wyszukiwania po kliknięciu poza jej kontenerem
+onClickOutside(searchContainerRef, () => {
+    // Sprawdzamy, czy jakieś inne menu jest aktywne, aby uniknąć kolizji
+    if (activeMenu.value === null) {
+        isSearchFocused.value = false
+    }
 })
 </script>
 
 <template>
   <div
     id="MainNav"
-    class="fixed z-1 w-full flex items-center justify-between top-0 h-14  bg-theme-bg-secondary shadow-md"
+    class="fixed z-50 w-full flex items-center justify-between top-0 h-14 bg-theme-bg-secondary shadow-md"
   >
     <div id="NavLeft" class="flex items-center justify-start w-[260px]">
+
+
+      <div
+        ref="searchContainerRef"
+        class="flex relative"
+      >
       <RouterLink to="/" class="pl-3 min-w-[55px]">
         <img class="w-10" src="../assets/images/FacebookLogoCircle.png" />
       </RouterLink>
-      <div class="flex items-center justify-center bg-[#EFF2F5] dark:bg-gray-800 p-1 rounded-full h-10 ml-2">
-        <Magnify class="p-1" :size="22" fillColor="#64676B" />
-        <input
-            class="lg:block hidden border-none p-0 bg-[#EFF2F5] bg-theme-bg text-theme-text placeholder-[#64676B] ring-0 focus:ring-0"
-          placeholder="Search Facebook"
-          type="text"
-        />
+        <div class="flex items-center justify-center bg-[#EFF2F5] dark:bg-gray-800 p-1 rounded-full h-10 ml-2">
+          <Magnify class="p-1" :size="22" fillColor="#64676B" />
+          <input
+            class="lg:block hidden border-none p-0 bg-[#EFF2F5] dark:bg-gray-800 text-theme-text placeholder-[#64676B] ring-0 focus:ring-0"
+            placeholder="Search Facebook"
+            type="text"
+            @focus="isSearchFocused = true"
+            @keyup.esc="isSearchFocused = false"
+
+          />
+        </div>
+
+        <div
+          v-if="isSearchFocused"
+          class="absolute top-12 left-0 w-[350px] rounded-lg shadow-xl overflow-hidden z-50"
+          style="box-shadow: rgba(0, 0, 0, 0.2) 0px 12px 28px 0px, rgba(0, 0, 0, 0.1) 0px 2px 4px 0px;"
+        >
+          <ContactList />
+        </div>
       </div>
     </div>
 
@@ -101,15 +136,15 @@ onClickOutside(target, () => {
 
     <div class="flex items-center justify-end w-[260px] mr-4 relative">
       <ThemeSwitcher />
-      <button class="rounded-full bg-[#E3E6EA] dark:bg-gray-700 p-2 hover:bg-gray-300 dark:hover:bg-gray-600 mx-1 cursor-pointer">
-        <DotsGrid :size="23" fillColor="#050505" />
+      <button class="rounded-full bg-[#E3E6EA] dark:bg-[#3b3d3f] p-2 hover:bg-gray-300 dark:hover:bg-gray-600 mx-1 cursor-pointer">
+        <DotsGrid :size="23" :fillColor="isDark ? '#fff' : '#050505'" />
       </button>
-      <button @click="toggleMenu('message')" class="rounded-full bg-[#E3E6EA] dark:bg-gray-700 p-2 hover:bg-gray-300 dark:hover:bg-gray-600 mx-1 cursor-pointer">
-        <FacebookMessenger :size="23" fillColor="#050505" />
+      <button @click="toggleMenu('message')" class="rounded-full bg-[#E3E6EA] dark:bg-[#3b3d3f] p-2 hover:bg-gray-300 dark:hover:bg-gray-600 mx-1 cursor-pointer">
+        <FacebookMessenger :size="23" :fillColor="isDark ? '#fff' : '#050505'" />
       </button>
 
-      <button @click="toggleMenu('notifications')" class="rounded-full bg-[#E3E6EA] dark:bg-gray-700 p-2 hover:bg-gray-300 dark:hover:bg-gray-600 mx-1 cursor-pointer">
-        <Bell :size="23" fillColor="#050505" />
+      <button @click="toggleMenu('notifications')" class="rounded-full bg-[#E3E6EA] dark:bg-[#3b3d3f] p-2 hover:bg-gray-300 dark:hover:bg-gray-600 mx-1 cursor-pointer">
+        <Bell :size="23" :fillColor="isDark ? '#fff' : '#050505'"/>
       </button>
 
       <div class="flex items-center justify-center relative">

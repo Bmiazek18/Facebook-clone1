@@ -10,6 +10,12 @@ import PauseIcon from 'vue-material-design-icons/Pause.vue';
 
 import type { Message, ImageMessage, GifMessage, AudioState } from '@/types/Message';
 
+// Zaktualizowana Definicja Typów (symulacja, zakładając, że Message jest w @/types/Message)
+// Dodajemy klucz mediaUrls do wiadomości ze zdjęciem.
+interface ImageMessageWithOptionalGroup extends ImageMessage {
+  // imageUrl: string jest używane dla pojedynczego zdjęcia
+  mediaUrls?: string[]; // Tablica linków dla wielu zdjęć
+}
 
 const createTimestamp = (timeStr: string, daysAgo: number = 0): number => {
   const [hours, minutes] = timeStr.split(':').map(Number);
@@ -44,28 +50,29 @@ const messages = ref<Message[]>([
     time: createTimestamp('14:50', 0),
   },
   {
+    // WIADOMOŚĆ GRUPOWA: Używamy mediaUrls
     id: 11,
     sender: 'me',
     type: 'image',
-    content: 'Wybrane zdjęcie:',
+    content: 'Wysłane zdjęcia:',
     time: createTimestamp('15:00', 0),
-    imageUrl: 'https://primefaces.org/cdn/primevue/images/galleria/galleria10.jpg'
-  }, {
-    id: 11,
-    sender: 'me',
-    type: 'image',
-    content: 'Wybrane zdjęcie:',
-    time: createTimestamp('15:00', 0),
-    imageUrl: 'https://primefaces.org/cdn/primevue/images/galleria/galleria11.jpg'
-  },
+    // imageUrl może być pierwszym elementem tablicy, lub ustawione jako pojedynczy string:
+    imageUrl: 'https://primefaces.org/cdn/primevue/images/galleria/galleria10.jpg',
+    mediaUrls: [ // Tablica dla grupowania
+      'https://primefaces.org/cdn/primevue/images/galleria/galleria10.jpg',
+      'https://primefaces.org/cdn/primevue/images/galleria/galleria11.jpg',
+      'https://primefaces.org/cdn/primevue/images/galleria/galleria14.jpg',
+    ],
+  } as ImageMessageWithOptionalGroup,
   {
-    id: 13,
-    sender: 'me',
+    // POJEDYNCZE ZDJĘCIE: Używamy tylko imageUrl
+    id: 15,
+    sender: 'other',
     type: 'image',
-    content: 'Wybrane zdjęcie:',
-    time: createTimestamp('15:00', 0),
-    imageUrl: 'https://primefaces.org/cdn/primevue/images/galleria/galleria14.jpg'
-  },
+    content: 'Pojedynczy obrazek:',
+    time: createTimestamp('15:01', 0),
+    imageUrl: 'https://primefaces.org/cdn/primevue/images/galleria/galleria12.jpg',
+  } as ImageMessageWithOptionalGroup,
   {
     id: 12,
     sender: 'other',
@@ -95,7 +102,7 @@ const chatContainer = ref(null);
 function scrollToBottom() {
   nextTick(() => {
     if (chatContainer.value) {
-      chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+      (chatContainer.value as HTMLElement).scrollTop = (chatContainer.value as HTMLElement).scrollHeight;
     }
   });
 }
@@ -104,11 +111,35 @@ const MAX_TIME_DIFF_MS = 5 * 60 * 1000;
 
 const isLightboxOpen = ref(false);
 const currentMediaIndex = ref(0);
-const filteredMedia = computed(() =>
-  messages.value
-    .filter(msg => msg.type === 'image' || msg.type === 'gif')
-    .map(msg => msg as (ImageMessage | GifMessage))
-);
+
+// POPRAWIONA LOGIKA LIGHTBOXA: Obsługuje pojedyncze i grupowe zdjęcia
+const filteredMedia = computed(() => {
+    const media: (ImageMessage | GifMessage)[] = [];
+    messages.value.forEach(msg => {
+        if (msg.type === 'image' || msg.type === 'gif') {
+            const imageMsg = msg as ImageMessageWithOptionalGroup;
+
+            if (imageMsg.mediaUrls && imageMsg.mediaUrls.length > 0) {
+                // To jest wiadomość grupowa, dodajemy każdy URL oddzielnie
+                imageMsg.mediaUrls.forEach(url => {
+                    media.push({
+                        id: msg.id,
+                        sender: msg.sender,
+                        type: msg.type,
+                        content: msg.content,
+                        time: msg.time,
+                        imageUrl: url
+                    } as ImageMessage);
+                });
+            } else if (imageMsg.imageUrl) {
+                // To jest wiadomość z pojedynczym URL-em
+                media.push(msg as (ImageMessage | GifMessage));
+            }
+        }
+    });
+    return media;
+});
+
 const openLightbox = (url: string) => {
   const idx = filteredMedia.value.findIndex(msg => msg.imageUrl === url);
   if (idx !== -1) {
@@ -122,11 +153,7 @@ const onKeyDown = (e: KeyboardEvent) => {
   }
 };
 
-
-
 const audioStates = ref<Record<number, AudioState>>({});
-
-
 
 const formatSeconds = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -141,7 +168,6 @@ const formatSeconds = (seconds: number): string => {
 
 const initializeAudioState = (id: number, audio: HTMLAudioElement, messageDuration?: number) => {
     if (!audioStates.value[id]) {
-        // Użyj messageDuration jeśli jest dostępny, inaczej audio.duration
         const duration = messageDuration ?? (isNaN(audio.duration) ? 0 : audio.duration);
         audioStates.value[id] = {
             isPlaying: false,
@@ -149,7 +175,6 @@ const initializeAudioState = (id: number, audio: HTMLAudioElement, messageDurati
             currentTime: 0,
         };
     } else {
-        // Aktualizuj duration z audio.duration jeśli jest dostępna, w innym wypadku zostaw
         if (!isNaN(audio.duration) && audio.duration > 0) {
             audioStates.value[id].duration = audio.duration;
         }
@@ -157,7 +182,7 @@ const initializeAudioState = (id: number, audio: HTMLAudioElement, messageDurati
 };
 
 const getMessageDuration = (message: Message): number => {
-  return message.type === 'audio' ? message.duration : 0;
+  return message.type === 'audio' ? (message as any).duration : 0;
 };
 
 const toggleAudioPlayback = (message: Message) => {
@@ -166,16 +191,12 @@ const toggleAudioPlayback = (message: Message) => {
 
     if (!audioElement) return;
 
-    // Pobranie duration z Message jeśli jest AudioMessage
-    const messageDuration = message.type === 'audio' ? message.duration : undefined;
+    const messageDuration = message.type === 'audio' ? (message as any).duration : undefined;
 
-    // Krok 1: Wymuś załadowanie metadanych, jeśli jeszcze nie załadowane
     if (audioElement.readyState < 1) {
-        // Użyj closure, aby poprawnie wywołać funkcję po załadowaniu
         const onLoaded = () => {
-             // Po załadowaniu zainicjuj stan
             initializeAudioState(audioId, audioElement, messageDuration);
-            toggleAudioPlayback(message); // Ponownie wywołaj, gdy metadane są gotowe
+            toggleAudioPlayback(message);
             audioElement.removeEventListener('loadedmetadata', onLoaded);
         };
         audioElement.addEventListener('loadedmetadata', onLoaded);
@@ -183,11 +204,9 @@ const toggleAudioPlayback = (message: Message) => {
         return;
     }
 
-    // Krok 2: Upewnij się, że stan jest zainicjowany
     initializeAudioState(audioId, audioElement, messageDuration);
     const currentState = audioStates.value[audioId];
 
-    // Krok 3: Pauzowanie wszystkich innych odtwarzaczy
     Object.keys(audioStates.value).forEach(id => {
         const otherId = parseInt(id);
         if (otherId !== audioId && audioStates.value[otherId].isPlaying) {
@@ -197,12 +216,10 @@ const toggleAudioPlayback = (message: Message) => {
         }
     });
 
-    // Krok 4: Logika odtwarzania/pauzowania bieżącego elementu
     if (currentState.isPlaying) {
         audioElement.pause();
         currentState.isPlaying = false;
     } else {
-        // Resetowanie do początku, jeśli dotarliśmy do końca
         if (audioElement.currentTime === audioElement.duration) {
             audioElement.currentTime = 0;
             currentState.currentTime = 0;
@@ -211,14 +228,13 @@ const toggleAudioPlayback = (message: Message) => {
         audioElement.play();
         currentState.isPlaying = true;
 
-        // Dodanie słuchaczy zdarzeń do aktualizacji stanu Vue
         audioElement.ontimeupdate = () => {
             currentState.currentTime = audioElement.currentTime;
         };
 
         audioElement.onended = () => {
             currentState.isPlaying = false;
-            currentState.currentTime = 0; // Resetowanie czasu po zakończeniu
+            currentState.currentTime = 0;
         };
     }
 };
@@ -263,8 +279,8 @@ onUnmounted(() => {
     window.removeEventListener('keydown', onKeyDown);
 
     messages.value.forEach(msg => {
-        if (msg.type === 'audio' && msg.audioUrl) {
-            URL.revokeObjectURL(msg.audioUrl);
+        if (msg.type === 'audio' && (msg as any).audioUrl) {
+            URL.revokeObjectURL((msg as any).audioUrl);
         }
     });
 });
@@ -295,86 +311,107 @@ onUnmounted(() => {
 
               <div v-if="isEmojiOnly(message.content) "
                    :class="{
-                        'emoji-size-small': message.iconSizeState === 'small',
-                        'emoji-size-medium': message.iconSizeState === 'medium',
-                        'emoji-size-large': message.iconSizeState === 'large',
-                        'emoji-size-default': message.iconSizeState === 'default' || !message.iconSizeState
-                    }"
+'emoji-size-small': message.iconSizeState === 'small',
+'emoji-size-medium': message.iconSizeState === 'medium',
+'emoji-size-large': message.iconSizeState === 'large',
+'emoji-size-default': message.iconSizeState === 'default' || !message.iconSizeState
+}"
                    class="p-0 wrap-break-word max-w-[62%]">
                 <p>{{ message.content }}</p>
               </div>
- <div v-else-if="message.type === 'audio'"
-                     class="flex items-center w-full min-w-[180px] space-x-2 p-2 rounded-full h-10"
-                     :class="{
-                        'bg-purple-600 text-white rounded-tl-none': message.sender === 'other',
-                        'bg-blue-500 text-white rounded-br-none': message.sender === 'me'
-                     }"
-                     style="padding: 6px 10px;"
-                >
-                    <audio :src="message.audioUrl" :id="`audio-${message.id}`" class="hidden" preload="metadata"></audio>
 
-                    <button
-                        @click="toggleAudioPlayback(message)"
-                        class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition"
+                <div v-else-if="message.type === 'image' && (message as ImageMessageWithOptionalGroup).mediaUrls && (message as ImageMessageWithOptionalGroup).mediaUrls.length > 0"
+                    class="mb-2 max-w-[62%]">
+                    <div class="grid gap-1 rounded-xl overflow-hidden"
                         :class="{
-                            'bg-white text-purple-600': message.sender === 'other',
-                            'bg-white text-blue-500': message.sender === 'me'
-                        }"
-                    >
-                        <template v-if="audioStates[message.id]?.isPlaying">
-                            <PauseIcon :size="16" />
-                        </template>
-                        <template v-else>
-                            <PlayIcon :size="16" :fill="true" class="ml-0.5" />
-                        </template>
-                    </button>
-
-                    <div
-    class="flex-grow h-6 relative overflow-hidden rounded-full cursor-pointer"
-    :class="{ 'opacity-80': audioStates[message.id]?.isPlaying }"
-
->
-    <div
-        class="absolute inset-0 bg-white rounded-full transition-width duration-75"
-        :style="{ width: `${(audioStates[message.id]?.currentTime || 0) / (getMessageDuration(message) || 1) * 100}%` }"
-    ></div>
-
-    <div class="absolute inset-0 flex items-center justify-between space-x-0.5 h-full px-1">
-        <div v-for="n in 8" :key="n"
-             class="rounded-full shrink-0 z-10"
-             :class="{
-                 // Kolor fali: fioletowy/niebieski, jeśli jest w białej strefie postępu
-                 'bg-purple-600': message.sender === 'other' && (audioStates[message.id]?.currentTime || 0) / (getMessageDuration(message) || 1) * 100 > ([0, 12, 25, 37, 50, 62, 75, 87][n-1] + 6),
-                 'bg-blue-500': message.sender === 'me' && (audioStates[message.id]?.currentTime || 0) / (getMessageDuration(message) || 1) * 100 > ([0, 12, 25, 37, 50, 62, 75, 87][n-1] + 6),
-                 // Kolor domyślny fali (biały)
-                 'bg-white': (message.sender === 'other' || message.sender === 'me') && (audioStates[message.id]?.currentTime || 0) / (getMessageDuration(message) || 1) * 100 <= ([0, 12, 25, 37, 50, 62, 75, 87][n-1] + 6)
-             }"
-             :style="{ height: `${[10, 20, 14, 25, 20, 15, 20, 10][n-1]}px`, width: '3px' }"
-        ></div>
-    </div>
-</div>
-
-                    <span class="text-xs font-semibold shrink-0 text-white">
-                        <template v-if="audioStates[message.id]?.isPlaying">
-        {{ formatSeconds(audioStates[message.id]?.currentTime || 0) }}
-    </template>
-    <template v-else>
-        {{ formatSeconds(getMessageDuration(message)) }}
-    </template>
-                    </span>
-
+                            // Maksymalnie 2 kolumny
+                            'grid-cols-2': (message as ImageMessageWithOptionalGroup).mediaUrls.length >= 2,
+                            'grid-cols-1': (message as ImageMessageWithOptionalGroup).mediaUrls.length === 1,
+                            'rounded-tl-none': message.sender === 'other',
+                            'rounded-br-none': message.sender === 'me'
+                        }">
+                        <img v-for="(url, mediaIndex) in (message as ImageMessageWithOptionalGroup).mediaUrls" :key="mediaIndex"
+                            :src="url"
+                            alt="Zdjęcie grupowe"
+                            class="w-full h-full object-cover cursor-pointer"
+                            :class="{
+                                'aspect-square': (message as ImageMessageWithOptionalGroup).mediaUrls.length > 1,
+                            }"
+                            @click="openLightbox(url)"
+                        />
+                    </div>
                 </div>
 
-                <div v-else-if="message.type === 'image' || message.type === 'gif'" class="mb-2">
+                <div v-else-if="message.type === 'image' || message.type === 'gif'" class="mb-2 max-w-[62%]">
                     <img
-                        :src="message.imageUrl"
+                        :src="(message as ImageMessage).imageUrl"
                         :alt="message.type === 'gif' ? 'Animated GIF' : 'Image'"
                         class="max-w-full h-auto rounded-lg cursor-pointer"
                         :class="{ 'border-2 border-purple-400': message.type === 'gif' }"
-                        @click="openLightbox(message.imageUrl)"
+                        @click="openLightbox((message as ImageMessage).imageUrl)"
                     />
                 </div>
-              <div v-else
+
+                <div v-else-if="message.type === 'audio'"
+                      class="flex items-center w-full min-w-[180px] space-x-2 p-2 rounded-full h-10"
+                      :class="{
+                          'bg-purple-600 text-white rounded-tl-none': message.sender === 'other',
+                          'bg-blue-500 text-white rounded-br-none': message.sender === 'me'
+                      }"
+                      style="padding: 6px 10px;"
+                  >
+                      <audio :src="(message as any).audioUrl" :id="`audio-${message.id}`" class="hidden" preload="metadata"></audio>
+
+                      <button
+                          @click="toggleAudioPlayback(message)"
+                          class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition"
+                          :class="{
+                              'bg-white text-purple-600': message.sender === 'other',
+                              'bg-white text-blue-500': message.sender === 'me'
+                          }"
+                      >
+                          <template v-if="audioStates[message.id]?.isPlaying">
+                              <PauseIcon :size="16" />
+                          </template>
+                          <template v-else>
+                              <PlayIcon :size="16" :fill="true" class="ml-0.5" />
+                          </template>
+                      </button>
+
+                      <div
+                          class="flex-grow h-6 relative overflow-hidden rounded-full cursor-pointer"
+                          :class="{ 'opacity-80': audioStates[message.id]?.isPlaying }"
+                      >
+                          <div
+                              class="absolute inset-0 bg-white rounded-full transition-width duration-75"
+                              :style="{ width: `${(audioStates[message.id]?.currentTime || 0) / (getMessageDuration(message) || 1) * 100}%` }"
+                          ></div>
+
+                          <div class="absolute inset-0 flex items-center justify-between space-x-0.5 h-full px-1">
+                              <div v-for="n in 8" :key="n"
+                                  class="rounded-full shrink-0 z-10"
+                                  :class="{
+                                      'bg-purple-600': message.sender === 'other' && (audioStates[message.id]?.currentTime || 0) / (getMessageDuration(message) || 1) * 100 > ([0, 12, 25, 37, 50, 62, 75, 87][n-1] + 6),
+                                      'bg-blue-500': message.sender === 'me' && (audioStates[message.id]?.currentTime || 0) / (getMessageDuration(message) || 1) * 100 > ([0, 12, 25, 37, 50, 62, 75, 87][n-1] + 6),
+                                      'bg-white': (message.sender === 'other' || message.sender === 'me') && (audioStates[message.id]?.currentTime || 0) / (getMessageDuration(message) || 1) * 100 <= ([0, 12, 25, 37, 50, 62, 75, 87][n-1] + 6)
+                                  }"
+                                  :style="{ height: `${[10, 20, 14, 25, 20, 15, 20, 10][n-1]}px`, width: '3px' }"
+                              ></div>
+                          </div>
+                      </div>
+
+                      <span class="text-xs font-semibold shrink-0 text-white">
+                          <template v-if="audioStates[message.id]?.isPlaying">
+                              {{ formatSeconds(audioStates[message.id]?.currentTime || 0) }}
+                          </template>
+                          <template v-else>
+                              {{ formatSeconds(getMessageDuration(message)) }}
+                          </template>
+                      </span>
+
+                  </div>
+
+                <div v-else
                    class="relative p-3 text-sm rounded-xl shadow-md break-words max-w-[62%]"
                    :class="{
                         'bg-purple-600 text-white rounded-tl-none': message.sender === 'other',
@@ -467,4 +504,3 @@ onUnmounted(() => {
 .delay-3 { animation-delay: 0.3s; }
 
 </style>
-
