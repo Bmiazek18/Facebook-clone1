@@ -9,8 +9,8 @@ import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue'
 
 <template>
   <VMenu placement="top-start">
-    <div class="font-extrabold text-[15px] text-theme-text">Bartosz Miazek</div>
 
+   <slot/>
     <template #popper>
       <div class="bg-theme-bg-secondary rounded-lg shadow-xl max-w-sm mx-auto overflow-hidden">
 
