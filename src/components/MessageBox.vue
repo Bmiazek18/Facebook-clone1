@@ -3,10 +3,7 @@ import { ref, onUnmounted, computed, nextTick, onMounted } from 'vue';
 import MultiMediaLightbox from './MessageBox/Lightbox.vue';
 import MessageBoxHeader from './MessageBoxHeader.vue';
 import MessageBoxFooter from './MessageBoxFooter.vue';
-
-import ThumbUpIcon from 'vue-material-design-icons/ThumbUp.vue';
-import PlayIcon from 'vue-material-design-icons/Play.vue';
-import PauseIcon from 'vue-material-design-icons/Pause.vue';
+import MessageItem from './MessageItem.vue'; // <-- Import nowego komponentu
 
 import type { Message, ImageMessage, GifMessage, AudioState } from '@/types/Message';
 
@@ -155,17 +152,6 @@ const onKeyDown = (e: KeyboardEvent) => {
 
 const audioStates = ref<Record<number, AudioState>>({});
 
-const formatSeconds = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-
-    if (isNaN(seconds) || seconds < 0) {
-        return '0:00';
-    }
-
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
-};
-
 const initializeAudioState = (id: number, audio: HTMLAudioElement, messageDuration?: number) => {
     if (!audioStates.value[id]) {
         const duration = messageDuration ?? (isNaN(audio.duration) ? 0 : audio.duration);
@@ -179,10 +165,6 @@ const initializeAudioState = (id: number, audio: HTMLAudioElement, messageDurati
             audioStates.value[id].duration = audio.duration;
         }
     }
-};
-
-const getMessageDuration = (message: Message): number => {
-  return message.type === 'audio' ? (message as any).duration : 0;
 };
 
 const toggleAudioPlayback = (message: Message) => {
@@ -265,12 +247,6 @@ const getDisplayTime = (index: number): string | null => {
   return null;
 };
 
-const isEmojiOnly = (content: string): boolean => {
-  if (!content.trim()) return false;
-  const strippedContent = content.trim().replace(/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g, '');
-  return strippedContent.trim().length === 0 && content.trim().length > 0;
-};
-
 onMounted(()=>{
   scrollToBottom();
   window.addEventListener('keydown', onKeyDown);
@@ -293,146 +269,21 @@ onUnmounted(() => {
       <main ref="chatContainer" class="flex flex-col grow p-4 space-y-4 overflow-y-auto custom-scrollbar bg-theme-bg-secondary">
         <div v-for="(message, index) in messages" :key="message.id" >
           <div v-if="getDisplayTime(index)" class="text-xs text-theme-text-secondary text-center my-2 select-none">{{ getDisplayTime(index) }}</div>
-          <div  class="flex items-end "
-               :class="{ 'justify-start': message.sender === 'other', 'justify-end': message.sender === 'me' }" >
-            <div v-if="message.sender === 'other' && !isEmojiOnly(message.content)"
-                 class="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mr-2 relative self-start flex-shrink-0">
-              <span class="text-base">😊</span>
-            </div>
-            <div
-            v-tooltip="{content:formatTime(message.time),placement:message.sender === 'other' ? 'left' : 'right' }"
-            class="max-w-[90%] w-full flex flex-col"
-                 :class="{ 'items-start': message.sender === 'other', 'items-end': message.sender === 'me' }">
-              <div v-if="message.isReply"
-                   class="mb-0 p-2 rounded-lg max-w-full bg-theme-bg-secondary border border-theme-border text-theme-text border-l-4">
-                    <p class="text-xs font-semibold text-theme-text-secondary">{{ message.replyToSender }} odpowiedział Ci</p>
-                    <p class="text-sm text-theme-text-secondary line-clamp-3 truncate">{{ message.replyToContentSnippet }}</p>
-              </div>
 
-              <div v-if="isEmojiOnly(message.content) "
-                   :class="{
-'emoji-size-small': message.iconSizeState === 'small',
-'emoji-size-medium': message.iconSizeState === 'medium',
-'emoji-size-large': message.iconSizeState === 'large',
-'emoji-size-default': message.iconSizeState === 'default' || !message.iconSizeState
-}"
-                   class="p-0 wrap-break-word max-w-[62%]">
-                <p>{{ message.content }}</p>
-              </div>
+          <MessageItem
+              :message="message"
+              :index="index"
+              :audioStates="audioStates"
+              @open-lightbox="openLightbox"
+              @toggle-audio-playback="toggleAudioPlayback"
+              @add-reaction="({ messageId, emoji }) => {
+        const msg = messages.find(m => m.id === messageId);
+        if (msg) {
+            if (!msg.reactions) msg.reactions = [];
+            msg.reactions.push(emoji);
+        }}"
+          />
 
-                <div v-else-if="message.type === 'image' && (message as ImageMessageWithOptionalGroup).mediaUrls && (message as ImageMessageWithOptionalGroup).mediaUrls.length > 0"
-                    class="mb-2 max-w-[62%]">
-                    <div class="grid gap-1 rounded-xl overflow-hidden"
-                        :class="{
-                            // Maksymalnie 2 kolumny
-                            'grid-cols-2': (message as ImageMessageWithOptionalGroup).mediaUrls.length >= 2,
-                            'grid-cols-1': (message as ImageMessageWithOptionalGroup).mediaUrls.length === 1,
-                            'rounded-tl-none': message.sender === 'other',
-                            'rounded-br-none': message.sender === 'me'
-                        }">
-                        <img v-for="(url, mediaIndex) in (message as ImageMessageWithOptionalGroup).mediaUrls" :key="mediaIndex"
-                            :src="url"
-                            alt="Zdjęcie grupowe"
-                            class="w-full h-full object-cover cursor-pointer"
-                            :class="{
-                                'aspect-square': (message as ImageMessageWithOptionalGroup).mediaUrls.length > 1,
-                            }"
-                            @click="openLightbox(url)"
-                        />
-                    </div>
-                </div>
-
-                <div v-else-if="message.type === 'image' || message.type === 'gif'" class="mb-2 max-w-[62%]">
-                    <img
-                        :src="(message as ImageMessage).imageUrl"
-                        :alt="message.type === 'gif' ? 'Animated GIF' : 'Image'"
-                        class="max-w-full h-auto rounded-lg cursor-pointer"
-                        :class="{ 'border-2 border-purple-400': message.type === 'gif' }"
-                        @click="openLightbox((message as ImageMessage).imageUrl)"
-                    />
-                </div>
-
-                <div v-else-if="message.type === 'audio'"
-                      class="flex items-center w-full min-w-[180px] space-x-2 p-2 rounded-full h-10"
-                      :class="{
-                          'bg-purple-600 text-white rounded-tl-none': message.sender === 'other',
-                          'bg-blue-500 text-white rounded-br-none': message.sender === 'me'
-                      }"
-                      style="padding: 6px 10px;"
-                  >
-                      <audio :src="(message as any).audioUrl" :id="`audio-${message.id}`" class="hidden" preload="metadata"></audio>
-
-                      <button
-                          @click="toggleAudioPlayback(message)"
-                          class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition"
-                          :class="{
-                              'bg-white text-purple-600': message.sender === 'other',
-                              'bg-white text-blue-500': message.sender === 'me'
-                          }"
-                      >
-                          <template v-if="audioStates[message.id]?.isPlaying">
-                              <PauseIcon :size="16" />
-                          </template>
-                          <template v-else>
-                              <PlayIcon :size="16" :fill="true" class="ml-0.5" />
-                          </template>
-                      </button>
-
-                      <div
-                          class="flex-grow h-6 relative overflow-hidden rounded-full cursor-pointer"
-                          :class="{ 'opacity-80': audioStates[message.id]?.isPlaying }"
-                      >
-                          <div
-                              class="absolute inset-0 bg-white rounded-full transition-width duration-75"
-                              :style="{ width: `${(audioStates[message.id]?.currentTime || 0) / (getMessageDuration(message) || 1) * 100}%` }"
-                          ></div>
-
-                          <div class="absolute inset-0 flex items-center justify-between space-x-0.5 h-full px-1">
-                              <div v-for="n in 8" :key="n"
-                                  class="rounded-full shrink-0 z-10"
-                                  :class="{
-                                      'bg-purple-600': message.sender === 'other' && (audioStates[message.id]?.currentTime || 0) / (getMessageDuration(message) || 1) * 100 > ([0, 12, 25, 37, 50, 62, 75, 87][n-1] + 6),
-                                      'bg-blue-500': message.sender === 'me' && (audioStates[message.id]?.currentTime || 0) / (getMessageDuration(message) || 1) * 100 > ([0, 12, 25, 37, 50, 62, 75, 87][n-1] + 6),
-                                      'bg-white': (message.sender === 'other' || message.sender === 'me') && (audioStates[message.id]?.currentTime || 0) / (getMessageDuration(message) || 1) * 100 <= ([0, 12, 25, 37, 50, 62, 75, 87][n-1] + 6)
-                                  }"
-                                  :style="{ height: `${[10, 20, 14, 25, 20, 15, 20, 10][n-1]}px`, width: '3px' }"
-                              ></div>
-                          </div>
-                      </div>
-
-                      <span class="text-xs font-semibold shrink-0 text-white">
-                          <template v-if="audioStates[message.id]?.isPlaying">
-                              {{ formatSeconds(audioStates[message.id]?.currentTime || 0) }}
-                          </template>
-                          <template v-else>
-                              {{ formatSeconds(getMessageDuration(message)) }}
-                          </template>
-                      </span>
-
-                  </div>
-
-                <div v-else
-                   class="relative p-3 text-sm rounded-xl shadow-md break-words max-w-[62%]"
-                   :class="{
-                        'bg-purple-600 text-white rounded-tl-none': message.sender === 'other',
-                        'bg-theme-bg-secondary text-theme-text border border-theme-border rounded-br-none': message.sender === 'me'
-                   }">
-
-
-
-                <p >{{ message.content }}</p>
-
-                <div v-if="message.sender === 'other' && message.isReply"
-                     class="absolute -bottom-1.5 -left-2 w-5 h-5 bg-blue-100 dark:bg-blue-900 rounded-full border-2 border-white dark:border-gray-600 flex items-center justify-center shadow">
-                    <span class="text-xs">😊</span>
-                </div>
-                <div v-if="message.sender === 'me'"
-                     class="absolute -bottom-2.5 -right-2.5 w-5 h-5 bg-theme-bg border border-theme-border rounded-full flex items-center justify-center shadow-md">
-                    <ThumbUpIcon :size="14" class="text-blue-500" />
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </main>
 

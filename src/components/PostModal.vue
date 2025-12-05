@@ -7,6 +7,7 @@ import MessageOutline from 'vue-material-design-icons/MessageOutline.vue'
 import ShareIcon from 'vue-material-design-icons/ShareVariant.vue'
 import HoverScrollbar from './HoverScrollbar.vue'
 import ReactionButton from './ReactionButton.vue'
+import Modal from './Modal.vue'
 // 1. IMPORT NOWEGO KOMPONENTU
 import CommentItem from './CommentItem.vue'
 // IMPORT INTERFEJSU KOMENTARZA DO UŻYCIA W DANYCH
@@ -98,23 +99,9 @@ const comments: Comment[] = [ // Dodano inferencję typu
 </script>
 
 <template>
-    <div
-        @click.self="closeModal"
-        class="fixed inset-0 z-55 flex items-center justify-center bg-gray-200/80 dark:bg-black/80"
-    >
-        <div class="bg-theme-bg-secondary rounded-lg shadow-2xl w-full max-w-2xl mx-4 my-8 relative flex flex-col max-h-[98vh]">
 
-            <div class="p-4 border-b border-theme-border flex items-center justify-center relative">
-                <h2 class="text-xl text-theme-text font-bold">{{ $t('post.title') }}</h2>
-                <button
-                    @click="closeModal"
-                    class="absolute right-4 text-theme-text hover:bg-theme-hover rounded-full p-2"
-                >
-                    <Close :size="24" fillColor="#65686C" />
-                </button>
-            </div>
-
-            <HoverScrollbar class="flex-grow">
+<Modal @close="closeModal">
+<HoverScrollbar class="flex-grow">
                 <div class="flex flex-col h-full">
 
                     <div class="p-4 border-b border-theme-border">
@@ -191,7 +178,8 @@ const comments: Comment[] = [ // Dodano inferencję typu
 
 
             </HoverScrollbar>
-        </div>
-    </div>
+</Modal>
+
+
 
 </template>
