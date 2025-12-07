@@ -17,7 +17,7 @@ import { onClickOutside } from '@vueuse/core'
 import ProfileMenu from '@/components/ProfileMenu.vue'
 import NotificationMenu from '@/components/NotificationMenu.vue'
 import MessageMenu from '@/components/MessageMenu.vue'
-import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
+
 import { useTheme } from '@/composables/useTheme'
 import ContactList from '@/components/ContactList.vue' // Upewnij się, że ścieżka jest poprawna
 
@@ -135,7 +135,7 @@ onClickOutside(searchContainerRef, () => {
     </div>
 
     <div class="flex items-center justify-end w-[260px] mr-4 relative">
-      <ThemeSwitcher />
+
       <button class="rounded-full bg-[#E3E6EA] dark:bg-[#3b3d3f] p-2 hover:bg-gray-300 dark:hover:bg-gray-600 mx-1 cursor-pointer">
         <DotsGrid :size="23" :fillColor="isDark ? '#fff' : '#050505'" />
       </button>

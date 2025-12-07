@@ -10,14 +10,10 @@ import ReactionButton from './ReactionButton.vue'
 import Modal from './Modal.vue'
 // 1. IMPORT NOWEGO KOMPONENTU
 import CommentItem from './CommentItem.vue'
-// IMPORT INTERFEJSU KOMENTARZA DO UŻYCIA W DANYCH
+
 import type { Comment } from './CommentItem.vue'
 
-const emit = defineEmits(['close'])
 
-const closeModal = () => {
-    emit('close')
-}
 
 // Przykładowe dane dla postu
 const postData = {
@@ -100,7 +96,7 @@ const comments: Comment[] = [ // Dodano inferencję typu
 
 <template>
 
-<Modal @close="closeModal">
+
 <HoverScrollbar class="flex-grow">
                 <div class="flex flex-col h-full">
 
@@ -178,7 +174,7 @@ const comments: Comment[] = [ // Dodano inferencję typu
 
 
             </HoverScrollbar>
-</Modal>
+
 
 
 

@@ -12,15 +12,13 @@ import ShareIcon from 'vue-material-design-icons/ShareVariant.vue'
 import ReactionButton from './ReactionButton.vue'
 import { useTheme } from '@/composables/useTheme'
 import ProfilePopper from './ProfilePopper.vue'
-
+import Modal from './Modal.vue'
+import PostModal from './PostModal.vue'
 useI18n()
 
-
-const emit = defineEmits(['openModal'])
-
-// Funkcja do otwierania modala
-const openPostModal = () => {
-    emit('openModal')
+const isModalOpen = ref(false)
+const toggleModal = () => {
+    isModalOpen.value = !isModalOpen.value
 }
 const { isDark } = useTheme()
 </script>
@@ -79,7 +77,7 @@ const { isDark } = useTheme()
            <ReactionButton/>
           </div>
            <button
-@click="openPostModal"
+@click="toggleModal"
             class="flex items-center justify-center h-[38px] hover:bg-theme-hover w-full rounded-lg mx-1 cursor-pointer"
           >
           <MessageOutline :size="18" fillColor="#65686C"  />
@@ -94,5 +92,11 @@ const { isDark } = useTheme()
             </div>
         </div>
 
+<Modal
+            v-if="isModalOpen"
+            @close="toggleModal"
 
+        >
+        <PostModal/>
+      </Modal>
 </template>

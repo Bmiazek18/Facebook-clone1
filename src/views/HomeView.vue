@@ -18,23 +18,16 @@ import Flag from 'vue-material-design-icons/Flag.vue'
 import ClockTimeTwoOutline from 'vue-material-design-icons/ClockTimeTwoOutline.vue'
 import Restore from 'vue-material-design-icons/Restore.vue'
 import PostItemSceleton from '@/components/PostItemSceleton.vue'
-import PostModal from '@/components/PostModal.vue'
 import { useTheme } from '@/composables/useTheme'
 
-const { t } = useI18n()
+
+
 const { isDark } = useTheme()
-const isModalOpen = ref(false)
+
 
 const isLoading = ref(true)
 setTimeout(()=>{isLoading.value =false},2000)
-const handleOpenModal = () => {
-    // selectedPost.value = post
-    isModalOpen.value = true
-}
 
-const handleCloseModal = () => {
-    isModalOpen.value = false
-}
 const posts = ref(
   Array.from({ length: 10 }, (_, i) => ({
     id: i,
@@ -126,7 +119,7 @@ const menuItems = [
 
                     <PostItem
                       :post="post.data"
-                      @openModal="handleOpenModal"
+
                     />
 
                     <PeopleYouMayKnow v-if="post.data.id + 1 === peopleYouMayKnowIndex" />
@@ -181,11 +174,5 @@ const menuItems = [
 
       </div>
     </div>
-    <Teleport to="body">
-<PostModal
-            v-if="isModalOpen"
-            @close="handleCloseModal"
-            :post-data="{/* Przekaż dane tutaj */}"
-        />
-        </Teleport>
+
 </template>
