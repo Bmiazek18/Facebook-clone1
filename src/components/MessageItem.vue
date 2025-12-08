@@ -7,8 +7,9 @@ import ReplyIcon from 'vue-material-design-icons/Reply.vue';
 import FileIcon from 'vue-material-design-icons/File.vue';
 import type { Message, ImageMessage, GifMessage, AudioState } from '@/types/Message';
 import Modal from './Modal.vue';
-
+import PlayerVideo from './PlayerVideo.vue';
 import ReactionPanel from './ReactionPanel.vue';
+import { useFileSize } from '@/composables/useFileSize';
 
 interface ImageMessageWithOptionalGroup extends ImageMessage {
   mediaUrls?: string[];
@@ -110,6 +111,15 @@ const selectReaction = (emoji: string) => {
   emit('add-reaction', { messageId: props.message.id, emoji });
   showReactions.value = false;
 };
+const downloadFile = (message: any) => {
+  const link = document.createElement('a');
+  link.href = message.fileUrl;
+  link.download = message.fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 </script>
 
 <template>
@@ -283,13 +293,24 @@ const selectReaction = (emoji: string) => {
           </template>
         </span>
       </div>
-<div v-else-if="isFileMessage" class="p-3 bg-gray-200 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-300" @click="window.open(message.fileUrl, '_blank')">
+<div v-else-if="isFileMessage" class="p-3 bg-gray-200 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-300" @click="downloadFile(message)">
 <FileIcon :size="22" />
 <div>
 <p class="text-sm font-semibold">{{ message.fileName }}</p>
-<p class="text-xs text-gray-600">Plik</p>
+<p class="text-xs text-gray-600">{{ useFileSize(message.fileSize)}}</p>
 </div>
 </div>
+<div
+  v-else-if="message.type === 'video'"
+
+>
+
+
+<PlayerVideo :url="message.videoUrl" />
+
+
+</div>
+
       <!-- Tekst -->
       <div
         v-else-if="isTextMessage"

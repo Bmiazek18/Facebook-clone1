@@ -104,37 +104,54 @@ const isLightboxOpen = ref(false);
 const currentMediaIndex = ref(0);
 
 const filteredMedia = computed(() => {
-    const media: (ImageMessage | GifMessage)[] = [];
-    messages.value.forEach(msg => {
-        if (msg.type === 'image' || msg.type === 'gif') {
-            const imageMsg = msg as ImageMessageWithOptionalGroup;
+  const media: (ImageMessage | GifMessage | { id: number; sender: string; type: 'video'; content: string; time: number; videoUrl: string; })[] = [];
 
-            if (imageMsg.mediaUrls && imageMsg.mediaUrls.length > 0) {
-                imageMsg.mediaUrls.forEach(url => {
-                    media.push({
-                        id: msg.id,
-                        sender: msg.sender,
-                        type: msg.type,
-                        content: msg.content,
-                        time: msg.time,
-                        imageUrl: url
-                    } as ImageMessage);
-                });
-            } else if (imageMsg.imageUrl) {
-                media.push(msg as (ImageMessage | GifMessage));
-            }
+  messages.value.forEach(msg => {
+    if (msg.type === 'image' || msg.type === 'gif' || msg.type === 'video') {
+      if (msg.type === 'video') {
+        media.push({
+          id: msg.id,
+          sender: msg.sender,
+          type: 'video',
+          content: msg.content,
+          time: msg.time,
+          videoUrl: (msg as any).videoUrl,
+        });
+      } else {
+        const imageMsg = msg as ImageMessageWithOptionalGroup;
+        if (imageMsg.mediaUrls && imageMsg.mediaUrls.length > 0) {
+          imageMsg.mediaUrls.forEach(url => {
+            media.push({
+              id: msg.id,
+              sender: msg.sender,
+              type: msg.type,
+              content: msg.content,
+              time: msg.time,
+              imageUrl: url
+            } as ImageMessage);
+          });
+        } else if (imageMsg.imageUrl) {
+          media.push(msg as (ImageMessage | GifMessage));
         }
-    });
-    return media;
+      }
+    }
+  });
+
+  return media;
 });
 
+
 const openLightbox = (url: string) => {
-  const idx = filteredMedia.value.findIndex(msg => msg.imageUrl === url);
+  const idx = filteredMedia.value.findIndex(msg => {
+    if (msg.type === 'video') return (msg as any).videoUrl === url;
+    return (msg as any).imageUrl === url;
+  });
   if (idx !== -1) {
     currentMediaIndex.value = idx;
     isLightboxOpen.value = true;
   }
 };
+
 
 const onKeyDown = (e: KeyboardEvent) => {
   if ((e.key === 'Escape' || e.key === 'Esc') && isLightboxOpen.value) {
@@ -285,15 +302,16 @@ const onDrop = (event: DragEvent) => {
 
     if (file.type.startsWith('image/')) {
       addDroppedImage(url);
-    } else if (file.type.startsWith('audio/')) {
-      addDroppedAudio(url, file);
-    } else if (file.type === 'image/gif') {
-      addDroppedGif(url);
+    }else if (file.type.startsWith('video/')) {
+      addDroppedVideo(url,file);
+    } else {
+      addDroppedFile(url, file);
     }
   }
 
   scrollToBottom();
 };
+
 
 const addDroppedImage = (url: string) => {
   messages.value.push({
@@ -305,27 +323,36 @@ const addDroppedImage = (url: string) => {
     imageUrl: url
   });
 };
-const addDroppedGif = (url: string) => {
+const addDroppedVideo = async (url: string, file: File) => {
+
+
   messages.value.push({
     id: Date.now(),
     sender: 'me',
-    type: 'gif',
-    content: 'Wysłano GIF:',
+    type: 'video',
+    content: file.name,
     time: Date.now(),
-    imageUrl: url
+    videoUrl: url,
+    fileName: file.name,
+    fileSize: file.size,
   });
 };
-const addDroppedAudio = (url: string, file: File) => {
+
+
+const addDroppedFile = (url: string, file: File) => {
   messages.value.push({
     id: Date.now(),
     sender: 'me',
-    type: 'audio',
-    content: `Wiadomość głosowa (${file.name})`,
+    type: 'file',
+    content: `Wysłano plik (${file.name})`,
     time: Date.now(),
-    audioUrl: url,
-    duration: 0
+    fileUrl: url,
+    fileName: file.name,
+    fileType: file.type,
+    fileSize: file.size
   });
 };
+
 const replyTarget = ref<Message | null>(null);
 
 const setReplyTo = (message: Message) => {

@@ -32,7 +32,15 @@ export interface AudioMessage extends BaseMessage {
   duration: number;
 }
 
-export type Message = TextMessage | ImageMessage | GifMessage | AudioMessage;
+
+export interface VideoMessage extends BaseMessage {
+  type: 'video';
+  content: string;
+  videoUrl: string;
+
+}
+
+export type Message = TextMessage | ImageMessage | GifMessage | AudioMessage | VideoMessage;
 
 export interface AudioState {
   isPlaying: boolean;
