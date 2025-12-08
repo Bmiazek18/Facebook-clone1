@@ -3,15 +3,12 @@ import { ref, onUnmounted, computed, nextTick, onMounted } from 'vue';
 import MultiMediaLightbox from './MessageBox/Lightbox.vue';
 import MessageBoxHeader from './MessageBoxHeader.vue';
 import MessageBoxFooter from './MessageBoxFooter.vue';
-import MessageItem from './MessageItem.vue'; // <-- Import nowego komponentu
+import MessageItem from './MessageItem.vue';
 
 import type { Message, ImageMessage, GifMessage, AudioState } from '@/types/Message';
 
-// Zaktualizowana Definicja Typów (symulacja, zakładając, że Message jest w @/types/Message)
-// Dodajemy klucz mediaUrls do wiadomości ze zdjęciem.
 interface ImageMessageWithOptionalGroup extends ImageMessage {
-  // imageUrl: string jest używane dla pojedynczego zdjęcia
-  mediaUrls?: string[]; // Tablica linków dla wielu zdjęć
+  mediaUrls?: string[];
 }
 
 const createTimestamp = (timeStr: string, daysAgo: number = 0): number => {
@@ -44,30 +41,27 @@ const messages = ref<Message[]>([
     sender: 'other',
     type: 'text',
     content: 'Spoko! Dzięki za info 😉',
-    time: createTimestamp('14:50', 0),
+    time: createTimestamp('14:50', 1),
   },
   {
-    // WIADOMOŚĆ GRUPOWA: Używamy mediaUrls
     id: 11,
     sender: 'me',
     type: 'image',
     content: 'Wysłane zdjęcia:',
-    time: createTimestamp('15:00', 0),
-    // imageUrl może być pierwszym elementem tablicy, lub ustawione jako pojedynczy string:
+    time: createTimestamp('15:00', 1),
     imageUrl: 'https://primefaces.org/cdn/primevue/images/galleria/galleria10.jpg',
-    mediaUrls: [ // Tablica dla grupowania
+    mediaUrls: [
       'https://primefaces.org/cdn/primevue/images/galleria/galleria10.jpg',
       'https://primefaces.org/cdn/primevue/images/galleria/galleria11.jpg',
       'https://primefaces.org/cdn/primevue/images/galleria/galleria14.jpg',
     ],
   } as ImageMessageWithOptionalGroup,
   {
-    // POJEDYNCZE ZDJĘCIE: Używamy tylko imageUrl
     id: 15,
     sender: 'other',
     type: 'image',
     content: 'Pojedynczy obrazek:',
-    time: createTimestamp('15:01', 0),
+    time: createTimestamp('15:01', 1),
     imageUrl: 'https://primefaces.org/cdn/primevue/images/galleria/galleria12.jpg',
   } as ImageMessageWithOptionalGroup,
   {
@@ -75,14 +69,14 @@ const messages = ref<Message[]>([
     sender: 'other',
     type: 'text',
     content: 'Właśnie wysłałem Ci link do tego nowego frameworka. Zobacz, czy to może nam pomóc przy optymalizacji.',
-    time: createTimestamp('15:05', 0),
+    time: createTimestamp('15:05', 1),
   },
   {
     id: 13,
     sender: 'other',
     type: 'audio',
     content: 'Wiadomość głosowa (0:15)',
-    time: createTimestamp('15:10', 0),
+    time: createTimestamp('15:10', 1),
     audioUrl: 'http://example.com/audio/other_voice_message.mp3',
     duration: 15,
   },
@@ -91,11 +85,11 @@ const messages = ref<Message[]>([
     sender: 'me',
     type: 'text',
     content: 'Oki, zaraz obczaję ten link i odsłucham wiadomość. Wielkie dzięki!',
-    time: createTimestamp('15:12', 0),
+    time: createTimestamp('15:12', 1),
   },
 ]);
-const chatContainer = ref(null);
 
+const chatContainer = ref(null);
 function scrollToBottom() {
   nextTick(() => {
     if (chatContainer.value) {
@@ -109,7 +103,6 @@ const MAX_TIME_DIFF_MS = 5 * 60 * 1000;
 const isLightboxOpen = ref(false);
 const currentMediaIndex = ref(0);
 
-// POPRAWIONA LOGIKA LIGHTBOXA: Obsługuje pojedyncze i grupowe zdjęcia
 const filteredMedia = computed(() => {
     const media: (ImageMessage | GifMessage)[] = [];
     messages.value.forEach(msg => {
@@ -117,7 +110,6 @@ const filteredMedia = computed(() => {
             const imageMsg = msg as ImageMessageWithOptionalGroup;
 
             if (imageMsg.mediaUrls && imageMsg.mediaUrls.length > 0) {
-                // To jest wiadomość grupowa, dodajemy każdy URL oddzielnie
                 imageMsg.mediaUrls.forEach(url => {
                     media.push({
                         id: msg.id,
@@ -129,7 +121,6 @@ const filteredMedia = computed(() => {
                     } as ImageMessage);
                 });
             } else if (imageMsg.imageUrl) {
-                // To jest wiadomość z pojedynczym URL-em
                 media.push(msg as (ImageMessage | GifMessage));
             }
         }
@@ -144,6 +135,7 @@ const openLightbox = (url: string) => {
     isLightboxOpen.value = true;
   }
 };
+
 const onKeyDown = (e: KeyboardEvent) => {
   if ((e.key === 'Escape' || e.key === 'Esc') && isLightboxOpen.value) {
     isLightboxOpen.value = false;
@@ -246,11 +238,28 @@ const getDisplayTime = (index: number): string | null => {
 
   return null;
 };
+const getMessagePositionInGroup = (index: number): 'single' | 'first' | 'middle' | 'last' => {
+  const current = messages.value[index];
+  const prev = messages.value[index - 1];
+  const next = messages.value[index + 1];
 
-onMounted(()=>{
+  const isSameSenderAsPrev = prev && prev.sender === current.sender && (current.time - prev.time) < MAX_TIME_DIFF_MS;
+  const isSameSenderAsNext = next && next.sender === current.sender && (next.time - current.time) < MAX_TIME_DIFF_MS;
+
+  if (!isSameSenderAsPrev && !isSameSenderAsNext) return 'single';
+  if (!isSameSenderAsPrev && isSameSenderAsNext) return 'first';
+  if (isSameSenderAsPrev && isSameSenderAsNext) return 'middle';
+  if (isSameSenderAsPrev && !isSameSenderAsNext) return 'last';
+
+  return 'single';
+};
+
+
+
+onMounted(() => {
   scrollToBottom();
   window.addEventListener('keydown', onKeyDown);
-})
+});
 onUnmounted(() => {
     window.removeEventListener('keydown', onKeyDown);
 
@@ -260,98 +269,160 @@ onUnmounted(() => {
         }
     });
 });
-</script>
-<template>
-  <div class=" flex items-center relative justify-center py-4 px-2">
-    <div class="w-full max-w-[328px] h-[455px] bg-theme-bg-secondary rounded-xl shadow-2xl flex flex-col overflow-hidden">
-            <MessageBoxHeader title="Alan, Jacek" :users="['Alan', 'Jacek']" />
 
-      <main ref="chatContainer" class="flex flex-col grow p-4 space-y-4 overflow-y-auto custom-scrollbar bg-theme-bg-secondary">
-        <div v-for="(message, index) in messages" :key="message.id" >
-          <div v-if="getDisplayTime(index)" class="text-xs text-theme-text-secondary text-center my-2 select-none">{{ getDisplayTime(index) }}</div>
+// ============= DRAG & DROP + OVERLAY =============
+const isDragging = ref(false);
+
+const onDragOver = () => { isDragging.value = true; };
+const onDragLeave = () => { isDragging.value = false; };
+const onDrop = (event: DragEvent) => {
+  isDragging.value = false;
+  const files = event.dataTransfer?.files;
+  if (!files || files.length === 0) return;
+
+  for (const file of Array.from(files)) {
+    const url = URL.createObjectURL(file);
+
+    if (file.type.startsWith('image/')) {
+      addDroppedImage(url);
+    } else if (file.type.startsWith('audio/')) {
+      addDroppedAudio(url, file);
+    } else if (file.type === 'image/gif') {
+      addDroppedGif(url);
+    }
+  }
+
+  scrollToBottom();
+};
+
+const addDroppedImage = (url: string) => {
+  messages.value.push({
+    id: Date.now(),
+    sender: 'me',
+    type: 'image',
+    content: 'Wysłano obraz:',
+    time: Date.now(),
+    imageUrl: url
+  });
+};
+const addDroppedGif = (url: string) => {
+  messages.value.push({
+    id: Date.now(),
+    sender: 'me',
+    type: 'gif',
+    content: 'Wysłano GIF:',
+    time: Date.now(),
+    imageUrl: url
+  });
+};
+const addDroppedAudio = (url: string, file: File) => {
+  messages.value.push({
+    id: Date.now(),
+    sender: 'me',
+    type: 'audio',
+    content: `Wiadomość głosowa (${file.name})`,
+    time: Date.now(),
+    audioUrl: url,
+    duration: 0
+  });
+};
+const replyTarget = ref<Message | null>(null);
+
+const setReplyTo = (message: Message) => {
+  replyTarget.value = message;
+};
+
+const clearReply = () => {
+  replyTarget.value = null;
+};
+
+</script>
+
+<template>
+  <div class="flex items-center relative justify-center py-4 px-2">
+
+    <div class="w-full relative max-w-[328px] h-[455px] bg-theme-bg-secondary rounded-xl shadow-2xl flex flex-col overflow-hidden">
+
+      <MessageBoxHeader title="Alan, Jacek" :users="['Alan', 'Jacek']" />
+<div
+      v-if="isDragging"
+      class="absolute inset-0 h-[400px] top-[55px] z-50 flex items-center justify-center bg-black/50 pointer-events-none"
+    >
+      <div class="text-white text-lg font-semibold p-4 rounded-lg border-2 border-dashed border-white">
+        Przeciągnij plik aby wysłać
+      </div>
+    </div>
+      <main
+        ref="chatContainer"
+        class=" relative flex flex-col grow p-4 space-y-4 overflow-y-auto custom-scrollbar bg-theme-bg-secondary transition-all duration-150"
+        @dragover.prevent="onDragOver"
+        @dragleave="onDragLeave"
+        @drop.prevent="onDrop"
+      >
+
+        <div v-for="(message, index) in messages" :key="message.id" class="my-2">
+
+          <div
+            v-if="getDisplayTime(index)"
+            class="text-xs text-theme-text-secondary text-center my-2 select-none"
+          >
+            {{ getDisplayTime(index) }}
+          </div>
 
           <MessageItem
-              :message="message"
-              :index="index"
-              :audioStates="audioStates"
-              @open-lightbox="openLightbox"
-              @toggle-audio-playback="toggleAudioPlayback"
-              @add-reaction="({ messageId, emoji }) => {
-        const msg = messages.find(m => m.id === messageId);
-        if (msg) {
-            if (!msg.reactions) msg.reactions = [];
-            msg.reactions.push(emoji);
-        }}"
+            :message="message"
+            :index="index"
+            :audioStates="audioStates"
+            @open-lightbox="openLightbox"
+            @reply="setReplyTo"
+            :positionInGroup="getMessagePositionInGroup(index)"
+            @toggle-audio-playback="toggleAudioPlayback"
+            @add-reaction="({ messageId, emoji }) => {
+              const msg = messages.find(m => m.id === messageId);
+              if (msg) {
+                if (!msg.reactions) msg.reactions = [];
+                msg.reactions.push(emoji);
+              }
+            }"
           />
-
         </div>
       </main>
 
       <MessageBoxFooter
+        :reply="replyTarget"
+        @clearReply="clearReply"
         @add-message="(msg) => { messages.push(msg); scrollToBottom(); }"
       />
+
     </div>
 
-  <MultiMediaLightbox
-    v-if="isLightboxOpen"
-    :modelValue="isLightboxOpen"
-    @update:modelValue="isLightboxOpen = $event"
-    :media="filteredMedia"
-    :startIndex="currentMediaIndex"
-  />
+
+
+
+    <MultiMediaLightbox
+      v-if="isLightboxOpen"
+      :modelValue="isLightboxOpen"
+      @update:modelValue="isLightboxOpen = $event"
+      :media="filteredMedia"
+      :startIndex="currentMediaIndex"
+    />
   </div>
 </template>
+
 <style scoped>
-
-.emoji-size-default {
-    font-size: 1.75rem;
-}
-.emoji-size-small {
-    font-size: 45px;
-}
-.emoji-size-medium {
-    font-size: 60px;
-}
-.emoji-size-large {
-    font-size: 80px;
-}
-.custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    background-color: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #d1d5db;
-    border-radius: 3px;
-}
-.custom-scrollbar:hover::-webkit-scrollbar-thumb {
-    background-color: #9ca3af;
-}
-.bg-purple-600 {
-    background-color: #8B5CF6;
-}
-.v-popper__arrow-container {
-    display: none !important;
-}
-
-.lightbox-bg-gradient {
-    background: radial-gradient(circle, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.85) 100%);
-}
-
-@keyframes wave {
-    0%, 100% {
-        transform: scaleY(0.5);
-    }
-    50% {
-        transform: scaleY(1.5);
-    }
-}
-
-.animate-wave {
-    animation: wave 1.2s ease-in-out infinite;
-}
-
+.emoji-size-default { font-size: 1.75rem; }
+.emoji-size-small { font-size: 45px; }
+.emoji-size-medium { font-size: 60px; }
+.emoji-size-large { font-size: 80px; }
+.custom-scrollbar::-webkit-scrollbar { width: 6px; background-color: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background-color: #d1d5db; border-radius: 3px; }
+.custom-scrollbar:hover::-webkit-scrollbar-thumb { background-color: #9ca3af; }
+.bg-purple-600 { background-color: #8B5CF6; }
+.v-popper__arrow-container { display: none !important; }
+.lightbox-bg-gradient { background: radial-gradient(circle, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.85) 100%); }
+@keyframes wave { 0%, 100% { transform: scaleY(0.5); } 50% { transform: scaleY(1.5); } }
+.animate-wave { animation: wave 1.2s ease-in-out infinite; }
 .delay-1 { animation-delay: 0.1s; }
 .delay-2 { animation-delay: 0.2s; }
 .delay-3 { animation-delay: 0.3s; }
-
 </style>

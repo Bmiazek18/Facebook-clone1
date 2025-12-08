@@ -3,10 +3,11 @@ import { ref, computed } from 'vue';
 import ThumbUpIcon from 'vue-material-design-icons/ThumbUp.vue';
 import PlayIcon from 'vue-material-design-icons/Play.vue';
 import PauseIcon from 'vue-material-design-icons/Pause.vue';
-
+import ReplyIcon from 'vue-material-design-icons/Reply.vue';
+import FileIcon from 'vue-material-design-icons/File.vue';
 import type { Message, ImageMessage, GifMessage, AudioState } from '@/types/Message';
 import Modal from './Modal.vue';
-import ReactionButton from './ReactionButton.vue';
+
 import ReactionPanel from './ReactionPanel.vue';
 
 interface ImageMessageWithOptionalGroup extends ImageMessage {
@@ -16,12 +17,14 @@ interface ImageMessageWithOptionalGroup extends ImageMessage {
 const props = defineProps<{
   message: Message;
   index: number;
+  positionInGroup: 'single' | 'first' | 'middle' | 'last';
   audioStates: Record<number, AudioState>;
 }>();
 
 const emit = defineEmits<{
   (e: 'open-lightbox', url: string): void;
   (e: 'toggle-audio-playback', message: Message): void;
+  (e: 'reply', message: Message): void;
   (e: 'add-reaction', payload: { messageId: number; emoji: string }): void;
 }>();
 
@@ -45,7 +48,28 @@ const isEmojiOnly = (content: string): boolean => {
     );
   return strippedContent.trim().length === 0 && content.trim().length > 0;
 };
+const positionClasses = computed(() => {
+  const isMe = (props.message.sender === 'me');
 
+  switch (props.positionInGroup) {
+    case 'single':
+      return 'rounded-xl';
+    case 'first':
+      return isMe
+        ? 'rounded-tl-xl rounded-tr-xl rounded-bl-xl rounded-br-[4px]'  // dolny prawy lekko ścięty
+        : 'rounded-tl-xl rounded-tr-xl rounded-br-xl rounded-bl-[4px]'; // dolny lewy lekko ścięty
+    case 'middle':
+      return isMe
+        ? 'rounded-tl-xl rounded-bl-xl rounded-tr-[4px] rounded-br-[4px]'  // górny i dolny prawy ścięty
+        : 'rounded-tr-xl rounded-br-xl rounded-tl-[4px] rounded-bl-[4px]'; // górny i dolny lewy ścięty
+    case 'last':
+      return isMe
+        ? 'rounded-tl-xl rounded-bl-xl rounded-tr-[4px] rounded-br-xl'  // górny i dolny prawy ścięty
+        : 'rounded-tr-xl rounded-br-xl rounded-tl-[4px] rounded-bl-xl'; // górny i dolny lewy ścięty
+    default:
+      return 'rounded-xl';
+  }
+});
 const audioProgressWidth = computed(() => {
   const state = props.audioStates[props.message.id];
   const duration = getMessageDuration(props.message);
@@ -78,6 +102,7 @@ const showReactionsPanel = ref(false);
 const closeReactionsPanel = () => {
     showReactionsPanel.value = !showReactionsPanel.value
 }
+const isFileMessage = computed(() => props.message.type === 'file');
 const openReactionsPanel = () => (showReactionsPanel.value = true);
 const toggleReactions = () => (showReactions.value = !showReactions.value);
 
@@ -88,6 +113,28 @@ const selectReaction = (emoji: string) => {
 </script>
 
 <template>
+  <div  v-if="message.isReply"
+  class="flex flex-col"
+  :class="{
+    'items-start': message.sender === 'other',
+    'items-end': message.sender === 'me'
+  }">
+  <span class="flex flex-row text-[12px] align-center">
+<ReplyIcon :size="12"/>
+   <p class="font-semibold">Odpowiadasz {{ message.replyToSender }}</p>
+  </span>
+
+<div
+
+  class=" pb-2 text-xs -mb-[15px] bg-gray-100/70 rounded-lg backdrop-blur-sm max-w-[80%] overflow-hidden"
+
+  style=" word-break: break-word;"
+>
+
+  <p class="text-gray-700 p-3 text-[11px]">{{ message.replyToContentSnippet }}</p>
+</div>
+  </div>
+
 <div
   class="relative flex items-end group"
   :class="{
@@ -106,14 +153,16 @@ const selectReaction = (emoji: string) => {
 
   <!-- BUBBLE + REACTION BUTTON WRAPPER -->
   <div
-    class="flex items-end"
+    class="flex  items-centre w-full"
     :class="{
       'flex-row': message.sender === 'other',
       'flex-row-reverse': message.sender === 'me'
     }"
   >
+
     <!-- Treść wiadomości -->
-    <div class="relative  max-w-[60%]">
+    <div class="relative flex flex-col flex-items  max-w-[60%]">
+
 
       <!-- Emoji -->
       <div
@@ -234,18 +283,21 @@ const selectReaction = (emoji: string) => {
           </template>
         </span>
       </div>
-
+<div v-else-if="isFileMessage" class="p-3 bg-gray-200 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-300" @click="window.open(message.fileUrl, '_blank')">
+<FileIcon :size="22" />
+<div>
+<p class="text-sm font-semibold">{{ message.fileName }}</p>
+<p class="text-xs text-gray-600">Plik</p>
+</div>
+</div>
       <!-- Tekst -->
       <div
         v-else-if="isTextMessage"
         class="relative p-3 text-sm rounded-xl shadow-md break-words"
-        :class="{
-          'bg-purple-600 text-white rounded-tl-none': message.sender === 'other',
-          'bg-theme-bg-secondary text-theme-text border border-theme-border rounded-br-none':
-            message.sender === 'me'
-        }"
+      :class="[positionClasses, message.sender === 'other' ? 'bg-purple-600 text-white ' : 'bg-theme-bg-secondary text-theme-text border border-theme-border ']"
+
       >
-        <p>{{ message.content }}</p>
+        <p>{{message.content }}</p>
       </div>
 
       <!-- Ostatnia reakcja -->
@@ -274,13 +326,10 @@ const selectReaction = (emoji: string) => {
       </div>
     </div>
 
-    <!-- Przycisk reakcji -->
-     <button
-      @click="toggleReactions"
-      class="w-7 h-7 mx-2 rounded-full bg-gray-200 hover:bg-gray-300 hidden  group-hover:flex items-center justify-center transition"
-    >
-      😊
-    </button>
+   <div class="flex flex-row items-center gap-2 mx-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button @click="toggleReactions" class="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"><span>😊</span></button>
+<button @click="emit('reply', message)" class="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"><ReplyIcon :size="18" /></button>
+</div>
   </div>
 
 </div>

@@ -20,8 +20,10 @@ const emojiIndex = new EmojiIndex(data);
 
 const emit = defineEmits<{
   'add-message': [message: Message];
-}>();
+  'clearReply': void
+}>()
 
+const props = defineProps<{reply: Message | null}>();
 const addMessage = (content: string, sizeState: 'default' | 'small' | 'medium' | 'large' = 'default', imageUrl?: string | null, gifUrl?: string | null, isAudio?: boolean, audioUrl?: string, duration?: number) => {
   const finalContent = content.trim();
 
@@ -376,6 +378,30 @@ onUnmounted(() => {
       </button>
     </div>
 
+<transition name="reply">
+  <div v-if="props.reply" class="reply-preview">
+    <div class="flex justify-between items-center mb-1">
+      <span class="reply-sender">{{ props.reply.sender === 'me' ? 'Ty' : props.reply.sender }}</span>
+      <button @click="$emit('clearReply')" class="text-gray-400 hover:text-gray-600 text-xs">✕</button>
+    </div>
+    <span class="reply-content truncate">
+      <template v-if="props.reply.type === 'text'">
+        {{ props.reply.content }}
+      </template>
+      <template v-else-if="props.reply.type === 'image'">
+        Obraz
+      </template>
+      <template v-else-if="props.reply.type === 'gif'">
+        GIF
+      </template>
+      <template v-else-if="props.reply.type === 'audio'">
+        Wiadomość głosowa
+      </template>
+    </span>
+  </div>
+</transition>
+
+
     <!-- Recording State -->
     <div v-if="isRecording" class="flex items-center space-x-2 w-full">
       <button @click="cancelVoiceRecording" class="p-2 rounded-full bg-purple-600 text-white shrink-0 hover:bg-purple-700 transition">
@@ -516,4 +542,37 @@ onUnmounted(() => {
 .delay-1 { animation-delay: 0.1s; }
 .delay-2 { animation-delay: 0.2s; }
 .delay-3 { animation-delay: 0.3s; }
+/* Transition dla odpowiedzi */
+.reply-enter-from{
+  transform: translateY(20px);
+  opacity: 0;
+}
+.reply-enter-to
+ {
+  transform: translateY(0);
+  opacity: 1;
+}
+.reply-enter-active
+ {
+  transition: all 0.3s ease-out;
+}
+
+.reply-content {
+  font-size: 0.875rem;
+  color: #374151; /* gray-700 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* ograniczenie do 2 linii */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal; /* pozwala na zawijanie w liniach */
+  word-break: break-word; /* długie słowa też zawijają */
+}
+
+.reply-sender {
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: #6b7280; /* gray-500 */
+}
+
 </style>
