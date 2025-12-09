@@ -97,7 +97,7 @@ const comments: Comment[] = [ // Dodano inferencję typu
 <template>
 
 
-<HoverScrollbar class="flex-grow">
+<HoverScrollbar class="grow">
                 <div class="flex flex-col h-full">
 
                     <div class="p-4 border-b border-theme-border">

@@ -44,11 +44,10 @@ import AddStoryCard from './AddStoryCard.vue';
 import type {Story}  from '../types/Story';
 import {useCarousel} from '../composables/useCarousel';
 
-// --- IMPORT IKON ---
 import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
 import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue';
 
-// --- UŻYCIE COMPOSABLE ---
+
 const {
   carouselRef,
   isStart,

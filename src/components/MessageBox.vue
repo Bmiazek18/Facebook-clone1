@@ -4,17 +4,23 @@ import MultiMediaLightbox from './MessageBox/Lightbox.vue';
 import MessageBoxHeader from './MessageBoxHeader.vue';
 import MessageBoxFooter from './MessageBoxFooter.vue';
 import MessageItem from './MessageItem.vue';
+import type { Message, ImageMessage, AudioState, VideoMessage } from '@/types/Message';
 
-import type { Message, ImageMessage, GifMessage, AudioState } from '@/types/Message';
-
-interface ImageMessageWithOptionalGroup extends ImageMessage {
-  mediaUrls?: string[];
+interface MediaItem {
+  id: number;
+  sender: string;
+  type: 'image' | 'gif' | 'video';
+  content: string;
+  time: number;
+  imageUrl?: string;
+  videoUrl?: string;
 }
 
 const createTimestamp = (timeStr: string, daysAgo: number = 0): number => {
   const [hours, minutes] = timeStr.split(':').map(Number);
-  const now = new Date();
-  const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysAgo, hours, minutes, 0);
+  const date = new Date();
+  date.setDate(date.getDate() - daysAgo);
+  date.setHours(hours, minutes, 0, 0);
   return date.getTime();
 };
 
@@ -55,7 +61,7 @@ const messages = ref<Message[]>([
       'https://primefaces.org/cdn/primevue/images/galleria/galleria11.jpg',
       'https://primefaces.org/cdn/primevue/images/galleria/galleria14.jpg',
     ],
-  } as ImageMessageWithOptionalGroup,
+  },
   {
     id: 15,
     sender: 'other',
@@ -63,7 +69,7 @@ const messages = ref<Message[]>([
     content: 'Pojedynczy obrazek:',
     time: createTimestamp('15:01', 1),
     imageUrl: 'https://primefaces.org/cdn/primevue/images/galleria/galleria12.jpg',
-  } as ImageMessageWithOptionalGroup,
+  },
   {
     id: 12,
     sender: 'other',
@@ -87,71 +93,88 @@ const messages = ref<Message[]>([
     content: 'Oki, zaraz obczaję ten link i odsłucham wiadomość. Wielkie dzięki!',
     time: createTimestamp('15:12', 1),
   },
+  {
+    id: 16,
+    sender: 'me',
+    type: 'poll',
+    content: 'Utworzono ankietę',
+    time: createTimestamp('15:15', 1),
+    pollData: {
+      question: 'Kiedy robimy calla podsumowującego? 📅',
+      allowMultiple: true,
+      allowAddOption: true,
+      options: [
+        { id: 1, text: 'Wtorek 10:00', votes: 2, votedByMe: true },
+        { id: 2, text: 'Środa 14:00', votes: 0, votedByMe: false },
+        { id: 3, text: 'Piątek rano', votes: 1, votedByMe: false }
+      ]
+    }
+  }
 ]);
 
-const chatContainer = ref(null);
+const chatContainer = ref<HTMLElement | null>(null);
+
 function scrollToBottom() {
   nextTick(() => {
     if (chatContainer.value) {
-      (chatContainer.value as HTMLElement).scrollTop = (chatContainer.value as HTMLElement).scrollHeight;
+      chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
     }
   });
 }
 
 const MAX_TIME_DIFF_MS = 5 * 60 * 1000;
-
 const isLightboxOpen = ref(false);
 const currentMediaIndex = ref(0);
 
-const filteredMedia = computed(() => {
-  const media: (ImageMessage | GifMessage | { id: number; sender: string; type: 'video'; content: string; time: number; videoUrl: string; })[] = [];
+const filteredMedia = computed<MediaItem[]>(() => {
+  return messages.value.flatMap((msg) => {
+    if (msg.type === 'video') {
+      const videoMsg = msg as VideoMessage;
+      return [{
+        id: videoMsg.id,
+        sender: videoMsg.sender,
+        type: 'video',
+        content: videoMsg.content,
+        time: videoMsg.time,
+        videoUrl: videoMsg.videoUrl,
+      }];
+    }
 
-  messages.value.forEach(msg => {
-    if (msg.type === 'image' || msg.type === 'gif' || msg.type === 'video') {
-      if (msg.type === 'video') {
-        media.push({
-          id: msg.id,
-          sender: msg.sender,
-          type: 'video',
-          content: msg.content,
-          time: msg.time,
-          videoUrl: (msg as any).videoUrl,
-        });
-      } else {
-        const imageMsg = msg as ImageMessageWithOptionalGroup;
-        if (imageMsg.mediaUrls && imageMsg.mediaUrls.length > 0) {
-          imageMsg.mediaUrls.forEach(url => {
-            media.push({
-              id: msg.id,
-              sender: msg.sender,
-              type: msg.type,
-              content: msg.content,
-              time: msg.time,
-              imageUrl: url
-            } as ImageMessage);
-          });
-        } else if (imageMsg.imageUrl) {
-          media.push(msg as (ImageMessage | GifMessage));
-        }
+    if (msg.type === 'image' || msg.type === 'gif') {
+      const imgMsg = msg as ImageMessage & { mediaUrls?: string[] };
+      if (imgMsg.mediaUrls?.length) {
+        return imgMsg.mediaUrls.map((url) => ({
+          id: imgMsg.id,
+          sender: imgMsg.sender,
+          type: imgMsg.type,
+          content: imgMsg.content,
+          time: imgMsg.time,
+          imageUrl: url
+        }));
+      } else if (imgMsg.imageUrl) {
+         return [{
+          id: imgMsg.id,
+          sender: imgMsg.sender,
+          type: imgMsg.type,
+          content: imgMsg.content,
+          time: imgMsg.time,
+          imageUrl: imgMsg.imageUrl
+        }];
       }
     }
+    return [];
   });
-
-  return media;
 });
 
-
 const openLightbox = (url: string) => {
-  const idx = filteredMedia.value.findIndex(msg => {
-    if (msg.type === 'video') return (msg as any).videoUrl === url;
-    return (msg as any).imageUrl === url;
-  });
+  const idx = filteredMedia.value.findIndex(msg =>
+    msg.videoUrl === url || msg.imageUrl === url
+  );
   if (idx !== -1) {
     currentMediaIndex.value = idx;
     isLightboxOpen.value = true;
   }
 };
-
 
 const onKeyDown = (e: KeyboardEvent) => {
   if ((e.key === 'Escape' || e.key === 'Esc') && isLightboxOpen.value) {
@@ -162,99 +185,79 @@ const onKeyDown = (e: KeyboardEvent) => {
 const audioStates = ref<Record<number, AudioState>>({});
 
 const initializeAudioState = (id: number, audio: HTMLAudioElement, messageDuration?: number) => {
-    if (!audioStates.value[id]) {
-        const duration = messageDuration ?? (isNaN(audio.duration) ? 0 : audio.duration);
-        audioStates.value[id] = {
-            isPlaying: false,
-            duration: duration,
-            currentTime: 0,
-        };
-    } else {
-        if (!isNaN(audio.duration) && audio.duration > 0) {
-            audioStates.value[id].duration = audio.duration;
-        }
-    }
+  if (!audioStates.value[id]) {
+    const duration = messageDuration ?? (isNaN(audio.duration) ? 0 : audio.duration);
+    audioStates.value[id] = { isPlaying: false, duration, currentTime: 0 };
+  } else if (audio.duration > 0 && audio.duration !== Infinity) {
+    audioStates.value[id].duration = audio.duration;
+  }
 };
 
 const toggleAudioPlayback = (message: Message) => {
-    const audioId = message.id;
-    const audioElement = document.getElementById(`audio-${audioId}`) as HTMLAudioElement;
+  const audioId = message.id;
+  const audioElement = document.getElementById(`audio-${audioId}`) as HTMLAudioElement;
+  if (!audioElement) return;
 
-    if (!audioElement) return;
+  const messageDuration = message.type === 'audio' ? (message as any).duration : undefined;
 
-    const messageDuration = message.type === 'audio' ? (message as any).duration : undefined;
+  if (audioElement.readyState < 1) {
+    const onLoaded = () => {
+      initializeAudioState(audioId, audioElement, messageDuration);
+      toggleAudioPlayback(message);
+      audioElement.removeEventListener('loadedmetadata', onLoaded);
+    };
+    audioElement.addEventListener('loadedmetadata', onLoaded);
+    audioElement.load();
+    return;
+  }
 
-    if (audioElement.readyState < 1) {
-        const onLoaded = () => {
-            initializeAudioState(audioId, audioElement, messageDuration);
-            toggleAudioPlayback(message);
-            audioElement.removeEventListener('loadedmetadata', onLoaded);
-        };
-        audioElement.addEventListener('loadedmetadata', onLoaded);
-        audioElement.load();
-        return;
+  initializeAudioState(audioId, audioElement, messageDuration);
+  const currentState = audioStates.value[audioId];
+
+  Object.keys(audioStates.value).forEach(id => {
+    const otherId = parseInt(id);
+    if (otherId !== audioId && audioStates.value[otherId]?.isPlaying) {
+      const otherAudio = document.getElementById(`audio-${otherId}`) as HTMLAudioElement;
+      otherAudio?.pause();
+      audioStates.value[otherId].isPlaying = false;
     }
+  });
 
-    initializeAudioState(audioId, audioElement, messageDuration);
-    const currentState = audioStates.value[audioId];
-
-    Object.keys(audioStates.value).forEach(id => {
-        const otherId = parseInt(id);
-        if (otherId !== audioId && audioStates.value[otherId].isPlaying) {
-            const otherAudio = document.getElementById(`audio-${otherId}`) as HTMLAudioElement;
-            otherAudio?.pause();
-            audioStates.value[otherId].isPlaying = false;
-        }
-    });
-
-    if (currentState.isPlaying) {
-        audioElement.pause();
-        currentState.isPlaying = false;
-    } else {
-        if (audioElement.currentTime === audioElement.duration) {
-            audioElement.currentTime = 0;
-            currentState.currentTime = 0;
-        }
-
-        audioElement.play();
-        currentState.isPlaying = true;
-
-        audioElement.ontimeupdate = () => {
-            currentState.currentTime = audioElement.currentTime;
-        };
-
-        audioElement.onended = () => {
-            currentState.isPlaying = false;
-            currentState.currentTime = 0;
-        };
+  if (currentState.isPlaying) {
+    audioElement.pause();
+    currentState.isPlaying = false;
+  } else {
+    if (Math.abs(audioElement.currentTime - audioElement.duration) < 0.5 || audioElement.ended) {
+      audioElement.currentTime = 0;
+      currentState.currentTime = 0;
     }
+    audioElement.play().catch(e => console.error(e));
+    currentState.isPlaying = true;
+
+    audioElement.ontimeupdate = () => { currentState.currentTime = audioElement.currentTime; };
+    audioElement.onended = () => { currentState.isPlaying = false; currentState.currentTime = 0; };
+  }
 };
 
-const isSameDay = (t1: number, t2: number): boolean => {
-    const d1 = new Date(t1);
-    const d2 = new Date(t2);
-    return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
-};
-const capitalizeWord = (wyraz: string): string => wyraz ? wyraz.charAt(0).toUpperCase() + wyraz.slice(1).toLowerCase() : wyraz;
+const isSameDay = (t1: number, t2: number): boolean => new Date(t1).toDateString() === new Date(t2).toDateString();
+const capitalizeWord = (wyraz: string): string => wyraz ? wyraz.charAt(0).toUpperCase() + wyraz.slice(1).toLowerCase() : '';
 const getDayAbbreviation = (timestamp: number): string => new Date(timestamp).toLocaleDateString('pl-PL', { weekday: 'short' }).replace('.', '');
 const formatTime = (timestamp: number): string => new Date(timestamp).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
 
 const getDisplayTime = (index: number): string | null => {
   const currentTimestamp = messages.value[index].time;
-
   if (index === 0) return `${capitalizeWord(getDayAbbreviation(currentTimestamp))}, ${formatTime(currentTimestamp)}`;
 
   const prevTimestamp = messages.value[index - 1].time;
   const timeDifference = currentTimestamp - prevTimestamp;
-
   const isTimeGapBig = timeDifference >= MAX_TIME_DIFF_MS;
   const isNewDay = !isSameDay(currentTimestamp, prevTimestamp);
 
   if (isNewDay) return `${capitalizeWord(getDayAbbreviation(currentTimestamp))}, ${formatTime(currentTimestamp)}`;
   if (isTimeGapBig) return formatTime(currentTimestamp);
-
   return null;
 };
+
 const getMessagePositionInGroup = (index: number): 'single' | 'first' | 'middle' | 'last' => {
   const current = messages.value[index];
   const prev = messages.value[index - 1];
@@ -267,132 +270,87 @@ const getMessagePositionInGroup = (index: number): 'single' | 'first' | 'middle'
   if (!isSameSenderAsPrev && isSameSenderAsNext) return 'first';
   if (isSameSenderAsPrev && isSameSenderAsNext) return 'middle';
   if (isSameSenderAsPrev && !isSameSenderAsNext) return 'last';
-
   return 'single';
 };
-
-
 
 onMounted(() => {
   scrollToBottom();
   window.addEventListener('keydown', onKeyDown);
 });
-onUnmounted(() => {
-    window.removeEventListener('keydown', onKeyDown);
 
-    messages.value.forEach(msg => {
-        if (msg.type === 'audio' && (msg as any).audioUrl) {
-            URL.revokeObjectURL((msg as any).audioUrl);
-        }
-    });
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeyDown);
+  messages.value.forEach(msg => {
+    if (msg.type === 'audio' && (msg as any).audioUrl?.startsWith('blob:')) {
+      URL.revokeObjectURL((msg as any).audioUrl);
+    }
+  });
 });
 
-// ============= DRAG & DROP + OVERLAY =============
+// ============= DRAG & DROP =============
 const isDragging = ref(false);
-
 const onDragOver = () => { isDragging.value = true; };
-const onDragLeave = () => { isDragging.value = false; };
+const onDragLeave = (e: DragEvent) => {
+    if (e.currentTarget && (e.currentTarget as Element).contains(e.relatedTarget as Node)) {
+        return;
+    }
+    isDragging.value = false;
+};
 const onDrop = (event: DragEvent) => {
   isDragging.value = false;
   const files = event.dataTransfer?.files;
-  if (!files || files.length === 0) return;
+  if (!files?.length) return;
 
-  for (const file of Array.from(files)) {
+  Array.from(files).forEach(file => {
     const url = URL.createObjectURL(file);
-
-    if (file.type.startsWith('image/')) {
-      addDroppedImage(url);
-    }else if (file.type.startsWith('video/')) {
-      addDroppedVideo(url,file);
-    } else {
-      addDroppedFile(url, file);
-    }
-  }
-
+    if (file.type.startsWith('image/')) addDroppedImage(url);
+    else if (file.type.startsWith('video/')) addDroppedVideo(url, file);
+    else addDroppedFile(url, file);
+  });
   scrollToBottom();
 };
 
-
 const addDroppedImage = (url: string) => {
-  messages.value.push({
-    id: Date.now(),
-    sender: 'me',
-    type: 'image',
-    content: 'Wysłano obraz:',
-    time: Date.now(),
-    imageUrl: url
-  });
+  messages.value.push({ id: Date.now() + Math.random(), sender: 'me', type: 'image', content: 'Wysłano obraz:', time: Date.now(), imageUrl: url } as Message);
 };
-const addDroppedVideo = async (url: string, file: File) => {
-
-
-  messages.value.push({
-    id: Date.now(),
-    sender: 'me',
-    type: 'video',
-    content: file.name,
-    time: Date.now(),
-    videoUrl: url,
-    fileName: file.name,
-    fileSize: file.size,
-  });
+const addDroppedVideo = (url: string, file: File) => {
+  messages.value.push({ id: Date.now() + Math.random(), sender: 'me', type: 'video', content: file.name, time: Date.now(), videoUrl: url, fileName: file.name, fileSize: file.size } as any);
 };
-
-
 const addDroppedFile = (url: string, file: File) => {
-  messages.value.push({
-    id: Date.now(),
-    sender: 'me',
-    type: 'file',
-    content: `Wysłano plik (${file.name})`,
-    time: Date.now(),
-    fileUrl: url,
-    fileName: file.name,
-    fileType: file.type,
-    fileSize: file.size
-  });
+  messages.value.push({ id: Date.now() + Math.random(), sender: 'me', type: 'file', content: `Wysłano plik (${file.name})`, time: Date.now(), fileUrl: url, fileName: file.name, fileType: file.type, fileSize: file.size } as any);
 };
 
 const replyTarget = ref<Message | null>(null);
-
-const setReplyTo = (message: Message) => {
-  replyTarget.value = message;
-};
-
-const clearReply = () => {
-  replyTarget.value = null;
-};
-
+const setReplyTo = (message: Message) => { replyTarget.value = message; };
+const clearReply = () => { replyTarget.value = null; };
 </script>
 
 <template>
-  <div class="flex items-center relative justify-center py-4 px-2">
-
+  <div
+    class="flex items-center relative justify-center py-4 px-2"
+    @dragover.prevent="onDragOver"
+    @dragleave.prevent="onDragLeave"
+    @drop.prevent="onDrop"
+  >
     <div class="w-full relative max-w-[328px] h-[455px] bg-theme-bg-secondary rounded-xl shadow-2xl flex flex-col overflow-hidden">
 
       <MessageBoxHeader title="Alan, Jacek" :users="['Alan', 'Jacek']" />
-<div
-      v-if="isDragging"
-      class="absolute inset-0 h-[400px] top-[55px] z-50 flex items-center justify-center bg-black/50 pointer-events-none"
-    >
-      <div class="text-white text-lg font-semibold p-4 rounded-lg border-2 border-dashed border-white">
-        Przeciągnij plik aby wysłać
+
+      <div
+        v-if="isDragging"
+        class="absolute inset-0 h-[400px] top-[55px] z-50 flex items-center justify-center bg-black/50 pointer-events-none"
+      >
+        <div class="text-white text-lg font-semibold p-4 rounded-lg border-2 border-dashed border-white">
+          Przeciągnij plik aby wysłać
+        </div>
       </div>
-    </div>
+
       <main
         ref="chatContainer"
-        class=" relative flex flex-col grow p-4 space-y-4 overflow-y-auto custom-scrollbar bg-theme-bg-secondary transition-all duration-150"
-        @dragover.prevent="onDragOver"
-        @dragleave="onDragLeave"
-        @drop.prevent="onDrop"
+        class="relative flex flex-col grow p-4 space-y-4 overflow-y-auto custom-scrollbar bg-theme-bg-secondary transition-all duration-150"
       >
-
         <div v-for="(message, index) in messages" :key="message.id" class="my-2">
-
-          <div
-            v-if="getDisplayTime(index)"
-            class="text-xs text-theme-text-secondary text-center my-2 select-none"
-          >
+          <div v-if="getDisplayTime(index)" class="text-xs text-theme-text-secondary text-center my-2 select-none opacity-70">
             {{ getDisplayTime(index) }}
           </div>
 
@@ -420,11 +378,7 @@ const clearReply = () => {
         @clearReply="clearReply"
         @add-message="(msg) => { messages.push(msg); scrollToBottom(); }"
       />
-
     </div>
-
-
-
 
     <MultiMediaLightbox
       v-if="isLightboxOpen"
@@ -437,19 +391,7 @@ const clearReply = () => {
 </template>
 
 <style scoped>
-.emoji-size-default { font-size: 1.75rem; }
-.emoji-size-small { font-size: 45px; }
-.emoji-size-medium { font-size: 60px; }
-.emoji-size-large { font-size: 80px; }
 .custom-scrollbar::-webkit-scrollbar { width: 6px; background-color: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #d1d5db; border-radius: 3px; }
 .custom-scrollbar:hover::-webkit-scrollbar-thumb { background-color: #9ca3af; }
-.bg-purple-600 { background-color: #8B5CF6; }
-.v-popper__arrow-container { display: none !important; }
-.lightbox-bg-gradient { background: radial-gradient(circle, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.85) 100%); }
-@keyframes wave { 0%, 100% { transform: scaleY(0.5); } 50% { transform: scaleY(1.5); } }
-.animate-wave { animation: wave 1.2s ease-in-out infinite; }
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
 </style>

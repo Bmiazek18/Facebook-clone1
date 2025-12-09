@@ -14,7 +14,7 @@
       </button>
     </div>
 
-    <div class="p-2 flex flex-col flex-grow">
+    <div class="p-2 flex flex-col grow">
       <h3 class="font-semibold text-theme-color text-base ">{{ person.name }}</h3>
 
       <div class="flex items-center text-sm text-theme-text-secondary">

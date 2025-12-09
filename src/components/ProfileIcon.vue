@@ -40,24 +40,23 @@ import PencilIcon from 'vue-material-design-icons/Pencil.vue';
 
 const chatStore = useChatStore()
 
-// Funkcja przywracająca boxa
 const restoreMessageBox = (boxId: string | number) => {
     chatStore.toggleMinimize(boxId);
 };
 
 
-// Funkcja addNewElement musi teraz dodawać nowy ID do systemu czatu
+
 const addNewElement = () => {
-  // Generowanie unikalnego ID dla nowego czatu
+
   const newId = `chat-${Date.now()}`;
-  // Używamy akcji z Pinia do dodania nowego boxa
+
   chatStore.addMessageBox(newId);
 };
 
 </script>
 
 <style scoped>
-/* Reszta stylów pozostaje bez zmian dla animacji */
+
 .list-enter-active,
 .list-leave-active {
   transition: all 0.5s ease;
