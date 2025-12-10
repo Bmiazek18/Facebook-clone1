@@ -66,31 +66,30 @@
 import { ref, type Ref, computed, type DefineComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-// 1. IMPORT KOMPONENTÓW IKON Z BIBLIOTEKI
-import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
-import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue'; // Ikona Grupy (niebieska)
-import BellIcon from 'vue-material-design-icons/Bell.vue'; // Ikona Dzwonka (czarna/szara)
 
-// i18n
+import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
+import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
+import BellIcon from 'vue-material-design-icons/Bell.vue';
+
+
 useI18n()
 
-// 2. INTERFEJSY TYPÓW DANYCH
 interface Notification {
   id: number;
   avatarUrl: string;
-  typeIcon: DefineComponent; // Komponent Ikony (AccountGroupIcon, BellIcon, etc.)
-  message: string; // Treść powiadomienia (może zawierać HTML/bold)
+  typeIcon: DefineComponent;
+  message: string;
   timeAgo: string;
   unread: boolean;
 }
 
-// 3. ZARZĄDZANIE STANEM
+
 const activeTab: Ref<'all' | 'unread'> = ref('all');
 
 const rawNotifications: Notification[] = [
   {
     id: 1,
-    avatarUrl: 'https://via.placeholder.com/100', // Placeholder dla Raula Salerno
+    avatarUrl: 'https://via.placeholder.com/100',
     typeIcon: BellIcon,
     message: 'Masz nową propozycję znajomości: <strong>Raul Salerno</strong>.',
     timeAgo: '19 godz.',
@@ -98,7 +97,7 @@ const rawNotifications: Notification[] = [
   },
   {
     id: 2,
-    avatarUrl: 'https://via.placeholder.com/100/400082?text=ST', // Placeholder dla Studenci Trójmiasto
+    avatarUrl: 'https://via.placeholder.com/100/400082?text=ST',
     typeIcon: AccountGroupIcon,
     message: 'Użytkownik <strong>Studenci Trójmiasto</strong> oznaczył Ciebie i innych użytkowników w poście w grupi...',
     timeAgo: '1 dzień',
@@ -114,8 +113,8 @@ const rawNotifications: Notification[] = [
   },
   {
     id: 4,
-    avatarUrl: 'https://via.placeholder.com/100/000000?text=KS', // Placeholder dla Kolegium Sędziów BOZPN
-    typeIcon: AccountGroupIcon, // Ikona Grupy
+    avatarUrl: 'https://via.placeholder.com/100/000000?text=KS',
+    typeIcon: AccountGroupIcon,
     message: 'Teraz w grupie Kolegium Sędziów BOZPN: **„UWAGA! Przypominam że runda jesienna 2025r. trwa...”**',
     timeAgo: '3 dni',
     unread: false,
@@ -140,7 +139,7 @@ const rawNotifications: Notification[] = [
 
 const notifications: Ref<Notification[]> = ref(rawNotifications);
 
-// 4. LOGIKA FILTROWANIA (Computed Property)
+
 const filteredNotifications = computed(() => {
   if (activeTab.value === 'unread') {
     return notifications.value.filter(n => n.unread);
@@ -148,11 +147,8 @@ const filteredNotifications = computed(() => {
   return notifications.value;
 });
 
-// 5. OBSŁUGA KLIKNIĘĆ
+
 
 </script>
 
-<style scoped>
-/* Dodatkowe style, jeśli Tailwind nie wystarcza lub do overridów */
-/* Użycie 'v-html' do renderowania boldowania w wiadomości jest z reguły wystarczające */
-</style>
+

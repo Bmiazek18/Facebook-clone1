@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 
-// --- TYPY DANYCH ---
+
 export interface PollOption {
   id: string | number;
   text: string;
@@ -10,7 +10,7 @@ export interface PollOption {
   avatars?: string[];
 }
 
-// --- PROPS ---
+
 interface Props {
   question: string;
   initialOptions?: PollOption[];
@@ -24,24 +24,24 @@ const props = withDefaults(defineProps<Props>(), {
   allowAddOption: true,
 });
 
-// --- EMITS ---
+
 const emit = defineEmits<{
   (e: 'update:options', options: PollOption[]): void;
   (e: 'vote', optionIds: (string | number)[]): void;
 }>();
 
-// --- STATE ---
+
 const options = ref<PollOption[]>(JSON.parse(JSON.stringify(props.initialOptions)));
 const newOptionText = ref('');
 const isAddingOption = ref(false);
 const selectedIds = ref<Set<string | number>>(new Set());
 
-// Inicjalizacja zaznaczonych opcji
+
 options.value.forEach(opt => {
   if (opt.votedByMe) selectedIds.value.add(opt.id);
 });
 
-// --- LOGIKA ---
+
 
 const totalVotes = computed(() => {
   return options.value.reduce((acc, opt) => acc + opt.votes, 0);
@@ -60,15 +60,14 @@ const toggleSelection = (id: string | number) => {
 
 const submitVote = () => {
   options.value.forEach(opt => {
-    const wasVoted = opt.votedByMe; // Stan faktyczny (przed głosowaniem)
-    const isSelected = selectedIds.value.has(opt.id); // Stan wizualny (checkbox)
+    const wasVoted = opt.votedByMe;
+    const isSelected = selectedIds.value.has(opt.id);
 
-    // Jeśli zaznaczone teraz, a nie było wcześniej -> DODAJ GŁOS
     if (isSelected && !wasVoted) {
       opt.votes++;
       opt.votedByMe = true;
     }
-    // Jeśli odznaczone teraz, a było wcześniej -> ODEJMIJ GŁOS
+
     else if (!isSelected && wasVoted) {
       opt.votes--;
       opt.votedByMe = false;
@@ -79,7 +78,7 @@ const submitVote = () => {
   emit('update:options', options.value);
 };
 
-// --- POPRAWIONA FUNKCJA DODAWANIA ---
+
 const addNewOption = () => {
   if (!newOptionText.value.trim()) return;
 
@@ -87,14 +86,11 @@ const addNewOption = () => {
     id: Date.now(),
     text: newOptionText.value,
     votes: 0,
-    // WAŻNA ZMIANA: Ustawiamy false.
-    // Dzięki temu 'submitVote' zobaczy różnicę (isSelected=true vs votedByMe=false) i doda głos.
     votedByMe: false,
   };
 
   options.value.push(newOption);
 
-  // Automatycznie zaznaczamy nową opcję wizualnie
   selectedIds.value.add(newOption.id);
 
   newOptionText.value = '';

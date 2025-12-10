@@ -32,6 +32,13 @@ const messages = ref<Message[]>([
     content: 'Ja bym zrobił ze w poniedziałek zdalnie i najwyżej we 2 będziemy albo w środę zdalnie zrobic tylko troche późno',
     time: createTimestamp('13:55', 2),
   },
+   {
+    id: 12,
+    sender: 'other',
+    type: 'text',
+    content: 'Ja222 bym zrobił ze w poniedziałek zdalnie i najwyżej we 2 będziemy albo w środę zdalnie zrobic tylko troche późno',
+    time: createTimestamp('13:56', 2),
+  },
   {
     id: 2,
     sender: 'me',
@@ -323,6 +330,7 @@ const addDroppedFile = (url: string, file: File) => {
 const replyTarget = ref<Message | null>(null);
 const setReplyTo = (message: Message) => { replyTarget.value = message; };
 const clearReply = () => { replyTarget.value = null; };
+defineProps<{ boxId:number }>();
 </script>
 
 <template>
@@ -334,7 +342,7 @@ const clearReply = () => { replyTarget.value = null; };
   >
     <div class="w-full relative max-w-[328px] h-[455px] bg-theme-bg-secondary rounded-xl shadow-2xl flex flex-col overflow-hidden">
 
-      <MessageBoxHeader title="Alan, Jacek" :users="['Alan', 'Jacek']" />
+      <MessageBoxHeader title="Alan, Jacek" :users="['Alan', 'Jacek']" :boxId="boxId"/>
 
       <div
         v-if="isDragging"
@@ -347,9 +355,9 @@ const clearReply = () => { replyTarget.value = null; };
 
       <main
         ref="chatContainer"
-        class="relative flex flex-col grow p-4 space-y-4 overflow-y-auto custom-scrollbar bg-theme-bg-secondary transition-all duration-150"
+        class="relative flex flex-col grow px-4 pt-4 space-y-4 overflow-y-auto custom-scrollbar bg-theme-bg-secondary transition-all duration-150"
       >
-        <div v-for="(message, index) in messages" :key="message.id" class="my-2">
+        <div v-for="(message, index) in messages" :key="message.id" class="mb-1">
           <div v-if="getDisplayTime(index)" class="text-xs text-theme-text-secondary text-center my-2 select-none opacity-70">
             {{ getDisplayTime(index) }}
           </div>

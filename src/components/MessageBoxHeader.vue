@@ -5,7 +5,19 @@ import VideoOutlineIcon from 'vue-material-design-icons/VideoOutline.vue';
 import MinusIcon from 'vue-material-design-icons/Minus.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 
-defineProps<{ title: string; users: string[] }>();
+defineProps<{ title: string; users: string[],boxId:number }>();
+import { useChatStore } from '@/stores/counter';
+
+
+
+const chatStore = useChatStore()
+
+const close = (boxId: string | number) => {
+    chatStore.removeMessageBox(boxId)
+};
+const minimalize = (boxId: string | number) => {
+    chatStore.toggleMinimize(boxId)
+};
 </script>
 <template>
   <header class="flex items-center justify-between p-3 border-b border-gray-200 bg-white shadow-sm">
@@ -23,8 +35,8 @@ defineProps<{ title: string; users: string[] }>();
     <div class="flex space-x-3 text-gray-500 shrink-0">
       <PhoneIcon :size="20" class="hover:text-purple-600 cursor-pointer" />
       <VideoOutlineIcon :size="20" class="hover:text-purple-600 cursor-pointer" />
-      <MinusIcon :size="20" class="hover:text-purple-600 cursor-pointer" />
-      <CloseIcon :size="20" class="hover:text-purple-600 cursor-pointer" />
+      <MinusIcon @click="minimalize(boxId)":size="20" class="hover:text-purple-600 cursor-pointer" />
+      <CloseIcon @click="close(boxId)" :size="20" class="hover:text-purple-600 cursor-pointer" />
     </div>
   </header>
 </template>

@@ -161,13 +161,13 @@ const downloadFile = (message: FileMessage) => {
     :class="{
       'justify-start': message.sender === 'other',
       'justify-end': message.sender === 'me',
-      'mb-1': props.positionInGroup !== 'last' && props.positionInGroup !== 'single',
+      'mb-0': props.positionInGroup !== 'last' && props.positionInGroup !== 'single',
       'mb-3': props.positionInGroup === 'last' || props.positionInGroup === 'single'
     }"
   >
     <div
       v-if="shouldDisplayAvatar"
-      class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center mr-2 shrink-0"
+      class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center mr-1 shrink-0"
     >
       <span>😊</span>
     </div>
