@@ -1,0 +1,95 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+
+// Import ikon z vue-material-design-icons
+import LockIcon from 'vue-material-design-icons/Lock.vue';
+import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue';
+import FormatColorTextIcon from 'vue-material-design-icons/FormatColorText.vue';
+import EmoticonHappyIcon from 'vue-material-design-icons/EmoticonHappy.vue';
+import ImageMultipleIcon from 'vue-material-design-icons/ImageMultiple.vue';
+import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
+import EmoticonIcon from 'vue-material-design-icons/Emoticon.vue';
+import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue';
+
+import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
+
+// Definicja emitowanych zdarzeń dla nawigacji
+const emit = defineEmits<{
+    (e: 'navigate', viewName: string): void;
+    (e: 'back'): void;
+}>();
+
+// Stan komponentu
+const userName = ref('Bartosz Miazek');
+const profilePicUrl = ref('https://via.placeholder.com/40');
+const postContent = ref('');
+
+const isPublishButtonDisabled = computed(() => !postContent.value.trim());
+
+// Funkcja wywołująca przejście do widoku 'privacy'
+const openPrivacySelector = () => {
+    emit('navigate', 'privacy');
+};
+</script>
+
+<template>
+  <div class="post-creator-card p-0 min-h-[200px]">
+
+    <div class="flex items-center mb-4">
+      <img :src="profilePicUrl" :alt="userName" class="w-10 h-10 rounded-full mr-3 object-cover" />
+      <div class="flex flex-col">
+        <span class="font-bold text-gray-800 text-sm">{{ userName }}</span>
+
+        <div
+            class="flex items-center bg-gray-200 px-2 py-0.5 rounded-md text-xs text-gray-600 cursor-pointer hover:bg-gray-300 transition-colors"
+            @click="openPrivacySelector"
+        >
+          <lock-icon :size="14" class="mr-1" />
+          <span>Tylko ja</span>
+          <chevron-down-icon :size="14" class="ml-1" />
+        </div>
+      </div>
+    </div>
+
+    <div class="relative mb-2">
+        <textarea
+            v-model="postContent"
+            placeholder="Co słychać?"
+            class="w-full h-24 border-none resize-none text-2xl placeholder-gray-500 focus:ring-0 focus:outline-none p-0 pt-2"
+        ></textarea>
+
+        <div class="absolute bottom-2 left-0 text-[#fe5b70] cursor-pointer" title="Stylizacja tekstu">
+             <format-color-text-icon :size="24" />
+        </div>
+        <div class="absolute bottom-2 right-0 text-gray-500 cursor-pointer" title="Dodaj emoji">
+            <emoticon-happy-icon :size="24" />
+        </div>
+    </div>
+
+    <hr class="my-4 border-gray-200">
+
+    <div class="flex justify-between items-center p-3 border border-gray-300 rounded-lg mb-4">
+      <span class="font-medium text-sm text-gray-700">Dodaj do posta</span>
+      <div class="flex space-x-3">
+        <image-multiple-icon :size="24" class="text-[#45bd62] cursor-pointer hover:opacity-80" />
+        <account-group-icon :size="24" class="text-[#1877f2] cursor-pointer hover:opacity-80" />
+        <emoticon-icon :size="24" class="text-[#f7b928] cursor-pointer hover:opacity-80" />
+        <map-marker-icon :size="24" class="text-[#f3425f] cursor-pointer hover:opacity-80" />
+       <span>GIF</span>>
+        <dots-horizontal-icon :size="24" class="text-gray-500 cursor-pointer hover:opacity-80" />
+      </div>
+    </div>
+
+    <button
+      :disabled="isPublishButtonDisabled"
+      class="w-full py-2 rounded-lg font-bold text-base transition-colors duration-200"
+      :class="{
+        'bg-blue-500 text-white hover:bg-blue-600': !isPublishButtonDisabled,
+        'bg-gray-200 text-gray-400 cursor-not-allowed': isPublishButtonDisabled
+      }"
+      @click="!isPublishButtonDisabled && console.log('Publikowanie posta...')"
+    >
+      Opublikuj
+    </button>
+  </div>
+</template>

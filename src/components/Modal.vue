@@ -18,7 +18,7 @@ defineProps<{
     @click.self="closeModal"
     class="fixed inset-0 z-55 flex items-center justify-center bg-gray-200/80 dark:bg-black/80"
   >
-    <div class="bg-theme-bg-secondary rounded-lg shadow-2xl w-full max-w-2xl mx-4 my-8 relative flex flex-col max-h-[98vh]">
+    <div class="bg-theme-bg-secondary rounded-lg shadow-2xl  mx-4 my-8 relative flex flex-col max-h-[98vh]">
 
       <!-- HEADER -->
       <div class="p-4 border-b border-theme-border flex items-center justify-center relative">

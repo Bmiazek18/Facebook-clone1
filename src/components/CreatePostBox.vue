@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { toRefs } from 'vue'
+import { toRefs,ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import VideoImage from 'vue-material-design-icons/VideoImage.vue'
 import Image from 'vue-material-design-icons/Image.vue'
 import EmoticonOutline from 'vue-material-design-icons/EmoticonOutline.vue'
-
+import Modal from './Modal.vue'
+import CreatePost from './CreatePost.vue'
 useI18n()
 
 const props = defineProps({
   image: String,
   placeholder: String,
 })
-
+const isOpen = ref(false)
 const { image, placeholder } = toRefs(props)
 </script>
 
@@ -23,6 +24,7 @@ const { image, placeholder } = toRefs(props)
         <img class="rounded-full ml-1 min-w-[36px] max-h-[36px]" :src="image || ''" />
       </a>
       <div
+      @click="()=>!isOpen"
         class="flex items-center justify-start bg-[#EFF2F5] dark:bg-gray-700 hover:bg-[#E5E6E9] dark:hover:bg-gray-600 p-2 rounded-full w-full cursor-pointer"
       >
         <div class="text-left pl-2 text-theme-text-secondary ">{{ placeholder }}</div>
@@ -50,4 +52,7 @@ const { image, placeholder } = toRefs(props)
       </button>
     </div>
   </div>
+<Modal v-if="isOpen" title="Utwórz post">
+  <CreatePost/>
+</Modal>
 </template>

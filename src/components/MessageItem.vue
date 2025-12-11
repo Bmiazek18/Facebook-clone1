@@ -2,19 +2,18 @@
 import { ref, computed } from 'vue';
 import PlayIcon from 'vue-material-design-icons/Play.vue';
 import PauseIcon from 'vue-material-design-icons/Pause.vue';
-import ReplyIcon from 'vue-material-design-icons/Reply.vue';
-import FileIcon from 'vue-material-design-icons/File.vue';
 import type { Message, ImageMessage, GifMessage, AudioMessage, FileMessage, VideoMessage, AudioState } from '@/types/Message';
 import MessegePool from './MessegePool.vue';
 import Modal from './Modal.vue';
 import PlayerVideo from './PlayerVideo.vue';
 import ReactionPanel from './ReactionPanel.vue';
-import { useFileSize } from '@/composables/useFileSize';
+import MessageReplyContext from './MessageReplyContext.vue';
+import MessageMediaGallery from './MessageMediaGallery.vue';
+import MessageFileAttachment from './MessageFileAttachment.vue';
+import MessageReactions from './MessageReactions.vue';
+// ----------------------------------------
 
-// --- DEFINICJA TYPÓW DLA TYPE GUARDS ---
-interface ImageMessageWithGroup extends ImageMessage {
-  mediaUrls?: string[];
-}
+interface ImageMessageWithGroup extends ImageMessage { mediaUrls?: string[]; }
 
 const props = defineProps<{
   message: Message;
@@ -31,19 +30,15 @@ const emit = defineEmits<{
 }>();
 
 
+// --- TYPE GUARDS i COMPUTED PROPERTIES ---
+
 const isAudioMessage = (msg: Message): msg is AudioMessage => msg.type === 'audio';
 const isImageMessage = (msg: Message): msg is ImageMessageWithGroup => msg.type === 'image';
 const isFileMessage = (msg: Message): msg is FileMessage => msg.type === 'file';
 const isVideoMessage = (msg: Message): msg is VideoMessage => msg.type === 'video';
 const isGifMessage = (msg: Message): msg is GifMessage => msg.type === 'gif';
 
-
-const formatSeconds = (seconds: number): string => {
-  if (isNaN(seconds) || seconds < 0) return '0:00';
-  const minutes = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${minutes}:${secs.toString().padStart(2, '0')}`;
-};
+const isMe = computed(() => props.message.sender === 'me');
 
 const isEmojiOnly = (content: string): boolean => {
   if (!content?.trim()) return false;
@@ -55,34 +50,27 @@ const isEmojiOnly = (content: string): boolean => {
 };
 
 const positionClasses = computed(() => {
-  const isMe = props.message.sender === 'me';
-
   const mappings: Record<string, string> = {
     single: 'rounded-xl',
-    first: isMe
+    first: isMe.value
       ? 'rounded-tl-xl rounded-tr-xl rounded-bl-xl rounded-br-[4px]'
       : 'rounded-tl-xl rounded-tr-xl rounded-br-xl rounded-bl-[4px]',
-    middle: isMe
+    middle: isMe.value
       ? 'rounded-tl-xl rounded-bl-xl rounded-tr-[4px] rounded-br-[4px]'
       : 'rounded-tr-xl rounded-br-xl rounded-tl-[4px] rounded-bl-[4px]',
-    last: isMe
+    last: isMe.value
       ? 'rounded-tl-xl rounded-bl-xl rounded-tr-[4px] rounded-br-xl'
       : 'rounded-tr-xl rounded-br-xl rounded-tl-[4px] rounded-bl-xl',
   };
-
   return mappings[props.positionInGroup] || 'rounded-xl';
 });
 
-
 const shouldDisplayAvatar = computed(() => {
   const isOther = props.message.sender === 'other';
-
   const isLastOrSingle = ['single', 'last'].includes(props.positionInGroup);
-
   return isOther && isLastOrSingle && !isEmojiOnly(props.message.content || '');
 });
 
-// --- LOGIKA TREŚCI ---
 const isGroupedImage = computed(() => {
   return isImageMessage(props.message) && (props.message.mediaUrls?.length ?? 0) > 0;
 });
@@ -95,56 +83,56 @@ const isTextMessage = computed(
   () => props.message.type === 'text' && !isEmojiOnly(props.message.content)
 );
 
-// Audio Helper Variables
+
+
+const formatSeconds = (seconds: number): string => {
+  if (isNaN(seconds) || seconds < 0) return '0:00';
+  const minutes = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${minutes}:${secs.toString().padStart(2, '0')}`;
+};
+
+// Paski wizualizera
 const visualizerBars = [10, 20, 14, 25, 20, 15, 20, 10];
+// Punkty procentowe, po których dany pasek powinien 'zaświecić się'
+const visualizerThresholds = [0, 12, 25, 37, 50, 62, 75, 87];
 
-const getMessageDuration = (message: Message): number => {
-  return isAudioMessage(message) ? message.duration : 0;
-};
+// Właściwości obliczane na podstawie stanu audio (MessageAudioPlayer logic, adapted)
+const audioState = computed(() => props.audioStates[props.message.id]);
+
+const audioIsPlaying = computed(() => audioState.value?.isPlaying ?? false);
+const audioCurrentTime = computed(() => audioState.value?.currentTime ?? 0);
+const audioDuration = computed(() => (props.message as AudioMessage).duration || 1);
+
+// Właściwość obliczana: Procent odtwarzania (dla białej linii postępu)
+const progressPercent = computed(() => {
+    return audioDuration.value > 0 ? (audioCurrentTime.value / audioDuration.value) * 100 : 0;
+});
+
+// Właściwość obliczana: Czas pozostały (countdown)
+const remainingTime = computed(() => {
+  const totalDuration = audioDuration.value || 0;
+  const current = audioCurrentTime.value;
+  // Zaokrąglenie w górę, aby uniknąć wyświetlania '0:-1' i uprościć wyświetlanie
+  return Math.max(0, Math.ceil(totalDuration - current));
+});
+
+const isOtherSender = computed(() => props.message.sender === 'other');
 
 
-const showReactions = ref(false);
+// --- Lokalne Stany i Handlery ---
 const showReactionsPanel = ref(false);
-const reactionsList = ['👍', '❤️', '😂', '😮', '😢', '👏'];
-
 const openReactionsPanel = () => (showReactionsPanel.value = true);
-const toggleReactions = () => (showReactions.value = !showReactions.value);
 
-const selectReaction = (emoji: string) => {
-  emit('add-reaction', { messageId: props.message.id, emoji });
-  showReactions.value = false;
-};
+const handleReply = () => emit('reply', props.message);
+const handleToggleAudio = () => emit('toggle-audio-playback', props.message);
+const handleAddReaction = (payload: { messageId: number; emoji: string }) => emit('add-reaction', payload);
 
-const downloadFile = (message: FileMessage) => {
-  const link = document.createElement('a');
-  link.href = message.fileUrl;
-  link.download = message.fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+
 </script>
 
 <template>
-  <div v-if="message.isReply"
-    class="flex flex-col"
-    :class="{
-      'items-start': message.sender === 'other',
-      'items-end': message.sender === 'me'
-    }"
-  >
-    <span class="flex flex-row text-[12px] align-center">
-      <ReplyIcon :size="12"/>
-      <p class="font-semibold">Odpowiadasz {{ message.replyToSender }}</p>
-    </span>
-
-    <div
-      class="pb-2 text-xs -mb-[15px] bg-gray-100/70 rounded-lg backdrop-blur-sm max-w-[80%] overflow-hidden"
-      style="word-break: break-word;"
-    >
-      <p class="text-gray-700 p-3 text-[11px]">{{ message.replyToContentSnippet }}</p>
-    </div>
-  </div>
+  <MessageReplyContext v-if="message.isReply" :reply="message" />
 
   <div v-if="message.type === 'poll'" class="flex justify-center">
     <MessegePool
@@ -159,26 +147,23 @@ const downloadFile = (message: FileMessage) => {
     v-else
     class="relative flex items-end group"
     :class="{
-      'justify-start': message.sender === 'other',
-      'justify-end': message.sender === 'me',
-      'mb-0': props.positionInGroup !== 'last' && props.positionInGroup !== 'single',
+      'justify-start': !isMe,
+      'justify-end': isMe,
+      'mb-1': props.positionInGroup !== 'last' && props.positionInGroup !== 'single',
       'mb-3': props.positionInGroup === 'last' || props.positionInGroup === 'single'
     }"
   >
     <div
       v-if="shouldDisplayAvatar"
-      class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center mr-1 shrink-0"
+      class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center mr-2 shrink-0"
     >
       <span>😊</span>
     </div>
-    <div v-else-if="message.sender === 'other'" class="w-9"></div>
+    <div v-else-if="!isMe" class="w-9"></div>
 
     <div
       class="flex items-center w-full"
-      :class="{
-        'flex-row': message.sender === 'other',
-        'flex-row-reverse': message.sender === 'me'
-      }"
+      :class="{ 'flex-row': !isMe, 'flex-row-reverse': isMe }"
     >
       <div class="relative flex flex-col flex-items max-w-[60%]">
 
@@ -194,33 +179,20 @@ const downloadFile = (message: FileMessage) => {
           <p>{{ message.content }}</p>
         </div>
 
-        <div v-else-if="isGroupedImage && isImageMessage(message)" class="mb-2">
-          <div
-            class="grid gap-1 rounded-xl overflow-hidden"
-            :class="{
-              'grid-cols-2': (message.mediaUrls?.length ?? 0) >= 2,
-              'grid-cols-1': (message.mediaUrls?.length ?? 0) === 1,
-              'rounded-tl-none': message.sender === 'other',
-              'rounded-br-none': message.sender === 'me'
-            }"
-          >
-            <img
-              v-for="(url, i) in message.mediaUrls"
-              :key="i"
-              :src="url"
-              class="object-cover w-full h-full cursor-pointer"
-              :class="{ 'aspect-square': (message.mediaUrls?.length ?? 0) > 1 }"
-              @click="emit('open-lightbox', url)"
-            />
-          </div>
-        </div>
+        <MessageMediaGallery
+          v-else-if="isGroupedImage && isImageMessage(message)"
+          :media-urls="(message as ImageMessageWithGroup).mediaUrls || []"
+          :is-me="isMe"
+          @open-lightbox="emit('open-lightbox', $event)"
+        />
 
         <div v-else-if="isSingleImageOrGif" class="mb-2">
-           <img
+          <img
             :src="(message as ImageMessage).imageUrl"
             class="max-w-full h-auto rounded-lg cursor-pointer"
             :class="{ 'border-2 border-purple-400': message.type === 'gif' }"
             @click="emit('open-lightbox', (message as ImageMessage).imageUrl)"
+            alt="Obraz lub GIF"
           />
         </div>
 
@@ -294,20 +266,13 @@ const downloadFile = (message: FileMessage) => {
           </span>
         </div>
 
-        <div
+        <MessageFileAttachment
           v-else-if="isFileMessage(message)"
-          class="p-3 bg-gray-200 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-300"
-          @click="downloadFile(message)"
-        >
-          <FileIcon :size="22" />
-          <div>
-            <p class="text-sm font-semibold">{{ message.fileName }}</p>
-            <p class="text-xs text-gray-600">{{ useFileSize(message.fileSize) }}</p>
-          </div>
-        </div>
+          :message="message as FileMessage"
+        />
 
         <div v-else-if="isVideoMessage(message)">
-          <PlayerVideo :url="message.videoUrl" />
+          <PlayerVideo :url="(message as VideoMessage).videoUrl" />
         </div>
 
         <div
@@ -315,9 +280,7 @@ const downloadFile = (message: FileMessage) => {
           class="relative p-3 text-sm shadow-md break-words"
           :class="[
             positionClasses,
-            message.sender === 'other'
-              ? 'bg-purple-600 text-white'
-              : 'bg-theme-bg-secondary text-theme-text border border-theme-border'
+            !isMe ? 'bg-purple-600 text-white' : 'bg-theme-bg-secondary text-theme-text border border-theme-border'
           ]"
         >
           <p>{{ message.content }}</p>
@@ -330,36 +293,15 @@ const downloadFile = (message: FileMessage) => {
         >
           {{ message.reactions.at(-1) }}
         </div>
-
-        <div
-          v-if="showReactions"
-          class="absolute bottom-full mb-2 left-0 flex gap-1 p-2 bg-white rounded-full shadow-lg z-20 border border-gray-100"
-        >
-          <span
-            v-for="emoji in reactionsList"
-            :key="emoji"
-            class="cursor-pointer text-lg hover:scale-125 transition-transform"
-            @click="selectReaction(emoji)"
-          >
-            {{ emoji }}
-          </span>
-        </div>
       </div>
 
-      <div class="flex flex-row items-center gap-2 mx-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button
-          @click="toggleReactions"
-          class="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
-        >
-          <span>😊</span>
-        </button>
-        <button
-          @click="emit('reply', message)"
-          class="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
-        >
-          <ReplyIcon :size="18" />
-        </button>
-      </div>
+      <MessageReactions
+        :message-id="message.id"
+        :reactions="message.reactions"
+        @add-reaction="handleAddReaction"
+        @open-panel="openReactionsPanel"
+        @reply="handleReply"
+      />
     </div>
   </div>
 
@@ -369,6 +311,7 @@ const downloadFile = (message: FileMessage) => {
 </template>
 
 <style scoped>
+/* Zachowanie stylów dla emoji i tła */
 .emoji-size-default { font-size: 1.75rem; }
 .emoji-size-small { font-size: 45px; }
 .emoji-size-medium { font-size: 60px; }
