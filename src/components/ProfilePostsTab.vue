@@ -2,6 +2,7 @@
 import CreatePostBox from '@/components/CreatePostBox.vue';
 import ProfileFriendsMini from './ProfileFriendsMini.vue';
 import { ref } from 'vue';
+import BirthdayPostFeed from './BirthdayPostFeed.vue';
 
 const props = defineProps<{
     friendsList: {
@@ -68,6 +69,8 @@ const props = defineProps<{
                 :image="userImage"
                 :placeholder="`Co słychać, ${userName.split(' ')[0]}?`"
             />
+            <BirthdayPostFeed/>
+
             </div>
     </div>
 </template>

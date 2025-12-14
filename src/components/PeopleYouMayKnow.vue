@@ -23,7 +23,7 @@
 
       <div
         ref="carouselRef"
-        class="flex overflow-x-scroll pb-2 scrollbar-hide"
+        class="flex overflow-x-scroll pb-2 h-[80px] scrollbar-hide"
 
       >
         <Card

@@ -1,12 +1,15 @@
 <template>
-  <div class="w-[190px] h-[300px] border border-gray-200 rounded-lg overflow-hidden shadow-sm flex flex-col bg-theme-bg-secondary">
-    <div class="relative h-[190px] w-[190px]">
+  <div class="w-full bg-white border border-[#dadde1] rounded-lg overflow-hidden shadow-sm flex flex-col">
+
+    <div class="relative w-full aspect-square bg-gray-200">
       <img
-        :src="person.imageUrl"
+        :src="person.image"
         :alt="person.name"
-        class="w-full h-full object-cover"
+        class="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity"
       />
+
       <button
+        v-if="variant === 'suggestion'"
         @click="$emit('remove', person.id)"
         class="absolute top-2 right-2 p-1 bg-black bg-opacity-40 rounded-full text-white hover:bg-opacity-60 transition"
       >
@@ -14,52 +17,81 @@
       </button>
     </div>
 
-    <div class="p-2 flex flex-col grow">
-      <h3 class="font-semibold text-theme-color text-base ">{{ person.name }}</h3>
+    <div class="p-3 flex flex-col flex-grow">
+      <h3 class="text-[17px] font-semibold text-[#050505] mb-1 cursor-pointer hover:underline truncate">
+        {{ person.name }}
+      </h3>
 
-      <div class="flex items-center text-sm text-theme-text-secondary">
-        <AccountGroupIcon :size="16" class="mr-1 text-blue-500" />
-        <span v-if="person.commonFriends > 1">{{ person.commonFriends }} {{ $t('profile.commonFriends') }}</span>
-        <span v-else-if="person.commonFriends === 1">{{ $t('profile.oneCommonFriend') }}</span>
-        <span v-else class="text-gray-400">{{ $t('profile.noCommonFriends') }}</span>
+      <div class="flex items-center text-[13px] text-[#65676b] mb-3 h-[20px]">
+        <div class="flex -space-x-1 mr-2" v-if="person.mutual > 0 && variant === 'request'">
+           <div class="w-4 h-4 rounded-full bg-red-500 border border-white"></div>
+           <div class="w-4 h-4 rounded-full bg-blue-500 border border-white"></div>
+        </div>
+
+        <span v-if="person.mutual > 0">
+          {{ person.mutual }} wspólnych znajomych
+        </span>
+        <span v-else>
+          Brak wspólnych znajomych
+        </span>
       </div>
 
-      <button
-        :disabled="person.isFriend"
-        class="mt-2  px-3 text-sm font-semibold rounded transition duration-150"
-        :class="{
-            'bg-blue-600 text-white hover:bg-blue-700': !person.isFriend,
-            'bg-gray-200 text-gray-500 cursor-not-allowed': person.isFriend,
-        }"
-      >
-        <span v-if="!person.isFriend" class="flex items-center justify-center">
-             <AccountPlusIcon :size="20" class="mr-1" fillColor="white" />
-            {{ $t('profile.addFriend') }}
-        </span>
-        <span v-else>{{ $t('profile.isFriend') }}</span>
-      </button>
+      <div class="mt-auto flex flex-col gap-2">
+
+        <template v-if="variant === 'request'">
+          <button
+            @click="$emit('confirm', person.id)"
+            class="w-full bg-[#1b74e4] hover:bg-[#1562bd] text-white font-semibold text-[15px] py-[7px] rounded-md transition-colors"
+          >
+            Potwierdź
+          </button>
+
+          <button
+            @click="$emit('delete', person.id)"
+            class="w-full bg-[#e4e6eb] hover:bg-[#d8dadf] text-[#050505] font-semibold text-[15px] py-[7px] rounded-md transition-colors"
+          >
+            Usuń
+          </button>
+        </template>
+
+        <template v-else>
+          <button
+            @click="$emit('add', person.id)"
+            class="w-full bg-[#e7f3ff] hover:bg-[#dbe7f2] text-[#1877f2] font-semibold text-[15px] py-[7px] rounded-md transition-colors flex items-center justify-center"
+          >
+             <AccountPlusIcon :size="20" class="mr-1" />
+            Dodaj znajomego
+          </button>
+        </template>
+
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n';
-import type { Person } from '../types/Person';
-
-// i18n
-useI18n()
-
-// --- IMPORT NOWYCH IKON ---
-import AccountPlusIcon from 'vue-material-design-icons/AccountPlus.vue';
-import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
+import AccountPlusIcon from 'vue-material-design-icons/AccountPlus.vue';
 
+// Definicja interfejsu (możesz go przenieść do oddzielnego pliku types.ts)
+export interface Person {
+  id?: number | string;
+  name: string;
+  image: string;
+  mutual: number; // Zmieniłem nazewnictwo na prostsze 'mutual' zgodnie z poprzednim krokiem
+}
 
-defineProps<{
+const props = withDefaults(defineProps<{
   person: Person;
-}>();
+  variant?: 'request' | 'suggestion'; // Nowy prop
+}>(), {
+  variant: 'request' // Domyślnie tryb zaproszenia
+});
 
 defineEmits<{
-  (e: 'remove', id: number): void;
+  (e: 'remove', id: number | string): void;
+  (e: 'confirm', id: number | string): void;
+  (e: 'delete', id: number | string): void;
+  (e: 'add', id: number | string): void;
 }>();
 </script>
