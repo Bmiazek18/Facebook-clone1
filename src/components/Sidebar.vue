@@ -86,10 +86,7 @@ const saveAltText = () => {
               <span class="font-medium text-gray-700 text-sm">Dodaj tekst</span>
            </div>
 
-           <div @click="emit('add-image')" class="flex items-center gap-4 px-4 py-3 hover:bg-gray-100 cursor-pointer transition active:scale-95">
-              <div class="bg-gray-200 p-2.5 rounded-full border border-gray-300"><ImageIcon :size="24" class="text-green-600"/></div>
-              <span class="font-medium text-gray-700 text-sm">Dodaj zdjęcie</span>
-           </div>
+
 
            <div @click="emit('toggle-music')" class="flex items-center gap-4 px-4 py-3 hover:bg-gray-100 cursor-pointer transition" :class="{'bg-blue-50 border-l-4 border-blue-500': isMusicModalOpen}">
               <div class="bg-gray-200 p-2.5 rounded-full border border-gray-300"><MusicNote :size="24" class="text-gray-700"/></div>

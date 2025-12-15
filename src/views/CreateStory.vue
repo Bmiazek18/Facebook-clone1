@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, onUnmounted, computed, onMounted } from 'vue';
+import { useTempStoryStore } from '@/stores/tempStory';
 
 // --- IMPORT KOMPONENTÓW ---
 import MusicModal, { type MusicTrack } from '../components/MusicModal.vue';
@@ -116,6 +117,25 @@ onMounted(() => {
     });
     observer.observe(backgroundRef.value);
   }
+
+
+  try {
+    const tempStore = useTempStoryStore();
+    const selectedRef = tempStore.selectedImage as import('vue').Ref<string | null> | string | null;
+    const imgUrl = typeof selectedRef === 'string' ? selectedRef : (selectedRef?.value ?? null);
+    if (imgUrl) {
+      const newId = `el_img_${Date.now()}`;
+      storyElements.value.push({ id: newId, type: 'image', content: imgUrl, x: 60, y: 200, width: 240, height: 320, rotation: 0, scale: 1, cropX: 0, cropY: 0, cropZoom: 1, styles: {} });
+      selectedElementId.value = newId;
+      setBackgroundGradientFromImage(imgUrl);
+  // don't clear the object URL immediately — wait until the image is loaded or user finishes editing
+      return;
+    }
+  } catch {
+
+  }
+
+
 });
 
 onUnmounted(() => {
@@ -245,12 +265,7 @@ const disableEdit = () => { editingId.value = null; };
 const onBackgroundClick = () => { disableEdit(); croppingId.value = null; selectedElementId.value = null; }
 const toggleCrop = (id: string) => { if (croppingId.value === id) croppingId.value = null; else { croppingId.value = id; editingId.value = null; selectedElementId.value = id; } }
 const addTextElement = () => { const newId = `el_${Date.now()}`; storyElements.value.push({ id: newId, type: 'text', content: 'Nowy Tekst', x: 100, y: 300, rotation: 0, scale: 1, styles: { color: '#ffffff', fontSize: '24px', fontWeight: 'bold' } }); selectedElementId.value = newId; };
-const addImageElement = () => {
-    const sampleImages = ['https://images.unsplash.com/photo-1517849845537-4d257902454a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80', 'https://images.unsplash.com/photo-1554080353-a576cf803bda?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'];
-  const randomImg = sampleImages[Math.floor(Math.random() * sampleImages.length)] ?? '';
-    const newId = `el_img_${Date.now()}`; storyElements.value.push({ id: newId, type: 'image', content: randomImg, x: 60, y: 200, width: 240, height: 320, rotation: 0, scale: 1, cropX: 0, cropY: 0, cropZoom: 1 }); selectedElementId.value = newId;
-    if (randomImg) setBackgroundGradientFromImage(randomImg);
-}
+
 const removeElement = (id: string) => { storyElements.value = storyElements.value.filter((el: StoryElementType) => el.id !== id); if (selectedElementId.value === id) selectedElementId.value = null; };
 const updateElementContent = (id: string, value: string) => {
   const target = storyElements.value.find((el: StoryElementType) => el.id === id);
@@ -273,7 +288,6 @@ const removeMusicAndOpenModal = () => {
       :current-alt-text="selectedElement?.altText"
       :is-image-selected="selectedElement?.type === 'image'"
       @add-text="addTextElement"
-      @add-image="addImageElement"
       @toggle-music="toggleMusicModal"
     />
 
