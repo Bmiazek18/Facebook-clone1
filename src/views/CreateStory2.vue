@@ -76,17 +76,6 @@ const openFilePicker = () => {
     // fall through to FileReader fallback
   }
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    const dataUrl = reader.result as string;
-    try {
-      sessionStorage.setItem('createStoryImage', dataUrl);
-    } catch (err) {
-      console.error('sessionStorage set failed', err);
-    }
-    router.push({ name: 'createReel' });
-  };
-  reader.readAsDataURL(file);
 };
 
 // Logika komponentu (tutaj prosta, bo to głównie UI)

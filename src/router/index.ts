@@ -8,6 +8,7 @@ import FriendsView from '@/views/FriendsView.vue'
 import ReelView from '@/views/ReelView.vue'
 import StoryView from '@/views/StoryView.vue'
 import CreateStory from '@/views/CreateStory.vue'
+import CreateStory2 from '@/views/CreateStory2.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -43,8 +44,14 @@ const router = createRouter({
     },
      {
       path: '/createReel',
-      name: 'reel',
+      name: 'createReel',
       component: CreateStory,
+      meta: { showMainLayout: false },
+    },
+     {
+      path: '/createReel2',
+      name: 'reel2',
+      component: CreateStory2,
       meta: { showMainLayout: false },
     },
     {
