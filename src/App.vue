@@ -1,7 +1,7 @@
 <template>
-  <MainNavLayout/>
+  <MainNavLayout v-if="showMainLayout"/>
 
-<router-view />
+  <router-view />
   <div class="fixed flex flex-row bottom-0 right-[60px]">
 
      <MessageBox
@@ -21,6 +21,8 @@
 
 
 import MainNavLayout from './Layouts/MainNavLayouts.vue'
+import { useRoute } from 'vue-router'
+import { computed } from 'vue'
 
 import 'floating-vue/dist/style.css'
 
@@ -34,5 +36,8 @@ const chatStore = useChatStore()
 
 // Initialize theme on app mount
 useTheme()
+
+const route = useRoute()
+const showMainLayout = computed(() => route.path !== '/createReel')
 
 </script>
