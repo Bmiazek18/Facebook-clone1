@@ -38,6 +38,10 @@ const chatStore = useChatStore()
 useTheme()
 
 const route = useRoute()
-const showMainLayout = computed(() => route.path !== '/createReel')
+// If a route sets `meta.showMainLayout === false` we hide the main layout.
+const showMainLayout = computed(() => {
+   const metaVal = (route && route.meta && (route.meta as Record<string, unknown>).showMainLayout);
+   return metaVal === false ? false : true;
+})
 
 </script>

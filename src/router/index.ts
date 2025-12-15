@@ -45,6 +45,7 @@ const router = createRouter({
       path: '/createReel',
       name: 'reel',
       component: CreateStory,
+      meta: { showMainLayout: false },
     },
     {
       path: '/story',
