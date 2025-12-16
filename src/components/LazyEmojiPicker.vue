@@ -18,7 +18,7 @@ onMounted(async () => {
     import('emoji-mart-vue-fast/src'),
     import('emoji-mart-vue-fast/data/all.json'),
   ]);
-  
+
   emojiIndex.value = new EmojiIndex(data);
   Picker.value = PickerComponent;
   isLoaded.value = true;
@@ -38,7 +38,7 @@ const onSelect = (e: { native: string }) => {
       </div>
     </div>
   </div>
-  <component 
+  <component
     v-else-if="Picker && emojiIndex"
     :is="Picker"
     :data="emojiIndex"

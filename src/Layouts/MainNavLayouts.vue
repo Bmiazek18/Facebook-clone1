@@ -19,23 +19,23 @@ import NotificationMenu from '@/components/NotificationMenu.vue'
 import MessageMenu from '@/components/MessageMenu.vue'
 
 import { useTheme } from '@/composables/useTheme'
-import ContactList from '@/components/ContactList.vue' // Upewnij się, że ścieżka jest poprawna
+import ContactList from '@/components/ContactList.vue'
 
 type ActiveMenuType = 'profile' | 'notifications' | 'message' | null;
 
 const target = useTemplateRef<HTMLElement>('target')
-// Ref do kontenera wyszukiwania, aby onClickOutside działało poprawnie
+
 const searchContainerRef = useTemplateRef<HTMLElement>('searchContainer')
 
-// Zmienna stanu dla aktywnego menu bocznego
+
 const activeMenu = ref<ActiveMenuType>(null)
 
-// Nowa zmienna stanu dla wyświetlania listy kontaktów (rozwijanie pod wyszukiwarką)
+
 const isSearchFocused = ref(false)
 
-// Funkcja przełączająca menu
+
 const toggleMenu = (menuName: ActiveMenuType) => {
-  // Zamknij listę wyszukiwania, jeśli otwierasz inne menu
+
   isSearchFocused.value = false;
 
   if (activeMenu.value === menuName) {
@@ -47,14 +47,12 @@ const toggleMenu = (menuName: ActiveMenuType) => {
 
 const {isDark} = useTheme()
 
-// Zamykanie menu po kliknięciu poza obszarem
 onClickOutside(target, () => {
   activeMenu.value = null
 })
 
-// Zamykanie listy wyszukiwania po kliknięciu poza jej kontenerem
 onClickOutside(searchContainerRef, () => {
-    // Sprawdzamy, czy jakieś inne menu jest aktywne, aby uniknąć kolizji
+
     if (activeMenu.value === null) {
         isSearchFocused.value = false
     }
