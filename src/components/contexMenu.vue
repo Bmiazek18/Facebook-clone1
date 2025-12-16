@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineEmits, markRaw, computed } from 'vue';
+import { markRaw, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { Component } from 'vue';
 

@@ -66,8 +66,8 @@
 import { ref } from 'vue';
 const handleAddFriend = (id: number) => {
   console.log('Wysłano zaproszenie do:', id);
-  const person = suggestions.value.find(p => p.id === id);
-  if (person) person.isFriend = true; // Zmienia stan przycisku na "Wysłano"
+  const person = friendRequests.value.find((p: { id: number }) => p.id === id);
+  if (person) person.isFriend = true;
 };
 // Ikony
 import CogIcon from 'vue-material-design-icons/Cog.vue';
@@ -92,84 +92,84 @@ const friendRequests = ref([
   {
     id: 1,
     name: 'Patryk Marciniuk',
-    mutual: 0,
+    commonFriends: 0,
     imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     isFriend: false
   },
   {
     id: 2,
     name: 'Hubert Rudnik',
-    mutual: 78,
+    commonFriends: 78,
     imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     isFriend: false
   },
   {
     id: 3,
     name: 'Michał Kudlak',
-    mutual: 97,
+    commonFriends: 97,
     imageUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     isFriend: false
   },
   {
     id: 4,
     name: 'Piotr Kosmala',
-    mutual: 11,
+    commonFriends: 11,
     imageUrl: 'https://images.unsplash.com/photo-1557862921-37829c790f19?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     isFriend: false
   },
   {
     id: 5,
     name: 'Mateusz Nowacki',
-    mutual: 12,
+    commonFriends: 12,
     imageUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     isFriend: false
   },
   {
     id: 6,
     name: 'Nela Gryczka',
-    mutual: 2,
+    commonFriends: 2,
     imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     isFriend: false
   },
   {
     id: 7,
     name: 'Maja Trochim',
-    mutual: 7,
+    commonFriends: 7,
     imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     isFriend: false
   },
   {
     id: 8,
     name: 'Wojciech Krasuski',
-    mutual: 70,
+    commonFriends: 70,
     imageUrl: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     isFriend: false
   },
   {
     id: 9,
     name: 'Kuba Bielecki',
-    mutual: 36,
+    commonFriends: 36,
     imageUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     isFriend: false
   },
   {
     id: 10,
     name: 'Krystian Celejewski',
-    mutual: 26,
+    commonFriends: 26,
     imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     isFriend: false
   },
   {
     id: 11,
     name: 'Julka Przeplatacka',
-    mutual: 4,
+    commonFriends: 4,
     imageUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     isFriend: false
   },
   {
     id: 12,
     name: 'Bartosz Szczepaniak',
-    mutual: 8,
+    commonFriends: 8,
     imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     isFriend: false
   },

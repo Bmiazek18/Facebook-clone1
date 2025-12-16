@@ -239,7 +239,7 @@ const handleAddReaction = (payload: { messageId: number; emoji: string }) => emi
                   backgroundColor: audioStates[message.id]?.isPlaying
                     ? ((audioStates[message.id]?.currentTime || 0) /
                         (message.duration || 1) * 100 >
-                        ([0, 12, 25, 37, 50, 62, 75, 87][index] + 6)
+                        (([0, 12, 25, 37, 50, 62, 75, 87][index] ?? 0) + 6)
                         ? 'white'
                         : 'rgba(255,255,255,0.5)')
                     : 'white'
@@ -291,7 +291,7 @@ const handleAddReaction = (payload: { messageId: number; emoji: string }) => emi
           v-if="message.reactions?.length"
           class="absolute bottom-0 right-0 cursor-pointer translate-x-1/2 translate-y-1/2 bg-white rounded-full w-6 h-6 flex items-center justify-center shadow-md text-sm border border-gray-200 z-10"
         >
-          {{ message.reactions.at(-1) }}
+          {{ message.reactions[message.reactions.length - 1] }}
         </div>
       </div>
 

@@ -3,7 +3,7 @@
 
     <div class="relative w-full aspect-square bg-gray-200">
       <img
-        :src="person.image"
+        :src="person.imageUrl"
         :alt="person.name"
         class="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity"
       />
@@ -23,13 +23,13 @@
       </h3>
 
       <div class="flex items-center text-[13px] text-[#65676b] mb-3 h-[20px]">
-        <div class="flex -space-x-1 mr-2" v-if="person.mutual > 0 && variant === 'request'">
+        <div class="flex -space-x-1 mr-2" v-if="person.commonFriends > 0 && variant === 'request'">
            <div class="w-4 h-4 rounded-full bg-red-500 border border-white"></div>
            <div class="w-4 h-4 rounded-full bg-blue-500 border border-white"></div>
         </div>
 
-        <span v-if="person.mutual > 0">
-          {{ person.mutual }} wspólnych znajomych
+        <span v-if="person.commonFriends > 0">
+          {{ person.commonFriends }} wspólnych znajomych
         </span>
         <span v-else>
           Brak wspólnych znajomych
@@ -72,26 +72,19 @@
 <script setup lang="ts">
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 import AccountPlusIcon from 'vue-material-design-icons/AccountPlus.vue';
+import type { Person } from '../types/Person';
 
-// Definicja interfejsu (możesz go przenieść do oddzielnego pliku types.ts)
-export interface Person {
-  id?: number | string;
-  name: string;
-  image: string;
-  mutual: number; // Zmieniłem nazewnictwo na prostsze 'mutual' zgodnie z poprzednim krokiem
-}
-
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   person: Person;
-  variant?: 'request' | 'suggestion'; // Nowy prop
+  variant?: 'request' | 'suggestion';
 }>(), {
-  variant: 'request' // Domyślnie tryb zaproszenia
+  variant: 'request'
 });
 
 defineEmits<{
-  (e: 'remove', id: number | string): void;
-  (e: 'confirm', id: number | string): void;
-  (e: 'delete', id: number | string): void;
-  (e: 'add', id: number | string): void;
+  (e: 'remove', id: number): void;
+  (e: 'confirm', id: number): void;
+  (e: 'delete', id: number): void;
+  (e: 'add', id: number): void;
 }>();
 </script>

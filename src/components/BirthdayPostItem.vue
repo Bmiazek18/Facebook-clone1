@@ -101,18 +101,10 @@ import HeartIcon from 'vue-material-design-icons/Heart.vue';
 import CommentOutlineIcon from 'vue-material-design-icons/CommentOutline.vue';
 import ShareOutlineIcon from 'vue-material-design-icons/ShareOutline.vue'; // Uwaga: ShareVariant często wygląda inaczej, ShareOutline jest bliższe
 import CommentItem from './CommentItem.vue';
+import type { Comment } from './CommentItem.vue';
 import CommentReplyInput from './CommentReplyInput.vue';
 const currentUserAvatar = "https://i.pravatar.cc/150?u=me";
 
-
-export interface Comment {
-  id: number;
-  authorName: string;
-  authorAvatar: string;
-  content: string;
-  date: string;
-  isSuper?: boolean;
-}
 
 export interface Post {
   id: number;
@@ -127,7 +119,7 @@ export interface Post {
   comments: Comment[];
 }
 
-const props = defineProps<{
+defineProps<{
   post: Post;
 }>();
 </script>

@@ -129,9 +129,9 @@ const generateGradient = (): void => {
 
                 // Uśrednianie kolorów
                 for (let j = 0; j < data.length; j += 4) {
-                    rTotal += data[j];
-                    gTotal += data[j + 1];
-                    bTotal += data[j + 2];
+                    rTotal += data[j] ?? 0;
+                    gTotal += data[j + 1] ?? 0;
+                    bTotal += data[j + 2] ?? 0;
                 }
 
                 // Obliczanie średnich składowych RGB

@@ -30,15 +30,14 @@ import ProfileIcon from './components/ProfileIcon.vue'
 import MessageBox from './components/MessageBox.vue'
 import { useTheme } from './composables/useTheme'
 
-import { useChatStore } from './stores/counter'
+import { useChatStore } from './stores/chat'
 
 const chatStore = useChatStore()
 
-// Initialize theme on app mount
 useTheme()
 
 const route = useRoute()
-// If a route sets `meta.showMainLayout === false` we hide the main layout.
+
 const showMainLayout = computed(() => {
    const metaVal = (route && route.meta && (route.meta as Record<string, unknown>).showMainLayout);
    return metaVal === false ? false : true;

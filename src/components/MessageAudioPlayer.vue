@@ -61,14 +61,14 @@ const remainingTime = computed(() => {
           ></audio>
 
           <button
-            @click="emit('toggle-audio-playback', message)"
+            @click="emit('togglePlayback')"
             class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0"
             :class="{
               'text-purple-600': message.sender === 'other',
               'text-blue-500': message.sender === 'me'
             }"
           >
-            <template v-if="audioStates[message.id]?.isPlaying">
+            <template v-if="isPlaying">
               <PauseIcon :size="16" />
             </template>
             <template v-else>
@@ -76,7 +76,7 @@ const remainingTime = computed(() => {
             </template>
           </button>
 
-          <div class="flex-grow h-6 relative overflow-hidden rounded-full cursor-pointer">
+          <div class="grow h-6 relative overflow-hidden rounded-full cursor-pointer">
             <div class="absolute inset-0 flex items-center justify-between space-x-0.5 h-full px-1">
               <div
                 v-for="(height, index) in visualizerBars"
@@ -85,29 +85,25 @@ const remainingTime = computed(() => {
                 :style="{
                   height: height + 'px',
                   width: '3px',
-                  backgroundColor: audioStates[message.id]?.isPlaying
-                    ? ((audioStates[message.id]?.currentTime || 0) /
-                        (message.duration || 1) * 100 >
-                        ([0, 12, 25, 37, 50, 62, 75, 87][index] + 6)
-                        ? 'white'
-                        : 'rgba(255,255,255,0.5)')
+                  backgroundColor: isPlaying
+                    ? (progressPercent > (visualizerThresholds[index] ?? 0) + 6 ? 'white' : 'rgba(255,255,255,0.5)')
                     : 'white'
                 }"
               ></div>
 
               <div
-                v-if="audioStates[message.id]?.isPlaying"
+                v-if="isPlaying"
                 class="absolute top-0 bottom-0 w-[3px] bg-white z-20 transition-left duration-100"
                 :style="{
-                  left: ((audioStates[message.id]?.currentTime || 0) / (message.duration || 1) * 100) + '%'
+                  left: progressPercent + '%'
                 }"
               ></div>
             </div>
           </div>
 
           <span class="text-xs font-semibold">
-            <template v-if="audioStates[message.id]?.isPlaying">
-              {{ formatSeconds(audioStates[message.id]?.currentTime || 0) }}
+            <template v-if="isPlaying">
+              {{ formatSeconds(currentTime) }}
             </template>
             <template v-else>
               {{ formatSeconds(message.duration) }}

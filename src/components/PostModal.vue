@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Close from 'vue-material-design-icons/Close.vue'
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
 import ThumbUp from 'vue-material-design-icons/ThumbUp.vue'
 import Earth from 'vue-material-design-icons/Earth.vue'
@@ -7,7 +6,6 @@ import MessageOutline from 'vue-material-design-icons/MessageOutline.vue'
 import ShareIcon from 'vue-material-design-icons/ShareVariant.vue'
 import HoverScrollbar from './HoverScrollbar.vue'
 import ReactionButton from './ReactionButton.vue'
-import Modal from './Modal.vue'
 // 1. IMPORT NOWEGO KOMPONENTU
 import CommentItem from './CommentItem.vue'
 
@@ -148,8 +146,8 @@ const comments: Comment[] = [ // Dodano inferencję typu
                             v-for="comment in comments"
                             :key="comment.id"
                             :comment="comment"
-                            :isReply="false"
-:depth="0"
+                            :postAvatarSrc="postData.avatarSrc"
+                            :depth="0"
                         />
                     </div>
                     <div class="p-4 border-t border-theme-border">

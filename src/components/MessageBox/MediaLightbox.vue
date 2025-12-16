@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" name="MultiMediaLightbox">
 import { ref, computed, watch, onUnmounted, onMounted } from 'vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue';
@@ -9,7 +9,7 @@ import PlayerVideo from '../PlayerVideo.vue';
 const props = defineProps<{
   media: Array<{
     id: number;
-    type: 'image' | 'video'; // nowy typ
+    type: 'image' | 'video' | 'gif';
     imageUrl?: string;
     videoUrl?: string;
   }>,
@@ -121,7 +121,7 @@ watch(() => props.startIndex, (newIndex) => {
                  alt="Powiększony obraz" />
             <PlayerVideo v-else
             :lightbox="true"
-                   :url="currentMedia.videoUrl"
+                   :url="currentMedia.videoUrl ?? ''"
                    class="max-w-[80%] max-h-[80vh] object-contain"
                    />
           </template>

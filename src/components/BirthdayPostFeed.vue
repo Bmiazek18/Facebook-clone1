@@ -28,7 +28,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import BirthdayPost, { Post } from './BirthdayPostItem.vue'; // Upewnij się, że ścieżka jest poprawna
+import BirthdayPost from './BirthdayPostItem.vue';
+import type { Post } from './BirthdayPostItem.vue';
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
 
 // Dane symulujące te ze zrzutu ekranu
@@ -65,7 +66,6 @@ const posts = ref<Post[]>([
             text: 'Dziękuję trenerze 😊',
             date: '41 tyg.',
             likesCount: 3,
-            isSuper: false,
             replies: [
                 {
                     id: 201,
@@ -74,7 +74,6 @@ const posts = ref<Post[]>([
                     text: 'Nie ma za co, widzimy się na treningu!',
                     date: '41 tyg.',
                     likesCount: 1,
-                    isSuper: true,
                     replies: [
                         {
                             id: 301,
@@ -120,7 +119,6 @@ const posts = ref<Post[]>([
             text: 'Dzięki wielkie byku 💪',
             date: '41 tyg.',
             likesCount: 1,
-            isSuper: true,
             replies: []
         },
         {
@@ -163,7 +161,6 @@ const posts = ref<Post[]>([
             text: 'Ania, dziękuję za piękne słowa! 🥰',
             date: '41 tyg.',
             likesCount: 2,
-            isSuper: true,
             replies: []
         }
     ]

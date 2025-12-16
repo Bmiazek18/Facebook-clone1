@@ -10,17 +10,13 @@ import SendIcon from 'vue-material-design-icons/Send.vue';
 import PlayIcon from 'vue-material-design-icons/Play.vue';
 import ThumbUpIcon from 'vue-material-design-icons/ThumbUp.vue';
 import GifBox from './GifBox.vue';
-import { Picker, EmojiIndex } from "emoji-mart-vue-fast/src";
-import "emoji-mart-vue-fast/css/emoji-mart.css";
-import data from "emoji-mart-vue-fast/data/all.json";
+import LazyEmojiPicker from './LazyEmojiPicker.vue';
 
 import type { Message } from '@/types/Message';
 
-const emojiIndex = new EmojiIndex(data);
-
 const emit = defineEmits<{
   'add-message': [message: Message];
-  'clearReply': void
+  'clearReply': []
 }>()
 
 const props = defineProps<{reply: Message | null}>();
@@ -499,7 +495,7 @@ onUnmounted(() => {
     </div>
 
     <!-- Emoji Picker -->
-    <Picker :data="emojiIndex" v-if="showPicker" class="max-h-[313px] shadow-2xl absolute right-[50px]" set="facebook" perLine="8" color="oklch(48.8% 0.243 264.376)" :showPreview="false" @select="showEmoji" />
+    <LazyEmojiPicker v-if="showPicker" class="max-h-[313px] shadow-2xl absolute right-[50px]" @select="showEmoji" />
   </footer>
 </template>
 <style scoped>

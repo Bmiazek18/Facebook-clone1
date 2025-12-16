@@ -117,8 +117,6 @@ import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
 import ArrowExpandIcon from 'vue-material-design-icons/ArrowExpand.vue';
 import PencilOutlineIcon from 'vue-material-design-icons/PencilOutline.vue';
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
-import ChatOutlineIcon from 'vue-material-design-icons/ChatOutline.vue';
-import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
 import ContexMenu from './contexMenu.vue';
 import LanguageSwitcher from './LanguageSwitcher.vue';
 

@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref, type DefineComponent, computed, nextTick, onMounted, watch, onBeforeUnmount } from 'vue';
+import { ref, type Ref, type Component, computed, nextTick, onMounted, watch, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import MainMenu from './ProfileMenu/MainMenu.vue';
@@ -30,7 +30,7 @@ useI18n();
 const currentView: Ref<string> = ref('main');
 const previousView: Ref<string | null> = ref(null);
 
-const viewComponents: Record<string, DefineComponent> = {
+const viewComponents: Record<string, Component> = {
   main: MainMenu,
   display: SubMenuDisplay,
 };

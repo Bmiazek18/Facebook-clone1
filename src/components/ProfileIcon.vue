@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts" >
-import { useChatStore } from '@/stores/counter';
+import { useChatStore } from '@/stores/chat';
 import PencilIcon from 'vue-material-design-icons/Pencil.vue';
 
 

@@ -171,7 +171,6 @@ import FileDocumentIcon from 'vue-material-design-icons/FileDocument.vue';
 import StickerEmojiIcon from 'vue-material-design-icons/StickerEmoji.vue';
 import PlayIcon from 'vue-material-design-icons/Play.vue';
 import CheckDecagramIcon from 'vue-material-design-icons/CheckDecagram.vue';
-import GifIcon from 'vue-material-design-icons/Gif.vue';
 import EmoticonHappyIcon from 'vue-material-design-icons/EmoticonHappy.vue';
 
 const isCommentsOpen = ref(false);

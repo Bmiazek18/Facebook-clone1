@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, onUnmounted, computed, nextTick, onMounted } from 'vue';
-import MultiMediaLightbox from './MessageBox/Lightbox.vue';
+import MultiMediaLightbox from './MessageBox/MediaLightbox.vue';
 import MessageBoxHeader from './MessageBoxHeader.vue';
 import MessageBoxFooter from './MessageBoxFooter.vue';
 import MessageItem from './MessageItem.vue';
-import type { Message, ImageMessage, AudioState, VideoMessage } from '@/types/Message';
+import type { Message, ImageMessage, AudioState, VideoMessage, AudioMessage as AudioMsg, FileMessage } from '@/types/Message';
 
 interface MediaItem {
   id: number;
@@ -17,7 +17,9 @@ interface MediaItem {
 }
 
 const createTimestamp = (timeStr: string, daysAgo: number = 0): number => {
-  const [hours, minutes] = timeStr.split(':').map(Number);
+  const parts = timeStr.split(':').map(Number);
+  const hours = parts[0] ?? 0;
+  const minutes = parts[1] ?? 0;
   const date = new Date();
   date.setDate(date.getDate() - daysAgo);
   date.setHours(hours, minutes, 0, 0);
@@ -134,43 +136,44 @@ const isLightboxOpen = ref(false);
 const currentMediaIndex = ref(0);
 
 const filteredMedia = computed<MediaItem[]>(() => {
-  return messages.value.flatMap((msg) => {
+  const result: MediaItem[] = [];
+  for (const msg of messages.value) {
     if (msg.type === 'video') {
       const videoMsg = msg as VideoMessage;
-      return [{
+      result.push({
         id: videoMsg.id,
         sender: videoMsg.sender,
         type: 'video',
         content: videoMsg.content,
         time: videoMsg.time,
         videoUrl: videoMsg.videoUrl,
-      }];
-    }
-
-    if (msg.type === 'image' || msg.type === 'gif') {
+      });
+    } else if (msg.type === 'image' || msg.type === 'gif') {
       const imgMsg = msg as ImageMessage & { mediaUrls?: string[] };
       if (imgMsg.mediaUrls?.length) {
-        return imgMsg.mediaUrls.map((url) => ({
-          id: imgMsg.id,
-          sender: imgMsg.sender,
-          type: imgMsg.type,
-          content: imgMsg.content,
-          time: imgMsg.time,
-          imageUrl: url
-        }));
+        for (const url of imgMsg.mediaUrls) {
+          result.push({
+            id: imgMsg.id,
+            sender: imgMsg.sender,
+            type: imgMsg.type,
+            content: imgMsg.content,
+            time: imgMsg.time,
+            imageUrl: url
+          });
+        }
       } else if (imgMsg.imageUrl) {
-         return [{
+        result.push({
           id: imgMsg.id,
           sender: imgMsg.sender,
           type: imgMsg.type,
           content: imgMsg.content,
           time: imgMsg.time,
           imageUrl: imgMsg.imageUrl
-        }];
+        });
       }
     }
-    return [];
-  });
+  }
+  return result;
 });
 
 const openLightbox = (url: string) => {
@@ -205,7 +208,7 @@ const toggleAudioPlayback = (message: Message) => {
   const audioElement = document.getElementById(`audio-${audioId}`) as HTMLAudioElement;
   if (!audioElement) return;
 
-  const messageDuration = message.type === 'audio' ? (message as any).duration : undefined;
+  const messageDuration = message.type === 'audio' ? (message as AudioMsg).duration : undefined;
 
   if (audioElement.readyState < 1) {
     const onLoaded = () => {
@@ -220,6 +223,7 @@ const toggleAudioPlayback = (message: Message) => {
 
   initializeAudioState(audioId, audioElement, messageDuration);
   const currentState = audioStates.value[audioId];
+  if (!currentState) return;
 
   Object.keys(audioStates.value).forEach(id => {
     const otherId = parseInt(id);
@@ -252,10 +256,14 @@ const getDayAbbreviation = (timestamp: number): string => new Date(timestamp).to
 const formatTime = (timestamp: number): string => new Date(timestamp).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
 
 const getDisplayTime = (index: number): string | null => {
-  const currentTimestamp = messages.value[index].time;
+  const currentMsg = messages.value[index];
+  if (!currentMsg) return null;
+  const currentTimestamp = currentMsg.time;
   if (index === 0) return `${capitalizeWord(getDayAbbreviation(currentTimestamp))}, ${formatTime(currentTimestamp)}`;
 
-  const prevTimestamp = messages.value[index - 1].time;
+  const prevMsg = messages.value[index - 1];
+  if (!prevMsg) return `${capitalizeWord(getDayAbbreviation(currentTimestamp))}, ${formatTime(currentTimestamp)}`;
+  const prevTimestamp = prevMsg.time;
   const timeDifference = currentTimestamp - prevTimestamp;
   const isTimeGapBig = timeDifference >= MAX_TIME_DIFF_MS;
   const isNewDay = !isSameDay(currentTimestamp, prevTimestamp);
@@ -267,6 +275,7 @@ const getDisplayTime = (index: number): string | null => {
 
 const getMessagePositionInGroup = (index: number): 'single' | 'first' | 'middle' | 'last' => {
   const current = messages.value[index];
+  if (!current) return 'single';
   const prev = messages.value[index - 1];
   const next = messages.value[index + 1];
 
@@ -288,8 +297,11 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeyDown);
   messages.value.forEach(msg => {
-    if (msg.type === 'audio' && (msg as any).audioUrl?.startsWith('blob:')) {
-      URL.revokeObjectURL((msg as any).audioUrl);
+    if (msg.type === 'audio') {
+      const audioMsg = msg as AudioMsg;
+      if (audioMsg.audioUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(audioMsg.audioUrl);
+      }
     }
   });
 });
@@ -321,16 +333,16 @@ const addDroppedImage = (url: string) => {
   messages.value.push({ id: Date.now() + Math.random(), sender: 'me', type: 'image', content: 'Wysłano obraz:', time: Date.now(), imageUrl: url } as Message);
 };
 const addDroppedVideo = (url: string, file: File) => {
-  messages.value.push({ id: Date.now() + Math.random(), sender: 'me', type: 'video', content: file.name, time: Date.now(), videoUrl: url, fileName: file.name, fileSize: file.size } as any);
+  messages.value.push({ id: Date.now() + Math.random(), sender: 'me', type: 'video', content: file.name, time: Date.now(), videoUrl: url } as VideoMessage);
 };
 const addDroppedFile = (url: string, file: File) => {
-  messages.value.push({ id: Date.now() + Math.random(), sender: 'me', type: 'file', content: `Wysłano plik (${file.name})`, time: Date.now(), fileUrl: url, fileName: file.name, fileType: file.type, fileSize: file.size } as any);
+  messages.value.push({ id: Date.now() + Math.random(), sender: 'me', type: 'file', content: `Wysłano plik (${file.name})`, time: Date.now(), fileUrl: url, fileName: file.name, fileSize: file.size } as FileMessage);
 };
 
 const replyTarget = ref<Message | null>(null);
 const setReplyTo = (message: Message) => { replyTarget.value = message; };
 const clearReply = () => { replyTarget.value = null; };
-defineProps<{ boxId:number }>();
+defineProps<{ boxId: string | number }>();
 </script>
 
 <template>

@@ -1,21 +1,19 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { renderGrid, Gif as GiphyGif } from '@giphy/js-components';
+import { renderGrid } from '@giphy/js-components';
 import { GiphyFetch } from '@giphy/js-fetch-api';
 
-// i18n
 useI18n()
 
-type DebounceFunction = (...args: any[]) => void;
+type DebounceFunction = (...args: unknown[]) => void;
 
 const debounce = (func: DebounceFunction, wait: number): DebounceFunction => {
     let timeout: ReturnType<typeof setTimeout> | null = null;
-    return function(this: any, ...args: any[]) {
-        const context = this;
+    return (...args: unknown[]) => {
         const later = () => {
             timeout = null;
-            func.apply(context, args);
+            func(...args);
         };
         if (timeout !== null) {
             clearTimeout(timeout);
@@ -30,10 +28,10 @@ interface Emits {
 
 const emit = defineEmits<Emits>();
 
-let gifs = ref<HTMLElement | null>(null);
-let searchTerm = ref<string>('');
-let grid = ref<{ remove: () => void } | null>(null);
-let previewGifUrl = ref<string | null>(null);
+const gifs = ref<HTMLElement | null>(null);
+const searchTerm = ref<string>('');
+const grid = ref<{ remove: () => void } | null>(null);
+const previewGifUrl = ref<string | null>(null);
 
 const gf = new GiphyFetch(import.meta.env.VITE_GIPHY_KEY as string);
 
@@ -75,7 +73,15 @@ const makeGrid = (targetEl: HTMLElement): { remove: () => void } => {
     };
 };
 
-const onGifClick = (gif: typeof GiphyGif, e: MouseEvent) => {
+interface IGif {
+    images: {
+        fixed_height: {
+            url: string;
+        };
+    };
+}
+
+const onGifClick = (gif: IGif, e: MouseEvent) => {
     e.preventDefault();
     const url = gif.images.fixed_height.url;
 
@@ -110,7 +116,7 @@ const clearGridAndFetchGifs = (): void => {
 </script>
 
 <template>
-    <div class="flex flex-col hidden bottom-18 items-center justify-center w-[280px] h-[350px] bg-white shadow-lg rounded-2xl border p-4">
+    <div class="flex flex-col bottom-18 items-center justify-center w-[280px] h-[350px] bg-white shadow-lg rounded-2xl border p-4">
 
         <div v-if="previewGifUrl" class="w-full mb-3 p-2 bg-indigo-50 border border-indigo-200 rounded-lg flex flex-col items-center">
             <span class="text-xs text-indigo-700 mb-1">{{ $t('post.gifSelected') }}</span>
