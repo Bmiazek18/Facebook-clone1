@@ -77,7 +77,7 @@ const formatTimeAgo = (timestamp: number) => {
 
 const handleSelectPost = () => {
   if (!selectedPost.value) return;
-  
+
   const postData: PostData = {
     id: selectedPost.value.id,
     authorName: selectedPost.value.authorName,
@@ -86,7 +86,7 @@ const handleSelectPost = () => {
     imageUrl: selectedPost.value.imageUrl,
     timestamp: selectedPost.value.timestamp
   };
-  
+
   emit('selectPost', postData);
   selectedPostId.value = null;
 };
@@ -119,7 +119,7 @@ const close = () => {
         <!-- Posts List -->
         <div class="flex-1 overflow-y-auto p-4 space-y-3">
           <p class="text-sm text-gray-500 mb-3">Wybierz post, który chcesz udostępnić:</p>
-          
+
           <div
             v-for="post in mockPosts"
             :key="post.id"

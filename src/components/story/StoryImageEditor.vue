@@ -144,7 +144,7 @@ onMounted(() => {
       postData: props.initialPost
     });
     selectedElementId.value = newId;
-    
+
     // Set gradient background based on post image if available
     if (props.initialPost.imageUrl) {
       setBackgroundGradientFromImage(props.initialPost.imageUrl);

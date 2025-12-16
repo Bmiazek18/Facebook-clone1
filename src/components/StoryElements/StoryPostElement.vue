@@ -8,9 +8,9 @@ defineProps<{
 </script>
 
 <template>
-  <div 
-    v-if="element.postData" 
-    class="bg-white rounded-xl overflow-hidden shadow-xl pointer-events-none select-none" 
+  <div
+    v-if="element.postData"
+    class="bg-white rounded-xl overflow-hidden shadow-xl pointer-events-none select-none"
     style="width: 240px;"
   >
     <!-- Post Header -->
@@ -24,17 +24,17 @@ defineProps<{
         </div>
       </div>
     </div>
-    
+
     <!-- Post Content -->
     <p class="px-3 pb-2 text-sm text-gray-800 line-clamp-3">{{ element.postData.content }}</p>
-    
+
     <!-- Post Image -->
-    <img 
-      v-if="element.postData.imageUrl" 
-      :src="element.postData.imageUrl" 
+    <img
+      v-if="element.postData.imageUrl"
+      :src="element.postData.imageUrl"
       class="w-full h-32 object-cover"
     />
-    
+
     <!-- Tap to view -->
     <div class="p-2 bg-gray-50 text-center">
       <span class="text-xs text-blue-600 font-medium">Dotknij, aby wyświetlić post</span>

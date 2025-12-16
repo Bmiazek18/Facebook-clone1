@@ -24,12 +24,12 @@ defineProps<{
         class="absolute max-w-none pointer-events-none origin-center"
         :style="{
           transform: `translate(${element.cropX || 0}px, ${element.cropY || 0}px) scale(${element.cropZoom || 1})`,
-          width: '100%', 
-          height: '100%', 
+          width: '100%',
+          height: '100%',
           objectFit: 'cover'
         }"
       />
-      
+
       <!-- Crop Grid -->
       <div v-if="isCropping" class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none opacity-50">
         <div class="border-r border-b border-white/30"></div>
@@ -43,7 +43,7 @@ defineProps<{
         <div></div>
       </div>
     </div>
-    
+
     <!-- Resize Handle -->
     <template v-if="!isCropping">
       <div

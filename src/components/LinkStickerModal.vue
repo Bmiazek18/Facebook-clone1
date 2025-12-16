@@ -158,7 +158,7 @@ const close = () => {
           <!-- Preview -->
           <div v-if="url" class="bg-gray-100 rounded-xl p-4">
             <p class="text-xs text-gray-500 mb-2">Podgląd:</p>
-            
+
             <!-- Default Preview -->
             <div v-if="selectedStyle === 'default'" class="inline-flex items-center gap-2 bg-linear-to-r from-blue-500 to-purple-500 rounded-xl px-4 py-2.5 text-white font-medium shadow-lg">
               <Link :size="18" />

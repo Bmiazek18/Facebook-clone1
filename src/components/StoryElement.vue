@@ -70,9 +70,9 @@ const handleUpdateContent = (id: string, value: string) => {
       </button>
 
       <!-- Music Element -->
-      <StoryMusicElement 
-        v-if="isMusicElement" 
-        :element="element" 
+      <StoryMusicElement
+        v-if="isMusicElement"
+        :element="element"
       />
 
       <!-- Image Element -->

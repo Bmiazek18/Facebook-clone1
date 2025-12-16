@@ -32,7 +32,7 @@ const vFocus = {
   >
     {{ element.content }}
   </div>
-  
+
   <!-- Edit Mode -->
   <textarea
     v-else
