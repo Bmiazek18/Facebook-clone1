@@ -42,12 +42,14 @@ export function calculateSnaps(
   // Horizontal center snap
   if (Math.abs(elementCenterX - centerX) < threshold) {
     snappedX = centerX - elementWidth / 2;
-    guides.push({ type: 'vertical', pos: centerX });
+    // Guide line at the CENTER of the snapped element
+    guides.push({ type: 'vertical', pos: snappedX + elementWidth / 2 });
   }
   // Vertical center snap
   if (Math.abs(elementCenterY - centerY) < threshold) {
     snappedY = centerY - elementHeight / 2;
-    guides.push({ type: 'horizontal', pos: centerY });
+    // Guide line at the CENTER of the snapped element
+    guides.push({ type: 'horizontal', pos: snappedY + elementHeight / 2 });
   }
 
   // ===== SMART GUIDES: Compare with other elements =====
@@ -71,32 +73,38 @@ export function calculateSnaps(
     // Snap to left edges
     if (Math.abs(elementLeft - otherLeft) < threshold) {
       snappedX = otherLeft;
+      // Guide line at the left edge position
       guides.push({ type: 'vertical', pos: otherLeft });
     }
     // Snap to right edges
     if (Math.abs(elementRight - otherRight) < threshold) {
       snappedX = otherRight - elementWidth;
+      // Guide line at the right edge position
       guides.push({ type: 'vertical', pos: otherRight });
     }
     // Snap to horizontal center
     if (Math.abs(elementCenterX - otherCenterX) < threshold) {
       snappedX = otherCenterX - elementWidth / 2;
+      // Guide line at the CENTER where elements align
       guides.push({ type: 'vertical', pos: otherCenterX });
     }
 
     // Snap to top edges
     if (Math.abs(elementTop - otherTop) < threshold) {
       snappedY = otherTop;
+      // Guide line at the top edge position
       guides.push({ type: 'horizontal', pos: otherTop });
     }
     // Snap to bottom edges
     if (Math.abs(elementBottom - otherBottom) < threshold) {
       snappedY = otherBottom - elementHeight;
+      // Guide line at the bottom edge position
       guides.push({ type: 'horizontal', pos: otherBottom });
     }
     // Snap to vertical center
     if (Math.abs(elementCenterY - otherCenterY) < threshold) {
       snappedY = otherCenterY - elementHeight / 2;
+      // Guide line at the CENTER where elements align
       guides.push({ type: 'horizontal', pos: otherCenterY });
     }
   }

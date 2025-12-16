@@ -248,8 +248,17 @@ const onMouseMove = (event: MouseEvent) => {
       let newX = elementStart.x + (event.clientX - dragStart.x);
       let newY = elementStart.y + (event.clientY - dragStart.y);
 
-      // Apply snapping and smart guides
-      const { snappedX, snappedY, guides } = calculateSnaps(element, newX, newY, storyElements.value, {
+      // Apply snapping and smart guides (use actual DOM dimensions from elementStart)
+      const elementWithDimensions = {
+        ...element,
+        width: elementStart.w || element.width || 100,
+        height: elementStart.h || element.height || 100,
+      };
+      const { snappedX, snappedY, guides } = calculateSnaps(elementWithDimensions, newX, newY, storyElements.value.map(el => ({
+        ...el,
+        width: el.width || 100,
+        height: el.height || 100,
+      })), {
         threshold: SNAP_THRESHOLD,
         canvasWidth: CANVAS_WIDTH,
         canvasHeight: CANVAS_HEIGHT,
@@ -325,10 +334,10 @@ const removeMusicAndOpenModal = () => {
 
                     <div class="absolute inset-0 w-full h-full pointer-events-none rounded-md overflow-hidden" :style="{ background: background.value }" ref="backgroundRef"></div>
 
-                    <!-- GUIDE LINES OVERLAY (absolute, positioned relative to parent) -->
+                    <!-- GUIDE LINES OVERLAY (centered at guide.pos using transform) -->
                     <template v-for="(guide, idx) in activeGuides" :key="`guide-${idx}`">
-                      <div v-if="guide.type === 'vertical'" class="absolute top-0 bottom-0 pointer-events-none z-40 bg-blue-500 opacity-60" :style="{ left: guide.pos + 'px', width: '2px' }"></div>
-                      <div v-else class="absolute left-0 right-0 pointer-events-none z-40 bg-blue-500 opacity-60" :style="{ top: guide.pos + 'px', height: '2px' }"></div>
+                      <div v-if="guide.type === 'vertical'" class="absolute top-0 bottom-0 pointer-events-none z-40 bg-blue-500 opacity-60" :style="{ left: guide.pos + 'px', width: '1px', transform: 'translateX(-50%)' }"></div>
+                      <div v-else class="absolute left-0 right-0 pointer-events-none z-40 bg-blue-500 opacity-60" :style="{ top: guide.pos + 'px', height: '1px', transform: 'translateY(-50%)' }"></div>
                     </template>
 
                     <StoryElement
