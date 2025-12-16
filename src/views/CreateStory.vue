@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, onUnmounted, computed, onMounted } from 'vue';
 import { useTempStoryStore } from '@/stores/tempStory';
+import { calculateSnaps, type Guide } from '@/utils/snapping';
 
 // --- IMPORT KOMPONENTÓW ---
 import MusicModal, { type MusicTrack } from '../components/MusicModal.vue';
@@ -199,6 +200,10 @@ const editingId = ref<string | null>(null);
 const croppingId = ref<string | null>(null);
 const dragStart = reactive({ x: 0, y: 0 });
 const elementStart = reactive({ x: 0, y: 0, w: 0, h: 0, rotation: 0, cropX: 0, cropY: 0 });
+const activeGuides = ref<Guide[]>([]);
+
+// Snap tolerance (pixels)
+const SNAP_THRESHOLD = 8;
 
 const startDrag = (event: MouseEvent, element: StoryElementType) => {
   selectedElementId.value = element.id;
@@ -242,6 +247,17 @@ const onMouseMove = (event: MouseEvent) => {
     if (element) {
       let newX = elementStart.x + (event.clientX - dragStart.x);
       let newY = elementStart.y + (event.clientY - dragStart.y);
+
+      // Apply snapping and smart guides
+      const { snappedX, snappedY, guides } = calculateSnaps(element, newX, newY, storyElements.value, {
+        threshold: SNAP_THRESHOLD,
+        canvasWidth: CANVAS_WIDTH,
+        canvasHeight: CANVAS_HEIGHT,
+      });
+      activeGuides.value = guides;
+      newX = snappedX;
+      newY = snappedY;
+
       if (element.type === 'text' || element.musicArtist ) {
           if (newX < 0) newX = 0; else if (newX + elementStart.w > bgDimensions.width) newX = bgDimensions.width - elementStart.w;
           if (newY < 0) newY = 0; else if (newY + elementStart.h > bgDimensions.height) newY = bgDimensions.height - elementStart.h;
@@ -259,7 +275,7 @@ const onMouseMove = (event: MouseEvent) => {
   }
 };
 
-const stopInteraction = () => { activeDragId.value = null; activeResizeId.value = null; activeRotateId.value = null; window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', stopInteraction); };
+const stopInteraction = () => { activeDragId.value = null; activeResizeId.value = null; activeRotateId.value = null; activeGuides.value = []; window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', stopInteraction); };
 const enableEdit = (id: string) => { editingId.value = id; activeDragId.value = null; };
 const disableEdit = () => { editingId.value = null; };
 const onBackgroundClick = () => { disableEdit(); croppingId.value = null; selectedElementId.value = null; }
@@ -305,9 +321,15 @@ const removeMusicAndOpenModal = () => {
            </div>
 
            <div class="flex-1 bg-[#18191A] rounded-lg flex items-center justify-center overflow-hidden relative shadow-inner border border-gray-800" @mousedown.self="onBackgroundClick">
-               <div class="relative aspect-9/16 h-[calc(100%-68px)] bg-black overflow-visible shadow-2xl rounded-md border border-gray-700">
+               <div class="relative aspect-9/16 h-[calc(100%-68px)] bg-black shadow-2xl rounded-md border border-gray-700" style="overflow: visible;">
 
                     <div class="absolute inset-0 w-full h-full pointer-events-none rounded-md overflow-hidden" :style="{ background: background.value }" ref="backgroundRef"></div>
+
+                    <!-- GUIDE LINES OVERLAY (absolute, positioned relative to parent) -->
+                    <template v-for="(guide, idx) in activeGuides" :key="`guide-${idx}`">
+                      <div v-if="guide.type === 'vertical'" class="absolute top-0 bottom-0 pointer-events-none z-40 bg-blue-500 opacity-60" :style="{ left: guide.pos + 'px', width: '2px' }"></div>
+                      <div v-else class="absolute left-0 right-0 pointer-events-none z-40 bg-blue-500 opacity-60" :style="{ top: guide.pos + 'px', height: '2px' }"></div>
+                    </template>
 
                     <StoryElement
                       v-for="element in storyElements"
