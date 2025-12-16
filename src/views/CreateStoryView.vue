@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useTempStoryStore } from '@/stores/tempStory';
+import { ref } from 'vue';
 
 // Sub-views rendered conditionally
 import StoryPicker from '@/components/story/StoryPicker.vue';
@@ -9,19 +8,12 @@ import StoryTextEditor from '@/components/story/StoryTextEditor.vue';
 
 type StoryMode = 'picker' | 'image' | 'text';
 
-const tempStore = useTempStoryStore();
 const mode = ref<StoryMode>('picker');
-
-// Check if image was passed from picker
-onMounted(() => {
-  if (tempStore.selectedImage) {
-    mode.value = 'image';
-  }
-});
+const selectedImage = ref<string | null>(null);
 
 // Handlers from picker
 const onSelectImage = (imageUrl: string) => {
-  tempStore.selectedImage = imageUrl;
+  selectedImage.value = imageUrl;
   mode.value = 'image';
 };
 
@@ -31,7 +23,11 @@ const onSelectText = () => {
 
 // Go back to picker
 const onBack = () => {
-  tempStore.clear();
+  // Revoke blob URL if exists
+  if (selectedImage.value?.startsWith('blob:')) {
+    URL.revokeObjectURL(selectedImage.value);
+  }
+  selectedImage.value = null;
   mode.value = 'picker';
 };
 </script>
@@ -48,7 +44,7 @@ const onBack = () => {
     <!-- Image editor -->
     <StoryImageEditor
       v-else-if="mode === 'image'"
-      :initial-image="tempStore.selectedImage"
+      :initial-image="selectedImage"
       @back="onBack"
     />
 
