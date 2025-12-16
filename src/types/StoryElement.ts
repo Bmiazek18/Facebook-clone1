@@ -1,5 +1,7 @@
+// --- Element Types ---
 export type ElementType = 'text' | 'image' | 'link' | 'post'
 
+// --- Shared Data Types ---
 export interface PostData {
   id: string;
   authorName: string;
@@ -9,7 +11,8 @@ export interface PostData {
   timestamp: number;
 }
 
-export interface StoryElement {
+// --- Base Element Interface ---
+export interface BaseStoryElement {
   id: string;
   type: ElementType;
   content: string;
@@ -19,22 +22,47 @@ export interface StoryElement {
   height?: number;
   rotation: number;
   scale: number;
+  styles?: Record<string, string>;
+}
+
+// --- Text Element ---
+export interface TextElement extends BaseStoryElement {
+  type: 'text';
+}
+
+// --- Image Element ---
+export interface ImageElement extends BaseStoryElement {
+  type: 'image';
   cropX?: number;
   cropY?: number;
   cropZoom?: number;
-  styles?: Record<string, string>;
   altText?: string;
+  // Music overlay (optional)
   musicTitle?: string;
   musicArtist?: string;
   musicStyle?: 'large' | 'small' | 'text' | 'icon';
-  // Link sticker properties
+}
+
+// --- Link Element ---
+export type LinkStyle = 'default' | 'minimal' | 'button';
+
+export interface LinkElement extends BaseStoryElement {
+  type: 'link';
   linkUrl?: string;
   linkTitle?: string;
-  linkStyle?: 'default' | 'minimal' | 'button';
-  // Shared post properties
+  linkStyle?: LinkStyle;
+}
+
+// --- Post Element ---
+export interface PostElement extends BaseStoryElement {
+  type: 'post';
   postData?: PostData;
 }
 
+// --- Union Type for all elements ---
+export type StoryElement = TextElement | ImageElement | LinkElement | PostElement;
+
+// --- Background Settings ---
 export interface BackgroundSettings {
   type: 'gradient' | 'image';
   value: string;
