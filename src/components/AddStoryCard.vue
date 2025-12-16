@@ -61,9 +61,12 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
 // Funkcja, która zostanie wywołana po kliknięciu przycisku
 const createStory = () => {
-  console.log('Kliknięto: Utwórz relację');
-  // Tutaj dodasz logikę do otwarcia kreatora relacji
+  router.push('/createReel');
 };
 </script>

@@ -10,6 +10,11 @@ import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue';
 import EmoticonOutlineIcon from 'vue-material-design-icons/EmoticonOutline.vue';
 import FormatSizeIcon from 'vue-material-design-icons/FormatSize.vue';
 
+// --- EMIT ---
+const emit = defineEmits<{
+  (e: 'back'): void;
+}>();
+
 // --- TYPY DANYCH ---
 
 interface BackgroundOption {
@@ -65,7 +70,6 @@ const fontStyles: FontStyle[] = [
   {
     id: 'typewriter',
     label: 'Maszyna',
-    // Usunięto tła i paddingi, które psuły Grid Stack. Teraz to czysty font mono.
     class: "font-['VT323'] tracking-widest drop-shadow-sm"
   },
   {
@@ -84,10 +88,10 @@ const fontStyles: FontStyle[] = [
 
 const textContent = ref('😎 DDD');
 const selectedBackgroundId = ref<number>(1);
-const selectedFont = ref<FontStyle>(fontStyles[0]);
+const selectedFont = ref<FontStyle>(fontStyles[0]!);
 
 const isFontMenuOpen = ref(false);
-const isBackgroundsExpanded = ref(false); // Stan rozwinięcia teł
+const isBackgroundsExpanded = ref(false);
 
 // --- COMPUTED ---
 
@@ -95,7 +99,6 @@ const currentBackground = computed(() => {
   return allBackgrounds.find(b => b.id === selectedBackgroundId.value);
 });
 
-// Logika wyświetlania teł: Pokaż pierwsze 11, chyba że rozwinięte
 const visibleBackgrounds = computed(() => {
   if (isBackgroundsExpanded.value) {
     return allBackgrounds;
@@ -121,6 +124,10 @@ const selectFont = (font: FontStyle) => {
 const toggleBackgrounds = () => {
   isBackgroundsExpanded.value = !isBackgroundsExpanded.value;
 };
+
+const handleBack = () => {
+  emit('back');
+};
 </script>
 
 <template>
@@ -129,7 +136,10 @@ const toggleBackgrounds = () => {
     <aside class="w-[360px] bg-white h-full flex flex-col border-r border-gray-300 shadow-sm z-20">
 
       <div class="p-4 flex items-center gap-3 border-b border-gray-200 shadow-sm">
-        <button class="p-2 bg-gray-200 rounded-full hover:bg-gray-300 transition text-gray-600">
+        <button 
+          @click="handleBack"
+          class="p-2 bg-gray-200 rounded-full hover:bg-gray-300 transition text-gray-600"
+        >
           <CloseIcon :size="20" />
         </button>
         <div class="bg-blue-600 rounded-full p-1 h-8 w-8 flex items-center justify-center">
@@ -229,7 +239,10 @@ const toggleBackgrounds = () => {
       </div>
 
       <div class="p-4 border-t border-gray-200 flex gap-3 bg-white">
-        <button class="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-md transition">
+        <button 
+          @click="handleBack"
+          class="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-md transition"
+        >
           Odrzuć
         </button>
         <button class="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition shadow-md">
@@ -252,7 +265,7 @@ const toggleBackgrounds = () => {
               <div class="z-10 w-full px-4 grid place-items-center">
 
                  <div
-                    class="col-start-1 row-start-1 invisible whitespace-pre-wrap break-words text-center pointer-events-none px-2 py-0 border border-transparent"
+                    class="col-start-1 row-start-1 invisible whitespace-pre-wrap wrap-break-word text-center pointer-events-none px-2 py-0 border border-transparent"
                     :class="[selectedFont.class, 'text-4xl leading-normal']"
                     aria-hidden="true"
                  >
