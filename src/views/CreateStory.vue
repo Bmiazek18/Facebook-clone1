@@ -79,7 +79,7 @@ const storyElements = ref<StoryElementType[]>([
     id: 'el_init_text',
     type: 'text',
     content: 'Przesuwaj mnie!',
-    x: 80, y: 100, rotation: 0, scale: 1,
+    x: 80, y: 100, width: 180, height: 40, rotation: 0, scale: 1,
     styles: { color: '#ffffff', fontSize: '24px', fontWeight: 'bold' }
   }
 ]);
@@ -203,7 +203,7 @@ const elementStart = reactive({ x: 0, y: 0, w: 0, h: 0, rotation: 0, cropX: 0, c
 const activeGuides = ref<Guide[]>([]);
 
 // Snap tolerance (pixels)
-const SNAP_THRESHOLD = 8;
+const SNAP_THRESHOLD = 12;
 
 const startDrag = (event: MouseEvent, element: StoryElementType) => {
   selectedElementId.value = element.id;
@@ -220,6 +220,9 @@ const startDrag = (event: MouseEvent, element: StoryElementType) => {
      elementStart.x = element.x; elementStart.y = element.y;
      const target = event.currentTarget as HTMLElement;
      elementStart.w = target.offsetWidth; elementStart.h = target.offsetHeight;
+     // Store actual DOM dimensions in element for snapping calculations
+     element.width = target.offsetWidth;
+     element.height = target.offsetHeight;
   }
   window.addEventListener('mousemove', onMouseMove); window.addEventListener('mouseup', stopInteraction);
 };
@@ -289,7 +292,7 @@ const enableEdit = (id: string) => { editingId.value = id; activeDragId.value = 
 const disableEdit = () => { editingId.value = null; };
 const onBackgroundClick = () => { disableEdit(); croppingId.value = null; selectedElementId.value = null; }
 const toggleCrop = (id: string) => { if (croppingId.value === id) croppingId.value = null; else { croppingId.value = id; editingId.value = null; selectedElementId.value = id; } }
-const addTextElement = () => { const newId = `el_${Date.now()}`; storyElements.value.push({ id: newId, type: 'text', content: 'Nowy Tekst', x: 100, y: 300, rotation: 0, scale: 1, styles: { color: '#ffffff', fontSize: '24px', fontWeight: 'bold' } }); selectedElementId.value = newId; };
+const addTextElement = () => { const newId = `el_${Date.now()}`; storyElements.value.push({ id: newId, type: 'text', content: 'Nowy Tekst', x: 100, y: 300, width: 150, height: 40, rotation: 0, scale: 1, styles: { color: '#ffffff', fontSize: '24px', fontWeight: 'bold' } }); selectedElementId.value = newId; };
 
 const removeElement = (id: string) => { storyElements.value = storyElements.value.filter((el: StoryElementType) => el.id !== id); if (selectedElementId.value === id) selectedElementId.value = null; };
 const updateElementContent = (id: string, value: string) => {
