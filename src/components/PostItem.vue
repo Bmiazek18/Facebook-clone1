@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 
 import Earth from 'vue-material-design-icons/Earth.vue'
 import ThumbUp from 'vue-material-design-icons/ThumbUp.vue'
@@ -13,13 +14,34 @@ import { useTheme } from '@/composables/useTheme'
 import ProfilePopper from './ProfilePopper.vue'
 import Modal from './Modal.vue'
 import PostModal from './PostModal.vue'
+import { useStoryShareStore } from '@/stores/storyShare'
+import type { PostData } from '@/types/StoryElement'
+
 useI18n()
+
+const router = useRouter()
+const storyShareStore = useStoryShareStore()
 
 const isModalOpen = ref(false)
 const toggleModal = () => {
     isModalOpen.value = !isModalOpen.value
 }
 const { isDark } = useTheme()
+
+// Post data - in real app this would come from props
+const postData: PostData = {
+  id: '1',
+  authorName: 'John Doe',
+  authorAvatar: 'https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg?stp=cp0_dst-jpg_s40x40_tt6&_nc_cat=104&ccb=1-7&_nc_sid=e99d92&_nc_ohc=-o822DQWa_kQ7kNvwEBBrQN&_nc_oc=Adk7CLzzn6vvAFCclTDzM32DkA0bnhHJCU8V-LZ-6Rgt046578D_zYBPKIpVqrH_jqSITUodiSom9HftYGfou-YR&_nc_zt=24&_nc_ht=scontent-waw2-1.xx&_nc_gid=hWinwIkg4qpusDkFaBv_tg&oh=00_AfhegpWXzJqTqkSqYk4lk-AflwjwvP0sVVYiWvBV-lyexg&oe=6917A7AC',
+  content: 'This is a sample post text.',
+  imageUrl: 'https://picsum.photos/700/400',
+  timestamp: Date.now()
+}
+
+const shareToStory = () => {
+  storyShareStore.setPostToShare(postData)
+  router.push('/createReel')
+}
 </script>
 
 <template>
@@ -84,6 +106,7 @@ const { isDark } = useTheme()
           </button>
             <button
             class="flex items-center justify-center h-[38px] hover:bg-theme-hover w-full rounded-lg mx-1 cursor-pointer"
+            @click="shareToStory"
           >
           <ShareIcon :size="18" fillColor="#65686C" />
             {{ $t('actions.share') }}

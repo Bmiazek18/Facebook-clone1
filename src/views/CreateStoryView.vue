@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useStoryShareStore } from '@/stores/storyShare';
+import type { PostData } from '@/types/StoryElement';
 
 // Sub-views rendered conditionally
 import StoryPicker from '@/components/story/StoryPicker.vue';
@@ -8,8 +10,20 @@ import StoryTextEditor from '@/components/story/StoryTextEditor.vue';
 
 type StoryMode = 'picker' | 'image' | 'text';
 
+const storyShareStore = useStoryShareStore();
+
 const mode = ref<StoryMode>('picker');
 const selectedImage = ref<string | null>(null);
+const initialPost = ref<PostData | null>(null);
+
+// Check for pending post to share on mount
+onMounted(() => {
+  const pendingPost = storyShareStore.getPendingPost();
+  if (pendingPost) {
+    initialPost.value = pendingPost;
+    mode.value = 'image';
+  }
+});
 
 // Handlers from picker
 const onSelectImage = (imageUrl: string) => {
@@ -28,13 +42,13 @@ const onBack = () => {
     URL.revokeObjectURL(selectedImage.value);
   }
   selectedImage.value = null;
+  initialPost.value = null;
   mode.value = 'picker';
 };
 </script>
 
 <template>
   <div class="h-screen w-full">
-    <!-- Picker: choose image or text story -->
     <StoryPicker
       v-if="mode === 'picker'"
       @select-image="onSelectImage"
@@ -45,6 +59,7 @@ const onBack = () => {
     <StoryImageEditor
       v-else-if="mode === 'image'"
       :initial-image="selectedImage"
+      :initial-post="initialPost"
       @back="onBack"
     />
 

@@ -1,4 +1,13 @@
-export type ElementType = 'text' | 'image'
+export type ElementType = 'text' | 'image' | 'link' | 'post'
+
+export interface PostData {
+  id: string;
+  authorName: string;
+  authorAvatar: string;
+  content: string;
+  imageUrl?: string;
+  timestamp: number;
+}
 
 export interface StoryElement {
   id: string;
@@ -18,6 +27,12 @@ export interface StoryElement {
   musicTitle?: string;
   musicArtist?: string;
   musicStyle?: 'large' | 'small' | 'text' | 'icon';
+  // Link sticker properties
+  linkUrl?: string;
+  linkTitle?: string;
+  linkStyle?: 'default' | 'minimal' | 'button';
+  // Shared post properties
+  postData?: PostData;
 }
 
 export interface BackgroundSettings {

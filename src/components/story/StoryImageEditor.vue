@@ -4,6 +4,8 @@ import { calculateSnaps, type Guide } from '@/utils/snapping';
 
 // --- IMPORT KOMPONENTÓW ---
 import MusicModal, { type MusicTrack } from '@/components/MusicModal.vue';
+import LinkStickerModal from '@/components/LinkStickerModal.vue';
+import PostShareModal from '@/components/PostShareModal.vue';
 import Sidebar from '@/components/Sidebar.vue';
 import ImageToolbar from '@/components/ImageToolbar.vue';
 import MusicToolbar from '@/components/MusicToolbar.vue';
@@ -12,11 +14,12 @@ import StoryElement from '@/components/StoryElement.vue';
 import VolumeHigh from 'vue-material-design-icons/VolumeHigh.vue';
 import VolumeOff from 'vue-material-design-icons/VolumeOff.vue';
 
-import type { StoryElement as StoryElementType, BackgroundSettings } from '@/types/StoryElement';
+import type { StoryElement as StoryElementType, BackgroundSettings, PostData } from '@/types/StoryElement';
 
 // --- PROPS & EMITS ---
 const props = defineProps<{
   initialImage?: string | null;
+  initialPost?: PostData | null;
 }>();
 
 const emit = defineEmits<{
@@ -127,8 +130,28 @@ onMounted(() => {
     observer.observe(backgroundRef.value);
   }
 
+  // Load initial post if provided (from share button)
+  if (props.initialPost) {
+    const newId = `el_post_${Date.now()}`;
+    storyElements.value.push({
+      id: newId,
+      type: 'post',
+      content: props.initialPost.content,
+      x: 50, y: 200,
+      width: 280, height: 180,
+      rotation: 0, scale: 1,
+      styles: {},
+      postData: props.initialPost
+    });
+    selectedElementId.value = newId;
+    
+    // Set gradient background based on post image if available
+    if (props.initialPost.imageUrl) {
+      setBackgroundGradientFromImage(props.initialPost.imageUrl);
+    }
+  }
   // Load initial image if provided
-  if (props.initialImage) {
+  else if (props.initialImage) {
     const imgUrl = props.initialImage;
     const newId = `el_img_${Date.now()}`;
     storyElements.value.push({
@@ -153,6 +176,14 @@ onUnmounted(() => {
 // --- MODAL MUZYKI ---
 const isMusicModalOpen = ref(false);
 const toggleMusicModal = () => isMusicModalOpen.value = !isMusicModalOpen.value;
+
+// --- MODAL LINK STICKER ---
+const isLinkModalOpen = ref(false);
+const toggleLinkModal = () => isLinkModalOpen.value = !isLinkModalOpen.value;
+
+// --- MODAL POST SHARE ---
+const isPostShareModalOpen = ref(false);
+const togglePostShareModal = () => isPostShareModalOpen.value = !isPostShareModalOpen.value;
 
 const addMusicPoster = (track: MusicTrack) => {
   const newId = `el_${Date.now()}`;
@@ -341,6 +372,43 @@ const removeMusicAndOpenModal = () => {
   }
 };
 
+// --- DODAWANIE LINK STICKER ---
+const addLinkSticker = (data: { url: string; title: string; style: 'default' | 'minimal' | 'button' | 'text' }) => {
+  const newId = `el_link_${Date.now()}`;
+  const linkStyle = data.style === 'text' ? 'default' : data.style;
+  storyElements.value.push({
+    id: newId,
+    type: 'link',
+    content: data.title || data.url,
+    x: 100, y: 400,
+    width: 200, height: 60,
+    rotation: 0, scale: 1,
+    styles: {},
+    linkUrl: data.url,
+    linkTitle: data.title,
+    linkStyle: linkStyle
+  });
+  selectedElementId.value = newId;
+  isLinkModalOpen.value = false;
+};
+
+// --- UDOSTĘPNIANIE POSTA NA STORY ---
+const addPostToStory = (postData: PostData) => {
+  const newId = `el_post_${Date.now()}`;
+  storyElements.value.push({
+    id: newId,
+    type: 'post',
+    content: postData.content,
+    x: 50, y: 200,
+    width: 280, height: 200,
+    rotation: 0, scale: 1,
+    styles: {},
+    postData: postData
+  });
+  selectedElementId.value = newId;
+  isPostShareModalOpen.value = false;
+};
+
 const goBack = () => {
   emit('back');
 };
@@ -354,6 +422,8 @@ const goBack = () => {
       :is-image-selected="selectedElement?.type === 'image'"
       @add-text="addTextElement"
       @toggle-music="toggleMusicModal"
+      @add-link="toggleLinkModal"
+      @share-post="togglePostShareModal"
       @back="goBack"
     />
 
@@ -421,6 +491,18 @@ const goBack = () => {
           :is-open="isMusicModalOpen"
           @close="isMusicModalOpen = false"
           @add-track="addMusicPoster"
+        />
+
+        <LinkStickerModal
+          :is-open="isLinkModalOpen"
+          @close="isLinkModalOpen = false"
+          @add-link="addLinkSticker"
+        />
+
+        <PostShareModal
+          :is-open="isPostShareModalOpen"
+          @close="isPostShareModalOpen = false"
+          @select-post="addPostToStory"
         />
       </div>
     </main>
