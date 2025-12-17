@@ -8,17 +8,10 @@ import RightSidebar from '../components/home/RightSidebar.vue'
 import { ref } from 'vue'
 import { useVirtualList } from '@vueuse/core'
 import PostItemSceleton from '@/components/PostItemSceleton.vue'
+import { posts } from '@/data/posts'
 
 const isLoading = ref(true)
 setTimeout(() => { isLoading.value = false }, 2000)
-
-const posts = ref(
-  Array.from({ length: 10 }, (_, i) => ({
-    id: i,
-    content: `Post #${i + 1}`,
-    imageUrl: `https://picsum.photos/700/400?random=${i}`
-  }))
-)
 
 const peopleYouMayKnowIndex = Math.floor(Math.random() * 10) + 2
 

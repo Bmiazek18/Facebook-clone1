@@ -10,32 +10,38 @@
             }"
         >
 
-            <button
-                class="absolute -top-10 right-0 p-2 text-theme-text rounded-full hover:bg-theme-hover z-50"
+            <router-link
+                to="/"
+                class="absolute top-4 left-4 p-2 text-theme-text rounded-full hover:bg-white/10 z-50"
                 :aria-label="$t('common.close')"
             >
                 <Close :size="28" fillColor="#FFFFFF" />
-            </button>
+            </router-link>
 
             <GalleryImageViewer
+                v-if="currentPost"
                 v-model:is-full-screen="isFullScreen"
-                image-src="https://picsum.photos/800/800?random=1"
+                :image-src="currentImageUrl"
                 image-alt="Post content"
+                :has-prev="hasPrevImage"
+                :has-next="hasNextImage"
+                @prev="goToPrevImage"
+                @next="goToNextImage"
             />
 
             <div
-                v-if="!isFullScreen"
+                v-if="!isFullScreen && currentPost"
                 class="w-full max-w-md flex flex-col min-w-[370px] "
             >
-                <HoverScrollbar class="flex-grow p-4 overflow-y-auto">
+                <HoverScrollbar class="grow p-4 overflow-y-auto">
                     <div class="p-4 ">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
-                                <img class="rounded-full w-10 h-10 mr-3" src="https://picsum.photos/40/40?random=10" alt="Avatar">
+                                <img class="rounded-full w-10 h-10 mr-3" :src="currentPost.authorAvatar" alt="Avatar">
                                 <div>
-                                    <div class="font-extrabold text-[15px] text-theme-text">{{ postData.userName }}</div>
+                                    <div class="font-extrabold text-[15px] text-theme-text">{{ currentPost.authorName }}</div>
                                     <div class="flex items-center font-semibold text-[13px] text-theme-text-secondary">
-                                        {{ postData.date }} <Earth class="ml-1" :size="15" fillColor="#64676B"/>
+                                        {{ currentPost.date }} <Earth class="ml-1" :size="15" fillColor="#64676B"/>
                                     </div>
                                 </div>
                             </div>
@@ -45,12 +51,16 @@
                         </div>
                     </div>
 
+                    <div class="px-4 pb-3 text-[15px] text-theme-text">
+                        {{ currentPost.content }}
+                    </div>
+
                     <div class="flex items-center justify-between pb-3 border-b text-theme-text-secondary text-sm font-semibold">
                             <div class="flex items-center">
-                                <ThumbUp fillColor="#1D72E2" :size="16" class="mr-1"/> {{ postData.mainLikesCount }}
+                                <ThumbUp fillColor="#1D72E2" :size="16" class="mr-1"/> {{ currentPost.likesCount }}
                             </div>
                             <div class="flex items-center">
-                                <span class="cursor-pointer hover:underline">{{ $t('comments.count', { count: postData.mainCommentsCount }) }}</span>
+                                <span class="cursor-pointer hover:underline">{{ $t('comments.count', { count: currentPost.commentsCount }) }}</span>
                                 </div>
                     </div>
                     <div class="flex items-center justify-between py-2 px-4  text-theme-text-secondary text-sm font-semibold">
@@ -70,7 +80,7 @@
                         </div>
                     </div>
                     <div class="flex justify-between items-center pt-3 mb-2">
-                        <span class="font-bold text-gray-700 text-sm">{{ postData.commentsHeader }}</span>
+                        <span class="font-bold text-gray-700 text-sm">Najtrafniejsze</span>
                         <button class="text-blue-500 text-xs font-semibold hover:underline">
                             {{ $t('comments.viewAll') }}
                         </button>
@@ -81,15 +91,15 @@
                             v-for="comment in comments"
                             :key="comment.id"
                             :comment="comment"
-                            :post-avatar-src="'https://picsum.photos/40/40?random=10'"
+                            :post-avatar-src="currentPost.authorAvatar"
                             :depth="0"
                         />
                     </div>
                 </HoverScrollbar>
 
                 <div class="p-4 border-t flex items-center bg-theme-bg-secondary sticky bottom-0">
-                    <img class="rounded-full w-8 h-8 mr-2 flex-shrink-0" src="https://picsum.photos/40/40?random=11" alt="Twój Avatar">
-                    <div class="flex-grow relative">
+                    <img class="rounded-full w-8 h-8 mr-2 shrink-0" src="https://picsum.photos/40/40?random=11" alt="Twój Avatar">
+                    <div class="grow relative">
                         <input
                             type="text"
                             :placeholder="$t('comments.placeholder')"
@@ -114,7 +124,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import Close from 'vue-material-design-icons/Close.vue'
 import ThumbUp from 'vue-material-design-icons/ThumbUp.vue'
 import Earth from 'vue-material-design-icons/Earth.vue'
@@ -127,18 +138,50 @@ import HoverScrollbar from '@/components/HoverScrollbar.vue'
 import ReactionButton from '@/components/ReactionButton.vue'
 import CommentItem from '@/components/CommentItem.vue'
 import GalleryImageViewer from '@/components/gallery/GalleryImageViewer.vue'
+import { getPostById } from '@/data/posts'
+
+const route = useRoute()
+const router = useRouter()
 
 const isFullScreen = ref(false)
 
-const postData = {
-    userName: "Bartosz Gulka",
-    date: "20 listopada o 10:01",
-    text: "To jest treść posta, która może być długa i zajmować kilka linii.",
-    mainLikesCount: 9,
-    mainCommentsCount: 18,
-    commentsHeader: "Najtrafniejsze",
+// Get postId and imageIndex from route params
+const postId = computed(() => Number(route.params.postId))
+const currentImageIndex = ref(Number(route.params.imageIndex) || 0)
 
+// Get the current post data
+const currentPost = computed(() => getPostById(postId.value))
+
+// Current image URL
+const currentImageUrl = computed((): string => {
+    return currentPost.value?.images[currentImageIndex.value] ?? ''
+})
+
+// Navigation helpers
+const hasPrevImage = computed(() => currentImageIndex.value > 0)
+const hasNextImage = computed(() => {
+    if (!currentPost.value) return false
+    return currentImageIndex.value < currentPost.value.images.length - 1
+})
+
+const goToPrevImage = () => {
+    if (hasPrevImage.value) {
+        currentImageIndex.value--
+        router.replace(`/photo/${postId.value}/${currentImageIndex.value}`)
+    }
 }
+
+const goToNextImage = () => {
+    if (hasNextImage.value) {
+        currentImageIndex.value++
+        router.replace(`/photo/${postId.value}/${currentImageIndex.value}`)
+    }
+}
+
+// Watch route params changes
+watch(() => route.params.imageIndex, (newIndex) => {
+    currentImageIndex.value = Number(newIndex) || 0
+})
 
 interface CommentData {
     id: number;
@@ -175,7 +218,7 @@ const comments: CommentData[] = [
                 date: "2 min",
                 likesCount: 1,
                 avatarSrc: "https://picsum.photos/40/40?random=6",
-                replies: [ // Dodano trzecie zagnieżdżenie dla testu
+                replies: [
                      {
                         id: 211,
                         userName: "Komentator Rekurencyjny",

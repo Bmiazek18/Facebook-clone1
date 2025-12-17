@@ -4,11 +4,20 @@ import Plus from 'vue-material-design-icons/Plus.vue';
 import Minus from 'vue-material-design-icons/Minus.vue';
 import ArrowExpand from 'vue-material-design-icons/ArrowExpand.vue';
 import ArrowCollapse from 'vue-material-design-icons/ArrowCollapse.vue';
+import ChevronLeft from 'vue-material-design-icons/ChevronLeft.vue';
+import ChevronRight from 'vue-material-design-icons/ChevronRight.vue';
 
 // --- PROPS & EMITS ---
 defineProps<{
   imageSrc: string;
   imageAlt?: string;
+  hasPrev?: boolean;
+  hasNext?: boolean;
+}>();
+
+const emit = defineEmits<{
+  prev: [];
+  next: [];
 }>();
 
 const isFullScreen = defineModel<boolean>('isFullScreen', { default: false });
@@ -177,6 +186,26 @@ onUnmounted(() => {
         <component :is="isFullScreen ? ArrowCollapse : ArrowExpand" :size="28" fillColor="#FFFFFF" />
       </button>
     </div>
+
+    <!-- Left arrow -->
+    <button
+      v-if="hasPrev"
+      @click="emit('prev')"
+      class="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white text-gray-800 rounded-full shadow-lg transition z-40"
+      aria-label="Poprzednie zdjęcie"
+    >
+      <ChevronLeft :size="28" />
+    </button>
+
+    <!-- Right arrow -->
+    <button
+      v-if="hasNext"
+      @click="emit('next')"
+      class="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white text-gray-800 rounded-full shadow-lg transition z-40"
+      aria-label="Następne zdjęcie"
+    >
+      <ChevronRight :size="28" />
+    </button>
 
     <!-- Image container -->
     <div
