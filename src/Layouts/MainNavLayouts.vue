@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from 'vue'
+import { useRoute } from 'vue-router'
 
 import Magnify from 'vue-material-design-icons/Magnify.vue'
 import Home from 'vue-material-design-icons/Home.vue'
@@ -23,6 +24,7 @@ import ContactList from '@/components/ContactList.vue'
 
 type ActiveMenuType = 'profile' | 'notifications' | 'message' | null;
 
+const route = useRoute()
 const target = useTemplateRef<HTMLElement>('target')
 
 const searchContainerRef = useTemplateRef<HTMLElement>('searchContainer')
@@ -100,36 +102,47 @@ onClickOutside(searchContainerRef, () => {
       id="NavCenter"
       class="hidden lg:flex items-center justify-center w-8/12 max-w-[700px]"
     >
-    <div class="border-b-4 border-b-blue-400 flex items-center justify-center h-12 p-1  w-full mx-1 cursor-pointer dark:bg-gray-800 dark:bg-opacity-50 rounded-lg">
-      <button
-        class=" rounded-lg "
+      <RouterLink
+        to="/"
+        class="flex items-center justify-center h-12 p-1 w-full mx-1 cursor-pointer"
+        :class="route.path === '/' ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'"
       >
-        <Home :size="27" fillColor="#1A73E3" class="mx-auto" />
+        <Home :size="27" :fillColor="route.path === '/' ? '#1A73E3' : '#64676B'" class="mx-auto" />
+      </RouterLink>
 
-      </button>
-</div>
-      <button
-        class="flex items-center justify-center h-12 p-1 hover:bg-theme-hover w-full rounded-lg mx-1 cursor-pointer"
+      <RouterLink
+        to="/reel"
+        class="flex items-center justify-center h-12 p-1 w-full mx-1 cursor-pointer"
+        :class="route.path === '/reel' ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'"
       >
-        <TelevisionPlay class="mx-auto" :size="27" fillColor="#64676B" />
-      </button>
-      <button
-          class="flex items-center justify-center h-12 p-1 hover:bg-theme-hover w-full rounded-lg mx-1 cursor-pointer"
+        <TelevisionPlay class="mx-auto" :size="27" :fillColor="route.path === '/reel' ? '#1A73E3' : '#64676B'" />
+      </RouterLink>
+
+      <RouterLink
+        to="/marketplace"
+        class="flex items-center justify-center h-12 p-1 w-full mx-1 cursor-pointer"
+        :class="route.path === '/marketplace' ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'"
       >
-        <StorefrontOutline class="mx-auto" :size="27" fillColor="#64676B" />
-      </button>
-      <button
-        class="flex items-center justify-center h-12 p-1 hover:bg-[#F2F2F2] dark:hover:bg-gray-700 w-full rounded-lg mx-1 cursor-pointer"
+        <StorefrontOutline class="mx-auto" :size="27" :fillColor="route.path === '/marketplace' ? '#1A73E3' : '#64676B'" />
+      </RouterLink>
+
+      <RouterLink
+        to="/friends"
+        class="flex items-center justify-center h-12 p-1 w-full mx-1 cursor-pointer"
+        :class="route.path === '/friends' ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'"
       >
-        <span class="rounded-full border-2 dark:border-gray-400 border-[#64676B] p-1">
-          <AccountGroup class="mx-auto" :size="22" fillColor="#64676B" />
+        <span class="rounded-full border-2 p-1" :class="route.path === '/friends' ? 'border-blue-500' : 'dark:border-gray-400 border-[#64676B]'">
+          <AccountGroup class="mx-auto" :size="22" :fillColor="route.path === '/friends' ? '#1A73E3' : '#64676B'" />
         </span>
-      </button>
-      <button
-        class="flex items-center justify-center h-12 p-1 hover:bg-[#F2F2F2] dark:hover:bg-gray-700 w-full rounded-lg mx-1 cursor-pointer"
+      </RouterLink>
+
+      <RouterLink
+        to="/gaming"
+        class="flex items-center justify-center h-12 p-1 w-full mx-1 cursor-pointer"
+        :class="route.path === '/gaming' ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'"
       >
-        <ControllerClassicOutline class="mx-auto" :size="32" fillColor="#64676B" />
-      </button>
+        <ControllerClassicOutline class="mx-auto" :size="32" :fillColor="route.path === '/gaming' ? '#1A73E3' : '#64676B'" />
+      </RouterLink>
     </div>
 
     <div class="flex items-center justify-end w-[260px] mr-4 relative">
