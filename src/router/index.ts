@@ -53,10 +53,10 @@ const router = createRouter({
       component: () => import('@/views/LoginAsView.vue'),
     },
 {
-      path: '/photo',
+      path: '/photo/:postId/:imageIndex',
       name: 'photo',
-      component: () => import('../views/GalleryView.vue')
-
+      component: () => import('../views/GalleryView.vue'),
+      props: true
     },
   ],
 })
