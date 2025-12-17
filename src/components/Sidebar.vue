@@ -144,7 +144,7 @@ const saveAltText = () => {
 </script>
 
 <template>
-  <aside class="w-[360px] shrink-0 bg-white shadow-xl z-20 flex flex-col justify-between h-full border-r border-gray-300 overflow-y-auto custom-scrollbar">
+  <aside  class="w-[360px] shrink-0 bg-white shadow-xl z-20 flex flex-col justify-between h-full border-r border-gray-300 overflow-y-auto custom-scrollbar">
       <div>
         <div class="flex items-center justify-between p-4 border-b border-gray-200 bg-white sticky top-0 z-10">
           <div class="flex items-center gap-2">
@@ -247,7 +247,7 @@ const saveAltText = () => {
         </template>
 
         <!-- IMAGE MODE: Original buttons -->
-        <template v-else>
+        <template v-else-if="mode !== 'text'">
           <div class="flex flex-col mt-2 pb-4">
 
            <div @click="emit('add-text')" class="flex items-center gap-4 px-4 py-3 hover:bg-gray-100 cursor-pointer transition active:scale-95">
