@@ -1,11 +1,18 @@
 <template>
   <div class="reaction-wrapper flex justify-center " @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
    <button
-class="flex"
-
-      >
-      <ThumbUpOutline fillColor="#65686C" :size="18"/> {{ $t('actions.like') }}
-      </button>
+      class="flex items-center justify-center gap-2 h-9 rounded hover:bg-theme-hover transition-colors cursor-pointer text-theme-text-secondary font-semibold text-[15px] w-full"
+      @click="toggleReaction('like')"
+   >
+      <template v-if="selectedReaction">
+        <img :src="getReactionSrc(selectedReaction)" :alt="selectedReaction" width="20" height="20">
+        <span :class="getReactionTextColor(selectedReaction)">{{ getReactionLabel(selectedReaction) }}</span>
+      </template>
+      <template v-else>
+        <ThumbUpOutline fillColor="#65676C" :size="20" class="text-gray-500 dark:text-gray-400"/>
+        <span>{{ $t('actions.like') }}</span>
+      </template>
+   </button>
 
 
     <!-- Reaction box -->
@@ -13,14 +20,14 @@ class="flex"
       <div
         v-for="reaction in reactions"
         :key="reaction.name"
-        class="reaction-item "
+        class="reaction-item"
+        @click="selectReaction(reaction.name)"
       >
         <div class="icon-wrapper">
           <div class="reaction-icon" :class="reaction.name" v-tooltip="reaction.label">
-  <img :src="reaction.src" alt="😄" width="37" height="37">
-</div>
+            <img :src="reaction.src" alt="😄" width="37" height="37">
+          </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -29,17 +36,22 @@ class="flex"
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useTimeoutFn } from '@vueuse/core'
 import ThumbUpOutline from 'vue-material-design-icons/ThumbUpOutline.vue'
 
 const { t } = useI18n()
 
+const emit = defineEmits<{
+  (e: 'react', reaction: string | null): void
+}>()
+
 const reactionConfigs = [
-  { name: 'like', labelKey: 'reaction.like', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f44d/512.gif" },
-  { name: 'love', labelKey: 'reaction.love', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/2764_fe0f/512.gif" },
-  { name: 'haha', labelKey: 'reaction.haha', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f606/512.gif"},
-  { name: 'wow', labelKey: 'reaction.wow', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f62f/512.gif" },
-  { name: 'sad', labelKey: 'reaction.sad', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f622/512.gif"},
-  { name: 'angry', labelKey: 'reaction.angry', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f621/512.gif" }
+  { name: 'like', labelKey: 'reaction.like', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f44d/512.gif", color: 'text-blue-500' },
+  { name: 'love', labelKey: 'reaction.love', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/2764_fe0f/512.gif", color: 'text-red-500' },
+  { name: 'haha', labelKey: 'reaction.haha', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f606/512.gif", color: 'text-yellow-500' },
+  { name: 'wow', labelKey: 'reaction.wow', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f62f/512.gif", color: 'text-yellow-500' },
+  { name: 'sad', labelKey: 'reaction.sad', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f622/512.gif", color: 'text-yellow-500' },
+  { name: 'angry', labelKey: 'reaction.angry', src:"https://fonts.gstatic.com/s/e/notoemoji/latest/1f621/512.gif", color: 'text-orange-500' }
 ]
 
 const reactions = computed(() =>
@@ -48,28 +60,63 @@ const reactions = computed(() =>
     label: t(config.labelKey)
   }))
 )
-const isVisible = ref(false);
+
+const selectedReaction = ref<string | null>(null)
+const isVisible = ref(false)
+
+const getReactionSrc = (name: string) => {
+  return reactionConfigs.find(r => r.name === name)?.src || ''
+}
+
+const getReactionLabel = (name: string) => {
+  const config = reactionConfigs.find(r => r.name === name)
+  return config ? t(config.labelKey) : ''
+}
+
+const getReactionTextColor = (name: string) => {
+  return reactionConfigs.find(r => r.name === name)?.color || 'text-blue-500'
+}
+
+const selectReaction = (reactionName: string) => {
+  if (selectedReaction.value === reactionName) {
+    selectedReaction.value = null
+    emit('react', null)
+  } else {
+    selectedReaction.value = reactionName
+    emit('react', reactionName)
+  }
+  isVisible.value = false
+}
+
+const toggleReaction = (defaultReaction: string) => {
+  if (selectedReaction.value) {
+    selectedReaction.value = null
+    emit('react', null)
+  } else {
+    selectedReaction.value = defaultReaction
+    emit('react', defaultReaction)
+  }
+}
 
 const { start: startHideTimer, stop: stopHideTimer } = useTimeoutFn(() => {
-  isVisible.value = false;
-}, 500, { immediate: false });
+  isVisible.value = false
+}, 500, { immediate: false })
 
 const { start: startShowTimer, stop: stopShowTimer } = useTimeoutFn(() => {
-  isVisible.value = true;
-}, 500, { immediate: false });
+  isVisible.value = true
+}, 500, { immediate: false })
 
 const handleMouseEnter = () => {
-  stopHideTimer();
-  startShowTimer();
-};
+  stopHideTimer()
+  startShowTimer()
+}
 
 const handleMouseLeave = () => {
-  stopShowTimer();
+  stopShowTimer()
   if (isVisible.value) {
-    startHideTimer();
+    startHideTimer()
   }
-};
-import { useTimeoutFn } from '@vueuse/core';
+}
 </script>
 
 <style>
