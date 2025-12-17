@@ -16,7 +16,7 @@ const posts = ref(
   Array.from({ length: 10 }, (_, i) => ({
     id: i,
     content: `Post #${i + 1}`,
-    image: 'https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg'
+    imageUrl: `https://picsum.photos/700/400?random=${i}`
   }))
 )
 

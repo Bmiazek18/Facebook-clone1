@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import CreatePostBox from '@/components/CreatePostBox.vue';
 import ProfileFriendsMini from './ProfileFriendsMini.vue';
-import { ref } from 'vue';
+import PostItem from './PostItem.vue';
 import BirthdayPostFeed from './BirthdayPostFeed.vue';
+import { usePostsStore } from '@/stores/posts';
 
-const props = defineProps<{
+const postsStore = usePostsStore();
+
+defineProps<{
     friendsList: {
         name: string;
         mutual: number;
@@ -16,6 +19,9 @@ const props = defineProps<{
     userImage: string;
 }>();
 
+const handleDeletePost = (postId: string) => {
+    postsStore.removeSharedPost(postId);
+};
 </script>
 
 <template>
@@ -69,6 +75,15 @@ const props = defineProps<{
                 :image="userImage"
                 :placeholder="`Co słychać, ${userName.split(' ')[0]}?`"
             />
+
+            <!-- Shared Posts using PostItem -->
+            <PostItem
+                v-for="post in postsStore.getSharedPosts"
+                :key="post.id"
+                :shared-post="post"
+                @delete="handleDeletePost"
+            />
+
             <BirthdayPostFeed/>
 
             </div>

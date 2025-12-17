@@ -2,11 +2,21 @@
   <div class="w-[500px]  p-4 mx-auto rounded-xl relative overflow-hidden ">
     <div class="transition-wrapper" ref="wrapperRef">
       <Transition :name="transitionName" mode="out-in" @before-enter="updateHeight()">
-        <component
-          :is="currentViewComponent"
-          :key="currentView"
+        <PostCreator 
+          v-if="currentView === 'creator'"
+          key="creator"
           class="view-container bg-white"
-          :data-view="currentView"
+          data-view="creator"
+          :shared-post="sharedPost"
+          @navigate="handleNavigation"
+          @back="handleNavigationBack"
+          @publish="(content) => emit('publish', content)"
+        />
+        <PrivacySelector
+          v-else-if="currentView === 'privacy'"
+          key="privacy"
+          class="view-container bg-white"
+          data-view="privacy"
           @navigate="handleNavigation"
           @back="handleNavigationBack"
         />
@@ -22,19 +32,26 @@ import { ref, type Ref, type DefineComponent, computed, onMounted,  onBeforeUnmo
 import PostCreator from './PostCreator.vue';
 import PrivacySelector from './PrivacySelector.vue';
 
+import type { PostData } from '@/types/StoryElement';
+
+// Props dla udostępnianego posta
+defineProps<{
+  sharedPost?: PostData | null;
+}>();
+
+const emit = defineEmits<{
+  (e: 'publish', content: string): void;
+}>();
+
 // --- Stan Widoków ---
-const currentView: Ref<string> = ref('privacy'); // Początkowy widok to 'creator'
+const currentView: Ref<string> = ref('creator'); // Początkowy widok to 'creator'
 const previousView: Ref<string | null> = ref(null);
 
-// Mapowanie komponentów do nazw
+// Mapowanie komponentów do nazw (kept for reference if needed)
 const viewComponents: Record<string, DefineComponent> = {
   creator: PostCreator as DefineComponent,
   privacy: PrivacySelector as DefineComponent,
 };
-
-const currentViewComponent = computed(() => {
-  return viewComponents[currentView.value] || PostCreator;
-});
 
 // --- Logika Nawigacji ---
 

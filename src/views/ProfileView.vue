@@ -13,7 +13,7 @@ import Check from 'vue-material-design-icons/Check.vue';
 import Message from 'vue-material-design-icons/Message.vue';
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'; // Dodany do górnego paska
 
-const activeTab = ref('friends'); // Ustawiamy domyślnie na 'friends' jak w przykładzie
+const activeTab = ref('posts'); // Ustawiamy domyślnie na 'friends' jak w przykładzie
 const userName = 'Wiktoria Królik';
 const userImage = 'https://picsum.photos/id/142/2000/320'; // Zdjęcie profilowe dla CreatePostBox
 

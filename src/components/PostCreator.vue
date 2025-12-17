@@ -10,25 +10,44 @@ import ImageMultipleIcon from 'vue-material-design-icons/ImageMultiple.vue';
 import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
 import EmoticonIcon from 'vue-material-design-icons/Emoticon.vue';
 import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue';
-
+import EarthIcon from 'vue-material-design-icons/Earth.vue';
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
+
+import type { PostData } from '@/types/StoryElement';
+
+// Props dla udostępnianego posta
+const props = defineProps<{
+    sharedPost?: PostData | null;
+}>();
 
 // Definicja emitowanych zdarzeń dla nawigacji
 const emit = defineEmits<{
     (e: 'navigate', viewName: string): void;
     (e: 'back'): void;
+    (e: 'publish', content: string): void;
 }>();
 
 // Stan komponentu
 const userName = ref('Bartosz Miazek');
-const profilePicUrl = ref('https://via.placeholder.com/40');
+const profilePicUrl = ref('https://i.pravatar.cc/150?img=12');
 const postContent = ref('');
 
-const isPublishButtonDisabled = computed(() => !postContent.value.trim());
+const isPublishButtonDisabled = computed(() => {
+  // Jeśli mamy udostępniany post, przycisk może być aktywny nawet bez komentarza
+  if (props.sharedPost) {
+    return false;
+  }
+  return !postContent.value.trim();
+});
 
 // Funkcja wywołująca przejście do widoku 'privacy'
 const openPrivacySelector = () => {
     emit('navigate', 'privacy');
+};
+
+const handlePublish = () => {
+    emit('publish', postContent.value);
+    postContent.value = '';
 };
 </script>
 
@@ -54,7 +73,7 @@ const openPrivacySelector = () => {
     <div class="relative mb-2">
         <textarea
             v-model="postContent"
-            placeholder="Co słychać?"
+            :placeholder="sharedPost ? 'Powiedz coś o tym...' : 'Co słychać?'"
             class="w-full h-24 border-none resize-none text-2xl placeholder-gray-500 focus:ring-0 focus:outline-none p-0 pt-2"
         ></textarea>
 
@@ -64,6 +83,31 @@ const openPrivacySelector = () => {
         <div class="absolute bottom-2 right-0 text-gray-500 cursor-pointer" title="Dodaj emoji">
             <emoticon-happy-icon :size="24" />
         </div>
+    </div>
+
+    <!-- Shared Post Preview -->
+    <div v-if="sharedPost" class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+      <!-- Post Image -->
+      <img
+        v-if="sharedPost.imageUrl"
+        :src="sharedPost.imageUrl"
+        class="w-full h-48 object-cover"
+      />
+
+      <!-- Post Content -->
+      <div class="p-3 bg-gray-50">
+        <div class="flex items-center gap-2 mb-2">
+          <img :src="sharedPost.authorAvatar" class="w-8 h-8 rounded-full object-cover" />
+          <div>
+            <p class="font-semibold text-gray-900 text-sm">{{ sharedPost.authorName }}</p>
+            <div class="flex items-center gap-1 text-xs text-gray-500">
+              <earth-icon :size="10" />
+              <span>Publiczny</span>
+            </div>
+          </div>
+        </div>
+        <p class="text-gray-800 text-sm line-clamp-3">{{ sharedPost.content }}</p>
+      </div>
     </div>
 
     <hr class="my-4 border-gray-200">
@@ -87,9 +131,19 @@ const openPrivacySelector = () => {
         'bg-blue-500 text-white hover:bg-blue-600': !isPublishButtonDisabled,
         'bg-gray-200 text-gray-400 cursor-not-allowed': isPublishButtonDisabled
       }"
-      @click="!isPublishButtonDisabled && console.log('Publikowanie posta...')"
+      @click="handlePublish"
     >
       Opublikuj
     </button>
   </div>
 </template>
+
+<style scoped>
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>
