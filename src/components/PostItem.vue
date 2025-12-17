@@ -12,6 +12,7 @@ import ShareIcon from 'vue-material-design-icons/ShareVariant.vue'
 import BookOpenPageVariant from 'vue-material-design-icons/BookOpenPageVariant.vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import ReactionButton from './ReactionButton.vue'
+import PostImageGallery from './PostImageGallery.vue'
 import { useTheme } from '@/composables/useTheme'
 import ProfilePopper from './ProfilePopper.vue'
 import Modal from './Modal.vue'
@@ -26,7 +27,8 @@ useI18n()
 interface PostProp {
   id: number
   content: string
-  imageUrl: string
+  imageUrl?: string
+  images?: string[]
   authorName?: string
   authorAvatar?: string
 }
@@ -73,6 +75,7 @@ const displayData = computed(() => {
       authorAvatar: props.sharedPost.originalPost.authorAvatar,
       content: props.sharedPost.originalPost.content,
       imageUrl: props.sharedPost.originalPost.imageUrl,
+      images: props.sharedPost.originalPost.images || (props.sharedPost.originalPost.imageUrl ? [props.sharedPost.originalPost.imageUrl] : []),
       sharedBy: props.sharedPost.sharedBy,
       comment: props.sharedPost.comment
     }
@@ -82,6 +85,7 @@ const displayData = computed(() => {
     authorAvatar: props.post?.authorAvatar || 'https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg',
     content: props.post?.content || '',
     imageUrl: props.post?.imageUrl || '',
+    images: props.post?.images || (props.post?.imageUrl ? [props.post.imageUrl] : []),
     sharedBy: null,
     comment: null
   }
@@ -97,7 +101,8 @@ const postData = computed<PostData>(() => {
     authorName: displayData.value.authorName,
     authorAvatar: displayData.value.authorAvatar,
     content: displayData.value.content,
-    imageUrl: displayData.value.imageUrl,
+    imageUrl: displayData.value.images[0] || displayData.value.imageUrl,
+    images: displayData.value.images,
     timestamp: Date.now()
   }
 })
@@ -225,13 +230,7 @@ const handleReaction = (reaction: string | null) => {
         {{ displayData.content }}
       </div>
 
-      <router-link to="/photo" class="block w-full bg-black/5">
-        <img
-          class="w-full h-auto object-cover max-h-[600px] cursor-pointer"
-          :src="displayData.imageUrl"
-          alt="Post content"
-        >
-      </router-link>
+      <PostImageGallery v-if="displayData.images.length > 0" :images="displayData.images" :post-id="props.post?.id ?? 0" />
     </div>
 
     <div v-else class="mx-3 mb-3 border border-theme-border rounded-lg overflow-hidden cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">

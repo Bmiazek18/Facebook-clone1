@@ -8,6 +8,7 @@ export interface PostData {
   authorAvatar: string;
   content: string;
   imageUrl?: string;
+  images?: string[];
   timestamp: number;
 }
 
