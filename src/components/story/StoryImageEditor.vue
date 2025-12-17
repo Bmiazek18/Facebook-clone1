@@ -14,12 +14,13 @@ import StoryElement from '@/components/StoryElement.vue';
 import VolumeHigh from 'vue-material-design-icons/VolumeHigh.vue';
 import VolumeOff from 'vue-material-design-icons/VolumeOff.vue';
 
-import type { StoryElement as StoryElementType, BackgroundSettings, PostData } from '@/types/StoryElement';
+import type { StoryElement as StoryElementType, BackgroundSettings, PostData, ReelData } from '@/types/StoryElement';
 
 // --- PROPS & EMITS ---
 const props = defineProps<{
   initialImage?: string | null;
   initialPost?: PostData | null;
+  initialReel?: ReelData | null;
 }>();
 
 const emit = defineEmits<{
@@ -148,6 +149,26 @@ onMounted(() => {
     // Set gradient background based on post image if available
     if (props.initialPost.imageUrl) {
       setBackgroundGradientFromImage(props.initialPost.imageUrl);
+    }
+  }
+  // Load initial reel if provided (from share button)
+  else if (props.initialReel) {
+    const newId = `el_reel_${Date.now()}`;
+    storyElements.value.push({
+      id: newId,
+      type: 'reel',
+      content: props.initialReel.videoSrc,
+      x: 50, y: 150,
+      width: 280, height: 400,
+      rotation: 0, scale: 1,
+      styles: {},
+      reelData: props.initialReel
+    });
+    selectedElementId.value = newId;
+
+    // Set gradient background based on reel poster if available
+    if (props.initialReel.poster) {
+      setBackgroundGradientFromImage(props.initialReel.poster);
     }
   }
   // Load initial image if provided

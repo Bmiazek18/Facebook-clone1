@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useStoryShareStore } from '@/stores/storyShare';
-import type { PostData } from '@/types/StoryElement';
+import type { PostData, ReelData } from '@/types/StoryElement';
 
 // Sub-views rendered conditionally
 import StoryPicker from '@/components/story/StoryPicker.vue';
@@ -15,12 +15,18 @@ const storyShareStore = useStoryShareStore();
 const mode = ref<StoryMode>('picker');
 const selectedImage = ref<string | null>(null);
 const initialPost = ref<PostData | null>(null);
+const initialReel = ref<ReelData | null>(null);
 
-// Check for pending post to share on mount
+// Check for pending post or reel to share on mount
 onMounted(() => {
   const pendingPost = storyShareStore.getPendingPost();
+  const pendingReel = storyShareStore.getPendingReel();
+
   if (pendingPost) {
     initialPost.value = pendingPost;
+    mode.value = 'image';
+  } else if (pendingReel) {
+    initialReel.value = pendingReel;
     mode.value = 'image';
   }
 });
@@ -43,6 +49,7 @@ const onBack = () => {
   }
   selectedImage.value = null;
   initialPost.value = null;
+  initialReel.value = null;
   mode.value = 'picker';
 };
 </script>
@@ -60,6 +67,7 @@ const onBack = () => {
       v-else-if="mode === 'image'"
       :initial-image="selectedImage"
       :initial-post="initialPost"
+      :initial-reel="initialReel"
       @back="onBack"
     />
 

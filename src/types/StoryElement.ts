@@ -1,5 +1,5 @@
 // --- Element Types ---
-export type ElementType = 'text' | 'image' | 'link' | 'post'
+export type ElementType = 'text' | 'image' | 'link' | 'post' | 'reel'
 
 // --- Shared Data Types ---
 export interface PostData {
@@ -9,6 +9,15 @@ export interface PostData {
   content: string;
   imageUrl?: string;
   timestamp: number;
+}
+
+export interface ReelData {
+  id: string;
+  authorName: string;
+  authorAvatar: string;
+  videoSrc: string;
+  poster?: string;
+  caption: string;
 }
 
 // --- Base Element Interface ---
@@ -59,8 +68,14 @@ export interface PostElement extends BaseStoryElement {
   postData?: PostData;
 }
 
+// --- Reel Element ---
+export interface ReelElement extends BaseStoryElement {
+  type: 'reel';
+  reelData?: ReelData;
+}
+
 // --- Union Type for all elements ---
-export type StoryElement = TextElement | ImageElement | LinkElement | PostElement;
+export type StoryElement = TextElement | ImageElement | LinkElement | PostElement | ReelElement;
 
 // --- Background Settings ---
 export interface BackgroundSettings {

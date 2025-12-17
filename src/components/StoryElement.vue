@@ -9,6 +9,7 @@ import StoryMusicElement from './StoryElements/StoryMusicElement.vue'
 import StoryLinkElement from './StoryElements/StoryLinkElement.vue'
 import StoryPostElement from './StoryElements/StoryPostElement.vue'
 import StoryTextElement from './StoryElements/StoryTextElement.vue'
+import StoryReelElement from './StoryElements/StoryReelElement.vue'
 
 const props = defineProps<{
   element: StoryElement
@@ -94,6 +95,12 @@ const handleUpdateContent = (id: string, value: string) => {
       <!-- Post Element -->
       <StoryPostElement
         v-else-if="element.type === 'post'"
+        :element="element"
+      />
+
+      <!-- Reel Element -->
+      <StoryReelElement
+        v-else-if="element.type === 'reel'"
         :element="element"
       />
 
