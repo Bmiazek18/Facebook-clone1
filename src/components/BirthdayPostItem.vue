@@ -1,6 +1,6 @@
 <template>
-  <div class="p-4 bg-white">
-    <div class="flex items-start justify-between mb-2">
+  <div class="p-4 border border-theme-border rounded-2xl bg-white">
+    <div class="flex  items-start justify-between mb-2">
       <div class="flex items-center">
         <div class="relative">
              <img
@@ -51,7 +51,7 @@
         </div>
     </div>
 
-    <div class="border-t border-gray-300 mx-1"></div>
+    <div class=" mx-1"></div>
 
     <div class="flex items-center justify-between px-1 py-1">
       <button
@@ -76,7 +76,7 @@
       </button>
     </div>
 
-    <div v-if="post.comments.length || true" class="border-t border-gray-300 mx-1 mb-2"></div>
+
 
     <CommentItem
              v-for="comment in post.comments"

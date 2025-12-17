@@ -4,17 +4,17 @@
 
       <div class="bg-white rounded-lg shadow-sm border border-gray-300 overflow-hidden">
 
-        <div class="p-4 flex items-start justify-between border-b border-gray-200">
+        <div class="p-4 flex items-start justify-between ">
              <div class="text-[15px] text-gray-500 leading-snug">
                 17 znajomych opublikowało post na Twojej <span class="font-bold text-gray-900 cursor-pointer hover:underline">Profilu</span> z okazji Twoich urodzin.
              </div>
              <DotsHorizontalIcon class="text-gray-500 cursor-pointer -mt-1" />
         </div>
 
-        <div v-for="(post, index) in posts" :key="post.id">
+        <div class="px-4 py-2" v-for="(post, index) in posts" :key="post.id">
             <BirthdayPost :post="post" />
 
-            <div v-if="index < posts.length - 1" class="border-b border-gray-300 mx-4"></div>
+
         </div>
 
         <div class="p-3 text-center border-t border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
