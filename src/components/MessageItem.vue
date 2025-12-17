@@ -165,7 +165,7 @@ const handleAddReaction = (payload: { messageId: number; emoji: string }) => emi
       class="flex items-center w-full"
       :class="{ 'flex-row': !isMe, 'flex-row-reverse': isMe }"
     >
-      <div class="relative flex flex-col flex-items max-w-[60%]">
+      <div class="relative flex flex-col flex-items max-w-[60%] overflow-visible">
 
         <div
           v-if="isEmojiOnly(message.content)"
