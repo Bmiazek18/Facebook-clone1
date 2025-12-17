@@ -61,10 +61,17 @@
                     @click="handleClick(chat.id)"
                     class="w-full group flex items-center py-2 px-1 hover:bg-theme-hover rounded-lg cursor-pointer transition duration-100 text-left"
                 >
-                    <div class="relative shrink-0  mr-3">
-                        <img :src="chat.avatarUrl" alt="Awatar" class="h-12 w-12 rounded-full object-cover bg-theme-bg" />
+                    <div class="relative shrink-0 mr-3 w-12 h-12">
+                        <!-- Avatar grupowy - dwa zdjęcia nałożone -->
+                        <template v-if="chat.isGroup && chat.extraAvatars && chat.extraAvatars.length >= 2">
+                            <img :src="chat.extraAvatars[0]" alt="Awatar" class="absolute z-999 bottom-0 left-0 h-8 w-8 rounded-full object-cover border border-theme-border bg-theme-bg ring-2 ring-[#fff]" />
+                            <img :src="chat.extraAvatars[1]" alt="Awatar" class="absolute  top-0 right-0 h-8 w-8 rounded-full object-cover bg-theme-bg border border-theme-border" />
+                        </template>
+                        <!-- Pojedynczy avatar -->
+                        <template v-else>
+                            <img :src="chat.avatarUrl" alt="Awatar" class="h-12 w-12 rounded-full object-cover bg-theme-bg border border-theme-border" />
+                        </template>
                         <span v-if="chat.isActive" class="absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white bg-green-500"></span>
-
                     </div>
 
                     <div class="grow min-w-0">
@@ -131,7 +138,7 @@ interface Chat {
   unread: boolean;
   isActive: boolean;
   isPinch?: boolean; // Ikona "szczypnięcia" / reakcji ręki
-
+  isGroup?: boolean; // Czy to jest grupa
   extraAvatars?: string[]; // Mini-awatary dla konwersacji grupowych
 }
 
@@ -143,7 +150,7 @@ const rawChats: Chat[] = [
   {
     id: 1,
     name: 'Carbonara 🤠',
-    avatarUrl: 'https://via.placeholder.com/100/108390?text=C',
+    avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
     lastMessage: 'Użytkownik Carbonara 🤠 wysłał ...',
     timeAgo: '21 min',
     unread: false,
@@ -154,7 +161,7 @@ const rawChats: Chat[] = [
   {
     id: 2,
     name: 'Łuków24',
-    avatarUrl: 'https://via.placeholder.com/100/DC143C?text=24',
+    avatarUrl: 'https://randomuser.me/api/portraits/men/45.jpg',
     lastMessage: 'Użytkownik Łuków24 wysłał ...',
     timeAgo: '49 min',
     unread: false,
@@ -164,7 +171,7 @@ const rawChats: Chat[] = [
   {
     id: 3,
     name: 'Pati Kochanska',
-    avatarUrl: 'https://via.placeholder.com/100/A0A0A0?text=P',
+    avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg',
     lastMessage: 'jeszcze w zime',
     timeAgo: '5 godz.',
     unread: false,
@@ -174,62 +181,82 @@ const rawChats: Chat[] = [
   {
     id: 4,
     name: 'Grupa 7 (casual)',
-    avatarUrl: 'https://via.placeholder.com/100/400082?text=G',
+    avatarUrl: 'https://randomuser.me/api/portraits/men/22.jpg',
     lastMessage: 'Paweł: chyba tak',
     timeAgo: '6 godz.',
     unread: false,
     isActive: false,
+    isGroup: true,
+    extraAvatars: [
+        'https://randomuser.me/api/portraits/men/22.jpg',
+        'https://randomuser.me/api/portraits/women/33.jpg'
+    ],
   },
   // 5. Koalicja 2 Grudnia
   {
     id: 5,
     name: 'Koalicja 2 Grudnia',
-    avatarUrl: 'https://via.placeholder.com/100/000000?text=K',
+    avatarUrl: 'https://randomuser.me/api/portraits/men/67.jpg',
     lastMessage: 'Ty: Aż tak za lukowe...',
     timeAgo: '9 godz.',
     unread: false,
     isActive: false,
+    isGroup: true,
     extraAvatars: [
-        'https://via.placeholder.com/100/E3E6EA?text=A',
-        'https://via.placeholder.com/100/E3E6EA?text=B'
+        'https://randomuser.me/api/portraits/women/12.jpg',
+        'https://randomuser.me/api/portraits/men/15.jpg'
     ],
   },
   // 6. Infa 2025
   {
     id: 6,
     name: 'Infa 2025',
-    avatarUrl: 'https://via.placeholder.com/100/A0A0A0?text=I',
+    avatarUrl: 'https://randomuser.me/api/portraits/women/28.jpg',
     lastMessage: 'Natalia: Okej',
     timeAgo: '13 godz.',
     unread: false,
     isActive: false,
-
+    isGroup: true,
+    extraAvatars: [
+        'https://randomuser.me/api/portraits/women/28.jpg',
+        'https://randomuser.me/api/portraits/men/19.jpg'
+    ],
   },
   // 7. Milf Hunters
   {
     id: 7,
     name: 'Milf Hunters',
-    avatarUrl: 'https://via.placeholder.com/100/000000?text=M',
+    avatarUrl: 'https://randomuser.me/api/portraits/men/75.jpg',
     lastMessage: 'Mateusz: Piłkarzami z przypadp...',
     timeAgo: '2 dni',
     unread: true,
     isActive: true,
+    isGroup: true,
+    extraAvatars: [
+        'https://randomuser.me/api/portraits/men/75.jpg',
+        'https://randomuser.me/api/portraits/men/81.jpg'
+    ],
   },
   // 8. Legia Futsal
   {
     id: 8,
     name: 'Legia Futsal',
-    avatarUrl: 'https://via.placeholder.com/100/004E22?text=L',
+    avatarUrl: 'https://randomuser.me/api/portraits/men/52.jpg',
     lastMessage: 'Bramka Luci Prioriego nomi...',
     timeAgo: '2 dni',
     unread: true,
     isActive: false,
+    isGroup: true,
+    extraAvatars: [
+        'https://randomuser.me/api/portraits/men/52.jpg',
+        'https://randomuser.me/api/portraits/men/61.jpg'
+    ],
   },
   // 9. Mateusz Bieniek
   {
     id: 9,
     name: 'Mateusz Bieniek',
-    avatarUrl: 'https://via.placeholder.com/100/108390?text=MB',
+    avatarUrl: 'https://randomuser.me/api/portraits/men/41.jpg',
     lastMessage: 'Nie dam rady',
     timeAgo: '2 dni',
     unread: false,
@@ -239,18 +266,22 @@ const rawChats: Chat[] = [
   {
     id: 10,
     name: 'Zgrupowanie Reprezentacja Se...',
-    avatarUrl: 'https://via.placeholder.com/100/FFFFFF',
+    avatarUrl: 'https://randomuser.me/api/portraits/men/36.jpg',
     lastMessage: 'Michał: Nie, tym razem to nie ...',
     timeAgo: '3 dni',
     unread: true,
     isActive: true,
-
+    isGroup: true,
+    extraAvatars: [
+        'https://randomuser.me/api/portraits/men/36.jpg',
+        'https://randomuser.me/api/portraits/men/47.jpg'
+    ],
   },
   // 11. Wioletta Miazek
   {
     id: 11,
     name: 'Wioletta Miazek',
-    avatarUrl: 'https://via.placeholder.com/100/F0F0F0?text=WM',
+    avatarUrl: 'https://randomuser.me/api/portraits/women/65.jpg',
     lastMessage: '🙌 3 dni',
     timeAgo: '3 dni',
     unread: true,
@@ -260,7 +291,7 @@ const rawChats: Chat[] = [
   {
     id: 12,
     name: 'Adam Zarzycki',
-    avatarUrl: 'https://via.placeholder.com/100/000000?text=AZ',
+    avatarUrl: 'https://randomuser.me/api/portraits/men/88.jpg',
     lastMessage: 'Ty: Gdzie ty jesteś?',
     timeAgo: '3 dni',
     unread: true,
@@ -270,11 +301,16 @@ const rawChats: Chat[] = [
   {
     id: 13,
     name: 'WC UPOSiF',
-    avatarUrl: 'https://via.placeholder.com/100/A0A0A0?text=W',
+    avatarUrl: 'https://randomuser.me/api/portraits/men/29.jpg',
     lastMessage: '...',
     timeAgo: '3 dni',
     unread: false,
     isActive: false,
+    isGroup: true,
+    extraAvatars: [
+        'https://randomuser.me/api/portraits/men/29.jpg',
+        'https://randomuser.me/api/portraits/women/55.jpg'
+    ],
   },
 ];
 

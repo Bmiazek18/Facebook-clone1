@@ -247,7 +247,7 @@ const saveAltText = () => {
         </template>
 
         <!-- IMAGE MODE: Original buttons -->
-        <template v-else-if="mode !== 'text'">
+        <template v-else>
           <div class="flex flex-col mt-2 pb-4">
 
            <div @click="emit('add-text')" class="flex items-center gap-4 px-4 py-3 hover:bg-gray-100 cursor-pointer transition active:scale-95">
