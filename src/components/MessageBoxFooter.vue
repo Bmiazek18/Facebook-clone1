@@ -454,7 +454,7 @@ onUnmounted(() => {
           @click="selectImage"
         />
         <StickerEmojiIcon :size="24" class="hover:text-purple-600 cursor-pointer" />
-        <GifBox @gif-selected="handleGifSelect" />
+        <GifBox v-if="false" @gif-selected="handleGifSelect" />
         <span class="font-bold text-xs border p-1 rounded cursor-pointer text-gray-500 hover:text-purple-600 self-center">GIF</span>
         <input
           type="file"

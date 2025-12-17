@@ -11,7 +11,7 @@
              <DotsHorizontalIcon class="text-gray-500 cursor-pointer -mt-1" />
         </div>
 
-        <div class="px-4 py-2" v-for="(post, index) in posts" :key="post.id">
+        <div class="px-4 py-2" v-for="(post) in posts" :key="post.id">
             <BirthdayPost :post="post" />
 
 
