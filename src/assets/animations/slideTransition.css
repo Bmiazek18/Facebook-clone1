@@ -1,0 +1,83 @@
+/* Stylizacja CSS dla animacji przejścia i dostosowania wysokości */
+.transition-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  transition: height 0.2s ease;
+  min-height: 48px;
+}
+
+/* KLUCZOWA ZMIANA: position: absolute tylko dla aktywnej tranzycji */
+.view-container {
+  /* Zapewniamy, że komponenty wpływają na wysokość wrapper'a poza tranzycją */
+  position: relative;
+  width: 100%;
+}
+
+.slide-left-enter-active,
+.slide-left-leave-active,
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: transform 0.28s ease, opacity 0.28s ease;
+  will-change: transform, opacity;
+
+  /* position: absolute jest konieczne dla animacji slajdu */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.slide-left-leave-active,
+.slide-right-leave-active {
+  z-index: 1;
+}
+
+.slide-left-enter-from {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.slide-left-enter-to {
+  transform: translateX(0%);
+  opacity: 1;
+}
+
+.slide-left-leave-from {
+  transform: translateX(0%);
+  opacity: 1;
+}
+
+.slide-left-leave-to {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.slide-right-enter-from {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.slide-right-enter-to {
+  transform: translateX(0%);
+  opacity: 1;
+}
+
+.slide-right-leave-from {
+  transform: translateX(0%);
+  opacity: 1;
+}
+
+.slide-right-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+/* Profile Menu specific styles */
+.profile-menu-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  transition: height 0.08s ease;
+  min-height: 48px;
+}
