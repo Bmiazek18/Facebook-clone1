@@ -21,7 +21,7 @@ const minimize = (boxId: string | number) => {
 };
 import IncomingCallModal from '../components/IncomingCallModal.vue';
 
-const isCallIncoming = ref(true);
+const isCallIncoming = ref(false);
 
 const onAccept = () => {
   console.log("Połączenie odebrane!");
@@ -51,8 +51,8 @@ const onReject = () => {
       <ChevronDownIcon :size="20" class="text-gray-400 shrink-0" />
     </div>
     <div class="flex space-x-3 text-gray-500 shrink-0">
-      <PhoneIcon :size="20" class="hover:text-purple-600 cursor-pointer" />
-      <VideoOutlineIcon :size="20" class="hover:text-purple-600 cursor-pointer" />
+      <PhoneIcon @click="isCallIncoming = true" :size="20" class="hover:text-purple-600 cursor-pointer" />
+      <VideoOutlineIcon @click="isCallIncoming = true" :size="20" class="hover:text-purple-600 cursor-pointer" />
       <MinusIcon @click="minimize(boxId)" :size="20" class="hover:text-purple-600 cursor-pointer" />
       <CloseIcon @click="close(boxId)" :size="20" class="hover:text-purple-600 cursor-pointer" />
     </div>
