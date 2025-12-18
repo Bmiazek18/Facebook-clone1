@@ -9,6 +9,7 @@ export interface PostData {
   content: string;
   imageUrl?: string;
   images?: string[];
+  videoUrl?: string;
   timestamp: number;
 }
 

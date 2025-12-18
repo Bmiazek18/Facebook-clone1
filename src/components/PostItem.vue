@@ -5,19 +5,17 @@ import { useRouter } from 'vue-router'
 
 import Earth from 'vue-material-design-icons/Earth.vue'
 import ThumbUp from 'vue-material-design-icons/ThumbUp.vue'
-import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
 import Close from 'vue-material-design-icons/Close.vue'
-import MessageOutline from 'vue-material-design-icons/MessageOutline.vue'
-import ShareIcon from 'vue-material-design-icons/ShareVariant.vue'
-import BookOpenPageVariant from 'vue-material-design-icons/BookOpenPageVariant.vue'
-import Pencil from 'vue-material-design-icons/Pencil.vue'
-import ReactionButton from './ReactionButton.vue'
 import PostImageGallery from './PostImageGallery.vue'
+import PlayerVideo from './PlayerVideo.vue'
 import { useTheme } from '@/composables/useTheme'
-import ProfilePopper from './ProfilePopper.vue'
+import { usePostReactions } from '@/composables/usePostReactions'
+import { useVideoAutoplay } from '@/composables/useVideoAutoplay'
 import Modal from './Modal.vue'
 import PostModal from './PostModal.vue'
 import ShareAsPostModal from './ShareAsPostModal.vue'
+import PostHeader from './post/PostHeader.vue'
+import PostActions from './post/PostActions.vue'
 import { useStoryShareStore } from '@/stores/storyShare'
 import { usePostsStore, type SharedPost } from '@/stores/posts'
 import type { PostData } from '@/types/StoryElement'
@@ -29,6 +27,7 @@ interface PostProp {
   content: string
   imageUrl?: string
   images?: string[]
+  videoUrl?: string
   authorName?: string
   authorAvatar?: string
 }
@@ -47,19 +46,10 @@ const storyShareStore = useStoryShareStore()
 const postsStore = usePostsStore()
 
 const isModalOpen = ref(false)
-const isShareMenuOpen = ref(false)
 const isShareAsPostModalOpen = ref(false)
 
 const toggleModal = () => {
     isModalOpen.value = !isModalOpen.value
-}
-
-const toggleShareMenu = () => {
-    isShareMenuOpen.value = !isShareMenuOpen.value
-}
-
-const closeShareMenu = () => {
-    isShareMenuOpen.value = false
 }
 
 const { isDark } = useTheme()
@@ -76,6 +66,7 @@ const displayData = computed(() => {
       content: props.sharedPost.originalPost.content,
       imageUrl: props.sharedPost.originalPost.imageUrl,
       images: props.sharedPost.originalPost.images || (props.sharedPost.originalPost.imageUrl ? [props.sharedPost.originalPost.imageUrl] : []),
+      videoUrl: props.sharedPost.originalPost.videoUrl,
       sharedBy: props.sharedPost.sharedBy,
       comment: props.sharedPost.comment
     }
@@ -86,6 +77,7 @@ const displayData = computed(() => {
     content: props.post?.content || '',
     imageUrl: props.post?.imageUrl || '',
     images: props.post?.images || (props.post?.imageUrl ? [props.post.imageUrl] : []),
+    videoUrl: props.post?.videoUrl,
     sharedBy: null,
     comment: null
   }
@@ -110,11 +102,9 @@ const postData = computed<PostData>(() => {
 const shareToStory = () => {
   storyShareStore.setPostToShare(postData.value)
   router.push('/stories/create')
-  closeShareMenu()
 }
 
 const shareAsMyPost = () => {
-  closeShareMenu()
   isShareAsPostModalOpen.value = true
 }
 
@@ -130,36 +120,13 @@ const handleDelete = () => {
   }
 }
 
-// Reaction handling
-const currentUser = {
-  name: 'Bartosz Miazek',
-  avatar: 'https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg'
-}
+// Reactions - using composable
+const { userReaction, likesCount, getReactionIcon, handleReaction } = usePostReactions(24)
 
-const userReaction = ref<string | null>(null)
-const baseLikesCount = 24
-
-const defaultReactionIcon = { src: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f44d/512.gif', bg: 'bg-blue-500' }
-
-const reactionIcons: Record<string, { src: string, bg: string }> = {
-  like: defaultReactionIcon,
-  love: { src: 'https://fonts.gstatic.com/s/e/notoemoji/latest/2764_fe0f/512.gif', bg: 'bg-red-500' },
-  haha: { src: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f606/512.gif', bg: 'bg-yellow-400' },
-  wow: { src: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f62f/512.gif', bg: 'bg-yellow-400' },
-  sad: { src: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f622/512.gif', bg: 'bg-yellow-400' },
-  angry: { src: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f621/512.gif', bg: 'bg-orange-500' }
-}
-
-const getReactionIcon = (reaction: string | null): { src: string, bg: string } => {
-  if (!reaction) return defaultReactionIcon
-  return reactionIcons[reaction] ?? defaultReactionIcon
-}
-
-const likesCount = computed(() => baseLikesCount + (userReaction.value ? 1 : 0))
-
-const handleReaction = (reaction: string | null) => {
-  userReaction.value = reaction
-}
+// Video autoplay - using composable
+const videoContainerRef = ref<HTMLElement | null>(null)
+const videoRef = ref<InstanceType<typeof PlayerVideo> | null>(null)
+useVideoAutoplay(videoContainerRef)
 </script>
 
 <template>
@@ -196,41 +163,22 @@ const handleReaction = (reaction: string | null) => {
     </div>
 
     <div v-if="!isSharedPostView">
-      <div class="px-4 pt-3 pb-1">
-        <div class="flex items-start">
-          <button class="mr-2.5">
-            <img
-              class="rounded-full w-10 h-10 object-cover "
-              :src="displayData.authorAvatar"
-              :alt="displayData.authorName"
-            >
-          </button>
-
-          <div class="flex-1 min-w-0 mt-0.5">
-            <ProfilePopper :name="displayData.authorName" class="font-semibold text-theme-text text-[15px] hover:underline cursor-pointer leading-tight block" />
-            <div class="flex items-center text-[13px] text-theme-text-secondary mt-0.5">
-              <span class="hover:underline cursor-pointer">17 grudnia</span>
-              <span class="mx-1">·</span>
-              <Earth :size="12" fillColor="#65676B" v-tooltip="'Publiczne'" />
-            </div>
-          </div>
-
-          <div class="flex items-center -mr-2">
-            <button class="rounded-full p-2 hover:bg-theme-hover transition-colors">
-              <DotsHorizontal :size="20" :fillColor="isDark ? '#B0B3B8' : '#65676B'" />
-            </button>
-            <button class="rounded-full p-2 hover:bg-theme-hover transition-colors">
-              <Close :size="20" :fillColor="isDark ? '#B0B3B8' : '#65676B'" />
-            </button>
-          </div>
-        </div>
-      </div>
+      <PostHeader
+        :author-name="displayData.authorName"
+        :author-avatar="displayData.authorAvatar"
+      />
 
       <div class="px-4 py-1 pb-3 text-[15px] text-theme-text leading-normal whitespace-pre-line">
         {{ displayData.content }}
       </div>
 
-      <PostImageGallery v-if="displayData.images.length > 0" :images="displayData.images" :post-id="props.post?.id ?? 0" />
+      <!-- Video -->
+      <div v-if="displayData.videoUrl" ref="videoContainerRef" class="w-full">
+        <PlayerVideo ref="videoRef" :url="displayData.videoUrl" />
+      </div>
+
+      <!-- Images -->
+      <PostImageGallery v-else-if="displayData.images.length > 0" :images="displayData.images" :post-id="props.post?.id ?? 0" />
     </div>
 
     <div v-else class="mx-3 mb-3 border border-theme-border rounded-lg overflow-hidden cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
@@ -298,71 +246,12 @@ const handleReaction = (reaction: string | null) => {
       </div>
     </div>
 
-
-
-    <div class="px-2 py-1 flex items-center justify-between relative z-10">
-        <div class="flex-1">
-             <ReactionButton @react="handleReaction" />
-        </div>
-        <button
-            @click="toggleModal"
-            class="flex-1 flex items-center justify-center gap-2 h-9 rounded hover:bg-theme-hover transition-colors cursor-pointer text-theme-text-secondary font-semibold text-[15px]"
-        >
-            <MessageOutline :size="20" class="text-gray-500 dark:text-gray-400" />
-            <span>{{ $t('home.comment') }}</span>
-        </button>
-        <div class="flex-1 relative">
-            <button
-                class="w-full flex items-center justify-center gap-2 h-9 rounded hover:bg-theme-hover transition-colors cursor-pointer text-theme-text-secondary font-semibold text-[15px]"
-                @click="toggleShareMenu"
-            >
-                <ShareIcon :size="20" class="text-gray-500 dark:text-gray-400" />
-                <span>{{ $t('actions.share') }}</span>
-            </button>
-
-             <Transition
-                enter-active-class="transition ease-out duration-100"
-                enter-from-class="transform opacity-0 scale-95"
-                enter-to-class="transform opacity-100 scale-100"
-                leave-active-class="transition ease-in duration-75"
-                leave-from-class="transform opacity-100 scale-100"
-                leave-to-class="transform opacity-0 scale-95"
-              >
-                <div
-                  v-if="isShareMenuOpen"
-                  class="absolute bottom-full right-0 mb-2 w-[300px] bg-theme-bg-secondary rounded-lg shadow-xl border border-theme-border z-50 overflow-hidden"
-                >
-                  <div class="p-2">
-                    <button
-                      @click="shareAsMyPost"
-                      class="w-full px-3 py-2 flex items-center gap-3 hover:bg-theme-hover rounded-lg transition-colors text-left"
-                    >
-                      <div class="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                        <Pencil :size="20" :fillColor="isDark ? '#E4E6EB' : '#050505'" />
-                      </div>
-                      <div class="flex-1">
-                        <p class="text-[15px] font-medium text-theme-text">Udostępnij teraz</p>
-                        <p class="text-xs text-theme-text-secondary">Udostępnij w aktualnościach</p>
-                      </div>
-                    </button>
-                    <button
-                      @click="shareToStory"
-                      class="w-full px-3 py-2 flex items-center gap-3 hover:bg-theme-hover rounded-lg transition-colors text-left mt-1"
-                    >
-                      <div class="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                        <BookOpenPageVariant :size="20" :fillColor="isDark ? '#E4E6EB' : '#050505'" />
-                      </div>
-                      <div class="flex-1">
-                        <p class="text-[15px] font-medium text-theme-text">Udostępnij w relacji</p>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              </Transition>
-        </div>
-    </div>
-
-    <div v-if="isShareMenuOpen" class="fixed inset-0 z-0" @click="closeShareMenu"></div>
+    <PostActions
+      @react="handleReaction"
+      @comment="toggleModal"
+      @share-as-post="shareAsMyPost"
+      @share-to-story="shareToStory"
+    />
 
     <Modal v-if="isModalOpen" @close="toggleModal"><PostModal/></Modal>
     <ShareAsPostModal :is-open="isShareAsPostModalOpen" :post="postData" @close="isShareAsPostModalOpen = false" @share="handleShareAsPost"/>
