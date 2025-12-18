@@ -2,16 +2,16 @@
   <div>
     <div class="shadow-xl p-3 rounded-lg bg-theme-bg-secondary">
       <RouterLink
-        to="/profile"
+        :to="profileLink"
         class="flex pt-2 items-center space-x-3 pb-3 border-b border-theme-border hover:bg-gray-100 cursor-pointer"
       >
         <img
-          src="https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg?stp=cp0_dst-jpg_s40x40_tt6&_nc_cat=104&ccb=1-7&_nc_sid=e99d92&_nc_ohc=-o822DQWa_kQ7kNvwEBBrQN&_nc_oc=Adk7CLzzn6vvAFCclTDzM32DkA0bnwHJCU8V-LZ-6Rgt046578D_zYBPKIpVqrH_jqSITUodiSom9HftYGfou-YR&_nc_zt=24&_nc_ht=scontent-waw2-1.xx&_nc_gid=hWinwIkg4qpusDkFaBv_tg&oh=00_AfhegpWXzJqTqkSqYk4lk-AflwjwvP0sVVYiWvBV-lyexg&oe=6917A7AC"
+          :src="currentUser?.avatar || 'https://i.pravatar.cc/150?img=1'"
           class="h-10 w-10 bg-gray-300 rounded-full shrink-0"
-          alt="avatar"
+          :alt="currentUser?.name || 'avatar'"
         />
         <span class="font-semibold text-theme-text font-[15px] truncate">
-          Bartosz Miazek
+          {{ currentUser?.name || 'Użytkownik' }}
         </span>
       </RouterLink>
 
@@ -57,8 +57,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref, type DefineComponent } from 'vue';
+import { ref, computed, type Ref, type DefineComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '@/stores/auth';
 
 import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
 import CogIcon from 'vue-material-design-icons/Cog.vue';
@@ -67,8 +68,19 @@ import WeatherNightIcon from 'vue-material-design-icons/WeatherNight.vue';
 import CommentProcessingOutlineIcon from 'vue-material-design-icons/CommentProcessingOutline.vue';
 import LogoutIcon from 'vue-material-design-icons/Logout.vue';
 import AccountSearchIcon from 'vue-material-design-icons/AccountSearch.vue';
+import TranslateIcon from 'vue-material-design-icons/Translate.vue';
 
 useI18n();
+
+const authStore = useAuthStore();
+
+// Get current user data
+const currentUser = computed(() => authStore.currentUser);
+
+// Create profile link based on current user
+const profileLink = computed(() => {
+  return currentUser.value ? `/profile/${currentUser.value.id}` : '/profile';
+});
 
 interface MenuItem {
   name: string;
@@ -78,22 +90,23 @@ interface MenuItem {
 }
 
 const menuItems: Ref<MenuItem[]> = ref([
-  {
-    name: 'settings',
-    labelKey: 'profile_menu.settings',
-    iconComponent: CogIcon,
-    hasSubMenu: true,
-  },
+
   {
     name: 'help',
     labelKey: 'profile_menu.help',
     iconComponent: HelpCircleOutlineIcon,
-    hasSubMenu: true,
+
   },
   {
     name: 'display',
     labelKey: 'profile_menu.display',
     iconComponent: WeatherNightIcon,
+    hasSubMenu: true,
+  },
+  {
+    name: 'language',
+    labelKey: 'profile_menu.language',
+    iconComponent: TranslateIcon,
     hasSubMenu: true,
   },
   {
