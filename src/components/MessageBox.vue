@@ -361,7 +361,7 @@ defineProps<{ boxId: string | number }>();
         class="absolute inset-0 h-[400px] top-[55px] z-50 flex items-center justify-center bg-black/50 pointer-events-none"
       >
         <div class="text-white text-lg font-semibold p-4 rounded-lg border-2 border-dashed border-white">
-          Przeciągnij plik aby wysłać
+          {{ $t('ui.dragFileToSend') }}
         </div>
       </div>
 

@@ -203,14 +203,14 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109];
                             class="flex justify-center items-baseline bg-gray-200 hover:bg-gray-300 rounded-lg cursor-pointer"
                         >
                             <button class="flex items-center px-4 py-2 font-bold">
-                                <Check class="-ml-2 mr-1" :size="22"/> Znajomi
+                                <Check class="-ml-2 mr-1" :size="22"/> {{ $t('ui.friend') }}
                             </button>
                         </a>
                          <a
                             class="flex justify-center items-baseline bg-blue-500 hover:bg-blue-600 rounded-lg cursor-pointer text-white"
                         >
                             <button class="flex items-center px-4 py-2 font-bold">
-                                <Message class="-ml-2 mr-1" :size="22"/> Wiadomość
+                                <Message class="-ml-2 mr-1" :size="22"/> {{ $t('ui.message') }}
                             </button>
                         </a>
                     </div>

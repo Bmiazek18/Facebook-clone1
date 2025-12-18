@@ -198,7 +198,7 @@ const close = () => {
             class="px-5 py-2.5 bg-blue-500 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600 flex items-center gap-2"
           >
             <ShareVariant :size="18" />
-            Udostępnij na relację
+            {{ $t('ui.shareToStory') }}
           </button>
         </div>
       </div>

@@ -151,7 +151,7 @@ const saveAltText = () => {
             <button @click="emit('back')" class="p-2 rounded-full hover:bg-gray-100 transition">
               <ArrowLeft :size="24" class="text-gray-700" />
             </button>
-            <h1 class="text-2xl font-bold text-black">Twoja relacja</h1>
+            <h1 class="text-2xl font-bold text-black">{{ $t('ui.yourStory') }}</h1>
           </div>
           <div class="bg-gray-100 p-2 rounded-full cursor-pointer hover:bg-gray-200 transition">
             <Cog :size="24" class="text-black"/>

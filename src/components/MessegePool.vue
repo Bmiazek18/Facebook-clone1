@@ -30,7 +30,6 @@ const emit = defineEmits<{
   (e: 'vote', optionIds: (string | number)[]): void;
 }>();
 
-
 const options = ref<PollOption[]>(JSON.parse(JSON.stringify(props.initialOptions)));
 const newOptionText = ref('');
 const isAddingOption = ref(false);
@@ -156,14 +155,14 @@ const getPercentage = (votes: number): string => {
 
     <div v-if="allowAddOption" class="mt-3 px-1">
       <div v-if="!isAddingOption" @click="isAddingOption = true" class="cursor-pointer text-gray-400 font-medium text-xs hover:text-gray-500">
-        Jeszcze 1 opcja
+        {{ $t('ui.oneMoreOption') }}
       </div>
       <div v-else class="flex items-center gap-2">
         <input
           v-model="newOptionText"
           @keyup.enter="addNewOption"
           type="text"
-          placeholder="Opcja..."
+          :placeholder="$t('ui.option')"
           class="w-full bg-transparent border-b border-gray-300 py-0.5 text-sm font-medium focus:outline-none focus:border-black placeholder-gray-400"
           autofocus
         />
@@ -172,7 +171,7 @@ const getPercentage = (votes: number): string => {
           :disabled="!newOptionText"
           class="text-xs font-bold text-black disabled:opacity-30"
         >
-          OK
+          {{ $t('ui.ok') }}
         </button>
       </div>
     </div>
@@ -181,7 +180,7 @@ const getPercentage = (votes: number): string => {
       @click="submitVote"
       class="w-full mt-4 bg-white py-2 rounded-xl shadow-sm text-black text-sm font-bold hover:bg-gray-50 active:scale-[0.98] transition-all"
     >
-      Głosuj
+      {{ $t('ui.vote') }}
     </button>
 
   </div>

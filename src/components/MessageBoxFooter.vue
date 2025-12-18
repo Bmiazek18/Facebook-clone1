@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 import ImageOutlineIcon from 'vue-material-design-icons/ImageOutline.vue';
 import StickerEmojiIcon from 'vue-material-design-icons/StickerEmoji.vue';
@@ -20,6 +21,9 @@ const emit = defineEmits<{
 }>()
 
 const props = defineProps<{reply: Message | null}>();
+
+const { t } = useI18n();
+
 const addMessage = (content: string, sizeState: 'default' | 'small' | 'medium' | 'large' = 'default', imageUrl?: string | null, gifUrl?: string | null, isAudio?: boolean, audioUrl?: string, duration?: number) => {
   const finalContent = content.trim();
 
@@ -377,7 +381,7 @@ onUnmounted(() => {
 <transition name="reply">
   <div v-if="props.reply" class="reply-preview">
     <div class="flex justify-between items-center mb-1">
-      <span class="reply-sender">{{ props.reply.sender === 'me' ? 'Ty' : props.reply.sender }}</span>
+      <span class="reply-sender">{{ props.reply.sender === 'me' ? $t('ui.you') : props.reply.sender }}</span>
       <button @click="$emit('clearReply')" class="text-gray-400 hover:text-gray-600 text-xs">✕</button>
     </div>
     <span class="reply-content truncate">
@@ -385,13 +389,13 @@ onUnmounted(() => {
         {{ props.reply.content }}
       </template>
       <template v-else-if="props.reply.type === 'image'">
-        Obraz
+        {{ $t('ui.image') }}
       </template>
       <template v-else-if="props.reply.type === 'gif'">
-        GIF
+        {{ $t('ui.gif') }}
       </template>
       <template v-else-if="props.reply.type === 'audio'">
-        Wiadomość głosowa
+        {{ $t('ui.voiceMessage') }}
       </template>
     </span>
   </div>
