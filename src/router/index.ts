@@ -53,6 +53,11 @@ const router = createRouter({
       name: 'story',
       component: () => import('@/views/StoryView.vue'),
     },
+     {
+      path: '/video',
+      name: 'video',
+      component: () => import('@/views/VideoCallView.vue'),
+    },
  {
       path: '/login/2',
       name: 'loginAs',

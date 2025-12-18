@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { ref } from 'vue';
 import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue';
 import PhoneIcon from 'vue-material-design-icons/Phone.vue';
 import VideoOutlineIcon from 'vue-material-design-icons/VideoOutline.vue';
@@ -18,7 +19,24 @@ const close = (boxId: string | number) => {
 const minimize = (boxId: string | number) => {
     chatStore.toggleMinimize(boxId)
 };
+import IncomingCallModal from '../components/IncomingCallModal.vue';
+
+const isCallIncoming = ref(true);
+
+const onAccept = () => {
+  console.log("Połączenie odebrane!");
+  isCallIncoming.value = false;
+  // Tutaj logika przekierowania do pokoju wideo
+};
+
+const onReject = () => {
+  console.log("Połączenie odrzucone.");
+  isCallIncoming.value = false;
+};
 </script>
+
+
+
 <template>
   <header class="flex items-center justify-between p-3 border-b border-gray-200 bg-white shadow-sm">
     <div class="flex items-center space-x-2 min-w-0">
@@ -39,4 +57,12 @@ const minimize = (boxId: string | number) => {
       <CloseIcon @click="close(boxId)" :size="20" class="hover:text-purple-600 cursor-pointer" />
     </div>
   </header>
+  <IncomingCallModal
+      :is-open="isCallIncoming"
+      caller-name="Wiktoria Szerszeń"
+      caller-avatar="https://i.pravatar.cc/150?u=wiktoria"
+      @close="isCallIncoming = false"
+      @reject="onReject"
+      @accept="onAccept"
+    />
 </template>

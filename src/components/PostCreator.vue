@@ -25,6 +25,7 @@ const emit = defineEmits<{
     (e: 'navigate', viewName: string): void;
     (e: 'back'): void;
     (e: 'publish', content: string): void;
+    (e: 'close'): void;
 }>();
 
 // Stan komponentu
@@ -47,6 +48,7 @@ const openPrivacySelector = () => {
 
 const handlePublish = () => {
     emit('publish', postContent.value);
+    emit('close'); // Emituj event zamknięcia po publikacji
     postContent.value = '';
 };
 </script>

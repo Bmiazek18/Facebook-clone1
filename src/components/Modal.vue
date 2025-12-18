@@ -21,11 +21,11 @@ defineProps<{
     <div class="bg-theme-bg-secondary rounded-lg shadow-2xl  mx-4 my-8 relative flex flex-col max-h-[98vh]">
 
       <!-- HEADER -->
-      <div class="p-4 border-b border-theme-border flex items-center justify-center relative">
+      <div class="p-4 border-b border-theme-border flex items-center justify-between">
         <h2 class="text-xl text-theme-text font-bold">{{ title }}</h2>
         <button
           @click="closeModal"
-          class="absolute right-4 text-theme-text hover:bg-theme-hover rounded-full p-2"
+          class="text-theme-text hover:bg-theme-hover rounded-full p-2"
         >
           <Close :size="24" fillColor="#65686C" />
         </button>
