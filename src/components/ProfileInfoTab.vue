@@ -1,7 +1,47 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
-  import FriendsSection from './FriendsSection.vue';
-const friendsList = ref([
+  import { ref, computed } from 'vue'
+  import { useRoute } from 'vue-router'
+  import FriendsSection from './FriendsSection.vue'
+  import OverviewSection from './ProfileInfoTab/OverviewSection.vue'
+  import WorkEducationSection from './ProfileInfoTab/WorkEducationSection.vue'
+  import PlacesSection from './ProfileInfoTab/PlacesSection.vue'
+  import ContactBasicSection from './ProfileInfoTab/ContactBasicSection.vue'
+  import FamilySection from './ProfileInfoTab/FamilySection.vue'
+  import DetailsSection from './ProfileInfoTab/DetailsSection.vue'
+  import EventsSection from './ProfileInfoTab/EventsSection.vue'
+  import { getUserById } from '@/data/users'
+
+  const route = useRoute()
+
+  // 1. Pobranie ID z URL
+  const userIdParam = computed(() => {
+    const id = route.params.userId
+    return id ? parseInt(id as string, 10) : null
+  })
+
+  // 2. Pobranie użytkownika (bez fallbacku do hardcoded default user)
+  const profileUser = computed(() => {
+    if (userIdParam.value) {
+      return getUserById(userIdParam.value)
+    }
+    return null
+  })
+
+  // 3. Obsługa zakładek (nawigacja po lewej stronie)
+  const activeTab = ref('overview')
+
+  const menuItems = [
+    { id: 'overview', label: 'Przegląd' },
+    { id: 'work_edu', label: 'Praca i wykształcenie' },
+    { id: 'places', label: 'Wcześniejsze miejsca zamieszkania' },
+    { id: 'contact_basic', label: 'Dane kontaktowe i podstawowe informacje' },
+    { id: 'family', label: 'Rodzina i związki' },
+    { id: 'details', label: 'Informacje szczegółowe' }, // Skrócona nazwa dla czytelności
+    { id: 'events', label: 'Wydarzenia z życia' },
+  ]
+
+  // Lista znajomych (pozostawiona bez zmian)
+  const friendsList = ref([
     { name: 'Natalia Wójcik', mutual: 71, isFriend: true, imageId: 35 },
     { name: 'Kacper Szymański', mutual: 10, isFriend: false, imageId: 36 },
     { name: 'Monika Zawadzka', mutual: 211, isFriend: true, imageId: 37 },
@@ -22,53 +62,49 @@ const friendsList = ref([
     { name: 'Justyna Jurek', mutual: 128, isFriend: true, imageId: 31 },
     { name: 'Robert Kubiak', mutual: 89, isFriend: false, imageId: 32 },
     { name: 'Karolina Sęk', mutual: 80, isFriend: false, imageId: 33 },
-]);
+  ])
 </script>
 
 <template>
     <div class="w-full mt-4 overflow-auto">
-        <div class="flex bg-theme-bg-secondary p-4 rounded-lg shadow-lg">
-            <div class="w-1/4 border-r pr-4">
+        <div v-if="profileUser" class="flex bg-theme-bg-secondary p-4 rounded-lg shadow-lg min-h-[400px]">
+
+            <div class="w-1/3 md:w-1/4 border-r border-gray-200 pr-4">
+                <h2 class="text-xl font-bold mb-4 text-theme-text ml-2">Informacje</h2>
                 <ul class="space-y-1 text-theme-text-secondary">
-                    <li class="p-2 rounded-lg bg-blue-100 text-blue-600 font-bold cursor-pointer">Przegląd</li>
-                    <li class="p-2 rounded-lg hover:bg-gray-100 cursor-pointer">Praca i wykształcenie</li>
-                    <li class="p-2 rounded-lg hover:bg-gray-100 cursor-pointer">Wcześniejsze miejsca zamieszkania</li>
-                    <li class="p-2 rounded-lg hover:bg-gray-100 cursor-pointer">Dane kontaktowe i podstawowe informacje</li>
-                    <li class="p-2 rounded-lg hover:bg-gray-100 cursor-pointer">Rodzina i związki</li>
-                    <li class="p-2 rounded-lg hover:bg-gray-100 cursor-pointer">Informacje szczegółowe o użytkowniku Wiktoria</li>
-                    <li class="p-2 rounded-lg hover:bg-gray-100 cursor-pointer">Wydarzenia z życia</li>
+                    <li
+                        v-for="item in menuItems"
+                        :key="item.id"
+                        @click="activeTab = item.id"
+                        class="p-2 rounded-lg cursor-pointer transition-colors"
+                        :class="activeTab === item.id
+                            ? 'bg-blue-50 text-blue-600 font-bold'
+                            : 'hover:bg-gray-100'"
+                    >
+                        {{ item.id === 'details' ? `Informacje szczegółowe o użytkowniku ${profileUser.name.split(' ')[0]}` : item.label }}
+                    </li>
                 </ul>
             </div>
 
-            <div class="w-3/4 pl-6 text-theme-text-secondary">
-                <h2 class="text-xl font-bold mb-4 text-theme-text">Informacje</h2>
-                <div class="space-y-4">
-                    <div class="flex items-center">
-                        <span class="material-icons mr-3">💼</span>
-                        Brak miejsc pracy do wyświetlenia
-                    </div>
-                    <div class="flex items-center">
-                        <span class="material-icons mr-3">🎓</span>
-                        Uczęszczała do: **IV LO im. Jana Pawła II w Łukowie**
-                    </div>
-                    <div class="flex items-center">
-                        <span class="material-icons mr-3">🏠</span>
-                        Mieszka w: **Łuków**
-                    </div>
-                    <div class="flex items-center">
-                        <span class="material-icons mr-3">📍</span>
-                        Z: **Łuków**
-                    </div>
-                    <div class="flex items-center">
-                        <span class="material-icons mr-3">❤️</span>
-                        Brak informacji o związku do wyświetlenia
-                    </div>
-                </div>
+            <div class="w-2/3 md:w-3/4 pl-6 text-theme-text-secondary">
+                <OverviewSection v-if="activeTab === 'overview'" :profile-user="profileUser" />
+                <WorkEducationSection v-else-if="activeTab === 'work_edu'" :profile-user="profileUser" />
+                <PlacesSection v-else-if="activeTab === 'places'" :profile-user="profileUser" />
+                <ContactBasicSection v-else-if="activeTab === 'contact_basic'" :profile-user="profileUser" />
+                <FamilySection v-else-if="activeTab === 'family'" :profile-user="profileUser" />
+                <DetailsSection v-else-if="activeTab === 'details'" :profile-user="profileUser" />
+                <EventsSection v-else-if="activeTab === 'events'" :profile-user="profileUser" />
             </div>
         </div>
-     <FriendsSection
-    :friends-list="friendsList"
-    :is-full-view="false" class="mt-4 border-none shadow-none p-0 bg-transparent"
-/>
+
+        <div v-else class="p-8 text-center text-gray-500 bg-theme-bg-secondary rounded-lg shadow-lg">
+            Nie znaleziono użytkownika lub brak ID w adresie URL.
+        </div>
+
+        <FriendsSection
+            :friends-list="friendsList"
+            :is-full-view="false"
+            class="mt-4 border-none shadow-none p-0 bg-transparent"
+        />
     </div>
 </template>
