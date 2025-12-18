@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, type Ref } from 'vue';
+import { ref, watch, computed, type Ref } from 'vue';
 
 // Definicja typu dla danych koloru (obiekt RGB)
 interface ColorData {
@@ -8,8 +8,17 @@ interface ColorData {
     b: number;
 }
 
+// Props
+interface Props {
+    imageUrl?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+    imageUrl: "https://picsum.photos/id/45/2000/800"
+})
+
 // URL obrazu wczytanego przez użytkownika
-const IMAGE_URL: string = "https://picsum.photos/id/45/2000/800";
+const IMAGE_URL = computed(() => props.imageUrl)
 
 // Referencje do elementów DOM
 // HTMLImageElement reprezentuje element <img>

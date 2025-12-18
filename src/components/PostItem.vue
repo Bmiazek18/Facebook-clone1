@@ -166,6 +166,7 @@ useVideoAutoplay(videoContainerRef)
       <PostHeader
         :author-name="displayData.authorName"
         :author-avatar="displayData.authorAvatar"
+        :author-id="(props.post as any)?.authorId"
       />
 
       <div class="px-4 py-1 pb-3 text-[15px] text-theme-text leading-normal whitespace-pre-line">

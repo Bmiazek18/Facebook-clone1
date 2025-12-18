@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { useRoute } from 'vue-router';
 
 // Importy nowych komponentów zakładek
 import ProfilePostsTab from '@/components/ProfilePostsTab.vue';
@@ -7,22 +8,58 @@ import ProfileInfoTab from '@/components/ProfileInfoTab.vue';
 import FriendsSection from '@/components/FriendsSection.vue'; // Pełny widok znajomych
 
 // Importy dla UI
-import ImageWithGradient from '@/components/ImageWithGradient.vue';
 import Camera from 'vue-material-design-icons/Camera.vue';
 import Check from 'vue-material-design-icons/Check.vue';
 import Message from 'vue-material-design-icons/Message.vue';
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'; // Dodany do górnego paska
+import ImageWithGradient from '@/components/ImageWithGradient.vue';
 
+// Importy do pobrania danych użytkownika
+import { getUserById } from '@/data/users';
+import type { User } from '@/data/users';
+
+const route = useRoute();
 const activeTab = ref('posts'); // Ustawiamy domyślnie na 'friends' jak w przykładzie
-const userName = 'Wiktoria Królik';
-const userImage = 'https://picsum.photos/id/142/2000/320'; // Zdjęcie profilowe dla CreatePostBox
+
+// Domyślny użytkownik (aktualnie zalogowany)
+const currentUser: User = {
+  id: 1,
+  name: 'Bartosz Miazek',
+  avatar: 'https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg',
+  bio: 'Developer & Tech Enthusiast',
+  location: 'Białystok, Polska',
+  website: 'https://bartoszmiazek.com',
+  joinDate: '2020-05-15',
+  followersCount: 1250,
+  followingCount: 342,
+  friendsCount: 856,
+  postsCount: 124,
+  cover: 'https://picsum.photos/1200/300?random=101',
+  status: 'online'
+};
+
+// Pobranie danych użytkownika na podstawie userId z URL lub użycie domyślnego
+const userIdParam = computed(() => {
+  const id = route.params.userId;
+  return id ? parseInt(id as string, 10) : null;
+});
+
+const profileUser = computed(() => {
+  if (userIdParam.value) {
+    return getUserById(userIdParam.value) || currentUser;
+  }
+  return currentUser;
+});
+
+const userName = computed(() => profileUser.value.name);
+const userImage = computed(() => profileUser.value.avatar);
 
 function setActiveTab(tab: string) {
     activeTab.value = tab;
 }
 
 function updateTitle() {
-        document.title = `${userName} | Facebook`;
+        document.title = `${userName.value} | Facebook`;
 }
 
 // ----------------------------------------------------
@@ -131,7 +168,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109];
         </div>
 
         <div class="w-full bg-theme-bg-secondary">
-            <ImageWithGradient class="rounded-b-xl"/>
+            <ImageWithGradient :image-url="profileUser.cover" class="rounded-b-xl"/>
             <div class="max-w-[1250px]  mx-auto pb-1">
 
                 <div id="ProfileInfo" class="flex md:flex-row flex-col items-center justify-between px-4">
@@ -151,7 +188,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109];
                             <div class="text-[28px] text-theme-text font-extrabold pt-1">
                                 {{ userName }}
                             </div>
-                            <div class="text-[17px] font-bold text-theme-text-secondary mb-1.5 text-center md:text-left">525 znajomi · 79 wspólnych znajomych</div>
+                            <div class="text-[17px] font-bold text-theme-text-secondary mb-1.5 text-center md:text-left">{{ profileUser.friendsCount }} znajomi · {{ profileUser.mutualFriendsCount || 0 }} wspólnych znajomych</div>
                             <div class="flex md:justify-start justify-center md:-ml-1">
                                 <img v-for="i in 7" :key="i"
                                     class="rounded-full -ml-3 z-[10 - i] w-[40px] h-[40px] border-white border-2"

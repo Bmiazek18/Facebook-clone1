@@ -5,6 +5,7 @@ export interface Post {
   videoUrl?: string
   authorName: string
   authorAvatar: string
+  authorId: number
   date: string
   likesCount: number
   commentsCount: number
@@ -15,11 +16,12 @@ export const posts: Post[] = [
   // Post z video
   {
     id: 0,
-    content: 'Niesamowity zachód słońca nad oceanem �',
+    content: 'Niesamowity zachód słońca nad oceanem 🌅',
     images: [],
     videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
     authorName: 'Bartosz Miazek',
     authorAvatar: 'https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg',
+    authorId: 1,
     date: '17 grudnia',
     likesCount: 156,
     commentsCount: 23,
@@ -32,6 +34,7 @@ export const posts: Post[] = [
     images: ['https://picsum.photos/800/600?random=1'],
     authorName: 'Anna Kowalska',
     authorAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+    authorId: 2,
     date: '16 grudnia',
     likesCount: 24,
     commentsCount: 3,
@@ -47,6 +50,7 @@ export const posts: Post[] = [
     ],
     authorName: 'Jan Nowak',
     authorAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+    authorId: 3,
     date: '15 grudnia',
     likesCount: 56,
     commentsCount: 8,
@@ -63,6 +67,7 @@ export const posts: Post[] = [
     ],
     authorName: 'Jan Nowak',
     authorAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+    authorId: 3,
     date: '15 grudnia',
     likesCount: 112,
     commentsCount: 15,
@@ -80,6 +85,7 @@ export const posts: Post[] = [
     ],
     authorName: 'Katarzyna Wiśniewska',
     authorAvatar: 'https://randomuser.me/api/portraits/women/28.jpg',
+    authorId: 4,
     date: '14 grudnia',
     likesCount: 89,
     commentsCount: 12,
@@ -98,6 +104,7 @@ export const posts: Post[] = [
     ],
     authorName: 'Piotr Kowalczyk',
     authorAvatar: 'https://randomuser.me/api/portraits/men/45.jpg',
+    authorId: 5,
     date: '13 grudnia',
     likesCount: 234,
     commentsCount: 45,
@@ -118,6 +125,7 @@ export const posts: Post[] = [
     ],
     authorName: 'Maria Lewandowska',
     authorAvatar: 'https://randomuser.me/api/portraits/women/65.jpg',
+    authorId: 6,
     date: '12 grudnia',
     likesCount: 567,
     commentsCount: 89,
@@ -141,6 +149,7 @@ export const posts: Post[] = [
     ],
     authorName: 'Tomasz Zieliński',
     authorAvatar: 'https://randomuser.me/api/portraits/men/67.jpg',
+    authorId: 7,
     date: '10 grudnia',
     likesCount: 1234,
     commentsCount: 156,
@@ -153,6 +162,7 @@ export const posts: Post[] = [
     images: ['https://picsum.photos/800/600?random=33'],
     authorName: 'Ewa Kamińska',
     authorAvatar: 'https://randomuser.me/api/portraits/women/33.jpg',
+    authorId: 8,
     date: '9 grudnia',
     likesCount: 45,
     commentsCount: 6,
@@ -168,6 +178,7 @@ export const posts: Post[] = [
     ],
     authorName: 'Michał Wójcik',
     authorAvatar: 'https://randomuser.me/api/portraits/men/52.jpg',
+    authorId: 9,
     date: '8 grudnia',
     likesCount: 78,
     commentsCount: 23,
@@ -184,6 +195,7 @@ export const posts: Post[] = [
     ],
     authorName: 'Aleksandra Dąbrowska',
     authorAvatar: 'https://randomuser.me/api/portraits/women/55.jpg',
+    authorId: 10,
     date: '7 grudnia',
     likesCount: 167,
     commentsCount: 34,
