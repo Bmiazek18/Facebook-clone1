@@ -185,6 +185,7 @@
     "settings": "Ustawienia i prywatność",
     "help": "Pomoc i wsparcie",
     "display": "Wyświetlanie i ułatwienia dostępu",
+    "language": "Język",
     "feedback": "Przekaż opinię",
     "logout": "Wyloguj się",
     "viewAllProfiles": "Zobacz wszystkie profile"
@@ -196,5 +197,34 @@
     "wow": "Wow",
     "sad": "Przykro mi",
     "angry": "Wrr"
+  },
+  "ui": {
+    "friend": "Znajomy",
+    "message": "Wiadomość",
+    "you": "Ty",
+    "image": "Obraz",
+    "gif": "GIF",
+    "audio": "Audio",
+    "dragFileToSend": "Przeciągnij plik aby wysłać",
+    "voiceMessage": "Wiadomość głosowa",
+    "shareToStory": "Udostępnij na relację",
+    "yourStory": "Twoja relacja",
+    "back": "Wróć",
+    "ok": "OK",
+    "option": "Opcja...",
+    "oneMoreOption": "Jeszcze 1 opcja",
+    "vote": "Głosuj",
+    "displayAndAccessibility": "Wyświetlanie i ułatwienia dostępu",
+    "darkMode": "Tryb ciemny",
+    "on": "Wł.",
+    "off": "Wył.",
+    "automatic": "Automatycznie",
+    "compactMode": "Tryb kompaktowy",
+    "keyboard": "Klawiatura",
+    "loading": "Ładowanie",
+    "reply": "Odpowiedź",
+    "text": "Tekst",
+    "allComments": "Wszystkie komentarze",
+    "newestFirst": "Najtrafniejsze"
   }
 }

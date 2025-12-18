@@ -63,6 +63,7 @@
     "watch": "Watch",
     "memories": "Memories",
     "birthday": "has birthday today",
+    "birthdayHas": "has birthday today",
     "contact": "Contact",
     "noPost": "No posts",
     "like": "Like",
@@ -74,6 +75,7 @@
   },
   "post": {
     "createPost": "Create post",
+    "addLive": "Go Live",
     "addPhoto": "Add photo",
     "addFeeling": "Add feeling",
     "feeling": "How are you feeling?",
@@ -183,6 +185,7 @@
     "settings": "Settings and Privacy",
     "help": "Help and Support",
     "display": "Display and Accessibility",
+    "language": "Language",
     "feedback": "Give Feedback",
     "logout": "Sign out",
     "viewAllProfiles": "View all profiles"
@@ -194,5 +197,34 @@
     "wow": "Wow",
     "sad": "Sad",
     "angry": "Angry"
+  },
+  "ui": {
+    "friend": "Friend",
+    "message": "Message",
+    "you": "You",
+    "image": "Image",
+    "gif": "GIF",
+    "audio": "Audio",
+    "dragFileToSend": "Drag file to send",
+    "voiceMessage": "Voice message",
+    "shareToStory": "Share to Story",
+    "yourStory": "Your story",
+    "back": "Back",
+    "ok": "OK",
+    "option": "Option...",
+    "oneMoreOption": "One more option",
+    "vote": "Vote",
+    "displayAndAccessibility": "Display and Accessibility",
+    "darkMode": "Dark Mode",
+    "on": "On",
+    "off": "Off",
+    "automatic": "Automatic",
+    "compactMode": "Compact Mode",
+    "keyboard": "Keyboard",
+    "loading": "Loading",
+    "reply": "Reply",
+    "text": "Text",
+    "allComments": "All comments",
+    "newestFirst": "Newest"
   }
 }
