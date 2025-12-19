@@ -1,23 +1,22 @@
 <template>
-  <div class="flex h-screen pt-[50px] bg-black overflow-hidden font-sans">
+  <div class="flex h-[calc(100vh-50px)] bg-black overflow-hidden font-sans mt-[50px]">
 
     <div class="flex-1 flex justify-center relative transition-all duration-300">
 
-      <!-- Scrollable reels container -->
       <div
         ref="scrollContainerRef"
-        class="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
+        class="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
         @scroll="handleScroll"
       >
         <div
           v-for="(reel, index) in reels"
           :key="reel.id"
           :ref="el => setReelRef(el, index)"
-          class="h-full flex items-center justify-center snap-start snap-always"
+          class="h-full w-full flex items-center justify-center snap-start snap-always py-4"
         >
-          <div class="flex items-end gap-4">
-            <!-- Video container -->
-            <div class="relative w-[647px] aspect-9/16 bg-[#222] rounded-lg shadow-2xl overflow-hidden">
+          <div class="flex items-end gap-2 md:gap-4 h-full max-h-[90vh] lg:max-h-[850px]">
+
+            <div class="relative h-full aspect-[9/16] bg-[#222] rounded-lg shadow-2xl overflow-hidden flex-shrink">
 
               <video
                 :ref="el => setVideoRef(el, index)"
@@ -36,54 +35,53 @@
               <div class="absolute inset-0 pointer-events-none bg-linear-to-b from-transparent via-transparent to-black/60"></div>
 
               <div v-if="currentIndex !== index || !isPlaying" class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <PlayIcon :size="64" class="text-white/50" />
+                <PlayIcon :size="48" class="text-white/50" />
               </div>
 
               <div class="absolute bottom-4 left-4 right-4 text-white z-10">
                 <div class="flex items-center gap-2 mb-2">
                   <img :src="reel.user.avatar" class="w-8 h-8 rounded-full object-cover border border-white/20" />
-                  <span class="font-bold text-[15px] hover:underline cursor-pointer">{{ reel.user.name }}</span>
-                  <button v-if="!reel.user.isFollowing" class="ml-1 text-white font-bold text-[15px] hover:underline">• Obserwuj</button>
+                  <span class="font-bold text-[14px] md:text-[15px] hover:underline cursor-pointer truncate">{{ reel.user.name }}</span>
+                  <button v-if="!reel.user.isFollowing" class="ml-1 text-white font-bold text-[14px] hover:underline whitespace-nowrap">• Obserwuj</button>
                 </div>
-                <p class="text-[15px] leading-snug line-clamp-2 pr-4 text-shadow-sm">
+                <p class="text-[13px] md:text-[15px] leading-snug line-clamp-2 pr-4 text-shadow-sm">
                   {{ reel.caption }} <span class="text-gray-300">{{ reel.hashtags }}</span>
                 </p>
-                <div class="flex items-center gap-2 mt-2 text-sm font-medium">
+                <div class="flex items-center gap-2 mt-2 text-xs font-medium">
                    <MusicNoteIcon :size="14" />
-                   <marquee class="max-w-[200px]">{{ reel.music }}</marquee>
+                   <div class="overflow-hidden w-full">
+                     <marquee class="max-w-[150px]">{{ reel.music }}</marquee>
+                   </div>
                 </div>
               </div>
-
             </div>
 
-            <!-- Side buttons -->
-            <div class="flex flex-col items-center gap-4 text-white pb-4">
-
+            <div class="flex flex-col items-center gap-3 md:gap-4 text-white pb-2">
               <div class="flex flex-col items-center gap-1 cursor-pointer group">
-                <div class="p-3 bg-[#3a3b3c] group-hover:bg-[#4e4f50] rounded-full transition-colors">
-                   <ThumbUpIcon :size="24" :fillColor="reel.isLiked ? '#1877f2' : 'white'" />
+                <div class="p-2 md:p-3 bg-[#3a3b3c] group-hover:bg-[#4e4f50] rounded-full transition-colors">
+                   <ThumbUpIcon :size="20" :fillColor="reel.isLiked ? '#1877f2' : 'white'" />
                 </div>
-                <span class="text-xs font-bold text-gray-300">{{ reel.likes }}</span>
+                <span class="text-[10px] md:text-xs font-bold text-gray-300">{{ reel.likes }}</span>
               </div>
 
               <div @click="toggleComments" class="flex flex-col items-center gap-1 cursor-pointer group">
-                <div class="p-3 bg-[#3a3b3c] group-hover:bg-[#4e4f50] rounded-full transition-colors"
+                <div class="p-2 md:p-3 bg-[#3a3b3c] group-hover:bg-[#4e4f50] rounded-full transition-colors"
                      :class="{'bg-white text-black hover:bg-white': isCommentsOpen}">
-                   <CommentIcon :size="24" :fillColor="isCommentsOpen ? 'black' : 'white'" />
+                   <CommentIcon :size="20" :fillColor="isCommentsOpen ? 'black' : 'white'" />
                 </div>
-                <span class="text-xs font-bold text-gray-300">{{ reel.comments }}</span>
+                <span class="text-[10px] md:text-xs font-bold text-gray-300">{{ reel.comments }}</span>
               </div>
 
               <div @click="shareToStory(reel)" class="flex flex-col items-center gap-1 cursor-pointer group">
-                <div class="p-3 bg-[#3a3b3c] group-hover:bg-[#4e4f50] rounded-full transition-colors">
-                   <ShareIcon :size="24" />
+                <div class="p-2 md:p-3 bg-[#3a3b3c] group-hover:bg-[#4e4f50] rounded-full transition-colors">
+                   <ShareIcon :size="20" />
                 </div>
-                <span class="text-xs font-bold text-gray-300">{{ reel.shares }}</span>
+                <span class="text-[10px] md:text-xs font-bold text-gray-300">{{ reel.shares }}</span>
               </div>
 
               <div class="mt-1 cursor-pointer group">
-                 <div class="p-3 bg-[#3a3b3c] group-hover:bg-[#4e4f50] rounded-full transition-colors">
-                    <DotsHorizontalIcon :size="24" />
+                 <div class="p-2 md:p-3 bg-[#3a3b3c] group-hover:bg-[#4e4f50] rounded-full transition-colors">
+                    <DotsHorizontalIcon :size="20" />
                  </div>
               </div>
             </div>
@@ -94,92 +92,31 @@
 
     </div>
 
-    <!-- Navigation arrows -->
     <div
-      class="fixed top-1/2 -translate-y-1/2 flex flex-col gap-4 z-30 transition-all duration-300"
+      class="fixed top-1/2 -translate-y-1/2 hidden sm:flex flex-col gap-4 z-30 transition-all duration-300"
       :class="isCommentsOpen ? 'right-[416px]' : 'right-4'"
     >
       <button
         @click="goToReel('up')"
         :disabled="!canGoUp"
-        class="w-12 h-12 bg-[#3a3b3c] hover:bg-[#4e4f50] rounded-full flex items-center justify-center text-white transition-colors border border-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+        class="w-10 h-10 md:w-12 md:h-12 bg-[#3a3b3c] hover:bg-[#4e4f50] rounded-full flex items-center justify-center text-white transition-colors border border-gray-700 disabled:opacity-30"
       >
-        <ChevronUpIcon :size="32" />
+        <ChevronUpIcon :size="28" />
       </button>
       <button
         @click="goToReel('down')"
         :disabled="!canGoDown"
-        class="w-12 h-12 bg-[#3a3b3c] hover:bg-[#4e4f50] rounded-full flex items-center justify-center text-white transition-colors border border-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+        class="w-10 h-10 md:w-12 md:h-12 bg-[#3a3b3c] hover:bg-[#4e4f50] rounded-full flex items-center justify-center text-white transition-colors border border-gray-700 disabled:opacity-30"
       >
-        <ChevronDownIcon :size="32" />
+        <ChevronDownIcon :size="28" />
       </button>
     </div>
 
     <div
       v-if="isCommentsOpen && currentReel"
-      class="w-[400px] bg-white border-l border-[#dadde1] flex flex-col transition-all duration-300 animate-slide-in relative z-40"
+      class="fixed right-0 top-[50px] bottom-0 w-full sm:w-[350px] md:w-[400px] bg-white border-l border-[#dadde1] flex flex-col transition-all duration-300 animate-slide-in z-40"
     >
-      <button @click="toggleComments" class="absolute top-2 right-2 text-gray-500 hover:bg-gray-100 p-1 rounded-full z-50">
-         <CloseIcon :size="24" />
-      </button>
-
-      <div class="p-4 border-b border-gray-200 overflow-y-auto max-h-[30vh]">
-        <div class="flex gap-3 mb-3">
-           <img :src="currentReel.user.avatar" class="w-10 h-10 rounded-full object-cover border border-gray-200" />
-           <div class="flex flex-col">
-             <div class="flex flex-wrap items-center gap-1 leading-tight">
-               <span class="font-bold text-[#050505] text-[15px] hover:underline cursor-pointer">
-                 {{ currentReel.user.name }}
-               </span>
-               <CheckDecagramIcon :size="14" class="text-blue-500" />
-               <span class="text-[#1877f2] font-semibold text-[15px] cursor-pointer hover:underline">
-                 • Obserwuj
-               </span>
-             </div>
-             <div class="flex items-center gap-1 text-[#65676b] text-[12px] mt-0.5">
-               <MusicNoteIcon :size="12" />
-               <span>{{ currentReel.music }}</span>
-             </div>
-           </div>
-        </div>
-
-        <div class="text-[15px] text-[#050505] leading-normal whitespace-pre-line pl-[52px]">
-          {{ currentReel.caption }}
-          <br />
-          <span class="text-[#1877f2] cursor-pointer hover:underline">
-             {{ currentReel.hashtags }}
-          </span>
-        </div>
       </div>
-
-      <div class="flex-1 flex flex-col items-center justify-center text-center p-8 bg-white">
-        <div class="mb-4 opacity-50">
-           <FileDocumentIcon :size="72" class="text-[#bcc0c4]" />
-        </div>
-        <h3 class="text-[#65676b] font-bold text-[20px] mb-2">
-          Nie ma jeszcze komentarzy
-        </h3>
-        <p class="text-[#65676b] text-[15px]">
-          Bądź pierwszą osobą, która to skomentuje.
-        </p>
-      </div>
-
-      <div class="p-4 border-t border-[#dadde1] bg-white sticky bottom-0">
-        <div class="flex items-center gap-2 bg-[#f0f2f5] rounded-full px-4 py-2.5">
-          <input
-            type="text"
-            placeholder="Napisz komentarz..."
-            class="bg-transparent w-full text-[15px] outline-none placeholder-[#65676b] text-black"
-          />
-          <div class="flex gap-3 text-[#65676b] cursor-pointer">
-             <StickerEmojiIcon :size="20" />
-             GIF
-             <EmoticonHappyIcon :size="20" />
-          </div>
-        </div>
-      </div>
-
-    </div>
 
   </div>
 </template>
