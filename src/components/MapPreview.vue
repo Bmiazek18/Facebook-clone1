@@ -105,7 +105,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div v-if="props.selectedLocation" class="relative mb-4 border border-gray-300 rounded-xl overflow-hidden shadow-sm bg-gray-100">
-    <div @click="$emit('removeLocation')" class="absolute top-2 right-2 z-50 bg-white w-8 h-8 rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-gray-100 transition">
+    <div @click="$emit('removeLocation')" class="absolute top-2 right-2 z-99999 bg-white w-8 h-8 rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-gray-100 transition">
       <CloseIcon :size="18" class="text-gray-600" />
     </div>
 

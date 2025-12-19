@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
-import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue'; // Zakładam, że masz tę ikonę, jeśli nie - użyj SVG poniżej
+
 import { getAllUsers } from '@/data/users';
 import type { User } from '@/data/users';
 import HoverScrollbar from './HoverScrollbar.vue';
