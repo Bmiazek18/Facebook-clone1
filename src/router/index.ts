@@ -43,6 +43,12 @@ const router = createRouter({
       component: () => import('@/views/ReelView.vue'),
     },
      {
+      path: '/chat',
+      name: 'chat',
+      component: () => import('@/views/ChatView.vue'),
+      meta: { showMainLayout: false },
+    },
+     {
       path: '/createReel',
       name: 'createReel',
       component: () => import('@/views/CreateStoryView.vue'),

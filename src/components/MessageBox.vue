@@ -342,23 +342,29 @@ const addDroppedFile = (url: string, file: File) => {
 const replyTarget = ref<Message | null>(null);
 const setReplyTo = (message: Message) => { replyTarget.value = message; };
 const clearReply = () => { replyTarget.value = null; };
-defineProps<{ boxId: string | number }>();
+
+const props = withDefaults(defineProps<{ boxId?: string | number; mode?: 'card' | 'full' }>(), { mode: 'card' });
+
+const isFull = computed(() => props.mode === 'full');
+const outerClass = computed(() => isFull.value ? 'relative flex-1 flex flex-col h-full w-full' : 'flex items-center relative justify-center py-4 px-2');
+const innerClass = computed(() => isFull.value ? 'w-full h-full bg-theme-bg-secondary rounded-none shadow-none flex flex-col overflow-hidden' : 'w-full relative max-w-[328px] h-[455px] bg-theme-bg-secondary rounded-xl shadow-2xl flex flex-col overflow-hidden');
+const dragOverlayClass = computed(() => isFull.value ? 'absolute inset-0 z-50 flex items-center justify-center bg-black/50 pointer-events-none' : 'absolute inset-0 h-[400px] top-[55px] z-50 flex items-center justify-center bg-black/50 pointer-events-none');
 </script>
 
 <template>
   <div
-    class="flex items-center relative justify-center py-4 px-2"
+    :class="outerClass"
     @dragover.prevent="onDragOver"
     @dragleave.prevent="onDragLeave"
     @drop.prevent="onDrop"
   >
-    <div class="w-full relative max-w-[328px] h-[455px] bg-theme-bg-secondary rounded-xl shadow-2xl flex flex-col overflow-hidden">
+    <div :class="innerClass">
 
-      <MessageBoxHeader title="Alan, Jacek" :users="['Alan', 'Jacek']" :boxId="boxId"/>
+      <MessageBoxHeader title="Alan, Jacek" :users="['Alan', 'Jacek']" :boxId="props.boxId ?? 1"/>
 
       <div
         v-if="isDragging"
-        class="absolute inset-0 h-[400px] top-[55px] z-50 flex items-center justify-center bg-black/50 pointer-events-none"
+        :class="dragOverlayClass"
       >
         <div class="text-white text-lg font-semibold p-4 rounded-lg border-2 border-dashed border-white">
           {{ $t('ui.dragFileToSend') }}

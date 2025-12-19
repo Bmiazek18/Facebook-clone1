@@ -1,9 +1,9 @@
 <template>
-  <div class="max-w-[360px] max-h-[calc(100vh-72px)] mx-auto bg-theme-bg-secondary h-screen flex flex-col overflow-hidden min-h-0 rounded-b-2xl">
+  <div class="max-w-[360px] mx-auto bg-theme-bg-secondary flex flex-col overflow-hidden min-h-0 rounded-b-2xl h-full">
     <header class="p-4 flex justify-between items-center bg-theme-bg-secondary z-10 shrink-0">
       <div class="flex items-center space-x-2">
         <h1 class="text-2xl font-bold text-theme-text">{{ $t('header.title') }}</h1>
-        <LanguageSwitcher />
+
       </div>
       <div class="flex space-x-3 text-theme-text-secondary">
         <DotsHorizontalIcon class="h-6 w-6 cursor-pointer" />
@@ -54,7 +54,7 @@
       </a>
     </div> -->
 
-    <div class="grow overflow-y-auto min-h-0 overscroll-y-contain">
+  <div class="flex-1 overflow-y-auto min-h-0 overscroll-y-contain">
         <ul class="px-4 space-y-1">
             <li v-for="chat in filteredChats" :key="chat.id">
                 <button
@@ -106,12 +106,7 @@
 
 
     </div>
-     <div class="p-1">
-            <a href="#" class="block w-full text-center py-2 text-[15px] text-blue-500 font-semibold hover:underline">
-                {{ $t('chat.openMessenger') }}
-            </a>
-        </div>
-  </div>
+    </div>
 
 </template>
 
