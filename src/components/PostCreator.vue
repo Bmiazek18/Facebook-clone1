@@ -1,27 +1,32 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, watch, onUnmounted } from 'vue';
+import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue';
+import type { DefineComponent } from 'vue';
 
 // --- IKONY ---
 import LockIcon from 'vue-material-design-icons/Lock.vue';
 import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue';
 import FormatColorTextIcon from 'vue-material-design-icons/FormatColorText.vue';
 import EmoticonHappyIcon from 'vue-material-design-icons/EmoticonHappy.vue';
+import LazyEmojiPicker from './LazyEmojiPicker.vue';
+import StoryTextCard from './StoryTextCard.vue';
+import MediaPreview from './MediaPreview.vue';
 import ImageMultipleIcon from 'vue-material-design-icons/ImageMultiple.vue';
 import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
 import EmoticonIcon from 'vue-material-design-icons/Emoticon.vue';
 import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue';
 import EarthIcon from 'vue-material-design-icons/Earth.vue';
+import AccountMultipleMinusIcon from 'vue-material-design-icons/AccountMultipleMinus.vue';
+import AccountStarIcon from 'vue-material-design-icons/AccountStar.vue';
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
-import PencilIcon from 'vue-material-design-icons/Pencil.vue';
-import CloseIcon from 'vue-material-design-icons/Close.vue';
+import HoverScrollbar from './HoverScrollbar.vue';
 
 // --- LEAFLET (MAPA) ---
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import MapPreview from './MapPreview.vue';
 
 // --- TYPY ---
 import type { PostData } from '@/types/StoryElement';
 import type { User } from '@/data/users';
+// import type HoverScrollbarVue from './HoverScrollbar.vue';
 
 // Interfejs zgodny z Twoim JSON-em:
 // { "title": "Gdańsk", "subtitle": "Twoja obecna lokalizacja", "type": "city", "lat": "54.3706858", "lon": "18.6129831" }
@@ -37,6 +42,8 @@ const props = defineProps<{
   sharedPost?: PostData | null;
   taggedUsers?: User[];
   selectedLocation?: Location | null;
+  selectedGif?: string | null;
+  selectedPrivacy?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -48,6 +55,8 @@ const emit = defineEmits<{
   (e: 'openTagUsers'): void;
   (e: 'openLocation'): void;
   (e: 'removeLocation'): void;
+  (e: 'openGifSelector'): void;
+  (e: 'removeGif'): void;
 }>();
 
 // --- STAN ---
@@ -57,88 +66,28 @@ const postContent = ref('');
 const selectedImage = ref<string | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
 
-// Referencje do mapy
-const mapContainer = ref<HTMLElement | null>(null);
-let mapInstance: L.Map | null = null;
-
 const isPublishButtonDisabled = computed(() => {
   if (props.sharedPost) return false;
-  return !postContent.value.trim() && !selectedImage.value && !props.selectedLocation;
+  return !postContent.value.trim() && !selectedImage.value && !props.selectedLocation && !props.selectedGif;
 });
 
-const locationTypeLabel = computed(() => {
-  if (!props.selectedLocation?.type) return 'MIEJSCE';
-  const type = props.selectedLocation.type.toLowerCase();
-  if (type === 'city') return 'MIEJSCOWOŚĆ';
-  if (type === 'country') return 'KRAJ';
-  return type.toUpperCase();
+const privacyInfo = computed(() => {
+  type Info = { label: string; icon: DefineComponent | null };
+  const map: Record<string, Info> = {
+    only_me: { label: 'Tylko ja', icon: LockIcon },
+    public: { label: 'Publiczne', icon: EarthIcon },
+    friends: { label: 'Znajomi', icon: AccountGroupIcon },
+    friends_except: { label: 'Znajomi z wyjątkiem...', icon: AccountMultipleMinusIcon },
+    specific_friends: { label: 'Konkretni znajomi', icon: AccountStarIcon },
+
+  };
+  if (!props.selectedPrivacy) return { label: 'Tylko ja', icon: LockIcon };
+  return map[props.selectedPrivacy] || { label: props.selectedPrivacy, icon: null };
 });
 
-// --- LOGIKA MAPY (LEAFLET) ---
-const initMap = async () => {
-  if (!props.selectedLocation) return;
+// locationTypeLabel moved to MapPreview component
 
-  const lat = parseFloat(props.selectedLocation.lat);
-  const lng = parseFloat(props.selectedLocation.lon);
-
-  if (isNaN(lat) || isNaN(lng)) return;
-
-  if (mapInstance) {
-    mapInstance.remove();
-    mapInstance = null;
-  }
-
-  await nextTick();
-
-  setTimeout(() => {
-    const container = mapContainer.value;
-    if (!container) return;
-
-    // @ts-ignore
-    if (container._leaflet_id) {
-      // @ts-ignore
-      container._leaflet_id = null;
-    }
-
-    mapInstance = L.map(container, {
-      center: [lat, lng],
-      zoom: 13,
-      zoomControl: false,
-      attributionControl: false,
-      dragging: false,
-      scrollWheelZoom: false,
-      doubleClickZoom: false
-    });
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance);
-
-    const defaultIcon = L.icon({
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34]
-    });
-
-    L.marker([lat, lng], { icon: defaultIcon }).addTo(mapInstance);
-
-    mapInstance.invalidateSize();
-  }, 200);
-};
-
-watch(() => props.selectedLocation, (newVal) => {
-  if (newVal) {
-    initMap();
-    emit('updateHeight');
-  }
-}, { immediate: true, deep: true });
-
-onUnmounted(() => {
-  if (mapInstance) {
-    mapInstance.remove();
-    mapInstance = null;
-  }
-});
+// map handling moved to MapPreview component
 
 // --- OBSŁUGA INTERFEJSU ---
 const openPrivacySelector = () => emit('navigate', 'privacy');
@@ -158,6 +107,54 @@ const handleImageSelect = (event: Event) => {
   }
 };
 
+// --- STORY-LIKE TEXT CARD (mini) ---
+const showTextCard = ref(false);
+const textCardContent = ref('');
+// include id=0 as a "white / no-gradient" option; textClass controls text color on the card
+interface CardBackground { id: number; class: string; textClass?: string }
+const cardBackgrounds: CardBackground[] = [
+  { id: 0, class: 'bg-white', textClass: 'text-black' },
+  { id: 1, class: 'bg-gradient-to-b from-blue-500 to-blue-700', textClass: 'text-white' },
+  { id: 2, class: 'bg-gradient-to-tr from-pink-500 via-red-500 to-yellow-500', textClass: 'text-white' },
+  { id: 3, class: 'bg-gradient-to-br from-purple-900 via-indigo-800 to-blue-900', textClass: 'text-white' },
+  { id: 4, class: 'bg-red-500', textClass: 'text-white' },
+  { id: 5, class: 'bg-gradient-to-r from-green-400 to-teal-500', textClass: 'text-white' },
+];
+const selectedCardBgId = ref<number>(1);
+
+const toggleTextCard = () => {
+  if (!showTextCard.value) {
+    // open: seed content from postContent
+    textCardContent.value = postContent.value || '';
+  }
+  showTextCard.value = !showTextCard.value;
+  // after toggle, recalc height
+  nextTick(() => emit('updateHeight'));
+};
+
+const selectCardBackground = (id: number) => {
+
+  // If user selected the white/no-gradient thumbnail (id === 0), behave like the old X:
+  // commit the text into main post content and close the inline card.
+  if (id === 0) {
+    postContent.value = textCardContent.value;
+    showTextCard.value = false;
+    // ensure parent recalculates height
+    nextTick(() => emit('updateHeight'));
+  } else {
+    selectedCardBgId.value = id;
+  }
+};
+
+// closeTextCard removed: closing the card is done via the format icon (toggleTextCard) which
+// already commits content when opening/closing.
+
+const handleCardClose = () => {
+  postContent.value = textCardContent.value;
+  showTextCard.value = false;
+  nextTick(() => emit('updateHeight'));
+};
+
 const removeImage = () => {
   selectedImage.value = null;
   if (fileInput.value) fileInput.value.value = '';
@@ -167,6 +164,41 @@ const removeImage = () => {
 const removeLocation = () => {
   emit('removeLocation');
 };
+
+// Emoji picker for post content
+const showPicker = ref(false);
+const emojiWrapper = ref<HTMLElement | null>(null);
+const togglePicker = () => {
+  showPicker.value = !showPicker.value;
+};
+const addEmoji = (e: { native: string }) => {
+  // If the inline text card is open, add emoji to its content, otherwise to the main post content
+  if (showTextCard.value) {
+    textCardContent.value = textCardContent.value + e.native;
+  } else {
+    postContent.value = postContent.value + e.native;
+  }
+  // close picker after selection
+  showPicker.value = false;
+};
+
+// Close picker when clicking outside
+const handleClickOutside = (ev: Event) => {
+  if (!showPicker.value) return;
+  const target = ev.target as Node | null;
+  if (emojiWrapper.value && target && !emojiWrapper.value.contains(target)) {
+    showPicker.value = false;
+  }
+};
+
+onUnmounted(() => {
+  document.removeEventListener('pointerdown', handleClickOutside);
+});
+// When GIF selection changes, notify parent to recalculate height
+watch(() => props.selectedGif, () => {
+  // give Vue a tick to render the element, then ask parent to recalc
+  nextTick(() => emit('updateHeight'));
+});
 
 const handlePublish = () => {
   emit('publish', postContent.value);
@@ -184,12 +216,7 @@ const handlePublish = () => {
       <div class="flex flex-col">
         <div class="text-[15px] leading-tight mb-1 text-gray-900">
           <span class="font-bold">{{ userName }}</span>
-
-          <template v-if="props.selectedLocation">
-             jest w: <span class="font-bold">{{ props.selectedLocation.title }}</span>
-          </template>
-
-          <template v-if="props.taggedUsers && props.taggedUsers.length">
+ <template v-if="props.taggedUsers && props.taggedUsers.length">
             <span class="font-normal text-gray-600"> z: </span>
             <span class="font-bold">
               <template v-for="(user, idx) in props.taggedUsers" :key="user.id">
@@ -198,20 +225,26 @@ const handlePublish = () => {
               </template>
             </span>
           </template>
+          <template v-if="props.selectedLocation">
+             jest w: <span class="font-bold">{{ props.selectedLocation.title }}</span>
+          </template>
+
+
         </div>
 
         <div
             class="flex items-center bg-gray-200 px-2 py-0.5 rounded-md text-xs font-semibold text-gray-700 w-fit cursor-pointer hover:bg-gray-300 transition-colors"
             @click="openPrivacySelector"
         >
-          <lock-icon :size="12" class="mr-1" />
-          <span>Tylko ja</span>
+
+          <component v-if="privacyInfo.icon" :is="privacyInfo.icon" :size="12" class="mr-1" />
+          <span>{{ privacyInfo.label }}</span>
           <chevron-down-icon :size="12" class="ml-1" />
         </div>
       </div>
     </div>
-
-    <div class="relative mb-2">
+<HoverScrollbar :maxHeight="'360px'">
+    <div v-if="!showTextCard" class="relative mb-2">
       <textarea
         v-model="postContent"
         :placeholder="sharedPost ? 'Powiedz coś o tym...' : (props.selectedLocation ? 'O czym myślisz, Bartosz?' : 'Co słychać?')"
@@ -220,55 +253,35 @@ const handlePublish = () => {
       ></textarea>
 
       <div class="absolute bottom-2 left-0 text-[#fe5b70] cursor-pointer" title="Stylizacja tekstu">
-         <format-color-text-icon :size="24" />
+        <format-color-text-icon :size="24" @click="toggleTextCard" />
       </div>
       <div class="absolute bottom-2 right-0 text-gray-500 cursor-pointer" title="Dodaj emoji">
-        <emoticon-happy-icon :size="24" />
+        <div class="relative" ref="emojiWrapper">
+          <emoticon-happy-icon v-if="!showTextCard" :size="24" @click="togglePicker" class="cursor-pointer" />
+          <LazyEmojiPicker v-if="showPicker && !showTextCard" class="absolute bottom-full right-0 mb-2 w-[280px] max-h-[300px] shadow-2xl z-9999" @select="addEmoji" />
+        </div>
       </div>
     </div>
 
-    <div v-if="props.selectedLocation" class="relative mb-4 border border-gray-300 rounded-xl overflow-hidden shadow-sm bg-gray-100">
+    <!-- Story text card component -->
+    <StoryTextCard
+      v-if="showTextCard"
+      v-model="textCardContent"
+      :bgId="selectedCardBgId"
+      :backgrounds="cardBackgrounds"
+      @update:bgId="selectCardBackground"
+      @close="handleCardClose"
+    />
 
-        <div
-          @click="removeLocation"
-          class="absolute top-2 right-2 z-[401] bg-white w-8 h-8 rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-gray-100 transition"
-        >
-          <close-icon :size="18" class="text-gray-600" />
-        </div>
+    <MapPreview :selectedLocation="props.selectedLocation" @removeLocation="removeLocation" v-if="props.selectedLocation" />
 
-        <div ref="mapContainer" id="my-map-container" class="h-44 w-full z-0 bg-gray-200 relative"></div>
-
-        <div class="bg-[#f0f2f5] p-3 flex items-center border-t border-gray-200">
-            <div class="w-10 h-10 rounded-full bg-[#f3425f] flex items-center justify-center flex-shrink-0 text-white mr-3">
-                <map-marker-icon :size="24" />
-            </div>
-            <div class="flex flex-col overflow-hidden">
-                <span class="font-semibold text-gray-500 text-[11px] uppercase tracking-wide truncate">
-                  {{ locationTypeLabel }}
-                </span>
-                <span class="font-bold text-gray-900 text-[15px] leading-tight truncate">
-                  {{ props.selectedLocation.title }}
-                </span>
-                <span class="text-xs text-gray-500 truncate mt-0.5">
-                  {{ props.selectedLocation.subtitle }}
-                </span>
-            </div>
-        </div>
-    </div>
-
-    <div v-if="selectedImage" class="relative mb-4 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-      <img :src="selectedImage" class="w-full max-h-60 object-cover" />
-      <div class="absolute top-2 left-2 bg-white flex items-center gap-1 px-2 py-1 rounded shadow text-blue-600 text-sm font-medium cursor-pointer hover:bg-gray-50">
-        <PencilIcon :size="16" class="mr-1" />
-        Edytuj
-      </div>
-      <button
-        @click="removeImage"
-        class="absolute top-2 right-2 bg-white text-gray-700 p-1.5 rounded-full shadow hover:bg-gray-100 transition"
-      >
-        <CloseIcon :size="20" />
-      </button>
-    </div>
+    <MediaPreview
+      :selectedImage="selectedImage"
+      :selectedGif="props.selectedGif"
+      @remove-image="removeImage"
+      @remove-gif="() => emit('removeGif')"
+      @loaded="() => emit('updateHeight')"
+    />
 
     <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleImageSelect" />
 
@@ -288,6 +301,7 @@ const handlePublish = () => {
         <p class="text-gray-800 text-sm line-clamp-3">{{ sharedPost.content }}</p>
       </div>
     </div>
+  </HoverScrollbar>
 
     <hr class="my-4 border-gray-200">
 
@@ -298,7 +312,7 @@ const handlePublish = () => {
         <account-group-icon :size="24" class="text-[#1877f2] cursor-pointer hover:bg-gray-100 p-0.5 rounded transition" @click="emit('openTagUsers')" title="Oznacz znajomych" />
         <emoticon-icon :size="24" class="text-[#f7b928] cursor-pointer hover:bg-gray-100 p-0.5 rounded transition" title="Nastrój/aktywność" />
         <map-marker-icon :size="24" class="text-[#f3425f] cursor-pointer hover:bg-gray-100 p-0.5 rounded transition" @click="emit('openLocation')" title="Lokalizacja" />
-        <div class="bg-[#1877f2] text-white text-[10px] font-bold px-1 rounded flex items-center cursor-pointer hover:opacity-90">GIF</div>
+  <div class="bg-[#1877f2] text-white text-[10px] font-bold px-1 rounded flex items-center cursor-pointer hover:opacity-90" @click="emit('openGifSelector')">GIF</div>
         <dots-horizontal-icon :size="24" class="text-gray-500 cursor-pointer hover:bg-gray-100 p-0.5 rounded transition" />
       </div>
     </div>
@@ -314,6 +328,7 @@ const handlePublish = () => {
     >
       Opublikuj
     </button>
+
   </div>
 </template>
 

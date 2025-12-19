@@ -52,7 +52,7 @@ const confirmSelection = () => {
 </script>
 
 <template>
-  <div class=" flex flex-col h-full max-h-[600px] w-full  mx-auto">
+  <div class=" flex flex-col h-[600px] w-full  mx-auto">
 
 
 
