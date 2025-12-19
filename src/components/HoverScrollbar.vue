@@ -1,11 +1,17 @@
 <template>
-  <div ref="containerRef" class="relative w-full h-[calc(100vh-85px)]">
-    <div ref="contentRef" class="h-full w-full overflow-y-auto pr-2" @scroll="updateThumb">
+  <div ref="containerRef" class="relative w-full">
+    <div
+      ref="contentRef"
+      class="w-full overflow-y-auto pr-2"
+      :style="{ maxHeight: maxHeight || 'none' }"
+      @scroll="updateThumb"
+    >
       <slot />
     </div>
 
     <div
-      v-show="scrollNeeded" class="absolute top-0 right-0 w-2 rounded-full bg-gray-400 transition-opacity duration-300 cursor-pointer"
+      v-show="scrollNeeded"
+      class="absolute top-0 right-0 w-2 rounded-full bg-gray-400 transition-opacity duration-300 cursor-pointer"
       :style="{
         height: thumbHeight + 'px',
         transform: `translateY(${thumbTop}px)`,
@@ -17,24 +23,51 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch } from 'vue'
-import { useElementHover } from '@vueuse/core'
+import { ref, onMounted, onUnmounted, toRefs } from 'vue'
+import { useElementHover, useResizeObserver } from '@vueuse/core'
+
+const props = defineProps<{
+  maxHeight?: string
+}>();
+const { maxHeight } = toRefs(props);
 
 const containerRef = ref<HTMLElement | null>(null)
 const contentRef = ref<HTMLElement | null>(null)
 
 const thumbHeight = ref(20)
 const thumbTop = ref(0)
-const scrollNeeded = ref(false) // NOWOŚĆ: Flaga, czy zawartość jest większa niż kontener
+const scrollNeeded = ref(false)
+const visible = ref(false)
 
 const hovered = useElementHover(containerRef)
-const visible = ref(false)
 let fadeTimeout: number | null = null
 
-watch(hovered, (h) => {
+// Główna funkcja aktualizująca wymiary
+function updateThumb() {
+  const el = contentRef.value
+  if (!el) return
+
+  const { clientHeight, scrollHeight, scrollTop } = el
+
+  scrollNeeded.value = scrollHeight > clientHeight
+
+  if (scrollNeeded.value) {
+    // Proporcjonalna wysokość paska (min. 20px)
+    thumbHeight.value = Math.max((clientHeight / scrollHeight) * clientHeight, 20)
+    // Proporcjonalna pozycja paska
+    thumbTop.value = (scrollTop / scrollHeight) * clientHeight
+  }
+
+  // Automatyczne ukrywanie, jeśli scroll przestał być potrzebny
+  if (!scrollNeeded.value) visible.value = false
+}
+
+// Reakcja na hover z uwzględnieniem scrollNeeded
+import { watchEffect } from 'vue'
+watchEffect(() => {
   if (fadeTimeout) clearTimeout(fadeTimeout)
-  // Zaktualizowana logika: Widoczne, gdy najechane I przewijanie jest potrzebne
-  if (h && scrollNeeded.value) {
+
+  if (hovered.value && scrollNeeded.value) {
     visible.value = true
   } else {
     fadeTimeout = window.setTimeout(() => {
@@ -43,44 +76,30 @@ watch(hovered, (h) => {
   }
 })
 
+// --- REAKTYWNOŚĆ ROZMIARU ---
+// Obserwujemy contentRef: zadziała przy zmianie okna,
+// zmianie zawartości slotu i zmianie maxHeight
+useResizeObserver(contentRef, () => {
+  updateThumb()
+})
+
+// Logika drag (bez zmian)
 let startY = 0
 let startScrollTop = 0
 
-function updateThumb() {
-  if (!contentRef.value) return
-  const containerHeight = contentRef.value.clientHeight
-  const scrollHeight = contentRef.value.scrollHeight
-  const scrollTop = contentRef.value.scrollTop
-
-  // Ustawienie flagi scrollNeeded
-  scrollNeeded.value = scrollHeight > containerHeight
-
-  // Ustawia wysokość i pozycję tylko, jeśli przewijanie jest potrzebne,
-  // aby uniknąć błędów dzielenia przez zero, chociaż nowoczesne przeglądarki
-  // zazwyczaj poprawnie obsługują 0 dla scrollHeight == containerHeight.
-  if (scrollNeeded.value) {
-    thumbHeight.value = Math.max((containerHeight / scrollHeight) * containerHeight, 20)
-    thumbTop.value = (scrollTop / scrollHeight) * containerHeight
-  }
-}
-
 function startDrag(event: MouseEvent) {
   if (!contentRef.value) return
-
   startY = event.clientY
   startScrollTop = contentRef.value.scrollTop
-
   document.addEventListener('mousemove', onDrag)
   document.addEventListener('mouseup', stopDrag)
 }
 
 function onDrag(event: MouseEvent) {
   if (!contentRef.value) return
-  const containerHeight = contentRef.value.clientHeight
-  const scrollHeight = contentRef.value.scrollHeight
+  const { clientHeight, scrollHeight } = contentRef.value
   const deltaY = event.clientY - startY
-
-  contentRef.value.scrollTop = startScrollTop + (deltaY * scrollHeight) / containerHeight
+  contentRef.value.scrollTop = startScrollTop + (deltaY * scrollHeight) / clientHeight
   updateThumb()
 }
 
@@ -90,28 +109,24 @@ function stopDrag() {
 }
 
 onMounted(() => {
-  updateThumb()
+  // Blokowanie propagacji scrolla (overscroll-behavior: contain w CSS mógłby to uprościć)
+  const wheelHandler = (event: WheelEvent) => {
+    const el = contentRef.value
+    if (!el) return
+    const { scrollTop, scrollHeight, clientHeight } = el
+    const atTop = scrollTop === 0
+    const atBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 1
 
-  // Prevent scroll from propagating to parent when at edges
-  if (contentRef.value) {
-    contentRef.value.addEventListener('wheel', (event) => {
-      const el = contentRef.value
-      if (!el) return
-
-      const { scrollTop, scrollHeight, clientHeight } = el
-      const atTop = scrollTop === 0
-      const atBottom = scrollTop + clientHeight >= scrollHeight
-
-      // If at top and scrolling up OR at bottom and scrolling down
-      if ((atTop && event.deltaY < 0) || (atBottom && event.deltaY > 0)) {
-        event.preventDefault()
-        event.stopPropagation()
-      }
-    }, { passive: false })
+    if ((atTop && event.deltaY < 0) || (atBottom && event.deltaY > 0)) {
+      event.preventDefault()
+    }
   }
-})
+  contentRef.value?.addEventListener('wheel', wheelHandler, { passive: false })
 
-window.addEventListener('resize', updateThumb)
+  onUnmounted(() => {
+    contentRef.value?.removeEventListener('wheel', wheelHandler)
+  })
+})
 
 </script>
 
