@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+// --- FLOATING VUE ---
+import { Dropdown as VDropdown } from 'floating-vue';
+import 'floating-vue/dist/style.css';
+
+// --- IKONY ---
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 import ImageOutlineIcon from 'vue-material-design-icons/ImageOutline.vue';
 import StickerEmojiIcon from 'vue-material-design-icons/StickerEmoji.vue';
@@ -10,6 +16,8 @@ import StopIcon from 'vue-material-design-icons/Stop.vue';
 import SendIcon from 'vue-material-design-icons/Send.vue';
 import PlayIcon from 'vue-material-design-icons/Play.vue';
 import ThumbUpIcon from 'vue-material-design-icons/ThumbUp.vue';
+
+// --- KOMPONENTY ---
 import GifBox from './GifBox.vue';
 import LazyEmojiPicker from './LazyEmojiPicker.vue';
 
@@ -83,7 +91,7 @@ const newMessage = ref('');
 const fileInput = ref<HTMLInputElement | null>(null);
 const selectedImageUrl = ref<string | null>(null);
 const selectedGifUrl = ref<string | null>(null);
-const showPicker = ref(false);
+// showPicker usunięte - obsługuje to Floating Vue
 const isRecording = ref(false);
 const isPaused = ref(false);
 const recordingDuration = ref(0);
@@ -268,9 +276,7 @@ const cancelVoiceRecording = () => {
 };
 
 // Emoji & Picker
-const togglePicker = () => {
-  showPicker.value = !showPicker.value;
-};
+// togglePicker usunięte - obsługuje to Floating Vue
 
 const showEmoji = (e: { native: string }) => {
   newMessage.value = newMessage.value + e.native;
@@ -365,9 +371,9 @@ onUnmounted(() => {
   }
 });
 </script>
+
 <template>
   <footer class="p-2 border-t border-gray-200 bg-white shrink-0">
-    <!-- Media Preview -->
     <div v-if="selectedImageUrl || selectedGifUrl" class="p-2 mb-2 bg-gray-100 rounded-lg flex items-center justify-between">
         <div class="flex items-center space-x-2">
         <img :src="selectedImageUrl || selectedGifUrl || ''" :alt="selectedGifUrl ? $t('post.selectedGif') : $t('post.selectedImage')" class="w-10 h-10 object-cover rounded" />
@@ -378,31 +384,29 @@ onUnmounted(() => {
       </button>
     </div>
 
-<transition name="reply">
-  <div v-if="props.reply" class="reply-preview">
-    <div class="flex justify-between items-center mb-1">
-      <span class="reply-sender">{{ props.reply.sender === 'me' ? $t('ui.you') : props.reply.sender }}</span>
-      <button @click="$emit('clearReply')" class="text-gray-400 hover:text-gray-600 text-xs">✕</button>
-    </div>
-    <span class="reply-content truncate">
-      <template v-if="props.reply.type === 'text'">
-        {{ props.reply.content }}
-      </template>
-      <template v-else-if="props.reply.type === 'image'">
-        {{ $t('ui.image') }}
-      </template>
-      <template v-else-if="props.reply.type === 'gif'">
-        {{ $t('ui.gif') }}
-      </template>
-      <template v-else-if="props.reply.type === 'audio'">
-        {{ $t('ui.voiceMessage') }}
-      </template>
-    </span>
-  </div>
-</transition>
+    <transition name="reply">
+      <div v-if="props.reply" class="reply-preview">
+        <div class="flex justify-between items-center mb-1">
+          <span class="reply-sender">{{ props.reply.sender === 'me' ? $t('ui.you') : props.reply.sender }}</span>
+          <button @click="$emit('clearReply')" class="text-gray-400 hover:text-gray-600 text-xs">✕</button>
+        </div>
+        <span class="reply-content truncate">
+          <template v-if="props.reply.type === 'text'">
+            {{ props.reply.content }}
+          </template>
+          <template v-else-if="props.reply.type === 'image'">
+            {{ $t('ui.image') }}
+          </template>
+          <template v-else-if="props.reply.type === 'gif'">
+            {{ $t('ui.gif') }}
+          </template>
+          <template v-else-if="props.reply.type === 'audio'">
+            {{ $t('ui.voiceMessage') }}
+          </template>
+        </span>
+      </div>
+    </transition>
 
-
-    <!-- Recording State -->
     <div v-if="isRecording" class="flex items-center space-x-2 w-full">
       <button @click="cancelVoiceRecording" class="p-2 rounded-full bg-purple-600 text-white shrink-0 hover:bg-purple-700 transition">
         <CloseIcon :size="24" />
@@ -429,7 +433,6 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <!-- Paused Recording State -->
     <div v-else-if="isPaused" class="flex items-center space-x-2 w-full">
       <button @click="cancelVoiceRecording" class="p-2 rounded-full bg-purple-600 text-white shrink-0 hover:bg-purple-700 transition">
         <CloseIcon :size="24" />
@@ -448,7 +451,6 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <!-- Normal Input State -->
     <div v-else class="flex items-center space-x-1">
       <div class="flex space-x-1 text-gray-500 shrink-0">
         <MicrophoneIcon @click="startVoiceRecording" :size="24" class="text-blue-500 hover:text-blue-700 cursor-pointer" />
@@ -468,6 +470,7 @@ onUnmounted(() => {
           class="hidden"
         />
       </div>
+
       <div class="relative grow">
         <input
           :value="newMessage"
@@ -478,12 +481,28 @@ onUnmounted(() => {
           class="grow w-full p-2 pr-10 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm transition duration-150 ease-in-out"
           style="padding-top: 8px; padding-bottom: 8px;"
         />
-        <EmoticonHappyOutlineIcon
-          @click="togglePicker"
-          :size="24"
-          class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-purple-600 cursor-pointer"
-        />
+
+        <VDropdown
+          placement="top-end"
+          :distance="10"
+          :skidding="0"
+          :triggers="['click']"
+          :autoHide="true"
+          class="absolute right-2 top-1/2 transform -translate-y-1/2"
+        >
+          <EmoticonHappyOutlineIcon
+            :size="24"
+            class="text-gray-500 hover:text-purple-600 cursor-pointer"
+          />
+
+          <template #popper>
+            <div class="emoji-popper-content">
+              <LazyEmojiPicker @select="(e) => { showEmoji(e);  }" />
+            </div>
+          </template>
+        </VDropdown>
       </div>
+
       <div
         class="flex space-x-1 text-gray-500 shrink-0 cursor-pointer transition-transform duration-100"
         @mousedown="handlePressStart"
@@ -497,11 +516,9 @@ onUnmounted(() => {
         />
       </div>
     </div>
-
-    <!-- Emoji Picker -->
-    <LazyEmojiPicker v-if="showPicker" class="max-h-[313px] shadow-2xl absolute right-[50px]" @select="showEmoji" />
   </footer>
 </template>
+
 <style scoped>
 @keyframes wave {
   0%, 100% {
@@ -514,7 +531,8 @@ onUnmounted(() => {
 
 .animate-wave {
   animation: wave 1.2s ease-in-out infinite;
-}.icon-state-0 {
+}
+.icon-state-0 {
     width: 24px;
     height: 24px;
     font-size: 24px;
@@ -542,18 +560,17 @@ onUnmounted(() => {
 .delay-1 { animation-delay: 0.1s; }
 .delay-2 { animation-delay: 0.2s; }
 .delay-3 { animation-delay: 0.3s; }
+
 /* Transition dla odpowiedzi */
-.reply-enter-from{
+.reply-enter-from {
   transform: translateY(20px);
   opacity: 0;
 }
-.reply-enter-to
- {
+.reply-enter-to {
   transform: translateY(0);
   opacity: 1;
 }
-.reply-enter-active
- {
+.reply-enter-active {
   transition: all 0.3s ease-out;
 }
 
@@ -575,4 +592,10 @@ onUnmounted(() => {
   color: #6b7280; /* gray-500 */
 }
 
+/* Stylizacja kontenera popovera */
+.emoji-popper-content {
+  max-width: 320px;
+  max-height: 400px;
+  overflow: hidden;
+}
 </style>

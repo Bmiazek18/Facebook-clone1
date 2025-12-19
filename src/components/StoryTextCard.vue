@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import LazyEmojiPicker from './LazyEmojiPicker.vue';
 import EmoticonHappyIcon from 'vue-material-design-icons/EmoticonHappy.vue';
+
+// --- FLOATING VUE ---
+import { Dropdown as VDropdown } from 'floating-vue';
+import 'floating-vue/dist/style.css';
 
 interface CardBackground { id: number; class: string; textClass?: string }
 
@@ -22,11 +26,11 @@ const localText = computed({
   set: (v: string) => emit('update:modelValue', v)
 });
 
-const showPicker = ref(false);
-const togglePicker = () => (showPicker.value = !showPicker.value);
+// showPicker i togglePicker usunięte - obsługuje to Floating Vue
+
 const addEmoji = (e: { native: string }) => {
   emit('update:modelValue', props.modelValue + e.native);
-
+  // BRAK wywołania hide() - picker zostaje otwarty po wyborze
 };
 
 const selectBg = (id: number) => {
@@ -53,9 +57,6 @@ const currentTextClass = computed(() => {
     <div :class="['w-full h-60 rounded-lg flex items-center justify-center relative', currentClass]">
 
       <div class="z-10 w-full h-full px-4 flex items-center justify-center">
-
-
-
         <textarea
           v-model="localText"
           class="w-full resize-none overflow-hidden bg-transparent text-center outline-none px-2 py-6 placeholder-white/50"
@@ -63,15 +64,26 @@ const currentTextClass = computed(() => {
           placeholder="Napisz tekst..."
           spellcheck="false"
         ></textarea>
-
       </div>
 
-      <!-- Emoji button on the bottom-right of the gradient card -->
       <div class="absolute bottom-3 right-3 z-40">
-        <button @click="togglePicker" class="bg-white p-2 rounded-full shadow text-gray-700 hover:bg-gray-50 transition">
-          <EmoticonHappyIcon :size="20" />
-        </button>
-        <LazyEmojiPicker v-if="showPicker" class="absolute bottom-full right-0 mb-2 w-[280px] max-h-[300px] shadow-2xl z-50" @select="addEmoji" />
+        <VDropdown
+          placement="top-end"
+          :distance="10"
+          :skidding="0"
+          :triggers="['click']"
+          :autoHide="true"
+        >
+          <button class="bg-white p-2 rounded-full shadow text-gray-700 hover:bg-gray-50 transition">
+            <EmoticonHappyIcon :size="20" />
+          </button>
+
+          <template #popper>
+            <div class="emoji-popper-content">
+              <LazyEmojiPicker @select="addEmoji" />
+            </div>
+          </template>
+        </VDropdown>
       </div>
 
       <div class="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-2 z-30">
@@ -87,4 +99,11 @@ const currentTextClass = computed(() => {
 
 <style scoped>
 textarea::placeholder { opacity: 0.75; }
+
+/* Stylizacja kontenera popovera */
+.emoji-popper-content {
+  max-width: 320px;
+  max-height: 400px;
+  overflow: hidden;
+}
 </style>

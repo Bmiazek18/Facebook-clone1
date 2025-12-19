@@ -4,7 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
-import EarthIcon from 'vue-material-design-icons/Earth.vue';
+
 
 export interface Location {
   title: string;

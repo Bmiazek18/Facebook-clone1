@@ -2,6 +2,11 @@
 import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue';
 import type { DefineComponent } from 'vue';
 
+// --- FLOATING VUE ---
+// Ensure you import the CSS in main.ts or here if not globally available
+import { Dropdown as VDropdown } from 'floating-vue';
+import 'floating-vue/dist/style.css';
+
 // --- IKONY ---
 import LockIcon from 'vue-material-design-icons/Lock.vue';
 import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue';
@@ -26,10 +31,7 @@ import MapPreview from './MapPreview.vue';
 // --- TYPY ---
 import type { PostData } from '@/types/StoryElement';
 import type { User } from '@/data/users';
-// import type HoverScrollbarVue from './HoverScrollbar.vue';
 
-// Interfejs zgodny z Twoim JSON-em:
-// { "title": "Gdańsk", "subtitle": "Twoja obecna lokalizacja", "type": "city", "lat": "54.3706858", "lon": "18.6129831" }
 export interface Location {
   title: string;
   subtitle: string;
@@ -85,10 +87,6 @@ const privacyInfo = computed(() => {
   return map[props.selectedPrivacy] || { label: props.selectedPrivacy, icon: null };
 });
 
-// locationTypeLabel moved to MapPreview component
-
-// map handling moved to MapPreview component
-
 // --- OBSŁUGA INTERFEJSU ---
 const openPrivacySelector = () => emit('navigate', 'privacy');
 const handleImageClick = () => fileInput.value?.click();
@@ -110,7 +108,6 @@ const handleImageSelect = (event: Event) => {
 // --- STORY-LIKE TEXT CARD (mini) ---
 const showTextCard = ref(false);
 const textCardContent = ref('');
-// include id=0 as a "white / no-gradient" option; textClass controls text color on the card
 interface CardBackground { id: number; class: string; textClass?: string }
 const cardBackgrounds: CardBackground[] = [
   { id: 0, class: 'bg-white', textClass: 'text-black' },
@@ -124,30 +121,21 @@ const selectedCardBgId = ref<number>(1);
 
 const toggleTextCard = () => {
   if (!showTextCard.value) {
-    // open: seed content from postContent
     textCardContent.value = postContent.value || '';
   }
   showTextCard.value = !showTextCard.value;
-  // after toggle, recalc height
   nextTick(() => emit('updateHeight'));
 };
 
 const selectCardBackground = (id: number) => {
-
-  // If user selected the white/no-gradient thumbnail (id === 0), behave like the old X:
-  // commit the text into main post content and close the inline card.
   if (id === 0) {
     postContent.value = textCardContent.value;
     showTextCard.value = false;
-    // ensure parent recalculates height
     nextTick(() => emit('updateHeight'));
   } else {
     selectedCardBgId.value = id;
   }
 };
-
-// closeTextCard removed: closing the card is done via the format icon (toggleTextCard) which
-// already commits content when opening/closing.
 
 const handleCardClose = () => {
   postContent.value = textCardContent.value;
@@ -165,38 +153,19 @@ const removeLocation = () => {
   emit('removeLocation');
 };
 
-// Emoji picker for post content
-const showPicker = ref(false);
-const emojiWrapper = ref<HTMLElement | null>(null);
-const togglePicker = () => {
-  showPicker.value = !showPicker.value;
-};
+// --- EMOJI PICKER HANDLING ---
 const addEmoji = (e: { native: string }) => {
-  // If the inline text card is open, add emoji to its content, otherwise to the main post content
   if (showTextCard.value) {
     textCardContent.value = textCardContent.value + e.native;
   } else {
     postContent.value = postContent.value + e.native;
   }
-  // close picker after selection
-  showPicker.value = false;
+  // No need to manually close or toggle boolean, FloatingVue handles the DOM.
 };
 
-// Close picker when clicking outside
-const handleClickOutside = (ev: Event) => {
-  if (!showPicker.value) return;
-  const target = ev.target as Node | null;
-  if (emojiWrapper.value && target && !emojiWrapper.value.contains(target)) {
-    showPicker.value = false;
-  }
-};
+// Removed handleClickOutside and showPicker refs as FloatingVue handles this internally
 
-onUnmounted(() => {
-  document.removeEventListener('pointerdown', handleClickOutside);
-});
-// When GIF selection changes, notify parent to recalculate height
 watch(() => props.selectedGif, () => {
-  // give Vue a tick to render the element, then ask parent to recalc
   nextTick(() => emit('updateHeight'));
 });
 
@@ -216,7 +185,7 @@ const handlePublish = () => {
       <div class="flex flex-col">
         <div class="text-[15px] leading-tight mb-1 text-gray-900">
           <span class="font-bold">{{ userName }}</span>
- <template v-if="props.taggedUsers && props.taggedUsers.length">
+          <template v-if="props.taggedUsers && props.taggedUsers.length">
             <span class="font-normal text-gray-600"> z: </span>
             <span class="font-bold">
               <template v-for="(user, idx) in props.taggedUsers" :key="user.id">
@@ -228,80 +197,89 @@ const handlePublish = () => {
           <template v-if="props.selectedLocation">
              jest w: <span class="font-bold">{{ props.selectedLocation.title }}</span>
           </template>
-
-
         </div>
 
         <div
             class="flex items-center bg-gray-200 px-2 py-0.5 rounded-md text-xs font-semibold text-gray-700 w-fit cursor-pointer hover:bg-gray-300 transition-colors"
             @click="openPrivacySelector"
         >
-
           <component v-if="privacyInfo.icon" :is="privacyInfo.icon" :size="12" class="mr-1" />
           <span>{{ privacyInfo.label }}</span>
           <chevron-down-icon :size="12" class="ml-1" />
         </div>
       </div>
     </div>
-<HoverScrollbar :maxHeight="'360px'">
-    <div v-if="!showTextCard" class="relative mb-2">
-      <textarea
-        v-model="postContent"
-        :placeholder="sharedPost ? 'Powiedz coś o tym...' : (props.selectedLocation ? 'O czym myślisz, Bartosz?' : 'Co słychać?')"
-        class="w-full min-h-[60px] border-none resize-none text-2xl placeholder-gray-500 focus:ring-0 focus:outline-none p-0 pt-2"
-        :class="{'text-base': postContent.length > 80}"
-      ></textarea>
 
-      <div class="absolute bottom-2 left-0 text-[#fe5b70] cursor-pointer" title="Stylizacja tekstu">
-        <format-color-text-icon :size="24" @click="toggleTextCard" />
-      </div>
-      <div class="absolute bottom-2 right-0 text-gray-500 cursor-pointer" title="Dodaj emoji">
-        <div class="relative" ref="emojiWrapper">
-          <emoticon-happy-icon v-if="!showTextCard" :size="24" @click="togglePicker" class="cursor-pointer" />
-          <LazyEmojiPicker v-if="showPicker && !showTextCard" class="absolute bottom-full right-0 mb-2 w-[280px] max-h-[300px] shadow-2xl z-9999" @select="addEmoji" />
+    <HoverScrollbar :maxHeight="'360px'">
+      <div v-if="!showTextCard" class="relative mb-2">
+        <textarea
+          v-model="postContent"
+          :placeholder="sharedPost ? 'Powiedz coś o tym...' : (props.selectedLocation ? 'O czym myślisz, Bartosz?' : 'Co słychać?')"
+          class="w-full min-h-[60px] border-none resize-none text-2xl placeholder-gray-500 focus:ring-0 focus:outline-none p-0 pt-2"
+          :class="{'text-base': postContent.length > 80}"
+        ></textarea>
+
+        <div class="absolute bottom-2 left-0 text-[#fe5b70] cursor-pointer" title="Stylizacja tekstu">
+          <format-color-text-icon :size="24" @click="toggleTextCard" />
+        </div>
+
+        <div class="absolute bottom-2 right-0 text-gray-500 cursor-pointer" title="Dodaj emoji">
+          <VDropdown
+            placement="top-end"
+            :distance="10"
+            :skidding="0"
+            :triggers="['click']"
+            :autoHide="true"
+          >
+            <emoticon-happy-icon :size="24" class="cursor-pointer hover:text-gray-700 transition" />
+
+            <template #popper>
+              <div class="emoji-popper-content">
+                <LazyEmojiPicker @select="(e) => { addEmoji(e); }" />
+              </div>
+            </template>
+          </VDropdown>
         </div>
       </div>
-    </div>
 
-    <!-- Story text card component -->
-    <StoryTextCard
-      v-if="showTextCard"
-      v-model="textCardContent"
-      :bgId="selectedCardBgId"
-      :backgrounds="cardBackgrounds"
-      @update:bgId="selectCardBackground"
-      @close="handleCardClose"
-    />
+      <StoryTextCard
+        v-if="showTextCard"
+        v-model="textCardContent"
+        :bgId="selectedCardBgId"
+        :backgrounds="cardBackgrounds"
+        @update:bgId="selectCardBackground"
+        @close="handleCardClose"
+      />
 
-    <MapPreview :selectedLocation="props.selectedLocation" @removeLocation="removeLocation" v-if="props.selectedLocation" />
+      <MapPreview :selectedLocation="props.selectedLocation" @removeLocation="removeLocation" v-if="props.selectedLocation" />
 
-    <MediaPreview
-      :selectedImage="selectedImage"
-      :selectedGif="props.selectedGif"
-      @remove-image="removeImage"
-      @remove-gif="() => emit('removeGif')"
-      @loaded="() => emit('updateHeight')"
-    />
+      <MediaPreview
+        :selectedImage="selectedImage"
+        :selectedGif="props.selectedGif"
+        @remove-image="removeImage"
+        @remove-gif="() => emit('removeGif')"
+        @loaded="() => emit('updateHeight')"
+      />
 
-    <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleImageSelect" />
+      <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleImageSelect" />
 
-    <div v-if="sharedPost" class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
-      <img v-if="sharedPost.imageUrl" :src="sharedPost.imageUrl" class="w-full h-48 object-cover" />
-      <div class="p-3 bg-gray-50">
-        <div class="flex items-center gap-2 mb-2">
-          <img :src="sharedPost.authorAvatar" class="w-8 h-8 rounded-full object-cover" />
-          <div>
-            <p class="font-semibold text-gray-900 text-sm">{{ sharedPost.authorName }}</p>
-            <div class="flex items-center gap-1 text-xs text-gray-500">
-              <earth-icon :size="10" />
-              <span>Publiczny</span>
+      <div v-if="sharedPost" class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+        <img v-if="sharedPost.imageUrl" :src="sharedPost.imageUrl" class="w-full h-48 object-cover" />
+        <div class="p-3 bg-gray-50">
+          <div class="flex items-center gap-2 mb-2">
+            <img :src="sharedPost.authorAvatar" class="w-8 h-8 rounded-full object-cover" />
+            <div>
+              <p class="font-semibold text-gray-900 text-sm">{{ sharedPost.authorName }}</p>
+              <div class="flex items-center gap-1 text-xs text-gray-500">
+                <earth-icon :size="10" />
+                <span>Publiczny</span>
+              </div>
             </div>
           </div>
+          <p class="text-gray-800 text-sm line-clamp-3">{{ sharedPost.content }}</p>
         </div>
-        <p class="text-gray-800 text-sm line-clamp-3">{{ sharedPost.content }}</p>
       </div>
-    </div>
-  </HoverScrollbar>
+    </HoverScrollbar>
 
     <hr class="my-4 border-gray-200">
 
@@ -312,7 +290,7 @@ const handlePublish = () => {
         <account-group-icon :size="24" class="text-[#1877f2] cursor-pointer hover:bg-gray-100 p-0.5 rounded transition" @click="emit('openTagUsers')" title="Oznacz znajomych" />
         <emoticon-icon :size="24" class="text-[#f7b928] cursor-pointer hover:bg-gray-100 p-0.5 rounded transition" title="Nastrój/aktywność" />
         <map-marker-icon :size="24" class="text-[#f3425f] cursor-pointer hover:bg-gray-100 p-0.5 rounded transition" @click="emit('openLocation')" title="Lokalizacja" />
-  <div class="bg-[#1877f2] text-white text-[10px] font-bold px-1 rounded flex items-center cursor-pointer hover:opacity-90" @click="emit('openGifSelector')">GIF</div>
+        <div class="bg-[#1877f2] text-white text-[10px] font-bold px-1 rounded flex items-center cursor-pointer hover:opacity-90" @click="emit('openGifSelector')">GIF</div>
         <dots-horizontal-icon :size="24" class="text-gray-500 cursor-pointer hover:bg-gray-100 p-0.5 rounded transition" />
       </div>
     </div>
@@ -341,16 +319,22 @@ const handlePublish = () => {
   overflow: hidden;
 }
 
-/* Fix CSS dla Leaflet: ustawienie z-index na 0, żeby popupy Vue były nad mapą */
+/* Fix CSS dla Leaflet */
 :deep(.leaflet-container) {
     z-index: 1111;
     font-family: inherit;
-    background-color: #e5e7eb; /* Tło zanim załadują się kafelki */
+    background-color: #e5e7eb;
 }
 :deep(.leaflet-pane) {
     z-index: 1111;
 }
 :deep(.leaflet-top), :deep(.leaflet-bottom) {
     z-index: 1111;
+}
+
+/* Optional: Customize the floating vue container if needed */
+.emoji-popper-content {
+
+  overflow: hidden;
 }
 </style>
