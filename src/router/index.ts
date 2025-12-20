@@ -48,6 +48,13 @@ const router = createRouter({
       component: () => import('@/views/ChatView.vue'),
       meta: { showMainLayout: false },
     },
+    {
+      path: '/chat/:chatId',
+      name: 'chatMessages',
+      component: () => import('@/views/ChatView.vue'),
+      props: true,
+      meta: { showMainLayout: false },
+    },
      {
       path: '/createReel',
       name: 'createReel',

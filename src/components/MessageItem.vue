@@ -2,7 +2,6 @@
 import { ref, computed } from 'vue';
 import PlayIcon from 'vue-material-design-icons/Play.vue';
 import PauseIcon from 'vue-material-design-icons/Pause.vue';
-import type { Message, ImageMessage, GifMessage, AudioMessage, FileMessage, VideoMessage, AudioState } from '@/types/Message';
 import MessegePool from './MessegePool.vue';
 import Modal from './Modal.vue';
 import PlayerVideo from './PlayerVideo.vue';
@@ -11,7 +10,16 @@ import MessageReplyContext from './MessageReplyContext.vue';
 import MessageMediaGallery from './MessageMediaGallery.vue';
 import MessageFileAttachment from './MessageFileAttachment.vue';
 import MessageReactions from './MessageReactions.vue';
-// ----------------------------------------
+
+// Types
+import type { Message, ImageMessage, GifMessage, AudioMessage, FileMessage, VideoMessage, AudioState } from '@/types/Message';
+
+// Zdefiniuj interfejs dla Theme lokalnie lub importuj go
+interface Theme {
+  id?: string;
+  sentBubbleColor?: string;
+  // inne pola...
+}
 
 interface ImageMessageWithGroup extends ImageMessage { mediaUrls?: string[]; }
 
@@ -20,6 +28,8 @@ const props = defineProps<{
   index: number;
   positionInGroup: 'single' | 'first' | 'middle' | 'last';
   audioStates: Record<number, AudioState>;
+  // Optymalizacja: Odbieramy motyw z rodzica zamiast liczyć go dla każdej wiadomości
+  currentTheme?: Theme;
 }>();
 
 const emit = defineEmits<{
@@ -29,112 +39,101 @@ const emit = defineEmits<{
   (e: 'add-reaction', payload: { messageId: number; emoji: string }): void;
 }>();
 
-
-// --- TYPE GUARDS i COMPUTED PROPERTIES ---
-
+// --- TYPE GUARDS ---
 const isAudioMessage = (msg: Message): msg is AudioMessage => msg.type === 'audio';
 const isImageMessage = (msg: Message): msg is ImageMessageWithGroup => msg.type === 'image';
 const isFileMessage = (msg: Message): msg is FileMessage => msg.type === 'file';
 const isVideoMessage = (msg: Message): msg is VideoMessage => msg.type === 'video';
 const isGifMessage = (msg: Message): msg is GifMessage => msg.type === 'gif';
+const isTextMessage = (msg: Message): boolean => msg.type === 'text' && !isEmojiOnly(msg.content);
 
 const isMe = computed(() => props.message.sender === 'me');
 
 const isEmojiOnly = (content: string): boolean => {
   if (!content?.trim()) return false;
-  const strippedContent = content.trim().replace(
-    /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g,
-    ''
-  );
-  return strippedContent.trim().length === 0 && content.trim().length > 0;
+  // Regex usuwający emoji - jeśli po usunięciu string jest pusty, to same emoji
+  const nonEmojiChars = content.replace(/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g, '').trim();
+  return nonEmojiChars.length === 0;
 };
 
-const positionClasses = computed(() => {
-  const mappings: Record<string, string> = {
+// --- STYLING LOGIC ---
+
+const bubbleRadiusClass = computed(() => {
+  const map = {
     single: 'rounded-xl',
-    first: isMe.value
-      ? 'rounded-tl-xl rounded-tr-xl rounded-bl-xl rounded-br-[4px]'
-      : 'rounded-tl-xl rounded-tr-xl rounded-br-xl rounded-bl-[4px]',
-    middle: isMe.value
-      ? 'rounded-tl-xl rounded-bl-xl rounded-tr-[4px] rounded-br-[4px]'
-      : 'rounded-tr-xl rounded-br-xl rounded-tl-[4px] rounded-bl-[4px]',
-    last: isMe.value
-      ? 'rounded-tl-xl rounded-bl-xl rounded-tr-[4px] rounded-br-xl'
-      : 'rounded-tr-xl rounded-br-xl rounded-tl-[4px] rounded-bl-xl',
+    first: isMe.value ? 'rounded-l-xl rounded-tr-xl rounded-br-[4px]' : 'rounded-r-xl rounded-tl-xl rounded-bl-[4px]',
+    middle: isMe.value ? 'rounded-l-xl rounded-r-[4px]' : 'rounded-r-xl rounded-l-[4px]',
+    last: isMe.value ? 'rounded-l-xl rounded-tr-[4px] rounded-br-xl' : 'rounded-r-xl rounded-tl-[4px] rounded-bl-xl',
   };
-  return mappings[props.positionInGroup] || 'rounded-xl';
+  return map[props.positionInGroup] || 'rounded-xl';
+});
+
+const bubbleColorClass = computed(() => {
+  if (!isMe.value) return 'bg-gray-200 text-black'; // Styl dla "innych"
+  // Styl dla "mnie" - użyj motywu lub fallback
+  return (props.currentTheme?.sentBubbleColor || 'bg-blue-500') + ' text-white border border-white/10';
 });
 
 const shouldDisplayAvatar = computed(() => {
-  const isOther = props.message.sender === 'other';
-  const isLastOrSingle = ['single', 'last'].includes(props.positionInGroup);
-  return isOther && isLastOrSingle && !isEmojiOnly(props.message.content || '');
+  return props.message.sender === 'other' &&
+         ['single', 'last'].includes(props.positionInGroup) &&
+         !isEmojiOnly(props.message.content || '');
 });
 
-const isGroupedImage = computed(() => {
-  return isImageMessage(props.message) && (props.message.mediaUrls?.length ?? 0) > 0;
-});
+// --- MEDIA LOGIC ---
 
-const isSingleImageOrGif = computed(() => {
-  return (isImageMessage(props.message) || isGifMessage(props.message)) && !isGroupedImage.value;
-});
+const isGroupedImage = computed(() => isImageMessage(props.message) && (props.message.mediaUrls?.length ?? 0) > 0);
+const isSingleImageOrGif = computed(() => (isImageMessage(props.message) || isGifMessage(props.message)) && !isGroupedImage.value);
 
-const isTextMessage = computed(
-  () => props.message.type === 'text' && !isEmojiOnly(props.message.content)
-);
+// --- AUDIO VISUALIZER LOGIC ---
 
-
+const visualizerBars = [10, 20, 14, 25, 20, 15, 20, 10];
+const VISUALIZER_THRESHOLDS = [0, 12, 25, 37, 50, 62, 75, 87];
 
 const formatSeconds = (seconds: number): string => {
   if (isNaN(seconds) || seconds < 0) return '0:00';
-  const minutes = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${minutes}:${secs.toString().padStart(2, '0')}`;
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-// Paski wizualizera
-const visualizerBars = [10, 20, 14, 25, 20, 15, 20, 10];
-// Punkty procentowe, po których dany pasek powinien 'zaświecić się'
-const visualizerThresholds = [0, 12, 25, 37, 50, 62, 75, 87];
+// Funkcja pomocnicza do stylu paska wizualizera (czyści template)
+const getAudioBarStyle = (msgId: number, index: number, duration: number) => {
+  const state = props.audioStates[msgId];
+  const isPlaying = state?.isPlaying;
+  const progressPercent = state ? (state.currentTime / (duration || 1)) * 100 : 0;
+  const threshold = VISUALIZER_THRESHOLDS[index] ?? 0;
 
-// Właściwości obliczane na podstawie stanu audio (MessageAudioPlayer logic, adapted)
-const audioState = computed(() => props.audioStates[props.message.id]);
+  // Jeśli odtwarza i pasek jest już "przesłuchany" -> pełny kolor, w przeciwnym razie półprzezroczysty
+  const isActive = isPlaying && progressPercent > (threshold + 6);
 
-const audioIsPlaying = computed(() => audioState.value?.isPlaying ?? false);
-const audioCurrentTime = computed(() => audioState.value?.currentTime ?? 0);
-const audioDuration = computed(() => (props.message as AudioMessage).duration || 1);
+  return {
+    height: `${visualizerBars[index]}px`,
+    width: '3px',
+    backgroundColor: isActive || !isPlaying ? 'white' : 'rgba(255,255,255,0.5)'
+  };
+};
 
-// Właściwość obliczana: Procent odtwarzania (dla białej linii postępu)
-const progressPercent = computed(() => {
-    return audioDuration.value > 0 ? (audioCurrentTime.value / audioDuration.value) * 100 : 0;
-});
+const getPlaybackIndicatorStyle = (msgId: number, duration: number) => {
+  const state = props.audioStates[msgId];
+  const leftPos = state ? (state.currentTime / (duration || 1)) * 100 : 0;
+  return { left: `${leftPos}%` };
+};
 
-// Właściwość obliczana: Czas pozostały (countdown)
-const remainingTime = computed(() => {
-  const totalDuration = audioDuration.value || 0;
-  const current = audioCurrentTime.value;
-  // Zaokrąglenie w górę, aby uniknąć wyświetlania '0:-1' i uprościć wyświetlanie
-  return Math.max(0, Math.ceil(totalDuration - current));
-});
-
-const isOtherSender = computed(() => props.message.sender === 'other');
-
-
-// --- Lokalne Stany i Handlery ---
+// --- HANDLERS ---
 const showReactionsPanel = ref(false);
 const openReactionsPanel = () => (showReactionsPanel.value = true);
 
 const handleReply = () => emit('reply', props.message);
-const handleToggleAudio = () => emit('toggle-audio-playback', props.message);
 const handleAddReaction = (payload: { messageId: number; emoji: string }) => emit('add-reaction', payload);
-
+const toggleAudio = (msg: Message) => emit('toggle-audio-playback', msg);
 
 </script>
 
 <template>
   <MessageReplyContext v-if="message.isReply" :reply="message" />
 
-  <div v-if="message.type === 'poll'" class="flex justify-center">
+  <div v-if="message.type === 'poll'" class="flex justify-center mb-4">
     <MessegePool
       :question="message.pollData.question"
       :initial-options="message.pollData.options"
@@ -145,64 +144,61 @@ const handleAddReaction = (payload: { messageId: number; emoji: string }) => emi
 
   <div
     v-else
-    class="relative flex items-end group"
+    class="relative flex items-end group transition-all duration-200"
     :class="{
       'justify-start': !isMe,
       'justify-end': isMe,
-      'mb-1': props.positionInGroup !== 'last' && props.positionInGroup !== 'single',
-      'mb-3': props.positionInGroup === 'last' || props.positionInGroup === 'single'
+      'mb-1': positionInGroup !== 'last' && positionInGroup !== 'single',
+      'mb-3': positionInGroup === 'last' || positionInGroup === 'single'
     }"
   >
     <div
       v-if="shouldDisplayAvatar"
-      class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center mr-2 shrink-0"
+      class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2 shrink-0 overflow-hidden shadow-sm"
     >
-      <span>😊</span>
+      <img src="https://ui-avatars.com/api/?name=User&background=random" alt="Avatar" class="w-full h-full object-cover"/>
     </div>
-    <div v-else-if="!isMe" class="w-9"></div>
-
-    <div
-      class="flex items-center w-full"
+    <div v-else-if="!isMe" class="w-10"></div> <div
+      class="flex items-center max-w-[75%]"
       :class="{ 'flex-row': !isMe, 'flex-row-reverse': isMe }"
     >
-      <div class="relative flex flex-col flex-items max-w-[60%] overflow-visible">
+      <div class="relative flex flex-col overflow-visible">
 
         <div
           v-if="isEmojiOnly(message.content)"
+          class="leading-none select-none transition-transform hover:scale-110"
           :class="{
-            'emoji-size-small': message.iconSizeState === 'small',
-            'emoji-size-medium': message.iconSizeState === 'medium',
-            'emoji-size-large': message.iconSizeState === 'large',
-            'emoji-size-default': !message.iconSizeState || message.iconSizeState === 'default'
+            'text-[3rem]': !message.iconSizeState || message.iconSizeState === 'default',
+            'text-[45px]': message.iconSizeState === 'small',
+            'text-[60px]': message.iconSizeState === 'medium',
+            'text-[80px]': message.iconSizeState === 'large',
           }"
         >
-          <p>{{ message.content }}</p>
+          {{ message.content }}
         </div>
 
         <MessageMediaGallery
           v-else-if="isGroupedImage && isImageMessage(message)"
-          :media-urls="(message as ImageMessageWithGroup).mediaUrls || []"
+          :media-urls="message.mediaUrls || []"
           :is-me="isMe"
           @open-lightbox="emit('open-lightbox', $event)"
         />
 
-        <div v-else-if="isSingleImageOrGif" class="mb-2">
+        <div v-else-if="isSingleImageOrGif" class="mb-1">
           <img
             :src="(message as ImageMessage).imageUrl"
-            class="max-w-full h-auto rounded-lg cursor-pointer"
+            class="max-w-full h-auto rounded-xl shadow-sm cursor-pointer hover:opacity-95 transition-opacity"
             :class="{ 'border-2 border-purple-400': message.type === 'gif' }"
             @click="emit('open-lightbox', (message as ImageMessage).imageUrl)"
-            alt="Obraz lub GIF"
+            alt="Attachment"
+            loading="lazy"
           />
         </div>
 
         <div
           v-else-if="isAudioMessage(message)"
-          class="flex items-center w-full min-w-[180px] space-x-2 p-2 rounded-full h-10"
-          :class="{
-            'bg-purple-600 text-white rounded-tl-none': message.sender === 'other',
-            'bg-blue-500 text-white rounded-br-none': message.sender === 'me'
-          }"
+          class="flex items-center w-full min-w-[200px] space-x-3 p-2.5 rounded-full h-12 shadow-sm transition-colors"
+          :class="bubbleColorClass"
         >
           <audio
             :src="message.audioUrl"
@@ -212,92 +208,68 @@ const handleAddReaction = (payload: { messageId: number; emoji: string }) => emi
           ></audio>
 
           <button
-            @click="emit('toggle-audio-playback', message)"
-            class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0"
-            :class="{
-              'text-purple-600': message.sender === 'other',
-              'text-blue-500': message.sender === 'me'
-            }"
+            @click="toggleAudio(message)"
+            class="w-8 h-8 rounded-full bg-white text-blue-600 flex items-center justify-center shrink-0 shadow-sm hover:scale-105 transition-transform"
           >
-            <template v-if="audioStates[message.id]?.isPlaying">
-              <PauseIcon :size="16" />
-            </template>
-            <template v-else>
-              <PlayIcon :size="16" />
-            </template>
+            <PauseIcon v-if="audioStates[message.id]?.isPlaying" :size="18" />
+            <PlayIcon v-else :size="18" class="ml-0.5" />
           </button>
 
-          <div class="flex-grow h-6 relative overflow-hidden rounded-full cursor-pointer">
-            <div class="absolute inset-0 flex items-center justify-between space-x-0.5 h-full px-1">
+          <div class="flex-grow h-8 relative overflow-hidden flex items-center cursor-pointer" @click="toggleAudio(message)">
+            <div class="flex items-center justify-between space-x-[2px] w-full px-1">
               <div
-                v-for="(height, index) in visualizerBars"
-                :key="index"
-                class="rounded-full shrink-0 z-10 transition-colors duration-300"
-                :style="{
-                  height: height + 'px',
-                  width: '3px',
-                  backgroundColor: audioStates[message.id]?.isPlaying
-                    ? ((audioStates[message.id]?.currentTime || 0) /
-                        (message.duration || 1) * 100 >
-                        (([0, 12, 25, 37, 50, 62, 75, 87][index] ?? 0) + 6)
-                        ? 'white'
-                        : 'rgba(255,255,255,0.5)')
-                    : 'white'
-                }"
-              ></div>
-
-              <div
-                v-if="audioStates[message.id]?.isPlaying"
-                class="absolute top-0 bottom-0 w-[3px] bg-white z-20 transition-left duration-100"
-                :style="{
-                  left: ((audioStates[message.id]?.currentTime || 0) / (message.duration || 1) * 100) + '%'
-                }"
+                v-for="(height, idx) in visualizerBars"
+                :key="idx"
+                class="rounded-full shrink-0 transition-colors duration-200"
+                :style="getAudioBarStyle(message.id, idx, message.duration)"
               ></div>
             </div>
+            <div
+              v-if="audioStates[message.id]?.isPlaying"
+              class="absolute top-0 bottom-0 w-[2px] bg-white/80 shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-100 ease-linear"
+              :style="getPlaybackIndicatorStyle(message.id, message.duration)"
+            ></div>
           </div>
 
-          <span class="text-xs font-semibold">
-            <template v-if="audioStates[message.id]?.isPlaying">
-              {{ formatSeconds(audioStates[message.id]?.currentTime || 0) }}
-            </template>
-            <template v-else>
-              {{ formatSeconds(message.duration) }}
-            </template>
+          <span class="text-xs font-bold tabular-nums pr-2 select-none min-w-[35px] text-right">
+            {{ formatSeconds(audioStates[message.id]?.isPlaying ? (audioStates[message.id]?.currentTime || 0) : message.duration) }}
           </span>
         </div>
 
         <MessageFileAttachment
           v-else-if="isFileMessage(message)"
-          :message="message as FileMessage"
+          :message="message"
+          :class="isMe ? 'text-white' : 'text-gray-900'"
         />
 
-        <div v-else-if="isVideoMessage(message)">
-          <PlayerVideo :url="(message as VideoMessage).videoUrl" />
+        <div v-else-if="isVideoMessage(message)" class="rounded-xl overflow-hidden shadow-sm">
+          <PlayerVideo :url="message.videoUrl" />
         </div>
 
         <div
-          v-else-if="isTextMessage"
-          class="relative p-3 text-sm shadow-md break-words"
-          :class="[
-            positionClasses,
-            !isMe ? 'bg-purple-600 text-white' : 'bg-theme-bg-secondary text-theme-text border border-theme-border'
-          ]"
+          v-else-if="isTextMessage(message)"
+          class="relative px-4 py-2 text-[15px] leading-relaxed shadow-sm break-words max-w-full"
+          :class="[bubbleRadiusClass, bubbleColorClass]"
         >
           <p>{{ message.content }}</p>
         </div>
 
         <div
-          @click.stop="openReactionsPanel"
           v-if="message.reactions?.length"
-          class="absolute bottom-0 right-0 cursor-pointer translate-x-1/2 translate-y-1/2 bg-white rounded-full w-6 h-6 flex items-center justify-center shadow-md text-sm border border-gray-200 z-10"
+          @click.stop="openReactionsPanel"
+          class="absolute -bottom-2 cursor-pointer bg-white rounded-full px-1.5 py-0.5 min-w-[24px] h-6 flex items-center justify-center shadow-md border border-gray-100 z-10 transition-transform hover:scale-110"
+          :class="isMe ? 'right-0 translate-y-0' : 'left-0 translate-y-0'"
         >
-          {{ message.reactions[message.reactions.length - 1] }}
+          <span class="text-xs leading-none">{{ message.reactions[message.reactions.length - 1] }}</span>
+          <span v-if="message.reactions.length > 1" class="text-[9px] font-bold text-gray-500 ml-0.5">{{ message.reactions.length }}</span>
         </div>
+
       </div>
 
       <MessageReactions
         :message-id="message.id"
         :reactions="message.reactions"
+        :is-me="isMe"
         @add-reaction="handleAddReaction"
         @open-panel="openReactionsPanel"
         @reply="handleReply"
@@ -305,7 +277,7 @@ const handleAddReaction = (payload: { messageId: number; emoji: string }) => emi
     </div>
   </div>
 
-  <Modal v-if="showReactionsPanel" @close="showReactionsPanel = false" title="Reakcje na wiadomości">
+  <Modal v-if="showReactionsPanel" @close="showReactionsPanel = false" title="Reakcje">
     <ReactionPanel />
   </Modal>
 </template>

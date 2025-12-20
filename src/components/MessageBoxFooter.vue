@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted } from 'vue';
-import { useI18n } from 'vue-i18n';
 
 // --- FLOATING VUE ---
 import { Dropdown as VDropdown } from 'floating-vue';
@@ -15,7 +14,6 @@ import MicrophoneIcon from 'vue-material-design-icons/Microphone.vue';
 import StopIcon from 'vue-material-design-icons/Stop.vue';
 import SendIcon from 'vue-material-design-icons/Send.vue';
 import PlayIcon from 'vue-material-design-icons/Play.vue';
-import ThumbUpIcon from 'vue-material-design-icons/ThumbUp.vue';
 
 // --- KOMPONENTY ---
 import GifBox from './GifBox.vue';
@@ -28,9 +26,28 @@ const emit = defineEmits<{
   'clearReply': []
 }>()
 
-const props = defineProps<{reply: Message | null}>();
+const props = defineProps<{reply: Message | null; boxId?: string | number}>();
 
-const { t } = useI18n();
+// translations available in templates via $t
+
+// connect selected emoji/icon to the shared messenger theme store
+import { useConversationsStore } from '@/stores/conversations'
+const convStore = useConversationsStore();
+
+const localSelectedEmoji = computed(() => {
+  try {
+    // if footer is used inside a chat (boxId), prefer the per-chat emoji stored in convStore.settings
+    if (props.boxId) {
+      const s = convStore.settings.find(x => x.chatId === Number(props.boxId));
+      if (s?.emoji) return s.emoji;
+    }
+    return (convStore.selectedEmoji as string) || '👍'
+  } catch {
+    return '👍'
+  }
+})
+
+
 
 const addMessage = (content: string, sizeState: 'default' | 'small' | 'medium' | 'large' = 'default', imageUrl?: string | null, gifUrl?: string | null, isAudio?: boolean, audioUrl?: string, duration?: number) => {
   const finalContent = content.trim();
@@ -279,7 +296,14 @@ const cancelVoiceRecording = () => {
 // togglePicker usunięte - obsługuje to Floating Vue
 
 const showEmoji = (e: { native: string }) => {
-  newMessage.value = newMessage.value + e.native;
+  const emoji = e.native;
+  // persist per-chat emoji if footer is inside a chat
+  if (props.boxId) {
+    try { convStore.setChatEmoji(Number(props.boxId), emoji); } catch {}
+  }
+  // also update global selection so UI that relies on it updates
+  try { convStore.setSelectedEmoji(emoji); } catch {}
+  newMessage.value = newMessage.value + emoji;
 };
 
 // Press Animation
@@ -337,7 +361,7 @@ const handlePressEnd = (content: string) => {
   }
 
   if (content.trim().length === 0 && !selectedGifUrl.value && !selectedImageUrl.value) {
-    addMessage('👍', sizeState);
+    addMessage(localSelectedEmoji.value, sizeState);
   }
 };
 
@@ -511,9 +535,7 @@ onUnmounted(() => {
         @touchstart.prevent="handlePressStart"
         @touchend.prevent="handlePressEnd(newMessage)"
       >
-        <ThumbUpIcon
-          :class="[currentIconState, 'text-blue-500 hover:text-blue-700']"
-        />
+       <span :class="[currentIconState, 'text-blue-500 hover:text-blue-700 text-2xl']">{{ localSelectedEmoji }}</span>
       </div>
     </div>
   </footer>
@@ -579,6 +601,7 @@ onUnmounted(() => {
   color: #374151; /* gray-700 */
   display: -webkit-box;
   -webkit-line-clamp: 2; /* ograniczenie do 2 linii */
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;

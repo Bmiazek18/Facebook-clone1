@@ -70,8 +70,8 @@ const startDrag = (event: MouseEvent) => {
 
 const onDrag = (event: MouseEvent) => {
   if (!isDragging.value || !draggableRef.value) return;
-  let newX = event.clientX - dragOffset.x;
-  let newY = event.clientY - dragOffset.y;
+  const newX = event.clientX - dragOffset.x;
+  const newY = event.clientY - dragOffset.y;
 
   const maxX = window.innerWidth - draggableRef.value.offsetWidth;
   const maxY = window.innerHeight - draggableRef.value.offsetHeight;

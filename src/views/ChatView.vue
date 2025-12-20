@@ -6,7 +6,7 @@
     <div class="flex-1 flex overflow-hidden bg-gray-200 relative p-3 gap-3">
 
       <div class="flex-1 flex flex-col min-w-0 relative bg-white rounded-xl shadow-sm ">
-        <MessageBox boxId="1" mode="full" />
+        <MessageBox :boxId="chatId" :messages="providedMessages" mode="full" />
       </div>
 
       <div v-if="showInfoPanel" class="w-80 min-w-[450px] overflow-auto flex flex-col bg-white h-full rounded-xl shadow-sm ">
@@ -17,10 +17,10 @@
                 <div v-if="panelView === 'home'" data-view class="h-full flex flex-col overflow-y-auto custom-scrollbar">
 
             <div class="pt-8 pb-4 flex flex-col items-center">
-              <div class="relative mb-3 hover:opacity-90 cursor-pointer transition">
-                 <img src="https://i.pravatar.cc/150?img=12" class="w-20 h-20 rounded-full object-cover shadow-sm" alt="Group Avatar">
-              </div>
-              <h2 class="text-lg font-bold text-gray-900 hover:underline cursor-pointer tracking-tight">Infa 2025</h2>
+          <div class="relative mb-3 hover:opacity-90 cursor-pointer transition">
+            <img :src="chatMeta.avatarUrl || 'https://i.pravatar.cc/150?img=12'" class="w-20 h-20 rounded-full object-cover shadow-sm" alt="Group Avatar">
+          </div>
+          <h2 class="text-lg font-bold text-gray-900 hover:underline cursor-pointer tracking-tight">{{ chatMeta.name }}</h2>
               <div class="flex mt-4 space-x-12 w-full justify-center px-4">
                 <div class="flex flex-col items-center cursor-pointer group">
                   <div class="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition mb-2">
@@ -60,7 +60,7 @@
               <div class="grid transition-[grid-template-rows,opacity] duration-300" :class="accordionState.customizeChat ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'">
                 <div class="overflow-hidden">
                    <div class="flex flex-col space-y-0.5 pb-2 mb-2">
-                      <div class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
+                      <div @click="openRenameModal" class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
                          <PencilIcon :size="20" class="text-black mr-3" />
                          <span class="text-[14px] font-medium text-gray-900">Zmień nazwę czatu</span>
                       </div>
@@ -68,16 +68,18 @@
                          <ImageIcon :size="20" class="text-black mr-3" />
                          <span class="text-[14px] font-medium text-gray-900">Zmień zdjęcie</span>
                       </div>
-                      <div class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
-                         <div class="w-5 h-5 mr-3 rounded-full bg-gradient-to-br from-red-400 to-pink-600 relative flex items-center justify-center">
-                            <div class="w-2 h-2 bg-black/20 rounded-full"></div>
-                         </div>
-                         <span class="text-[14px] font-medium text-gray-900">Zmień motyw</span>
-                      </div>
-                      <div class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
-                         <PawIcon :size="20" class="text-[#5F4B3C] mr-3" />
-                         <span class="text-[14px] font-medium text-gray-900">Zmień ikonę emoji</span>
-                      </div>
+               <div class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2"
+                  @click="openThemeModal">
+                 <div class="w-5 h-5 mr-3 rounded-full bg-gradient-to-br from-red-400 to-pink-600 relative flex items-center justify-center">
+                   <div class="w-2 h-2 bg-black/20 rounded-full"></div>
+                 </div>
+                 <span class="text-[14px] font-medium text-gray-900">Zmień motyw</span>
+               </div>
+               <div class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2"
+                  @click="openEmojiModal">
+                 <PawIcon :size="20" class="text-[#5F4B3C] mr-3" />
+                 <span class="text-[14px] font-medium text-gray-900">Zmień ikonę emoji</span>
+               </div>
                       <div class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
                          <FormatLetterCaseIcon :size="20" class="text-black mr-3" />
                          <span class="text-[14px] font-medium text-gray-900">Edytuj nicki</span>
@@ -184,8 +186,30 @@
       </div>
 
     </div>
+
+    <Modal v-if="showRenameModal" title="Zmień nazwę czatu" @close="closeRenameModal">
+      <div class="px-4 py-3">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Nazwa czatu</label>
+        <input v-model="renameInput" type="text" class="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+        <div class="mt-3 flex justify-end space-x-2">
+          <button @click="closeRenameModal" class="px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200">Anuluj</button>
+          <button @click="saveRename" class="px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Zapisz</button>
+        </div>
+      </div>
+    </Modal>
+    <Modal v-if="showThemeModal" title="Wybierz motyw czatu" @close="closeThemeModalAndSave">
+      <MessangerTheme @apply="closeThemeModalAndSave" />
+    </Modal>
+    <!-- Emoji Modal -->
+    <Modal v-if="showEmojiModal" title="Wybierz ikonę emoji" @close="closeEmojiModal">
+      <div class="flex items-center justify-between px-4 pt-2 pb-3 border-b border-gray-100">
+        <div class="text-2xl">{{ convStore.selectedEmoji || '👍' }}</div>
+        <button @click="closeEmojiModal" class="text-gray-500 hover:text-gray-700 text-xl leading-none">✕</button>
+      </div>
+      <LazyEmojiPicker @select="onEmojiSelect" />
+    </Modal>
   </div>
-</template>
+  </template>
 
 <script setup lang="ts">
 import '@/assets/animations/slideTransition.css';
@@ -212,6 +236,37 @@ import ChatMediaPanel from '@/components/ChatMediaPanel.vue';
 
 import MessageMenu from '@/components/MessageMenu.vue';
 import MessageBox from '@/components/MessageBox.vue';
+import { useConversationsStore } from '@/stores/conversations';
+import { useRoute } from 'vue-router';
+// chatSettings moved into conversations store (convStore.settings)
+// use conversations store directly for theme/emoji
+
+// accept optional route prop chatId so this view can render messages for a given chat
+const routeProps = withDefaults(defineProps<{ chatId?: string | number }>(), { chatId: undefined });
+const route = useRoute();
+const chatId = computed(() => Number(route.params.chatId ?? routeProps.chatId ?? ''));
+const convStore = useConversationsStore();
+
+
+// chat metadata (name/avatar) shown in the right panel and header
+const chatMeta = computed(() => convStore.chats.find(c => c.id === chatId.value) ?? { id: chatId.value, name: `Czat ${chatId.value}`, avatarUrl: '', lastMessage: '', timeAgo: '', unread: false, isActive: false });
+
+// apply chat-specific theme and emoji when chat changes
+watch(chatId, (newId) => {
+  const s = convStore.settings.find(x => x.chatId === Number(newId));
+  if (s?.themeId !== undefined) {
+    // chatSettings.themeId stores a numeric index; map it to the real theme id string
+    const idx = Number(s.themeId);
+    const themesArr = convStore.themes as { id: string }[] | undefined;
+    const mappedId = themesArr && themesArr[idx]?.id ? themesArr[idx].id : (themesArr && themesArr[0]?.id) ?? String(s.themeId);
+    convStore.setSelectedTheme(mappedId);
+  }
+  if (s?.emoji) convStore.setSelectedEmoji(s.emoji);
+});
+
+import Modal from '@/components/Modal.vue';
+import MessangerTheme from '@/components/MessangerTheme.vue';
+import LazyEmojiPicker from '@/components/LazyEmojiPicker.vue';
 
 const showInfoPanel = ref(true);
 
@@ -221,10 +276,10 @@ const panelView = ref<'home' | 'media'>('home');
 
 const accordionState = ref({
   chatInfo: true,
-  customizeChat: true,
-  multimedia: true,
-  privacy: true,
-  chatMembers: true,
+  customizeChat: false,
+  multimedia: false,
+  privacy: false,
+  chatMembers: false,
 });
 
 function toggleSection(key: 'chatInfo' | 'customizeChat' | 'multimedia' | 'privacy' | 'chatMembers') {
@@ -241,6 +296,55 @@ const members = ref([
 const { wrapperRef, updateHeight } = useSlideTransition();
 
 const previousPanelView = ref<'home' | 'media'>(panelView.value);
+
+// Modal state for theme selection
+const showThemeModal = ref(false);
+const openThemeModal = () => { showThemeModal.value = true; };
+// persist selected theme for this chat when closing modal
+const closeThemeModalAndSave = () => {
+  try {
+    // save current selected theme id as numeric index in chat settings
+    convStore.setChatThemeById(chatId.value, convStore.selectedThemeId as string);
+  } catch {
+    // noop
+  }
+  showThemeModal.value = false;
+};
+
+// Emoji picker modal
+const showEmojiModal = ref(false);
+const openEmojiModal = () => { showEmojiModal.value = true; };
+const closeEmojiModal = () => { showEmojiModal.value = false; };
+
+const onEmojiSelect = (e: { native: string }) => {
+  // persist per-chat emoji and update global selected emoji
+  const emoji = e.native;
+  try {
+    convStore.setChatEmoji(chatId.value, emoji);
+  } catch {
+    // ignore if store not available
+  }
+  convStore.setSelectedEmoji(emoji);
+  closeEmojiModal();
+}
+
+// Rename chat modal
+const showRenameModal = ref(false);
+const renameInput = ref('');
+function openRenameModal() {
+  renameInput.value = chatMeta.value?.name ?? `Czat ${chatId.value}`;
+  showRenameModal.value = true;
+}
+function closeRenameModal() {
+  showRenameModal.value = false;
+}
+function saveRename() {
+  const trimmed = String(renameInput.value ?? '').trim();
+  if (trimmed) {
+    convStore.updateChatName(chatId.value, trimmed);
+  }
+  closeRenameModal();
+}
 
 const transitionName = computed(() => {
   if (previousPanelView.value === 'home' && panelView.value === 'media') return 'slide-left';

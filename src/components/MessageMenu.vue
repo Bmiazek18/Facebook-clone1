@@ -120,196 +120,17 @@ import ArrowExpandIcon from 'vue-material-design-icons/ArrowExpand.vue';
 import PencilOutlineIcon from 'vue-material-design-icons/PencilOutline.vue';
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
 import ContexMenu from './contexMenu.vue';
-import LanguageSwitcher from './LanguageSwitcher.vue';
+import { useRouter } from 'vue-router';
 
 
-// 2. INTERFEJSY TYPÓW DANYCH
-interface Chat {
-  id: number;
-  name: string;
-  avatarUrl: string;
-  lastMessage: string;
-  timeAgo: string;
-  unread: boolean;
-  isActive: boolean;
-  isPinch?: boolean; // Ikona "szczypnięcia" / reakcji ręki
-  isGroup?: boolean; // Czy to jest grupa
-  extraAvatars?: string[]; // Mini-awatary dla konwersacji grupowych
-}
+import { useConversationsStore } from '@/stores/conversations';
+import type { Chat } from '@/data/rawChats';
 
 // 3. ZARZĄDZANIE STANEM
 const activeTab: Ref<'all' | 'unread'> = ref('all');
 
-const rawChats: Chat[] = [
-  // 1. Carbonara
-  {
-    id: 1,
-    name: 'Carbonara 🤠',
-    avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
-    lastMessage: 'Użytkownik Carbonara 🤠 wysłał ...',
-    timeAgo: '21 min',
-    unread: false,
-    isActive: false,
-    isPinch: true,
-  },
-  // 2. Łuków24
-  {
-    id: 2,
-    name: 'Łuków24',
-    avatarUrl: 'https://randomuser.me/api/portraits/men/45.jpg',
-    lastMessage: 'Użytkownik Łuków24 wysłał ...',
-    timeAgo: '49 min',
-    unread: false,
-    isActive: false,
-  },
-  // 3. Pati Kochanska
-  {
-    id: 3,
-    name: 'Pati Kochanska',
-    avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg',
-    lastMessage: 'jeszcze w zime',
-    timeAgo: '5 godz.',
-    unread: false,
-    isActive: true,
-  },
-  // 4. Grupa 7 (casual)
-  {
-    id: 4,
-    name: 'Grupa 7 (casual)',
-    avatarUrl: 'https://randomuser.me/api/portraits/men/22.jpg',
-    lastMessage: 'Paweł: chyba tak',
-    timeAgo: '6 godz.',
-    unread: false,
-    isActive: false,
-    isGroup: true,
-    extraAvatars: [
-        'https://randomuser.me/api/portraits/men/22.jpg',
-        'https://randomuser.me/api/portraits/women/33.jpg'
-    ],
-  },
-  // 5. Koalicja 2 Grudnia
-  {
-    id: 5,
-    name: 'Koalicja 2 Grudnia',
-    avatarUrl: 'https://randomuser.me/api/portraits/men/67.jpg',
-    lastMessage: 'Ty: Aż tak za lukowe...',
-    timeAgo: '9 godz.',
-    unread: false,
-    isActive: false,
-    isGroup: true,
-    extraAvatars: [
-        'https://randomuser.me/api/portraits/women/12.jpg',
-        'https://randomuser.me/api/portraits/men/15.jpg'
-    ],
-  },
-  // 6. Infa 2025
-  {
-    id: 6,
-    name: 'Infa 2025',
-    avatarUrl: 'https://randomuser.me/api/portraits/women/28.jpg',
-    lastMessage: 'Natalia: Okej',
-    timeAgo: '13 godz.',
-    unread: false,
-    isActive: false,
-    isGroup: true,
-    extraAvatars: [
-        'https://randomuser.me/api/portraits/women/28.jpg',
-        'https://randomuser.me/api/portraits/men/19.jpg'
-    ],
-  },
-  // 7. Milf Hunters
-  {
-    id: 7,
-    name: 'Milf Hunters',
-    avatarUrl: 'https://randomuser.me/api/portraits/men/75.jpg',
-    lastMessage: 'Mateusz: Piłkarzami z przypadp...',
-    timeAgo: '2 dni',
-    unread: true,
-    isActive: true,
-    isGroup: true,
-    extraAvatars: [
-        'https://randomuser.me/api/portraits/men/75.jpg',
-        'https://randomuser.me/api/portraits/men/81.jpg'
-    ],
-  },
-  // 8. Legia Futsal
-  {
-    id: 8,
-    name: 'Legia Futsal',
-    avatarUrl: 'https://randomuser.me/api/portraits/men/52.jpg',
-    lastMessage: 'Bramka Luci Prioriego nomi...',
-    timeAgo: '2 dni',
-    unread: true,
-    isActive: false,
-    isGroup: true,
-    extraAvatars: [
-        'https://randomuser.me/api/portraits/men/52.jpg',
-        'https://randomuser.me/api/portraits/men/61.jpg'
-    ],
-  },
-  // 9. Mateusz Bieniek
-  {
-    id: 9,
-    name: 'Mateusz Bieniek',
-    avatarUrl: 'https://randomuser.me/api/portraits/men/41.jpg',
-    lastMessage: 'Nie dam rady',
-    timeAgo: '2 dni',
-    unread: false,
-    isActive: false,
-  },
-  // 10. Zgrupowanie Reprezentacja Se...
-  {
-    id: 10,
-    name: 'Zgrupowanie Reprezentacja Se...',
-    avatarUrl: 'https://randomuser.me/api/portraits/men/36.jpg',
-    lastMessage: 'Michał: Nie, tym razem to nie ...',
-    timeAgo: '3 dni',
-    unread: true,
-    isActive: true,
-    isGroup: true,
-    extraAvatars: [
-        'https://randomuser.me/api/portraits/men/36.jpg',
-        'https://randomuser.me/api/portraits/men/47.jpg'
-    ],
-  },
-  // 11. Wioletta Miazek
-  {
-    id: 11,
-    name: 'Wioletta Miazek',
-    avatarUrl: 'https://randomuser.me/api/portraits/women/65.jpg',
-    lastMessage: '🙌 3 dni',
-    timeAgo: '3 dni',
-    unread: true,
-    isActive: false,
-  },
-  // 12. Adam Zarzycki
-  {
-    id: 12,
-    name: 'Adam Zarzycki',
-    avatarUrl: 'https://randomuser.me/api/portraits/men/88.jpg',
-    lastMessage: 'Ty: Gdzie ty jesteś?',
-    timeAgo: '3 dni',
-    unread: true,
-    isActive: false,
-  },
-  // 13. WC UPOSiF
-  {
-    id: 13,
-    name: 'WC UPOSiF',
-    avatarUrl: 'https://randomuser.me/api/portraits/men/29.jpg',
-    lastMessage: '...',
-    timeAgo: '3 dni',
-    unread: false,
-    isActive: false,
-    isGroup: true,
-    extraAvatars: [
-        'https://randomuser.me/api/portraits/men/29.jpg',
-        'https://randomuser.me/api/portraits/women/55.jpg'
-    ],
-  },
-];
-
-const chats: Ref<Chat[]> = ref(rawChats);
+const convStore = useConversationsStore();
+const chats = computed(() => convStore.chats as Chat[]);
 
 // track which dropdown is open per chat id so the trigger stays visible when popper is active
 const openDropdowns = ref<Record<number, boolean>>({});
@@ -327,9 +148,9 @@ const filteredChats = computed(() => {
 });
 
 // 5. OBSŁUGA KLIKNIĘĆ
+const router = useRouter();
 const handleClick = (chatId: number): void => {
-  console.log(`Przechodzę do czatu ID: ${chatId}`);
-  // Tutaj dodasz logikę routingu do konwersacji
+  router.push({ name: 'chatMessages', params: { chatId } }).catch(() => {});
 };
 
 </script>

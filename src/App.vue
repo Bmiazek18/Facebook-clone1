@@ -8,7 +8,7 @@
 
         v-for="boxId in chatStore.getBoxIds"
         :key="boxId"
-        :boxId="boxId"
+        :boxId="1"
      />
   </div>
 
