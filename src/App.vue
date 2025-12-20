@@ -4,12 +4,12 @@
   <router-view />
   <div class="fixed flex flex-row bottom-0 right-[60px]">
 
-     <MessageBox
+     <!-- <MessageBox
 
         v-for="boxId in chatStore.getBoxIds"
         :key="boxId"
         :boxId="1"
-     />
+     /> -->
   </div>
 
 <ProfileIcon/>

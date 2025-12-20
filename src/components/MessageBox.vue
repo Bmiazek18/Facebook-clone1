@@ -86,6 +86,21 @@ function scrollToBottom() {
   });
 }
 
+function scrollToMessage(messageId: number) {
+  nextTick(() => {
+    const domId = `msg-${props.boxId ?? '0'}-${messageId}`;
+    const el = document.getElementById(domId);
+    const container = chatContainer.value;
+    if (!el || !container) return;
+    // scroll so the message is centered-ish
+    const top = el.offsetTop - (container.clientHeight / 2) + (el.clientHeight / 2);
+    container.scrollTo({ top, behavior: 'smooth' });
+    // flash highlight
+    el.classList.add('ring-2', 'ring-indigo-300');
+    setTimeout(() => el.classList.remove('ring-2', 'ring-indigo-300'), 1800);
+  });
+}
+
 // --- LIGHTBOX & MEDIA ---
 const isLightboxOpen = ref(false);
 const currentMediaIndex = ref(0);
@@ -123,10 +138,11 @@ const openLightbox = (url: string) => {
 // --- AUDIO PLAYER ---
 const audioStates = ref<Record<number, AudioState>>({});
 
-const toggleAudioPlayback = (message: Message) => {
+  const toggleAudioPlayback = (message: Message) => {
   const audioId = message.id;
-  // UWAGA: Używanie ID w DOM jest ryzykowne. Upewnij się, że MessageItem generuje unikalne ID np. `audio-${boxId}-${msgId}`
-  const audioElement = document.getElementById(`audio-${audioId}`) as HTMLAudioElement;
+  // Używamy złożonego id zgodnego z MessageItem: audio-<boxId>-<msgId>
+  const domId = `audio-${props.boxId ?? '0'}-${audioId}`;
+  const audioElement = document.getElementById(domId) as HTMLAudioElement | null;
 
   if (!audioElement) return;
 
@@ -302,6 +318,9 @@ const headerTitle = computed(() => {
 });
 
 const isFull = computed(() => props.mode === 'full');
+
+// expose scrolling API to parent
+defineExpose({ scrollToMessage });
 </script>
 
 <template>
@@ -339,21 +358,22 @@ const isFull = computed(() => props.mode === 'full');
       >
         <div v-if="boxTheme?.gradientClass" :class="['absolute inset-0 pointer-events-none opacity-30', boxTheme.gradientClass]"></div>
 
-        <div v-for="(message, index) in messagesList" :key="message.id" class="relative z-10 mb-1">
+  <div v-for="(message, index) in messagesList" :key="message.id" :id="`msg-${props.boxId ?? '0'}-${message.id}`" class="relative z-10 mb-1">
           <div v-if="getDisplayTime(index)" class="text-[11px] font-medium text-gray-400 text-center my-3 select-none uppercase tracking-wide opacity-80">
             {{ getDisplayTime(index) }}
           </div>
 
-          <MessageItem
-            :message="message"
-            :index="index"
-            :audioStates="audioStates"
-            :positionInGroup="getMessagePositionInGroup(index)"
-            @open-lightbox="openLightbox"
-            @reply="replyTarget = $event"
-            @toggle-audio-playback="toggleAudioPlayback"
-            @add-reaction="({ messageId, emoji }) => handleAddReaction(messageId, emoji)"
-          />
+                  <MessageItem
+                    :message="message"
+                    :index="index"
+                    :audioStates="audioStates"
+                    :positionInGroup="getMessagePositionInGroup(index)"
+                    :boxId="props.boxId"
+                    @open-lightbox="openLightbox"
+                    @reply="replyTarget = $event"
+                    @toggle-audio-playback="toggleAudioPlayback"
+                    @add-reaction="({ messageId, emoji }) => handleAddReaction(messageId, emoji)"
+                  />
         </div>
       </main>
 

@@ -6,7 +6,7 @@
     <div class="flex-1 flex overflow-hidden bg-gray-200 relative p-3 gap-3">
 
       <div class="flex-1 flex flex-col min-w-0 relative bg-white rounded-xl shadow-sm ">
-        <MessageBox :boxId="chatId" :messages="providedMessages" mode="full" />
+        <MessageBox ref="messageBoxRef" :boxId="chatId" mode="full" />
       </div>
 
       <div v-if="showInfoPanel" class="w-80 min-w-[450px] overflow-auto flex flex-col bg-white h-full rounded-xl shadow-sm ">
@@ -28,7 +28,7 @@
                   </div>
                   <span class="text-[12px] leading-tight font-medium text-gray-900 text-center">Wyciszono</span>
                 </div>
-                <div class="flex flex-col items-center cursor-pointer group">
+                <div class="flex flex-col items-center cursor-pointer group" @click.stop="openSearchPanel">
                   <div class="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition mb-2">
                     <MagnifyIcon :size="20" class="text-black" />
                   </div>
@@ -179,7 +179,8 @@
             </div>
               </div>
 
-              <ChatMediaPanel v-else data-view @close="panelView = 'home'" />
+              <ChatMediaPanel v-else-if="panelView === 'media'" data-view @close="panelView = 'home'" />
+              <MessageSearch v-else-if="panelView === 'search'" data-view :boxId="chatId" @close="panelView = 'home'" @go-to-message="onSearchGoTo" />
             </div>
           </transition>
         </div>
@@ -233,7 +234,7 @@ import LogoutIcon from 'vue-material-design-icons/Logout.vue';
 
 // Nowa ikona powrotu
 import ChatMediaPanel from '@/components/ChatMediaPanel.vue';
-
+import MessageSearch from '@/components/MessageSearch.vue';
 import MessageMenu from '@/components/MessageMenu.vue';
 import MessageBox from '@/components/MessageBox.vue';
 import { useConversationsStore } from '@/stores/conversations';
@@ -272,7 +273,7 @@ const showInfoPanel = ref(true);
 
 // 'home' - główny widok z akordeonem
 // 'media' - widok galerii
-const panelView = ref<'home' | 'media'>('home');
+const panelView = ref<'home' | 'media' | 'search'>('home');
 
 const accordionState = ref({
   chatInfo: true,
@@ -294,8 +295,25 @@ const members = ref([
 
 // Slide transition wrapper (handles measured height and resize)
 const { wrapperRef, updateHeight } = useSlideTransition();
+const messageBoxRef = ref<InstanceType<typeof MessageBox> | null>(null);
 
-const previousPanelView = ref<'home' | 'media'>(panelView.value);
+const previousPanelView = ref<'home' | 'media'|'search'|''>(panelView.value);
+
+function openSearchPanel() {
+  panelView.value = 'search';
+}
+
+function onSearchGoTo(payload: { id: number; chatId?: string | number }) {
+  // close right panel and scroll to message in MessageBox
+  panelView.value = 'home';
+  nextTick(() => {
+    try {
+      messageBoxRef.value?.scrollToMessage(payload.id);
+    } catch (e) {
+      // ignore errors
+    }
+  });
+}
 
 // Modal state for theme selection
 const showThemeModal = ref(false);
@@ -347,13 +365,19 @@ function saveRename() {
 }
 
 const transitionName = computed(() => {
-  if (previousPanelView.value === 'home' && panelView.value === 'media') return 'slide-left';
-  if (previousPanelView.value === 'media' && panelView.value === 'home') return 'slide-right';
-  return 'slide-left';
+  // assign an order so direction can be determined programmatically
+  const order: Record<string, number> = { home: 0, media: 1, search: 2 };
+  const prev = previousPanelView.value || 'home';
+  const curr = panelView.value || 'home';
+  const prevIdx = order[prev] ?? 0;
+  const currIdx = order[curr] ?? 0;
+
+  return currIdx >= prevIdx ? 'slide-left' : 'slide-right';
 });
 
 watch(panelView, (newVal, oldVal) => {
-  previousPanelView.value = oldVal as 'home' | 'media';
+  // remember the old view (allow all three states)
+  previousPanelView.value = (oldVal as 'home' | 'media' | 'search' | '') ?? '';
   // ensure wrapper height updates after DOM changes
   nextTick(() => updateHeight());
 });
