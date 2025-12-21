@@ -1,6 +1,7 @@
+
 <script setup lang="ts">
 import { ref, reactive, onUnmounted, computed, onMounted } from 'vue';
-import { calculateSnaps, type Guide } from '@/utils/snapping';
+import { useStoryElementInteraction } from '@/composables/useStoryElementInteraction';
 
 // --- IMPORT KOMPONENTÓW ---
 import MusicModal, { type MusicTrack } from '@/components/MusicModal.vue';
@@ -96,7 +97,26 @@ const storyElements = ref<StoryElementType[]>([
   }
 ]);
 
-const selectedElementId = ref<string | null>(null);
+const backgroundRef = ref<HTMLElement | null>(null);
+const bgDimensions = reactive({ width: CANVAS_WIDTH, height: CANVAS_HEIGHT });
+
+const {
+  activeDragId,
+  activeResizeId,
+  croppingId,
+  editingId,
+  activeGuides,
+  selectedElementId,
+  startDrag,
+  startResize,
+  stopInteraction,
+  enableEdit,
+  disableEdit,
+  onBackgroundClick,
+  toggleCrop,
+  rotateElement90
+} = useStoryElementInteraction(storyElements, bgDimensions);
+
 
 const selectedElement = computed(() => {
   return storyElements.value.find((el: StoryElementType) => el.id === selectedElementId.value);
@@ -117,8 +137,6 @@ const toggleBackgroundMusic = () => {
   }
 };
 
-const backgroundRef = ref<HTMLElement | null>(null);
-const bgDimensions = reactive({ width: CANVAS_WIDTH, height: CANVAS_HEIGHT });
 
 onMounted(() => {
   if (backgroundRef.value) {
@@ -243,128 +261,10 @@ const updateMusicStyle = (style: 'large' | 'small' | 'text' | 'icon') => {
   else if (style === 'icon') { el.width = 60; el.height = 60; }
 };
 
-// --- INTERAKCJE ---
-const activeDragId = ref<string | null>(null);
-const activeResizeId = ref<string | null>(null);
-const activeRotateId = ref<string | null>(null);
-const editingId = ref<string | null>(null);
-const croppingId = ref<string | null>(null);
-const dragStart = reactive({ x: 0, y: 0 });
-const elementStart = reactive({ x: 0, y: 0, w: 0, h: 0, rotation: 0, cropX: 0, cropY: 0 });
-const activeGuides = ref<Guide[]>([]);
-const SNAP_THRESHOLD = 12;
-
-const startDrag = (event: MouseEvent, element: StoryElementType) => {
-  selectedElementId.value = element.id;
-  if (editingId.value === element.id || activeResizeId.value || activeRotateId.value) return;
-
-  if (croppingId.value === element.id && element.type === 'image') {
-    activeDragId.value = 'CROP_MOVE';
-    dragStart.x = event.clientX; dragStart.y = event.clientY;
-    elementStart.cropX = element.cropX || 0; elementStart.cropY = element.cropY || 0;
-  } else {
-    if (croppingId.value) return;
-    activeDragId.value = element.id;
-    dragStart.x = event.clientX; dragStart.y = event.clientY;
-    elementStart.x = element.x; elementStart.y = element.y;
-    const target = event.currentTarget as HTMLElement;
-    elementStart.w = target.offsetWidth; elementStart.h = target.offsetHeight;
-    element.width = target.offsetWidth;
-    element.height = target.offsetHeight;
-  }
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseup', stopInteraction);
-};
-
-const startResize = (event: MouseEvent, element: StoryElementType) => {
-  event.stopPropagation(); event.preventDefault();
-  activeResizeId.value = element.id; selectedElementId.value = element.id;
-  dragStart.x = event.clientX;
-  elementStart.w = element.width || 200;
-  elementStart.h = element.height || 200;
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseup', stopInteraction);
-};
 
 const handleStartDrag = (event: MouseEvent, element: StoryElementType) => startDrag(event, element);
 const handleStartResize = (event: MouseEvent, element: StoryElementType) => startResize(event, element);
-const rotateElement90 = () => { if (selectedElement.value) selectedElement.value.rotation = (selectedElement.value.rotation + 90) % 360; };
 
-const onMouseMove = (event: MouseEvent) => {
-  if (activeDragId.value === 'CROP_MOVE' && croppingId.value) {
-    const element = storyElements.value.find((el: StoryElementType) => el.id === croppingId.value);
-    if (element && element.type === 'image') {
-      element.cropX = elementStart.cropX + (event.clientX - dragStart.x);
-      element.cropY = elementStart.cropY + (event.clientY - dragStart.y);
-    }
-    return;
-  }
-
-  if (activeDragId.value && activeDragId.value !== 'CROP_MOVE') {
-    const element = storyElements.value.find((el: StoryElementType) => el.id === activeDragId.value);
-    if (element) {
-      let newX = elementStart.x + (event.clientX - dragStart.x);
-      let newY = elementStart.y + (event.clientY - dragStart.y);
-
-      const elementWithDimensions = {
-        ...element,
-        width: elementStart.w || element.width || 100,
-        height: elementStart.h || element.height || 100,
-      };
-      const { snappedX, snappedY, guides } = calculateSnaps(
-        elementWithDimensions, newX, newY,
-        storyElements.value.map(el => ({ ...el, width: el.width || 100, height: el.height || 100 })),
-        { threshold: SNAP_THRESHOLD, canvasWidth: CANVAS_WIDTH, canvasHeight: CANVAS_HEIGHT }
-      );
-      activeGuides.value = guides;
-      newX = snappedX;
-      newY = snappedY;
-
-      if (element.type === 'text' || (element.type === 'image' && element.musicArtist)) {
-        if (newX < 0) newX = 0;
-        else if (newX + elementStart.w > bgDimensions.width) newX = bgDimensions.width - elementStart.w;
-        if (newY < 0) newY = 0;
-        else if (newY + elementStart.h > bgDimensions.height) newY = bgDimensions.height - elementStart.h;
-      }
-      element.x = newX; element.y = newY;
-    }
-  }
-
-  if (activeResizeId.value) {
-    const element = storyElements.value.find((el: StoryElementType) => el.id === activeResizeId.value);
-    if (element) {
-      const newSize = Math.max(50, elementStart.w + (event.clientX - dragStart.x));
-      element.width = newSize;
-      if (element.height) element.height = newSize;
-      element.scale = 1;
-    }
-  }
-
-  if (activeRotateId.value) {
-    const element = storyElements.value.find((el: StoryElementType) => el.id === activeRotateId.value);
-    if (element) {
-      const angleRad = Math.atan2(event.clientY - dragStart.y, event.clientX - dragStart.x);
-      element.rotation = (angleRad * 180 / Math.PI) + 90;
-    }
-  }
-};
-
-const stopInteraction = () => {
-  activeDragId.value = null;
-  activeResizeId.value = null;
-  activeRotateId.value = null;
-  activeGuides.value = [];
-  window.removeEventListener('mousemove', onMouseMove);
-  window.removeEventListener('mouseup', stopInteraction);
-};
-
-const enableEdit = (id: string) => { editingId.value = id; activeDragId.value = null; };
-const disableEdit = () => { editingId.value = null; };
-const onBackgroundClick = () => { disableEdit(); croppingId.value = null; selectedElementId.value = null; };
-const toggleCrop = (id: string) => {
-  if (croppingId.value === id) croppingId.value = null;
-  else { croppingId.value = id; editingId.value = null; selectedElementId.value = id; }
-};
 
 const addTextElement = () => {
   const newId = `el_${Date.now()}`;
