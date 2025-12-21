@@ -14,7 +14,6 @@ interface FontStyle {
 
 const props = defineProps<{
   isMusicModalOpen: boolean;
-  currentAltText?: string;
   isImageSelected: boolean;
   mode?: 'image' | 'text';
   // Text mode props
@@ -70,7 +69,6 @@ const emit = defineEmits<{
         <ImageModeOptions
             v-else
             :is-music-modal-open="isMusicModalOpen"
-            :current-alt-text="currentAltText"
             :is-image-selected="isImageSelected"
             @add-text="emit('add-text')"
             @toggle-music="emit('toggle-music')"

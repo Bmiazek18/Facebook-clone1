@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { ref, reactive, onUnmounted, computed, onMounted } from 'vue';
+import { ref, reactive, onUnmounted, computed, onMounted, provide } from 'vue';
 import { useStoryElementInteraction } from '@/composables/useStoryElementInteraction';
 
 // --- IMPORT KOMPONENTÓW ---
@@ -121,6 +121,9 @@ const {
 const selectedElement = computed(() => {
   return storyElements.value.find((el: StoryElementType) => el.id === selectedElementId.value);
 });
+
+provide('selectedElement', selectedElement);
+
 
 // --- AUDIO PLAYER ---
 const audioPlayer = new Audio();
@@ -339,7 +342,6 @@ const goBack = () => {
   <div class="flex h-screen w-full bg-[#F0F2F5] font-sans overflow-hidden select-none relative">
     <StorySidebar
       :is-music-modal-open="isMusicModalOpen"
-      :current-alt-text="selectedElement?.type === 'image' ? selectedElement?.altText : ''"
       :is-image-selected="selectedElement?.type === 'image'"
       @add-text="addTextElement"
       @toggle-music="toggleMusicModal"

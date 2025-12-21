@@ -16,6 +16,7 @@ import LazyEmojiPicker from './LazyEmojiPicker.vue';
 import StoryTextCard from './StoryTextCard.vue';
 import MediaPreview from './MediaPreview.vue';
 import EarthIcon from 'vue-material-design-icons/Earth.vue';
+import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue'; // Corrected missing import
 import AccountMultipleMinusIcon from 'vue-material-design-icons/AccountMultipleMinus.vue';
 import AccountStarIcon from 'vue-material-design-icons/AccountStar.vue';
 import HoverScrollbar from './HoverScrollbar.vue';

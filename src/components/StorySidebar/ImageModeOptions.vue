@@ -39,7 +39,7 @@
             </div>
         </div>
 
-        <AltTextEditor v-if="isAltTextExpanded" :current-alt-text="currentAltText" @save-alt-text="(text) => emit('save-alt-text', text)" />
+        <AltTextEditor v-if="isAltTextExpanded" @save-alt-text="(text) => emit('save-alt-text', text)" />
     </div>
 </template>
 
@@ -52,9 +52,8 @@ import ShareVariant from 'vue-material-design-icons/ShareVariant.vue';
 import AlphaABox from 'vue-material-design-icons/AlphaABox.vue';
 import AltTextEditor from './AltTextEditor.vue';
 
-defineProps<{
+const props = defineProps<{
     isMusicModalOpen: boolean;
-    currentAltText?: string;
     isImageSelected: boolean;
 }>();
 
