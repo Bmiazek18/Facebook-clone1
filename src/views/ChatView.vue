@@ -188,7 +188,7 @@
 
     </div>
 
-    <Modal v-if="showRenameModal" title="Zmień nazwę czatu" @close="closeRenameModal">
+    <BaseModal v-if="showRenameModal" title="Zmień nazwę czatu" @close="closeRenameModal">
       <div class="px-4 py-3">
         <label class="block text-sm font-medium text-gray-700 mb-2">Nazwa czatu</label>
         <input v-model="renameInput" type="text" class="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500" />
@@ -197,18 +197,18 @@
           <button @click="saveRename" class="px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Zapisz</button>
         </div>
       </div>
-    </Modal>
-    <Modal v-if="showThemeModal" title="Wybierz motyw czatu" @close="closeThemeModalAndSave">
+    </BaseModal>
+    <BaseModal v-if="showThemeModal" title="Wybierz motyw czatu" @close="closeThemeModalAndSave">
       <MessangerTheme @apply="closeThemeModalAndSave" />
-    </Modal>
+    </BaseModal>
     <!-- Emoji Modal -->
-    <Modal v-if="showEmojiModal" title="Wybierz ikonę emoji" @close="closeEmojiModal">
+    <BaseModal v-if="showEmojiModal" title="Wybierz ikonę emoji" @close="closeEmojiModal">
       <div class="flex items-center justify-between px-4 pt-2 pb-3 border-b border-gray-100">
         <div class="text-2xl">{{ convStore.selectedEmoji || '👍' }}</div>
         <button @click="closeEmojiModal" class="text-gray-500 hover:text-gray-700 text-xl leading-none">✕</button>
       </div>
       <LazyEmojiPicker @select="onEmojiSelect" />
-    </Modal>
+    </BaseModal>
   </div>
   </template>
 
@@ -265,7 +265,7 @@ watch(chatId, (newId) => {
   if (s?.emoji) convStore.setSelectedEmoji(s.emoji);
 });
 
-import Modal from '@/components/Modal.vue';
+import BaseModal from '@/components/BaseModal.vue';
 import MessangerTheme from '@/components/MessangerTheme.vue';
 import LazyEmojiPicker from '@/components/LazyEmojiPicker.vue';
 
@@ -309,7 +309,7 @@ function onSearchGoTo(payload: { id: number; chatId?: string | number }) {
   nextTick(() => {
     try {
       messageBoxRef.value?.scrollToMessage(payload.id);
-    } catch (e) {
+    } catch {
       // ignore errors
     }
   });

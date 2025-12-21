@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import type { DefineComponent } from 'vue';
 
 // --- Import Ikony z vue-material-design-icons ---
 import EarthIcon from 'vue-material-design-icons/Earth.vue';
@@ -23,7 +24,7 @@ interface PrivacyOption {
   id: string;
   label: string;
   description: string;
-  iconComponent: any;
+  iconComponent: DefineComponent<object, object, unknown>;
 }
 
 const privacyOptions: PrivacyOption[] = [
@@ -56,7 +57,8 @@ watch(() => props.initialSelected, (v) => {
 const readDefaultFromCookie = (): string | null => {
   try {
     const m = document.cookie.match('(?:^|; )' + 'fc_default_privacy' + '=([^;]*)');
-    return m ? decodeURIComponent(m[1]) : null;
+    if (!m) return null;
+    return m[1] ? decodeURIComponent(m[1]) : null;
   } catch {
     return null;
   }

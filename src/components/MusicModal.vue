@@ -45,6 +45,14 @@ const displayedMusic = computed(() => {
 });
 
 // Logika API
+interface ItunesResult {
+  trackId: number;
+  trackName: string;
+  artistName: string;
+  artworkUrl100: string;
+  previewUrl: string;
+}
+
 const searchMusic = async () => {
   if (musicQuery.value.trim().length < 2) return;
   isSearching.value = true;
@@ -57,7 +65,7 @@ const searchMusic = async () => {
     const response = await fetch(url);
     const data = await response.json();
 
-    musicResults.value = data.results.map((item: any) => ({
+    musicResults.value = data.results.map((item: ItunesResult) => ({
       id: item.trackId,
       title: item.trackName,
       artist: item.artistName,

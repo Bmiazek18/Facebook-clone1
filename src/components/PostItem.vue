@@ -11,7 +11,7 @@ import PlayerVideo from './PlayerVideo.vue'
 import { useTheme } from '@/composables/useTheme'
 import { usePostReactions } from '@/composables/usePostReactions'
 import { useVideoAutoplay } from '@/composables/useVideoAutoplay'
-import Modal from './Modal.vue'
+import BaseModal from './BaseModal.vue'
 import PostModal from './PostModal.vue'
 import ShareAsPostModal from './ShareAsPostModal.vue'
 import PostHeader from './post/PostHeader.vue'
@@ -254,7 +254,7 @@ useVideoAutoplay(videoContainerRef)
       @share-to-story="shareToStory"
     />
 
-    <Modal v-if="isModalOpen" @close="toggleModal"><PostModal/></Modal>
+    <BaseModal v-if="isModalOpen" @close="toggleModal"><PostModal/></BaseModal>
     <ShareAsPostModal :is-open="isShareAsPostModalOpen" :post="postData" @close="isShareAsPostModalOpen = false" @share="handleShareAsPost"/>
   </div>
 </template>

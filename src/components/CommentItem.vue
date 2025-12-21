@@ -61,7 +61,7 @@ const avatarSizeClass = isRootComment ? 'w-8 h-8' : 'w-6 h-6'
             <div v-if="!isRootComment" class="w-8 mr-2 relative">
                 <div class="absolute w-[21px] h-4 border-b-2 border-l-2 border-gray-300 right-0 rounded-bl-[10px]"></div>
             </div>
-            <ProfilePopper>
+            <ProfilePopper :name="props.comment.userName">
 <a :class="[avatarSizeClass]">
 <img
                 :class="['rounded-full mt-1', avatarSizeClass,  ]"
@@ -80,7 +80,7 @@ const avatarSizeClass = isRootComment ? 'w-8 h-8' : 'w-6 h-6'
 
             <div v-if="!isRootComment" class="flex-grow ml-2">
                  <div class="bg-gray-100 w-fit p-2 rounded-xl dark:bg-[#333333]">
-                   <ProfilePopper>
+                   <ProfilePopper :name="props.comment.userName">
 <span class="font-extrabold text-[13px] text-theme-text hover:underline cursor-pointer">{{ props.comment.userName }}</span>
             </ProfilePopper>
 
@@ -146,7 +146,7 @@ const avatarSizeClass = isRootComment ? 'w-8 h-8' : 'w-6 h-6'
         </div>
         <div v-if="isRootComment" class="flex-grow">
             <div class="bg-gray-100 ml-2 w-fit dark:bg-[#333333] p-2 rounded-xl">
-                 <ProfilePopper>
+                 <ProfilePopper :name="props.comment.userName">
 <span class="font-extrabold text-[13px] text-theme-text hover:underline cursor-pointer">{{ props.comment.userName }}</span>
             </ProfilePopper>
                 <p class="text-[15px] text-theme-text">{{ props.comment.text }}</p>

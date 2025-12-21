@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, nextTick, watch } from 'vue';
 import type { DefineComponent } from 'vue';
 
 // --- FLOATING VUE ---
@@ -32,18 +32,18 @@ import MapPreview from './MapPreview.vue';
 import type { PostData } from '@/types/StoryElement';
 import type { User } from '@/data/users';
 
-export interface Location {
+export interface PostLocation {
   title: string;
   subtitle: string;
   type: string;
-  lat: string;
-  lon: string;
+  lat: string | null;
+  lon: string | null;
 }
 
 const props = defineProps<{
   sharedPost?: PostData | null;
   taggedUsers?: User[];
-  selectedLocation?: Location | null;
+  selectedLocation?: PostLocation | null;
   selectedGif?: string | null;
   selectedPrivacy?: string | null;
 }>();

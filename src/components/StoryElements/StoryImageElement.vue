@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import ResizeBottomRight from 'vue-material-design-icons/ResizeBottomRight.vue'
-import type { StoryElement } from '@/types/StoryElement'
+import type { ImageElement } from '@/types/StoryElement'
 
 defineProps<{
-  element: StoryElement
+  element: ImageElement
   isCropping: boolean
   isSelected: boolean
-  onStartResize: (e: MouseEvent, element: StoryElement) => void
+  onStartResize: (e: MouseEvent, element: ImageElement) => void
   onToggleCrop: (id: string) => void
 }>()
 </script>

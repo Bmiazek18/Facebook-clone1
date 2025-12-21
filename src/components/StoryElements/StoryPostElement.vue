@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import Earth from 'vue-material-design-icons/Earth.vue'
-import type { StoryElement } from '@/types/StoryElement'
+import type { PostElement } from '@/types/StoryElement'
 
 defineProps<{
-  element: StoryElement
+  element: PostElement
 }>()
 </script>
 

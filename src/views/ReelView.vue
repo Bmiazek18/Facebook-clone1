@@ -133,13 +133,8 @@ import ThumbUpIcon from 'vue-material-design-icons/ThumbUp.vue';
 import CommentIcon from 'vue-material-design-icons/Comment.vue';
 import ShareIcon from 'vue-material-design-icons/Share.vue';
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
-import CloseIcon from 'vue-material-design-icons/Close.vue';
 import MusicNoteIcon from 'vue-material-design-icons/MusicNote.vue';
-import FileDocumentIcon from 'vue-material-design-icons/FileDocument.vue';
-import StickerEmojiIcon from 'vue-material-design-icons/StickerEmoji.vue';
 import PlayIcon from 'vue-material-design-icons/Play.vue';
-import CheckDecagramIcon from 'vue-material-design-icons/CheckDecagram.vue';
-import EmoticonHappyIcon from 'vue-material-design-icons/EmoticonHappy.vue';
 
 const router = useRouter();
 const storyShareStore = useStoryShareStore();

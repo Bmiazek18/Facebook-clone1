@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import Link from 'vue-material-design-icons/Link.vue'
 import OpenInNew from 'vue-material-design-icons/OpenInNew.vue'
-import type { StoryElement } from '@/types/StoryElement'
+import type { LinkElement } from '@/types/StoryElement'
 
 defineProps<{
-  element: StoryElement
+  element: LinkElement
 }>()
 </script>
 

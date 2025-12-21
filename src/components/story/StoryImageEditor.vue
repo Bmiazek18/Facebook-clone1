@@ -6,7 +6,7 @@ import { calculateSnaps, type Guide } from '@/utils/snapping';
 import MusicModal, { type MusicTrack } from '@/components/MusicModal.vue';
 import LinkStickerModal from '@/components/LinkStickerModal.vue';
 import PostShareModal from '@/components/PostShareModal.vue';
-import Sidebar from '@/components/Sidebar.vue';
+import StorySidebar from '@/components/StorySidebar.vue';
 import ImageToolbar from '@/components/ImageToolbar.vue';
 import MusicToolbar from '@/components/MusicToolbar.vue';
 import StoryElement from '@/components/StoryElement.vue';
@@ -232,7 +232,7 @@ const addMusicPoster = (track: MusicTrack) => {
 };
 
 const updateMusicStyle = (style: 'large' | 'small' | 'text' | 'icon') => {
-  if (!selectedElement.value) return;
+  if (!selectedElement.value || selectedElement.value.type !== 'image') return;
   const el = selectedElement.value;
   el.musicStyle = style;
   el.scale = 1;
@@ -258,7 +258,7 @@ const startDrag = (event: MouseEvent, element: StoryElementType) => {
   selectedElementId.value = element.id;
   if (editingId.value === element.id || activeResizeId.value || activeRotateId.value) return;
 
-  if (croppingId.value === element.id) {
+  if (croppingId.value === element.id && element.type === 'image') {
     activeDragId.value = 'CROP_MOVE';
     dragStart.x = event.clientX; dragStart.y = event.clientY;
     elementStart.cropX = element.cropX || 0; elementStart.cropY = element.cropY || 0;
@@ -293,7 +293,7 @@ const rotateElement90 = () => { if (selectedElement.value) selectedElement.value
 const onMouseMove = (event: MouseEvent) => {
   if (activeDragId.value === 'CROP_MOVE' && croppingId.value) {
     const element = storyElements.value.find((el: StoryElementType) => el.id === croppingId.value);
-    if (element) {
+    if (element && element.type === 'image') {
       element.cropX = elementStart.cropX + (event.clientX - dragStart.x);
       element.cropY = elementStart.cropY + (event.clientY - dragStart.y);
     }
@@ -320,7 +320,7 @@ const onMouseMove = (event: MouseEvent) => {
       newX = snappedX;
       newY = snappedY;
 
-      if (element.type === 'text' || element.musicArtist) {
+      if (element.type === 'text' || (element.type === 'image' && element.musicArtist)) {
         if (newX < 0) newX = 0;
         else if (newX + elementStart.w > bgDimensions.width) newX = bgDimensions.width - elementStart.w;
         if (newY < 0) newY = 0;
@@ -437,9 +437,9 @@ const goBack = () => {
 
 <template>
   <div class="flex h-screen w-full bg-[#F0F2F5] font-sans overflow-hidden select-none relative">
-    <Sidebar
+    <StorySidebar
       :is-music-modal-open="isMusicModalOpen"
-      :current-alt-text="selectedElement?.altText"
+      :current-alt-text="selectedElement?.type === 'image' ? selectedElement?.altText : ''"
       :is-image-selected="selectedElement?.type === 'image'"
       @add-text="addTextElement"
       @toggle-music="toggleMusicModal"
@@ -499,7 +499,7 @@ const goBack = () => {
         </div>
 
         <MusicToolbar
-          v-if="selectedElement && selectedElement.musicTitle"
+          v-if="selectedElement && selectedElement.type === 'image' && selectedElement.musicTitle"
           :current-style="selectedElement.musicStyle || 'large'"
           :track-title="selectedElement.musicTitle"
           :track-artist="selectedElement.musicArtist"

@@ -35,13 +35,6 @@ const progressPercent = computed(() => {
     return duration.value > 0 ? (currentTime.value / duration.value) * 100 : 0;
 });
 
-// Właściwość obliczana: Czas pozostały (countdown)
-const remainingTime = computed(() => {
-  const totalDuration = duration.value || 0;
-  const current = currentTime.value;
-  // Zaokrąglenie w górę, aby uniknąć wyświetlania '0:-1' i uprościć wyświetlanie
-  return Math.max(0, Math.ceil(totalDuration - current));
-});
 </script>
 
 <template>

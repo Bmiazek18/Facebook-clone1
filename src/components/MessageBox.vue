@@ -7,8 +7,10 @@ import MessageBoxFooter from './MessageBoxFooter.vue';
 import MessageItem from './MessageItem.vue';
 import { useConversationsStore } from '@/stores/conversations';
 
+import type { Theme } from '@/stores/messengerTheme';
 
-import type { Message, ImageMessage, AudioState, VideoMessage, AudioMessage as AudioMsg, FileMessage } from '@/types/Message';
+
+import type { Message, ImageMessage, AudioState, VideoMessage } from '@/types/Message';
 
 
 interface MediaItem {
@@ -70,7 +72,7 @@ const boxTheme = computed(() => {
     return themes.value[settings.themeId] || selectedTheme.value;
   }
 
-  return themes.value.find((t: any) => t.id === settings.themeId) || selectedTheme.value;
+  return themes.value.find((t: Theme) => t.id === settings.themeId) || selectedTheme.value;
 });
 
 
@@ -238,17 +240,17 @@ const handleDrop = (event: DragEvent) => {
     const baseMsg = { sender: 'me', time: Date.now() }; // Common fields
 
     // Logika dodawania do store LUB localMessages
-    const pushMsg = (msg: any) => {
+    const pushMsg = (msg: Message) => {
       if (props.boxId) convStore.addMessage(Number(props.boxId), msg);
       else localMessages.value.push({ id: Date.now() + Math.random(), ...msg });
     };
 
     if (file.type.startsWith('image/')) {
-       pushMsg({ ...baseMsg, type: 'image', content: 'Wysłano obraz', imageUrl: url });
+       pushMsg({ ...baseMsg, type: 'image', content: 'Wysłano obraz', imageUrl: url } as ImageMessage);
     } else if (file.type.startsWith('video/')) {
-       pushMsg({ ...baseMsg, type: 'video', content: file.name, videoUrl: url });
+       pushMsg({ ...baseMsg, type: 'video', content: file.name, videoUrl: url } as VideoMessage);
     } else {
-       pushMsg({ ...baseMsg, type: 'file', content: `Plik: ${file.name}`, fileUrl: url, fileName: file.name, fileSize: file.size });
+       pushMsg({ ...baseMsg, type: 'file', content: `Plik: ${file.name}`, fileUrl: url, fileName: file.name, fileSize: file.size } as Message);
     }
   });
   scrollToBottom();
@@ -279,14 +281,14 @@ const handleAddReaction = (messageId: number, emoji: string) => {
     // Jeśli używamy store, musimy zaktualizować obiekt w store, nie lokalną kopię
     if (props.boxId) {
        const msgs = convStore.getMessagesByChatId(Number(props.boxId));
-       const target = msgs.find(m => m.id === messageId) as any;
+       const target = msgs.find(m => m.id === messageId);
        if (target) {
          if(!target.reactions) target.reactions = [];
          target.reactions.push(emoji);
        }
     } else {
        // Fallback dla local
-       const target = localMessages.value.find(m => m.id === messageId) as any;
+       const target = localMessages.value.find(m => m.id === messageId);
        if(target) {
           if(!target.reactions) target.reactions = [];
           target.reactions.push(emoji);
@@ -305,8 +307,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   // Cleanup object URLs to avoid memory leaks
-  messagesList.value.forEach((msg: any) => {
-    if (msg.audioUrl?.startsWith('blob:')) URL.revokeObjectURL(msg.audioUrl);
+  messagesList.value.forEach((msg: Message) => {
+    if ('audioUrl' in msg && msg.audioUrl?.startsWith('blob:')) URL.revokeObjectURL(msg.audioUrl);
   });
 });
 

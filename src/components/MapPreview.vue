@@ -10,8 +10,8 @@ export interface Location {
   title: string;
   subtitle: string;
   type: string;
-  lat: string;
-  lon: string;
+  lat: string | null;
+  lon: string | null;
 }
 
 const props = defineProps<{
@@ -35,7 +35,7 @@ const locationTypeLabel = computed(() => {
 });
 
 const initMap = async () => {
-  if (!props.selectedLocation) return;
+  if (!props.selectedLocation || !props.selectedLocation.lat || !props.selectedLocation.lon) return;
   const lat = parseFloat(props.selectedLocation.lat);
   const lng = parseFloat(props.selectedLocation.lon);
   if (isNaN(lat) || isNaN(lng)) return;

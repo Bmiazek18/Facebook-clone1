@@ -48,12 +48,12 @@
         @click="goToMessage(msg)"
       >
         <div class="relative shrink-0">
-          <img :src="msg.avatar || 'https://i.pravatar.cc/150?img=12'" :alt="msg.name || msg.sender" class="w-12 h-12 rounded-full object-cover border border-gray-100 shadow-sm" />
+          <img :src="'https://i.pravatar.cc/150?img=12'" :alt="msg.sender" class="w-12 h-12 rounded-full object-cover border border-gray-100 shadow-sm" />
         </div>
 
         <div class="flex-1 min-w-0 flex flex-col justify-center h-12">
           <h3 class="text-[15px] font-semibold text-gray-900 leading-none mb-1">
-            {{ msg.name || msg.sender }}
+            {{ msg.sender }}
           </h3>
 
           <div class="text-[13px] text-gray-500 truncate leading-snug">
@@ -74,6 +74,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useConversationsStore } from '@/stores/conversations';
+import type { ChatMessage } from '@/data/messages';
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -120,7 +121,7 @@ const formatTime = (t: number | string | undefined) => {
   return date.toLocaleString();
 };
 
-function goToMessage(msg) {
+function goToMessage(msg: ChatMessage) {
   // emit message id and chatId (if present)
   emit('go-to-message', { id: msg.id, chatId: props.boxId });
 }

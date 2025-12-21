@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 
 // --- IMPORT KOMPONENTÓW ---
-import Sidebar from '@/components/Sidebar.vue';
+import StorySidebar from '@/components/StorySidebar.vue';
 import EmoticonOutlineIcon from 'vue-material-design-icons/EmoticonOutline.vue';
 
 // --- EMIT ---
@@ -83,7 +83,7 @@ const toggleMusicModal = () => {
 <template>
   <div class="flex h-screen w-full bg-[#F0F2F5] font-sans overflow-hidden select-none">
 
-    <Sidebar
+    <StorySidebar
       mode="text"
       :is-music-modal-open="isMusicModalOpen"
       :is-image-selected="false"

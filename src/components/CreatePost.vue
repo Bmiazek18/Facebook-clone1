@@ -67,7 +67,7 @@ import { type DefineComponent, ref } from 'vue';
 import PostCreator from './PostCreator.vue';
 import PrivacySelector from './PrivacySelector.vue';
 import TagUsers from './TagUsers.vue';
-import LocationSelector from './LocationSelector.vue';
+import LocationSelector, { type LocationResult } from './LocationSelector.vue';
 import GifSelector from './GifSelector.vue';
 import '@/assets/animations/slideTransition.css';
 import { useSlideTransition } from '@/composables/useSlideTransition';
@@ -120,12 +120,12 @@ const handleTagUsersConfirm = (users: User[]) => {
 };
 
 // --- Wybór lokalizacji ---
-const selectedLocation = ref<Location | null>(null);
+const selectedLocation = ref<LocationResult | null>(null);
 const openLocation = () => {
   previousView.value = currentView.value;
   currentView.value = 'location';
 };
-const handleLocationConfirm = (location: Location | null) => {
+const handleLocationConfirm = (location: LocationResult | null) => {
   selectedLocation.value = location;
   currentView.value = 'creator';
 };

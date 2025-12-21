@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import VideoImage from 'vue-material-design-icons/VideoImage.vue'
 import Image from 'vue-material-design-icons/Image.vue'
 import EmoticonOutline from 'vue-material-design-icons/EmoticonOutline.vue'
-import Modal from './Modal.vue'
+import BaseModal from './BaseModal.vue'
 import CreatePost from './CreatePost.vue'
 
 useI18n()
@@ -72,7 +72,7 @@ const handlePostPublish = (content: string) => {
     </div>
   </div>
 
-  <Modal v-if="isOpen" title="Utwórz post" @close="closeCreatePost">
+  <BaseModal v-if="isOpen" title="Utwórz post" @close="closeCreatePost">
     <CreatePost @publish="handlePostPublish" />
-  </Modal>
+  </BaseModal>
 </template>

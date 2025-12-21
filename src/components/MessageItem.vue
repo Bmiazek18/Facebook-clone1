@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import PlayIcon from 'vue-material-design-icons/Play.vue';
 import PauseIcon from 'vue-material-design-icons/Pause.vue';
 import MessegePool from './MessegePool.vue';
-import Modal from './Modal.vue';
+import BaseModal from './BaseModal.vue';
 import PlayerVideo from './PlayerVideo.vue';
 import ReactionPanel from './ReactionPanel.vue';
 import MessageReplyContext from './MessageReplyContext.vue';
@@ -277,9 +277,9 @@ const toggleAudio = (msg: Message) => emit('toggle-audio-playback', msg);
     </div>
   </div>
 
-  <Modal v-if="showReactionsPanel" @close="showReactionsPanel = false" title="Reakcje">
+  <BaseModal v-if="showReactionsPanel" @close="showReactionsPanel = false" title="Reakcje">
     <ReactionPanel />
-  </Modal>
+  </BaseModal>
 </template>
 
 <style scoped>

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Delete from 'vue-material-design-icons/Delete.vue';
 import ViewAgenda from 'vue-material-design-icons/ViewAgenda.vue'; // Duży widok
 import ViewList from 'vue-material-design-icons/ViewList.vue';     // Mały widok
 import TextBox from 'vue-material-design-icons/TextBox.vue';       // Tekst

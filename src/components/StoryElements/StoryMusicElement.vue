@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import MusicNote from 'vue-material-design-icons/MusicNote.vue'
-import type { StoryElement } from '@/types/StoryElement'
+import type { ImageElement } from '@/types/StoryElement'
 
 defineProps<{
-  element: StoryElement
+  element: ImageElement
 }>()
 </script>
 

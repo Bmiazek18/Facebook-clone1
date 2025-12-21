@@ -34,12 +34,6 @@ const elementTransform = computed(() => `rotate(${props.element.rotation}deg) sc
 const handleStartDrag = (e: MouseEvent) => props.onStartDrag?.(e, props.element)
 const handleRemove = () => props.onRemove?.(props.element.id)
 
-// Check if element is a music element (image with music data)
-const isMusicElement = computed(() => {
-  const el = props.element
-  return el.type === 'image' && 'musicTitle' in el && !!el.musicTitle
-})
-
 const handleUpdateContent = (id: string, value: string) => {
   emit('update-content', id, value)
 }
@@ -63,7 +57,7 @@ const handleUpdateContent = (id: string, value: string) => {
     >
       <!-- Remove Button -->
       <button
-        v-if="!state.editing && !state.cropping && !isMusicElement"
+        v-if="!state.editing && !state.cropping"
         @click.stop="handleRemove"
         class="absolute -top-3 -right-3 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-600 z-50 transition-opacity shadow-md"
       >
@@ -72,7 +66,7 @@ const handleUpdateContent = (id: string, value: string) => {
 
       <!-- Music Element -->
       <StoryMusicElement
-        v-if="isMusicElement"
+        v-if="element.type === 'image' && element.musicTitle"
         :element="element"
       />
 

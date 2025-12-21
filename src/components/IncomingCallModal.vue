@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Modal from './Modal.vue';
+import BaseModal from './BaseModal.vue';
 import LockIcon from 'vue-material-design-icons/Lock.vue';
 import PhoneOffIcon from 'vue-material-design-icons/PhoneOff.vue';
 import PhoneIcon from 'vue-material-design-icons/Phone.vue';
@@ -32,7 +32,7 @@ const handleAccept = () => emit('accept');
 </script>
 
 <template>
-  <Modal v-if="isOpen" title="Połączenie przychodzące" @close="handleClose">
+  <BaseModal v-if="isOpen" title="Połączenie przychodzące" @close="handleClose">
     <div class="w-[300px] flex flex-col items-center p-4">
       <div class="mb-4 relative">
         <img
@@ -77,5 +77,5 @@ const handleAccept = () => emit('accept');
         </div>
       </div>
     </div>
-  </Modal>
+  </BaseModal>
 </template>

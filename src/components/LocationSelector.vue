@@ -8,7 +8,6 @@ import OfficeBuildingIcon from 'vue-material-design-icons/OfficeBuilding.vue';
 import TreeIcon from 'vue-material-design-icons/Tree.vue';
 import NavigationIcon from 'vue-material-design-icons/Navigation.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
-import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue';
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
 
 
@@ -20,6 +19,14 @@ export interface LocationResult {
   lat: string | null;
   lon: string | null;
   searchbox_id?: string; // Opcjonalne, potrzebne tylko dla sugestii
+}
+
+interface Suggestion {
+  name: string;
+  full_address: string;
+  place_formatted: string;
+  feature_type: string;
+  mapbox_id: string;
 }
 
 const emit = defineEmits<{
@@ -67,7 +74,7 @@ const searchLocations = async () => {
 
     if (!data.suggestions) return;
 
-    suggestions.value = data.suggestions.map((item: any) => {
+    suggestions.value = data.suggestions.map((item: Suggestion) => {
       const featureType = item.feature_type;
       let type: LocationResult['type'] = 'place';
 

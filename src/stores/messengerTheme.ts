@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-interface Theme {
+export interface Theme {
   id: string;
   title: string;
   subtitle?: string;

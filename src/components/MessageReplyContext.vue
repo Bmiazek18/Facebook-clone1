@@ -2,7 +2,7 @@
 import ReplyIcon from 'vue-material-design-icons/Reply.vue';
 import type { Message } from '@/types/Message';
 
-const props = defineProps<{
+defineProps<{
     reply: Message;
 }>();
 </script>

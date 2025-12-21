@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { GiphyFetch } from '@giphy/js-fetch-api';
-import { useI18n } from 'vue-i18n';
+import type { IGif } from '@giphy/js-types';
 
 const emit = defineEmits<{
   (e: 'confirm', url: string): void;
 }>();
 
-const { t } = useI18n();
 const searchTerm = ref('');
-const gifs = ref<any[]>([]);
+const gifs = ref<IGif[]>([]);
 const loading = ref(false);
 const gf = new GiphyFetch(import.meta.env.VITE_GIPHY_KEY as string);
 
@@ -26,9 +25,9 @@ const fetchGifs = async () => {
   }
 };
 
-const debounce = (func: Function, wait: number) => {
-  let timeout: any;
-  return (...args: any) => {
+const debounce = (func: (...args: string[]) => void, wait: number) => {
+  let timeout: number;
+  return (...args: string[]) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
   };
@@ -55,7 +54,7 @@ onMounted(() => fetchGifs());
         <input
           type="text"
           v-model="searchTerm"
-          @input="handleGifSearch"
+          @input="() => handleGifSearch()"
           class="w-full bg-[#F0F2F5] border-none rounded-full py-2 pl-11 pr-4 text-[16px] focus:ring-0 outline-none placeholder-gray-500"
           placeholder="Szukaj"
         />

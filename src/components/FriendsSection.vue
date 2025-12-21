@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import Magnify from 'vue-material-design-icons/Magnify.vue';
-import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
-import ThumbsUp from 'vue-material-design-icons/ThumbUp.vue';
 import FriendListItem from './FriendListItem.vue';
 // Zmieniona Definicja propsów: Został tylko friendsList i isFullView
-const props = defineProps<{
+defineProps<{
     friendsList: {
         name: string;
         mutual: number;
@@ -14,13 +11,6 @@ const props = defineProps<{
     }[];
     isFullView: boolean; // false = Info Tab Preview, true = Full Friends Tab
 }>();
-
-// Lista dla podglądu w zakładce Info (max 8 osób, 2 kolumny po 4)
-const infoPreviewList = computed(() => props.friendsList.slice(0, 8));
-const friendsCountText = "525 (wspólnych: 79)";
-
-// Wybór listy na podstawie trybu
-const currentFriendList = computed(() => props.isFullView ? props.friendsList : infoPreviewList.value);
 
 </script>
 

@@ -62,7 +62,6 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 
 import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
-import CogIcon from 'vue-material-design-icons/Cog.vue';
 import HelpCircleOutlineIcon from 'vue-material-design-icons/HelpCircleOutline.vue';
 import WeatherNightIcon from 'vue-material-design-icons/WeatherNight.vue';
 import CommentProcessingOutlineIcon from 'vue-material-design-icons/CommentProcessingOutline.vue';

@@ -3,7 +3,7 @@ import { defineStore, storeToRefs } from 'pinia'
 import rawChats from '@/data/rawChats'
 import initialMessages, { type ChatMessage } from '@/data/messages'
 import chatSettings from '@/data/chatSettings'
-import { useMessengerThemeStore } from '@/stores/messengerTheme'
+import { useMessengerThemeStore, type Theme } from '@/stores/messengerTheme'
 
 export const useConversationsStore = defineStore('conversations', () => {
   const chats = ref(structuredClone(rawChats))
@@ -38,7 +38,9 @@ export const useConversationsStore = defineStore('conversations', () => {
 
     const sorted = [...msgs].sort((a, b) => a.time - b.time)
     const last = sorted[sorted.length - 1]
-    _updateLastMessage(chatId, last)
+    if (last) {
+      _updateLastMessage(chatId, last)
+    }
   }
 
   function _updateLastMessage(chatId: number, msg: ChatMessage) {
@@ -60,8 +62,10 @@ export const useConversationsStore = defineStore('conversations', () => {
     s.emoji = emoji
   }
 
+  
+
   function setChatThemeById(chatId: number, themeId: string) {
-    const idx = themes.value.findIndex((t: any) => t.id === themeId)
+    const idx = themes.value.findIndex((t: Theme) => t.id === themeId)
     const s = _getOrCreateSettings(chatId)
     s.themeId = idx >= 0 ? idx : undefined
   }

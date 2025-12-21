@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
-import Message from 'vue-material-design-icons/Message.vue';
 
-const props = defineProps<{
+defineProps<{
     friend: {
         name: string;
         mutual: number;

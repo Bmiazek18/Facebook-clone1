@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Modal from './Modal.vue';
+import BaseModal from './BaseModal.vue';
 import CreatePost from './CreatePost.vue';
 import type { PostData } from '@/types/StoryElement';
 
@@ -23,7 +23,7 @@ const close = () => {
 </script>
 
 <template>
-  <Modal
+  <BaseModal
     v-if="isOpen"
     title="Utwórz post"
     @close="close"
@@ -32,5 +32,5 @@ const close = () => {
       :shared-post="post"
       @publish="handlePublish"
     />
-  </Modal>
+  </BaseModal>
 </template>
