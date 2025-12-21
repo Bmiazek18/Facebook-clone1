@@ -6,18 +6,18 @@ import { Dropdown as VDropdown } from 'floating-vue';
 import 'floating-vue/dist/style.css';
 
 // --- IKONY ---
-import CloseIcon from 'vue-material-design-icons/Close.vue';
 import ImageOutlineIcon from 'vue-material-design-icons/ImageOutline.vue';
 import StickerEmojiIcon from 'vue-material-design-icons/StickerEmoji.vue';
 import EmoticonHappyOutlineIcon from 'vue-material-design-icons/EmoticonHappyOutline.vue';
-import MicrophoneIcon from 'vue-material-design-icons/Microphone.vue';
-import StopIcon from 'vue-material-design-icons/Stop.vue';
-import SendIcon from 'vue-material-design-icons/Send.vue';
-import PlayIcon from 'vue-material-design-icons/Play.vue';
+
 
 // --- KOMPONENTY ---
 import GifBox from './GifBox.vue';
 import LazyEmojiPicker from './LazyEmojiPicker.vue';
+import VoiceRecorder from './MessageBoxFooter/VoiceRecorder.vue';
+import LikeButton from './MessageBoxFooter/LikeButton.vue';
+import MediaPreview from './MessageBoxFooter/MediaPreview.vue';
+
 
 import type { Message } from '@/types/Message';
 
@@ -108,38 +108,12 @@ const newMessage = ref('');
 const fileInput = ref<HTMLInputElement | null>(null);
 const selectedImageUrl = ref<string | null>(null);
 const selectedGifUrl = ref<string | null>(null);
-// showPicker usunięte - obsługuje to Floating Vue
-const isRecording = ref(false);
-const isPaused = ref(false);
-const recordingDuration = ref(0);
 
-// Media Recorder
-const mediaRecorder = ref<MediaRecorder | null>(null);
-const audioChunks = ref<Blob[]>([]);
-const recordingTimer = ref<ReturnType<typeof setInterval> | null>(null);
-const isRecordingInitialized = ref(false);
-let mediaStream: MediaStream | null = null;
-const recordedBlob = ref<Blob | null>(null);
-const audioUrlPreview = ref<string | null>(null);
-
-// Press animation
-const animationTimer = ref<ReturnType<typeof setInterval> | null>(null);
-const pressStartTime = ref<number | null>(null);
-const currentPressDurationVisual = ref(0);
-const ICON_CLASSES = ['icon-state-0', 'icon-state-1', 'icon-state-2', 'icon-state-3'];
-const currentIconState = ref(ICON_CLASSES[0]);
-const MAX_PRESS_TIME_MS = 5000;
-const DURATION_STEP_MS = 1000;
 
 const isInputEmpty = computed(() => {
   return newMessage.value.trim().length === 0 && !selectedImageUrl.value && !selectedGifUrl.value;
 });
 
-const formatDuration = (totalSeconds: number): string => {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-};
 
 // Media Selection
 const clearMediaSelection = () => {
@@ -173,124 +147,19 @@ const handleGifSelect = (gifUrl: string) => {
   newMessage.value = 'Wysłano GIF';
 };
 
-// Voice Recording
-const resetRecordingState = () => {
-  if (recordingTimer.value) clearInterval(recordingTimer.value);
-  isRecording.value = false;
-  isPaused.value = false;
-  recordingDuration.value = 0;
-  audioChunks.value = [];
-  recordedBlob.value = null;
-  audioUrlPreview.value = null;
+
+const handleAudioRecorded = (payload: { audioUrl: string, duration: number }) => {
+    addMessage(
+        `Wiadomość głosowa (${payload.duration}s)`,
+        'default',
+        null,
+        null,
+        true,
+        payload.audioUrl,
+        payload.duration
+    );
 };
 
-const startVoiceRecording = async () => {
-  if (isPaused.value) {
-    mediaRecorder.value?.resume();
-    isPaused.value = false;
-    isRecording.value = true;
-    recordingTimer.value = setInterval(() => {
-      recordingDuration.value++;
-    }, 1000);
-    return;
-  }
-
-  if (!isInputEmpty.value || isRecording.value) return;
-
-  try {
-    if (!isRecordingInitialized.value) {
-      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder.value = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' });
-
-      mediaRecorder.value.ondataavailable = event => {
-        if (event.data.size > 0) {
-          audioChunks.value.push(event.data);
-        }
-      };
-      isRecordingInitialized.value = true;
-    }
-
-    audioChunks.value = [];
-    recordedBlob.value = null;
-    if (audioUrlPreview.value) URL.revokeObjectURL(audioUrlPreview.value);
-    audioUrlPreview.value = null;
-
-    mediaRecorder.value?.start();
-    isRecording.value = true;
-    recordingDuration.value = 0;
-
-    recordingTimer.value = setInterval(() => {
-      recordingDuration.value++;
-    }, 1000);
-  } catch (error) {
-    console.error('Błąd dostępu do mikrofonu:', error);
-    alert('Nie można uzyskać dostępu do mikrofonu. Upewnij się, że zezwoliłeś na użycie mikrofonu.');
-  }
-};
-
-const pauseRecording = () => {
-  if (!isRecording.value || !mediaRecorder.value) return;
-
-  mediaRecorder.value.stop();
-
-  if (recordingTimer.value) {
-    clearInterval(recordingTimer.value);
-    recordingTimer.value = null;
-  }
-
-  isRecording.value = false;
-  isPaused.value = true;
-
-  mediaRecorder.value.onstop = () => {
-    if (audioChunks.value.length === 0) {
-      resetRecordingState();
-      return;
-    }
-
-    const blob = new Blob(audioChunks.value, { type: 'audio/webm' });
-    recordedBlob.value = blob;
-    audioUrlPreview.value = URL.createObjectURL(blob);
-
-    audioChunks.value = [];
-  };
-};
-
-const sendRecordedAudio = () => {
-  if (!recordedBlob.value || !audioUrlPreview.value) return;
-
-  const durationSeconds = Math.floor(recordingDuration.value);
-  addMessage(
-    `Wiadomość głosowa (${formatDuration(recordingDuration.value)})`,
-    'default',
-    null,
-    null,
-    true,
-    audioUrlPreview.value,
-    durationSeconds
-  );
-
-  isRecording.value = false;
-  isPaused.value = false;
-  recordingDuration.value = 0;
-  audioChunks.value = [];
-  recordedBlob.value = null;
-  audioUrlPreview.value = null;
-
-  if (recordingTimer.value) clearInterval(recordingTimer.value);
-};
-
-const cancelVoiceRecording = () => {
-  if (mediaRecorder.value) {
-    mediaRecorder.value.stop();
-    mediaRecorder.value.onstop = () => {};
-  }
-
-  if (audioUrlPreview.value) {
-    URL.revokeObjectURL(audioUrlPreview.value);
-  }
-
-  resetRecordingState();
-};
 
 // Emoji & Picker
 // togglePicker usunięte - obsługuje to Floating Vue
@@ -306,74 +175,18 @@ const showEmoji = (e: { native: string }) => {
   newMessage.value = newMessage.value + emoji;
 };
 
-// Press Animation
-const clearTimers = () => {
-  if (animationTimer.value) {
-    clearInterval(animationTimer.value);
-    animationTimer.value = null;
-  }
-  pressStartTime.value = null;
-  currentPressDurationVisual.value = 0;
-  currentIconState.value = ICON_CLASSES[0];
-};
-
-const handlePressStart = (event: MouseEvent | TouchEvent) => {
-  if (event instanceof MouseEvent && event.button !== 0) return;
-  if (pressStartTime.value !== null) return;
-
-  pressStartTime.value = Date.now();
-  currentIconState.value = ICON_CLASSES[0];
-  currentPressDurationVisual.value = 0;
-
-  const increaseIconState = () => {
-    currentPressDurationVisual.value += 1;
-
-    if (currentPressDurationVisual.value < ICON_CLASSES.length) {
-      currentIconState.value = ICON_CLASSES[currentPressDurationVisual.value];
-    } else {
-      clearTimers();
+const handleSendLike = (sizeState: 'default' | 'small' | 'medium' | 'large') => {
+    if (newMessage.value.trim().length === 0 && !selectedGifUrl.value && !selectedImageUrl.value) {
+        addMessage(localSelectedEmoji.value, sizeState);
     }
-  };
+}
 
-  animationTimer.value = setInterval(increaseIconState, DURATION_STEP_MS);
-};
-
-const handlePressEnd = (content: string) => {
-  if (pressStartTime.value === null) return;
-
-  const durationMs = Date.now() - pressStartTime.value;
-  clearTimers();
-
-  const durationSeconds = durationMs / 1000;
-
-  if (durationMs > MAX_PRESS_TIME_MS) {
-    return;
-  }
-
-  let sizeState: 'default' | 'small' | 'medium' | 'large' = 'default';
-
-  if (durationSeconds >= 3) {
-    sizeState = 'large';
-  } else if (durationSeconds >= 2) {
-    sizeState = 'medium';
-  } else if (durationSeconds >= 1) {
-    sizeState = 'small';
-  }
-
-  if (content.trim().length === 0 && !selectedGifUrl.value && !selectedImageUrl.value) {
-    addMessage(localSelectedEmoji.value, sizeState);
-  }
-};
 
 const sendMessage = (content: string, sizeState: 'default' | 'small' | 'medium' | 'large' = 'default') => {
   const isSendingMedia = selectedImageUrl.value || selectedGifUrl.value;
   const finalContent = selectedGifUrl.value ? 'GIF' : content.trim();
 
   if (finalContent !== '' || isSendingMedia) {
-    if (isRecording.value || isPaused.value) {
-      cancelVoiceRecording();
-    }
-
     addMessage(finalContent, sizeState, selectedImageUrl.value, selectedGifUrl.value);
     newMessage.value = '';
 
@@ -383,30 +196,14 @@ const sendMessage = (content: string, sizeState: 'default' | 'small' | 'medium' 
 };
 
 onUnmounted(() => {
-  clearTimers();
-
   if (selectedImageUrl.value) URL.revokeObjectURL(selectedImageUrl.value);
   if (selectedGifUrl.value) URL.revokeObjectURL(selectedGifUrl.value);
-  if (audioUrlPreview.value) URL.revokeObjectURL(audioUrlPreview.value);
-
-  resetRecordingState();
-  if (mediaStream) {
-    mediaStream.getTracks().forEach(track => track.stop());
-  }
 });
 </script>
 
 <template>
   <footer class="p-2 border-t border-gray-200 bg-white shrink-0">
-    <div v-if="selectedImageUrl || selectedGifUrl" class="p-2 mb-2 bg-gray-100 rounded-lg flex items-center justify-between">
-        <div class="flex items-center space-x-2">
-        <img :src="selectedImageUrl || selectedGifUrl || ''" :alt="selectedGifUrl ? $t('post.selectedGif') : $t('post.selectedImage')" class="w-10 h-10 object-cover rounded" />
-        <span class="text-xs text-gray-600 truncate">{{ selectedGifUrl ? $t('post.selectedGif') : $t('post.readyToSend') }}</span>
-      </div>
-      <button @click="clearMediaSelection" class="text-red-500 hover:text-red-700 text-sm font-semibold">
-        {{ $t('common.delete') }}
-      </button>
-    </div>
+    <MediaPreview :imageUrl="selectedImageUrl" :gifUrl="selectedGifUrl" @clear-media="clearMediaSelection" />
 
     <transition name="reply">
       <div v-if="props.reply" class="reply-preview">
@@ -431,53 +228,9 @@ onUnmounted(() => {
       </div>
     </transition>
 
-    <div v-if="isRecording" class="flex items-center space-x-2 w-full">
-      <button @click="cancelVoiceRecording" class="p-2 rounded-full bg-purple-600 text-white shrink-0 hover:bg-purple-700 transition">
-        <CloseIcon :size="24" />
-      </button>
-
-      <div class="grow h-10 flex items-center bg-purple-600 rounded-full px-2 py-1 space-x-2 relative shadow-lg">
-        <button @click="pauseRecording" class="w-8 h-8 rounded-full bg-white text-purple-600 flex items-center justify-center shrink-0">
-          <StopIcon :size="20" class="text-purple-600" />
-        </button>
-        <div class="grow h-full flex items-center justify-center">
-          <div class="w-full h-1 bg-purple-700 opacity-60 rounded-full relative">
-            <div class="absolute inset-y-0 flex items-center space-x-1 left-2">
-              <div class="w-1 h-2 bg-white rounded-full opacity-50 animate-wave delay-1"></div>
-              <div class="w-1 h-3 bg-white rounded-full opacity-80 animate-wave delay-2"></div>
-              <div class="w-1 h-4 bg-white rounded-full opacity-100 animate-wave delay-3"></div>
-            </div>
-          </div>
-        </div>
-        <span class="text-white text-sm font-semibold w-10 text-right shrink-0">{{ formatDuration(recordingDuration) }}</span>
-      </div>
-
-      <button disabled class="w-12 h-12 rounded-full bg-gray-300 text-gray-500 border-2 border-gray-400 flex items-center justify-center shrink-0">
-        <SendIcon :size="24" />
-      </button>
-    </div>
-
-    <div v-else-if="isPaused" class="flex items-center space-x-2 w-full">
-      <button @click="cancelVoiceRecording" class="p-2 rounded-full bg-purple-600 text-white shrink-0 hover:bg-purple-700 transition">
-        <CloseIcon :size="24" />
-      </button>
-
-      <div class="grow h-10 flex items-center bg-purple-600 rounded-full px-2 py-1 space-x-2 relative shadow-lg">
-        <button @click="startVoiceRecording" class="w-8 h-8 rounded-full bg-white text-purple-600 flex items-center justify-center shrink-0">
-          <PlayIcon :size="20" class="text-purple-600" />
-        </button>
-        <div class="grow flex items-center"></div>
-        <span class="text-white text-sm font-semibold w-10 text-right shrink-0">{{ formatDuration(recordingDuration) }}</span>
-      </div>
-
-      <button @click="sendRecordedAudio" class="w-12 h-12 rounded-full bg-white text-blue-500 border-2 border-blue-500 flex items-center justify-center shrink-0 hover:bg-gray-50 transition">
-        <SendIcon :size="24" />
-      </button>
-    </div>
-
-    <div v-else class="flex items-center space-x-1">
-      <div class="flex space-x-1 text-gray-500 shrink-0">
-        <MicrophoneIcon @click="startVoiceRecording" :size="24" class="text-blue-500 hover:text-blue-700 cursor-pointer" />
+    <div class="flex items-center space-x-1">
+        <VoiceRecorder @audio-recorded="handleAudioRecorded" />
+        <div class="flex space-x-1 text-gray-500 shrink-0">
         <ImageOutlineIcon
           :size="24"
           class="hover:text-purple-600 cursor-pointer"
@@ -527,16 +280,7 @@ onUnmounted(() => {
         </VDropdown>
       </div>
 
-      <div
-        class="flex space-x-1 text-gray-500 shrink-0 cursor-pointer transition-transform duration-100"
-        @mousedown="handlePressStart"
-        @mouseup="handlePressEnd(newMessage)"
-        @mouseleave="handlePressEnd(newMessage)"
-        @touchstart.prevent="handlePressStart"
-        @touchend.prevent="handlePressEnd(newMessage)"
-      >
-       <span :class="[currentIconState, 'text-blue-500 hover:text-blue-700 text-2xl']">{{ localSelectedEmoji }}</span>
-      </div>
+      <LikeButton :emoji="localSelectedEmoji" @send-like="handleSendLike" />
     </div>
   </footer>
 </template>
