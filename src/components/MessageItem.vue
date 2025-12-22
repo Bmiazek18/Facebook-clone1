@@ -38,6 +38,7 @@ const emit = defineEmits<{
   (e: 'toggle-audio-playback', message: Message): void;
   (e: 'reply', message: Message): void;
   (e: 'add-reaction', payload: { messageId: number; emoji: string }): void;
+  (e: 'open-modal', type: 'CHANGE_E' | 'CHANGE_NICKNAME' | 'CHANGE_THEME'): void;
 }>();
 
 // --- TYPE GUARDS ---
@@ -221,7 +222,18 @@ const toggleAudio = (msg: Message) => emit('toggle-audio-playback', msg);
         >
           {{ message.content }}
         </div>
+<div v-else-if="message.type === 'action'" class="flex w-full items-center justify-center text-sm text-gray-500">
+  <span v-if="message.subType==='CHANGE_E'">  Emotka została zmieniona na {{message.payload}}</span>
+  <span v-if="message.subType==='CHANGE_NICKNAME'">  Nick został zmieniony na {{message.payload}}</span>
 
+  <span v-if="message.subType==='CHANGE_THEME'">Zmieniłeś motyw na {{message.payload}}.</span>
+
+  <button
+    @click="emit('open-modal', message.subType)"
+    class="ml-1 font-bold text-gray-900 hover:underline">
+    Zmień
+  </button>
+</div>
         <div
           v-else-if="isAnyCallType(message)"
           class="flex items-center p-3 bg-white rounded-2xl shadow-sm min-w-[240px] border border-gray-100"
@@ -364,7 +376,7 @@ const toggleAudio = (msg: Message) => emit('toggle-audio-playback', msg);
       </div>
 
       <MessageReactions
-        v-if="!isAnyCallType(message)"
+        v-if="!isAnyCallType(message) && message.type !== 'action'"
         :message-id="message.id"
         :reactions="message.reactions"
         :is-me="isMe"

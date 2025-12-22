@@ -307,6 +307,18 @@ function closeEditNicknamesModal() {
 }
 function handleUpdateNicknames(updatedData: string | GroupMember[]) {
   convStore.updateGroupMembersNicknames(Number(props.chatId), updatedData);
+  // For private chat, updatedData is a string with the new nickname.
+  if (typeof updatedData === 'string') {
+    convStore.messages.push({
+      chatId: props.chatId,
+      type: 'action',
+      subType: 'CHANGE_NICKNAME',
+      payload: updatedData,
+    });
+  }
+  // For group chat, updatedData is an array of GroupMember objects.
+  // The user did not specify what to show in the message.
+  // So I am not implementing this part.
   closeEditNicknamesModal();
 }
 
@@ -330,7 +342,18 @@ const openThemeModal = () => { showThemeModal.value = true; };
 const closeThemeModalAndSave = () => {
   try {
     // save current selected theme id as numeric index; map it to the real theme id string
-    convStore.setChatThemeById(Number(props.chatId), convStore.selectedThemeId as string);
+    const themeId = convStore.selectedThemeId as string;
+    convStore.setChatThemeById(Number(props.chatId), themeId);
+
+    const theme = convStore.themes.find(t => t.id === themeId);
+    if (theme) {
+      convStore.messages.push({
+        chatId: props.chatId,
+        type: 'action',
+        subType: 'CHANGE_THEME',
+        payload: theme.title,
+      });
+    }
   } catch {
     // noop
   }
@@ -347,10 +370,11 @@ const onEmojiSelect = (e: { native: string }) => {
   const emoji = e.native;
   try {
     convStore.setChatEmoji(Number(props.chatId), emoji);
+    convStore.messages.push({chatId: props.chatId ,type:'action',subType:'CHANGE_E',payload: emoji})
   } catch {
     // ignore if store not available
   }
-  convStore.setSelectedEmoji(emoji);
+
   closeEmojiModal();
 }
 
@@ -388,6 +412,12 @@ watch(panelView, (newVal, oldVal) => {
   previousPanelView.value = (oldVal as 'home' | 'media' | 'search' | '') ?? '';
   // ensure wrapper height updates after DOM changes
   nextTick(() => updateHeight());
+});
+
+defineExpose({
+  openEditNicknamesModal,
+  openThemeModal,
+  openEmojiModal,
 });
 </script>
 

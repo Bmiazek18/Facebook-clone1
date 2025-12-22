@@ -6,10 +6,10 @@
     <div class="flex-1 flex overflow-hidden bg-gray-200 relative p-3 gap-3">
 
       <div class="flex-1 flex flex-col min-w-0 relative bg-white rounded-xl shadow-sm ">
-        <MessageBox ref="messageBoxRef" :boxId="chatId" mode="full" />
+        <MessageBox ref="messageBoxRef" :boxId="chatId" mode="full" @open-modal="openModal" />
       </div>
 
-      <ChatInfoPanel :chat-id="chatId" @go-to-message="onSearchGoTo" />
+      <ChatInfoPanel ref="chatInfoPanelRef" :chat-id="chatId" @go-to-message="onSearchGoTo" />
 
     </div>
   </div>
@@ -50,6 +50,18 @@ watch(chatId, (newId) => {
 
 
 const messageBoxRef = ref<InstanceType<typeof MessageBox> | null>(null);
+const chatInfoPanelRef = ref<InstanceType<typeof ChatInfoPanel> | null>(null);
+
+function openModal(modalType: 'CHANGE_E' | 'CHANGE_NICKNAME' | 'CHANGE_THEME') {
+  if (!chatInfoPanelRef.value) return;
+  if (modalType === 'CHANGE_NICKNAME') {
+    chatInfoPanelRef.value.openEditNicknamesModal();
+  } else if (modalType === 'CHANGE_THEME') {
+    chatInfoPanelRef.value.openThemeModal();
+  } else if (modalType === 'CHANGE_E') {
+    chatInfoPanelRef.value.openEmojiModal();
+  }
+}
 
 function onSearchGoTo(payload: { id: number; chatId?: string | number }) {
   // close right panel and scroll to message in MessageBox

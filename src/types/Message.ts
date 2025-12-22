@@ -70,7 +70,13 @@ export interface PollMessage extends BaseMessage {
   content: string;
   pollData: PollData;
 }
+export type MessageActionType = 'CHANGE_E' | 'CHANGE_NICKNAME' | 'CHANGE_THEME';
 
+export interface ActionsMessage extends BaseMessage {
+  type: 'action';
+  subType: MessageActionType;
+  payload: string; // Payload for the action
+}
 // --- NOWE TYPY ---
 
 export interface CallMessage extends BaseMessage {
@@ -121,7 +127,7 @@ export type Message =
   | CallMessage
 
   | CallRejectedMessage
-
+  | ActionsMessage
   | LinkMessage;
 
 

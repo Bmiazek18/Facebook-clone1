@@ -13,6 +13,7 @@ import { useLightbox } from '@/composables/useLightbox';
 import type { Theme } from '@/stores/messengerTheme';
 import type { Message, ImageMessage, VideoMessage } from '@/types/Message';
 
+const emit = defineEmits(['open-modal']);
 const props = withDefaults(defineProps<{
   boxId?: string | number;
   mode?: 'card' | 'full';
@@ -217,6 +218,7 @@ defineExpose({ scrollToMessage });
                     @reply="replyTarget = $event"
                     @toggle-audio-playback="toggleAudioPlayback"
                     @add-reaction="({ messageId, emoji }) => handleAddReaction(messageId, emoji)"
+                    @open-modal="$emit('open-modal', $event)"
                   />
         </div>
       </main>
