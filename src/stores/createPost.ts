@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref,computed } from 'vue';
 import type { User } from '@/data/users';
 import type { LocationResult } from '@/components/LocationSelector.vue';
 
@@ -58,7 +58,16 @@ export const useCreatePostStore = defineStore('createPost', () => {
     selectedCardBgId.value = 1; // Reset do wartości domyślnej
     // Nie resetujemy privacy, ponieważ jest ładowane z localStorage
   }
-
+  const hasUnsavedChanges = computed(() => {
+      return (
+        taggedUsers.value.length > 0 ||
+        selectedLocation.value !== null ||
+        selectedGif.value !== null ||
+        imageToEdit.value !== null ||
+        postContent.value !== '' ||
+        selectedImage.value !== null
+      );
+    });
   // --- RETURN (Udostępnienie publiczne) ---
   return {
     taggedUsers,
@@ -69,6 +78,7 @@ export const useCreatePostStore = defineStore('createPost', () => {
     postContent,
     selectedImage,
     selectedCardBgId,
+  hasUnsavedChanges,
     setTaggedUsers,
     setLocation,
     setGif,
