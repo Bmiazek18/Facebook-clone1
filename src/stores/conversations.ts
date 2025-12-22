@@ -1,7 +1,8 @@
 import { ref } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
 import rawChats from '@/data/rawChats'
-import initialMessages, { type ChatMessage } from '@/data/messages'
+import initialMessages from '@/data/messages'
+import { type ChatMessage, type LinkMessage } from '@/types/Message'
 import chatSettings from '@/data/chatSettings'
 import { useMessengerThemeStore, type Theme } from '@/stores/messengerTheme'
 
@@ -62,13 +63,27 @@ export const useConversationsStore = defineStore('conversations', () => {
     s.emoji = emoji
   }
 
-  
+
 
   function setChatThemeById(chatId: number, themeId: string) {
     const idx = themes.value.findIndex((t: Theme) => t.id === themeId)
     const s = _getOrCreateSettings(chatId)
     s.themeId = idx >= 0 ? idx : undefined
   }
+
+
+  function updateGroupMembersNicknames(chatId: number, updatedMembers: GroupMember[]) {
+    console.log('updateGroupMembersNicknames called for chatId:', chatId);
+    const chat = chats.value.find(c => c.id === Number(chatId));
+    if (chat && chat.type === 'group' && chat.groupMembers) {
+      console.log('Chat found before update:', JSON.parse(JSON.stringify(chat))); // Deep copy for logging
+      chat.groupMembers = updatedMembers;
+      console.log('Chat found after update:', JSON.parse(JSON.stringify(chat))); // Deep copy for logging
+    } else {
+      console.log('Chat not found or not a group chat for chatId:', chatId);
+    }
+  }
+
 
   function _getOrCreateSettings(chatId: number) {
     let s = settings.value.find(x => x.chatId === Number(chatId))
@@ -93,6 +108,7 @@ export const useConversationsStore = defineStore('conversations', () => {
     updateChatName,
     setChatEmoji,
     setChatThemeById,
+    updateGroupMembersNicknames,
     setSelectedTheme: themeStore.setSelectedTheme,
     setSelectedEmoji: themeStore.setSelectedEmoji,
   }

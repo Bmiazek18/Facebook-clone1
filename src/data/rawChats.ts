@@ -1,3 +1,19 @@
+import { users, getUserById } from './users'; // Import users data
+
+
+
+export enum ChatType {
+  Private = 'private',
+  Group = 'group',
+}
+
+export interface GroupMember {
+  id: number;
+  name: string;
+  nickname?: string;
+  addedByUserId?: number; // Add addedByUserId field
+}
+
 export interface Chat {
   id: number;
   name: string;
@@ -7,8 +23,10 @@ export interface Chat {
   unread: boolean;
   isActive: boolean;
   isPinch?: boolean;
-  isGroup?: boolean;
+  type: ChatType; // Use ChatType enum
+  groupMembers?: GroupMember[]; // Optional for group chats
   extraAvatars?: string[];
+  otherUserNickname?: string; // Add otherUserNickname for private chats
 }
 
 const rawChats: Chat[] = [
@@ -21,6 +39,7 @@ const rawChats: Chat[] = [
     unread: false,
     isActive: false,
     isPinch: true,
+    type: ChatType.Private,
   },
   {
     id: 2,
@@ -30,6 +49,7 @@ const rawChats: Chat[] = [
     timeAgo: '49 min',
     unread: false,
     isActive: false,
+    type: ChatType.Private,
   },
   {
     id: 3,
@@ -39,6 +59,7 @@ const rawChats: Chat[] = [
     timeAgo: '5 godz.',
     unread: false,
     isActive: true,
+    type: ChatType.Private,
   },
   {
     id: 4,
@@ -48,7 +69,12 @@ const rawChats: Chat[] = [
     timeAgo: '6 godz.',
     unread: false,
     isActive: false,
-    isGroup: true,
+    type: ChatType.Group,
+    groupMembers: [
+      { id: 1, name: getUserById(1)?.name || 'Unknown User', nickname: 'Bartosz G.', addedByUserId: 1 },
+      { id: 2, name: getUserById(2)?.name || 'Unknown User', nickname: 'Ania K.', addedByUserId: 1 },
+      { id: 3, name: getUserById(3)?.name || 'Unknown User', nickname: 'Jan N.', addedByUserId: 2 },
+    ],
     extraAvatars: [
       'https://randomuser.me/api/portraits/men/22.jpg',
       'https://randomuser.me/api/portraits/women/33.jpg',
@@ -62,7 +88,12 @@ const rawChats: Chat[] = [
     timeAgo: '9 godz.',
     unread: false,
     isActive: false,
-    isGroup: true,
+    type: ChatType.Group,
+    groupMembers: [
+      { id: 4, name: getUserById(4)?.name || 'Unknown User', nickname: 'Kasia W.', addedByUserId: 1 },
+      { id: 5, name: getUserById(5)?.name || 'Unknown User', nickname: 'Piotr K.', addedByUserId: 4 },
+      { id: 6, name: getUserById(6)?.name || 'Unknown User', nickname: 'Marysia L.', addedByUserId: 5 },
+    ],
     extraAvatars: [
       'https://randomuser.me/api/portraits/women/12.jpg',
       'https://randomuser.me/api/portraits/men/15.jpg',
@@ -76,7 +107,12 @@ const rawChats: Chat[] = [
     timeAgo: '13 godz.',
     unread: false,
     isActive: false,
-    isGroup: true,
+    type: ChatType.Group,
+    groupMembers: [
+      { id: 7, name: getUserById(7)?.name || 'Unknown User', nickname: 'Tomek Z.', addedByUserId: 1 },
+      { id: 8, name: getUserById(8)?.name || 'Unknown User', nickname: 'Ewa K.', addedByUserId: 7 },
+      { id: 9, name: getUserById(9)?.name || 'Unknown User', nickname: 'Michał W.', addedByUserId: 8 },
+    ],
     extraAvatars: [
       'https://randomuser.me/api/portraits/women/28.jpg',
       'https://randomuser.me/api/portraits/men/19.jpg',
@@ -90,7 +126,12 @@ const rawChats: Chat[] = [
     timeAgo: '2 dni',
     unread: true,
     isActive: true,
-    isGroup: true,
+    type: ChatType.Group,
+    groupMembers: [
+      { id: 1, name: getUserById(1)?.name || 'Unknown User', nickname: 'Bartek G.', addedByUserId: 10 },
+      { id: 10, name: getUserById(10)?.name || 'Unknown User', nickname: 'Ola D.', addedByUserId: 1 },
+      { id: 2, name: getUserById(2)?.name || 'Unknown User', nickname: 'Ania K.', addedByUserId: 10 },
+    ],
     extraAvatars: [
       'https://randomuser.me/api/portraits/men/75.jpg',
       'https://randomuser.me/api/portraits/men/81.jpg',
@@ -104,7 +145,12 @@ const rawChats: Chat[] = [
     timeAgo: '2 dni',
     unread: true,
     isActive: false,
-    isGroup: true,
+    type: ChatType.Group,
+    groupMembers: [
+      { id: 3, name: getUserById(3)?.name || 'Unknown User', nickname: 'Jan N.', addedByUserId: 1 },
+      { id: 4, name: getUserById(4)?.name || 'Unknown User', nickname: 'Kasia W.', addedByUserId: 3 },
+      { id: 5, name: getUserById(5)?.name || 'Unknown User', nickname: 'Piotr K.', addedByUserId: 4 },
+    ],
     extraAvatars: [
       'https://randomuser.me/api/portraits/men/52.jpg',
       'https://randomuser.me/api/portraits/men/61.jpg',
@@ -118,6 +164,7 @@ const rawChats: Chat[] = [
     timeAgo: '2 dni',
     unread: false,
     isActive: false,
+    type: ChatType.Private,
   },
   {
     id: 10,
@@ -127,7 +174,12 @@ const rawChats: Chat[] = [
     timeAgo: '3 dni',
     unread: true,
     isActive: true,
-    isGroup: true,
+    type: ChatType.Group,
+    groupMembers: [
+      { id: 6, name: getUserById(6)?.name || 'Unknown User', nickname: 'Marysia L.', addedByUserId: 1 },
+      { id: 7, name: getUserById(7)?.name || 'Unknown User', nickname: 'Tomek Z.', addedByUserId: 6 },
+      { id: 8, name: getUserById(8)?.name || 'Unknown User', nickname: 'Ewa K.', addedByUserId: 7 },
+    ],
     extraAvatars: [
       'https://randomuser.me/api/portraits/men/36.jpg',
       'https://randomuser.me/api/portraits/men/47.jpg',
@@ -141,6 +193,7 @@ const rawChats: Chat[] = [
     timeAgo: '3 dni',
     unread: true,
     isActive: false,
+    type: ChatType.Private,
   },
   {
     id: 12,
@@ -150,6 +203,7 @@ const rawChats: Chat[] = [
     timeAgo: '3 dni',
     unread: true,
     isActive: false,
+    type: ChatType.Private,
   },
   {
     id: 13,
@@ -159,7 +213,12 @@ const rawChats: Chat[] = [
     timeAgo: '3 dni',
     unread: false,
     isActive: false,
-    isGroup: true,
+    type: ChatType.Group,
+    groupMembers: [
+      { id: 9, name: getUserById(9)?.name || 'Unknown User', nickname: 'Michał W.', addedByUserId: 1 },
+      { id: 10, name: getUserById(10)?.name || 'Unknown User', nickname: 'Ola D.', addedByUserId: 9 },
+      { id: 1, name: getUserById(1)?.name || 'Unknown User', nickname: 'Bartosz M.', addedByUserId: 10 },
+    ],
     extraAvatars: [
       'https://randomuser.me/api/portraits/men/29.jpg',
       'https://randomuser.me/api/portraits/women/55.jpg',

@@ -10,7 +10,7 @@
         <div class="relative mb-3 hover:opacity-90 cursor-pointer transition">
             <img :src="chatMeta.avatarUrl || 'https://i.pravatar.cc/150?img=12'" class="w-20 h-20 rounded-full object-cover shadow-sm" alt="Group Avatar">
         </div>
-        <h2 class="text-lg font-bold text-gray-900 hover:underline cursor-pointer tracking-tight">{{ chatMeta.name }}</h2>
+        <h2 class="text-lg font-bold text-gray-900 hover:underline cursor-pointer tracking-tight">{{ chatMeta.otherUserNickname || chatMeta.name }}</h2>
             <div class="flex mt-4 space-x-12 w-full justify-center px-4">
             <div class="flex flex-col items-center cursor-pointer group">
                 <div class="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition mb-2">
@@ -70,9 +70,9 @@
                 <PawIcon :size="20" class="text-[#5F4B3C] mr-3" />
                 <span class="text-[14px] font-medium text-gray-900">Zmień ikonę emoji</span>
             </div>
-                    <div class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
+                    <div  @click="openEditNicknamesModal" class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
                         <FormatLetterCaseIcon :size="20" class="text-black mr-3" />
-                        <span class="text-[14px] font-medium text-gray-900">Edytuj nicki</span>
+                        <span class="text-[14px] font-medium text-gray-900">Edytuj nicki uczestników</span>
                     </div>
                 </div>
             </div>
@@ -145,7 +145,7 @@
             </div>
         </div>
 
-        <div class="mt-1 pb-10">
+        <div v-if="chatMeta.type === ChatType.Group" class="mt-1 pb-10">
             <button @click="toggleSection('chatMembers')" class="w-full px-4 py-3 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors outline-none">
             <span class="font-semibold text-[14px] text-gray-900">Uczestnicy czatu</span>
                 <ChevronUpIcon :size="20" class="text-gray-900 transition-transform duration-300" :class="{'rotate-180': !accordionState.chatMembers}" />
@@ -153,11 +153,16 @@
             <div class="grid transition-[grid-template-rows,opacity] duration-300" :class="accordionState.chatMembers ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'">
                 <div class="overflow-hidden">
                 <div class="flex flex-col space-y-1 mt-1 mb-2">
-                    <div v-for="(member, i) in members" :key="i" class="px-3 py-2 flex items-center hover:bg-gray-100 cursor-pointer rounded-md mx-2 group">
-                        <img :src="member.avatar" class="w-9 h-9 rounded-full mr-3 object-cover">
+                    <div v-for="(member, i) in chatMeta.groupMembers" :key="i" class="px-3 py-2 flex items-center hover:bg-gray-100 cursor-pointer rounded-md mx-2 group">
+                        <img :src="'https://i.pravatar.cc/150?img=' + member.id" class="w-9 h-9 rounded-full mr-3 object-cover">
                         <div class="flex-1 min-w-0">
-                            <h4 class="text-[14px] font-medium text-gray-900">{{ member.name }}</h4>
-                            <p class="text-[12px] text-gray-500 truncate">{{ member.sub }}</p>
+                            <h4 class="text-[14px] font-medium text-gray-900">
+                                {{ member.nickname || member.name }}
+                                <span v-if="member.nickname" class="text-[12px] text-gray-500 truncate"> ({{ member.name }})</span>
+                            </h4>
+                            <p v-if="member.addedByUserId" class="text-[12px] text-gray-500 truncate">
+                              Dodany przez: {{ getUserById(member.addedByUserId)?.name || 'Nieznany Użytkownik' }}
+                            </p>
                         </div>
                         <div class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition">
                             <DotsHorizontalIcon :size="20" class="text-gray-600" />
@@ -190,12 +195,21 @@
     </BaseModal>
     <!-- Emoji Modal -->
     <BaseModal v-if="showEmojiModal" title="Wybierz ikonę emoji" @close="closeEmojiModal">
-      <div class="flex items-center justify-between px-4 pt-2 pb-3 border-b border-gray-100">
+      <div class="flex items-center justify-between px-4 pt-2 pb-3 border-b border-100">
         <div class="text-2xl">{{ convStore.selectedEmoji || '👍' }}</div>
         <button @click="closeEmojiModal" class="text-gray-500 hover:text-gray-700 text-xl leading-none">✕</button>
       </div>
       <LazyEmojiPicker @select="onEmojiSelect" />
     </BaseModal>
+    <EditNicknamesModal
+      v-if="showEditNicknamesModal"
+      :chat-type="chatMeta.type"
+      :chat-name="chatMeta.name"
+      :members="chatMeta.type === ChatType.Group ? chatMeta.groupMembers : undefined"
+      :current-private-nickname="chatMeta.type === ChatType.Private ? chatMeta.otherUserNickname || chatMeta.name : undefined"
+      @update-nicknames="handleUpdateNicknames"
+      @close="closeEditNicknamesModal"
+    />
 </template>
 
 <script setup lang="ts">
@@ -222,6 +236,9 @@ import LogoutIcon from 'vue-material-design-icons/Logout.vue';
 import ChatMediaPanel from '@/components/ChatMediaPanel.vue';
 import MessageSearch from '@/components/MessageSearch.vue';
 import { useConversationsStore } from '@/stores/conversations';
+import { ChatType, type GroupMember } from '@/data/rawChats'; // Import ChatType and GroupMember
+import EditNicknamesModal from '@/components/EditNicknamesModal.vue'; // Import EditNicknamesModal
+import { getUserById } from '@/data/users'; // Import getUserById
 
 const props = defineProps<{ chatId: string | number }>();
 const emit = defineEmits<{ (e: 'goToMessage', payload: { id: number; chatId?: string | number }): void }>();
@@ -230,7 +247,20 @@ const convStore = useConversationsStore();
 
 
 // chat metadata (name/avatar) shown in the right panel and header
-const chatMeta = computed(() => convStore.chats.find(c => c.id === props.chatId) ?? { id: props.chatId, name: `Czat ${props.chatId}`, avatarUrl: '', lastMessage: '', timeAgo: '', unread: false, isActive: false });
+const chatMeta = computed(() => {
+  const meta = convStore.chats.find(c => c.id === props.chatId) ?? {
+    id: props.chatId,
+    name: `Czat ${props.chatId}`,
+    avatarUrl: '',
+    lastMessage: '',
+    timeAgo: '',
+    unread: false,
+    isActive: false,
+    type: ChatType.Private, // Default to Private
+    groupMembers: [],
+  };
+  return meta;
+});
 
 // apply chat-specific theme and emoji when chat changes
 watch(() => props.chatId, (newId) => {
@@ -267,11 +297,18 @@ function toggleSection(key: 'chatInfo' | 'customizeChat' | 'multimedia' | 'priva
   accordionState.value[key] = !accordionState.value[key];
 }
 
-const members = ref([
-  { avatar: 'https://i.pravatar.cc/150?img=4', name: 'Anna Kowalska', sub: 'Admin' },
-  { avatar: 'https://i.pravatar.cc/150?img=5', name: 'Jan Nowak', sub: 'Użytkownik' },
-  { avatar: 'https://i.pravatar.cc/150?img=6', name: 'Ewa Zielińska', sub: 'Moderator' },
-]);
+// Edit Nicknames Modal
+const showEditNicknamesModal = ref(false);
+function openEditNicknamesModal() {
+  showEditNicknamesModal.value = true;
+}
+function closeEditNicknamesModal() {
+  showEditNicknamesModal.value = false;
+}
+function handleUpdateNicknames(updatedData: string | GroupMember[]) {
+  convStore.updateGroupMembersNicknames(Number(props.chatId), updatedData);
+  closeEditNicknamesModal();
+}
 
 // Slide transition wrapper (handles measured height and resize)
 const { wrapperRef, updateHeight } = useSlideTransition();
@@ -292,7 +329,7 @@ const openThemeModal = () => { showThemeModal.value = true; };
 // persist selected theme for this chat when closing modal
 const closeThemeModalAndSave = () => {
   try {
-    // save current selected theme id as numeric index in chat settings
+    // save current selected theme id as numeric index; map it to the real theme id string
     convStore.setChatThemeById(Number(props.chatId), convStore.selectedThemeId as string);
   } catch {
     // noop
