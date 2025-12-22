@@ -19,18 +19,37 @@ export const useConversationsStore = defineStore('conversations', () => {
   }
 
   function addMessage(chatId: number, msg: Partial<ChatMessage>) {
-    const newMsg: ChatMessage = {
-      id: Date.now(),
-      chatId: Number(chatId),
-      sender: 'me',
-      time: Date.now(),
-      ...msg,
-    } as ChatMessage
+    let newMsg: ChatMessage;
 
-    messages.value.push(newMsg)
-    _updateLastMessage(chatId, newMsg)
+    if (msg.type === 'link') {
+      const linkMsg = msg as Partial<LinkMessage>;
+      if (!linkMsg.url) {
+        console.error('Link message must have a URL.');
+        return;
+      }
 
-    return newMsg
+      linkMsg.content = linkMsg.url; // Set content to the URL for display purposes
+      newMsg = {
+        id: Date.now(),
+        chatId: Number(chatId),
+        sender: 'me',
+        time: Date.now(),
+        ...linkMsg,
+      } as LinkMessage;
+    } else {
+      newMsg = {
+        id: Date.now(),
+        chatId: Number(chatId),
+        sender: 'me',
+        time: Date.now(),
+        ...msg,
+      } as ChatMessage;
+    }
+
+    messages.value.push(newMsg);
+    _updateLastMessage(chatId, newMsg);
+
+    return newMsg;
   }
 
   function recomputeLastMessage(chatId: number) {
@@ -62,6 +81,8 @@ export const useConversationsStore = defineStore('conversations', () => {
     const s = _getOrCreateSettings(chatId)
     s.emoji = emoji
   }
+
+
 
 
 

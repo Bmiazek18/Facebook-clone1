@@ -2,6 +2,9 @@ export interface BaseMessage {
   id: number;
   sender: 'me' | 'other';
   time: number;
+  // Opcjonalnie: sformatowany czas jako string (np. "16:13"),
+  // jeśli Twój komponent tego wymaga (w poprzednim kodzie używałeś message.timestamp)
+  timestamp?: string;
   isReply?: boolean;
   replyToSender?: string;
   replyToContentSnippet?: string;
@@ -18,7 +21,7 @@ export interface ImageMessage extends BaseMessage {
   type: 'image';
   content: string;
   imageUrl: string;
-  mediaUrls?: string[]; // Obsługa galerii zdjęć
+  mediaUrls?: string[];
 }
 
 export interface GifMessage extends BaseMessage {
@@ -48,7 +51,6 @@ export interface FileMessage extends BaseMessage {
   fileUrl: string;
 }
 
-
 export interface PollOption {
   id: string | number;
   text: string;
@@ -69,16 +71,60 @@ export interface PollMessage extends BaseMessage {
   pollData: PollData;
 }
 
+// --- NOWE TYPY ---
+
+export interface CallMessage extends BaseMessage {
+  type: 'call';
+
+  duration: number ; // Czas trwania (np. string "2 min" lub number w sekundach do sformatowania)
+}
+
+export interface CallRejectedMessage extends BaseMessage {
+
+  type: 'call_rejected';
+
+}
+
+
+
+export interface LinkMessage extends BaseMessage {
+
+  type: 'link';
+
+  url: string;
+
+
+}
+
+
+
+// ----------------
+
 
 
 export type Message =
+
   | TextMessage
+
   | ImageMessage
+
   | GifMessage
+
   | AudioMessage
+
   | VideoMessage
+
   | FileMessage
-  | PollMessage;
+
+  | PollMessage
+
+  | CallMessage
+
+  | CallRejectedMessage
+
+  | LinkMessage;
+
+
 
 export interface AudioState {
   isPlaying: boolean;
