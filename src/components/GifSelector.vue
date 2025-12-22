@@ -2,11 +2,13 @@
 import { ref, onMounted } from 'vue';
 import { GiphyFetch } from '@giphy/js-fetch-api';
 import type { IGif } from '@giphy/js-types';
+import { useCreatePostStore } from '@/stores/createPost';
 
 const emit = defineEmits<{
-  (e: 'confirm', url: string): void;
+  (e: 'back'): void;
 }>();
 
+const createPostStore = useCreatePostStore();
 const searchTerm = ref('');
 const gifs = ref<IGif[]>([]);
 const loading = ref(false);
@@ -36,7 +38,8 @@ const debounce = (func: (...args: string[]) => void, wait: number) => {
 const handleGifSearch = debounce(() => fetchGifs(), 500);
 
 const selectGif = (url: string) => {
-  emit('confirm', url);
+  createPostStore.setGif(url);
+  emit('back');
 };
 
 onMounted(() => fetchGifs());

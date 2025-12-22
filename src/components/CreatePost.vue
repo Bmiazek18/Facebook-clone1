@@ -1,76 +1,15 @@
-<template>
-  <div class="w-[500px]  p-4 mx-auto rounded-xl relative overflow-hidden ">
-    <div class="transition-wrapper" ref="wrapperRef">
-      <Transition :name="transitionName" mode="out-in" @before-enter="updateHeight()">
-        <PostCreator
-          v-if="currentView === 'creator'"
-          key="creator"
-          class="view-container bg-white"
-          data-view="creator"
-          :shared-post="sharedPost"
-          :tagged-users="taggedUsers"
-          :selected-location="selectedLocation"
-          :selected-gif="selectedGif"
-          :selected-privacy="selectedPrivacy"
-          @navigate="handleNavigation"
-          @back="handleNavigationBack"
-          @publish="(content) => emit('publish', content)"
-          @close="() => emit('close')"
-          @updateHeight="updateHeight"
-          @openTagUsers="openTagUsers"
-          @openLocation="openLocation"
-          @openGifSelector="openGifSelector"
-          @removeGif="handleRemoveGif"
-        />
-        <PrivacySelector
-          v-else-if="currentView === 'privacy'"
-          key="privacy"
-          class="view-container bg-white"
-          data-view="privacy"
-          :initial-selected="selectedPrivacy"
-          @navigate="handleNavigation"
-          @back="handleNavigationBack"
-          @confirm="handlePrivacyConfirm"
-        />
-        <TagUsers
-          v-else-if="currentView === 'tagUsers'"
-          key="tagUsers"
-          class="view-container bg-white"
-          data-view="tagUsers"
-          :initial-selected="taggedUsers"
-          @back="backToCreator"
-          @confirm="handleTagUsersConfirm"
-        />
-        <LocationSelector
-          v-else-if="currentView === 'location'"
-          key="location"
-          class="view-container bg-white"
-          data-view="location"
-          @back="backToCreator"
-          @confirm="handleLocationConfirm"
-        />
-        <GifSelector
-          v-else-if="currentView === 'gifSelector'"
-          key="gifSelector"
-          class="view-container bg-white"
-          data-view="gifSelector"
-          @back="backToCreator"
-          @confirm="handleGifConfirm"
-        />
-      </Transition>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { type DefineComponent, ref } from 'vue';
+import { type DefineComponent, ref, onUnmounted } from 'vue';
+import { storeToRefs } from 'pinia';
 import PostCreator from './PostCreator.vue';
 import PrivacySelector from './PrivacySelector.vue';
 import TagUsers from './TagUsers.vue';
 import LocationSelector, { type LocationResult } from './LocationSelector.vue';
 import GifSelector from './GifSelector.vue';
+import ImageEditor from './ImageEditor.vue';
 import '@/assets/animations/slideTransition.css';
 import { useSlideTransition } from '@/composables/useSlideTransition';
+import { useCreatePostStore } from '@/stores/createPost';
 import type { PostData } from '@/types/StoryElement';
 import type { User } from '@/data/users';
 
@@ -84,13 +23,25 @@ const emit = defineEmits<{
 }>();
 
 const { wrapperRef, currentView, previousView, updateHeight, transitionName } = useSlideTransition();
+const createPostStore = useCreatePostStore();
+const {
+  taggedUsers,
+  selectedLocation,
+  selectedGif,
+  selectedPrivacy,
+  imageToEdit,
+} = storeToRefs(createPostStore);
 
 const viewComponents: Record<string, DefineComponent> = {
   creator: PostCreator as DefineComponent,
   privacy: PrivacySelector as DefineComponent,
+  imageEditor: ImageEditor as DefineComponent,
 };
 
-const handleNavigation = (viewName: string) => {
+const handleNavigation = (viewName: string, data: string | null = null) => {
+  if (viewName === 'imageEditor' && data) {
+    createPostStore.setImageToEdit(data);
+  }
   if (viewComponents[viewName]) {
     previousView.value = currentView.value;
     currentView.value = viewName;
@@ -99,14 +50,34 @@ const handleNavigation = (viewName: string) => {
   }
 };
 
+const handlePublish = (content: string) => {
+  emit('publish', content);
+  createPostStore.reset();
+};
+
+const handleClose = () => {
+  emit('close');
+  createPostStore.reset();
+};
+
 const handleNavigationBack = () => {
     previousView.value = currentView.value;
     currentView.value = 'creator';
-    emit('close');
+    handleClose();
+};
+
+const handleImageEditorBack = () => {
+  createPostStore.setImageToEdit(null);
+  currentView.value = 'creator';
+};
+
+const handleImageEdited = (editedImageUrl: string) => {
+  createPostStore.setSelectedImage(editedImageUrl);
+  createPostStore.setImageToEdit(null);
+  currentView.value = 'creator';
 };
 
 // --- Tagowanie użytkowników ---
-const taggedUsers = ref<User[]>([]);
 const openTagUsers = () => {
   previousView.value = currentView.value;
   currentView.value = 'tagUsers';
@@ -115,49 +86,109 @@ const backToCreator = () => {
   currentView.value = 'creator';
 };
 const handleTagUsersConfirm = (users: User[]) => {
-  taggedUsers.value = users;
+  createPostStore.setTaggedUsers(users);
   currentView.value = 'creator';
 };
 
 // --- Wybór lokalizacji ---
-const selectedLocation = ref<LocationResult | null>(null);
 const openLocation = () => {
   previousView.value = currentView.value;
   currentView.value = 'location';
 };
-const handleLocationConfirm = (location: LocationResult | null) => {
-  selectedLocation.value = location;
-  currentView.value = 'creator';
-};
 
 // --- Wybór GIF-a ---
-const selectedGif = ref<string | null>(null);
 const openGifSelector = () => {
   previousView.value = currentView.value;
   currentView.value = 'gifSelector';
 };
-const handleGifConfirm = (url: string) => {
-  selectedGif.value = url;
-  currentView.value = 'creator';
-};
 const handleRemoveGif = () => {
-  selectedGif.value = null;
+  createPostStore.setGif(null);
 };
 
 // --- Privacy selection ---
 // load saved default privacy (if any)
-const selectedPrivacy = ref<string>('friends');
 try {
   const saved = localStorage.getItem('fc_default_privacy');
-  if (saved) selectedPrivacy.value = saved;
+  if (saved) createPostStore.setPrivacy(saved);
 } catch { /* ignore on SSR or if localStorage not available */ }
 
 const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
-  selectedPrivacy.value = payload.id;
+  console.log('handlePrivacyConfirm received payload:', payload);
+  console.log('Store privacy before setting:', createPostStore.selectedPrivacy);
+  createPostStore.setPrivacy(payload.id);
+  console.log('Store privacy after setting:', createPostStore.selectedPrivacy);
   if (payload.setDefault) {
     try { localStorage.setItem('fc_default_privacy', payload.id); } catch {}
   }
   // return to creator view
   currentView.value = 'creator';
 };
+
+
 </script>
+
+<template>
+  <div :class="{'w-[1200px]': currentView === 'imageEditor',}"  class='p-4 w-[500px] mx-auto rounded-xl relative overflow-hidden' >
+    <div class="transition-wrapper" ref="wrapperRef">
+      <Transition :name="transitionName" mode="out-in" @before-enter="updateHeight()">
+        <PostCreator
+          v-if="currentView === 'creator'"
+          key="creator"
+          class="view-container bg-white"
+          data-view="creator"
+          :shared-post="sharedPost"
+          @navigate="handleNavigation"
+          @back="handleNavigationBack"
+          @publish="handlePublish"
+          @close="handleClose"
+          @updateHeight="updateHeight"
+          @openTagUsers="openTagUsers"
+          @openLocation="openLocation"
+          @openGifSelector="openGifSelector"
+          @removeGif="handleRemoveGif"
+        />
+        <PrivacySelector
+          v-else-if="currentView === 'privacy'"
+          key="privacy"
+          class="view-container bg-white"
+          data-view="privacy"
+          @navigate="handleNavigation"
+          @back="handleNavigationBack"
+          @confirm="handlePrivacyConfirm"
+        />
+        <TagUsers
+          v-else-if="currentView === 'tagUsers'"
+          key="tagUsers"
+          class="view-container bg-white"
+          data-view="tagUsers"
+          @back="backToCreator"
+          @confirm="handleTagUsersConfirm"
+        />
+        <LocationSelector
+          v-else-if="currentView === 'location'"
+          key="location"
+          class="view-container bg-white"
+          data-view="location"
+          @back="backToCreator"
+        />
+        <GifSelector
+          v-else-if="currentView === 'gifSelector'"
+          key="gifSelector"
+          class="view-container bg-white"
+          data-view="gifSelector"
+          @back="backToCreator"
+        />
+        <ImageEditor
+          v-else-if="currentView === 'imageEditor'"
+          key="imageEditor"
+          class="view-container bg-white"
+          data-view="imageEditor"
+          :initial-image="imageToEdit"
+          @back="handleImageEditorBack"
+          @done="handleImageEdited"
+          @updateHeight="updateHeight"
+        />
+      </Transition>
+    </div>
+  </div>
+</template>

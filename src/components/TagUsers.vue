@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
+import { useCreatePostStore } from '@/stores/createPost';
+import { storeToRefs } from 'pinia';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
 
@@ -12,15 +14,12 @@ const emit = defineEmits<{
   (e: 'back'): void;
 }>();
 
-const props = defineProps<{ initialSelected?: User[] }>();
-const allUsers = ref<User[]>(getAllUsers());
-const selectedUsers = ref<User[]>(props.initialSelected ? [...props.initialSelected] : []);
-const searchQuery = ref('');
+const createPostStore = useCreatePostStore();
+const { taggedUsers: initialTaggedUsers } = storeToRefs(createPostStore);
 
-// Synchronizuj selectedUsers gdy initialSelected się zmienia
-watch(() => props.initialSelected, (newVal) => {
-  selectedUsers.value = newVal ? [...newVal] : [];
-});
+const allUsers = ref<User[]>(getAllUsers());
+const selectedUsers = ref<User[]>(initialTaggedUsers.value ? [...initialTaggedUsers.value] : []);
+const searchQuery = ref('');
 
 const isSelected = (user: User) => selectedUsers.value.some(u => u.id === user.id);
 

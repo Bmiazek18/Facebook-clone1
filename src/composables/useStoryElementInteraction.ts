@@ -74,14 +74,30 @@ export function useStoryElementInteraction(storyElements: ref<StoryElementType[]
                     { threshold: SNAP_THRESHOLD, canvasWidth: bgDimensions.width, canvasHeight: bgDimensions.height }
                 );
                 activeGuides.value = guides;
-                newX = snappedX;
-                newY = snappedY;
 
+                // If element is text or music image, apply specific clamping, otherwise apply snapping
                 if (element.type === 'text' || (element.type === 'image' && element.musicArtist)) {
-                    if (newX < 0) newX = 0;
-                    else if (newX + elementStart.w > bgDimensions.width) newX = bgDimensions.width - elementStart.w;
-                    if (newY < 0) newY = 0;
-                    else if (newY + elementStart.h > bgDimensions.height) newY = bgDimensions.height - elementStart.h;
+                    const mainImage = storyElements.value.find(el => el.id === 'main-image');
+                    if (mainImage) {
+                        // Clamp horizontally to main image boundaries
+                        const minX = mainImage.x;
+                        const maxX = mainImage.x + mainImage.width - elementStart.w;
+                        newX = Math.max(minX, Math.min(newX, maxX));
+
+                        // Clamp vertically to above main image boundaries
+                        const minY = 0;
+                        const maxY = Math.max(minY, mainImage.y - elementStart.h); // Ensure maxY is not negative
+                        newY = Math.max(minY, Math.min(newY, maxY));
+                    } else {
+                         // Fallback to clamping within bgDimensions if main image is not found
+                        if (newX < 0) newX = 0;
+                        else if (newX + elementStart.w > bgDimensions.width) newX = bgDimensions.width - elementStart.w;
+                        if (newY < 0) newY = 0;
+                        else if (newY + elementStart.h > bgDimensions.height) newY = bgDimensions.height - elementStart.h;
+                    }
+                } else { // For non-text elements, apply snapping
+                    newX = snappedX;
+                    newY = snappedY;
                 }
                 element.x = newX; element.y = newY;
             }

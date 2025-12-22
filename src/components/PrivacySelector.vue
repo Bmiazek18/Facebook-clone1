@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import type { DefineComponent } from 'vue';
+import { useCreatePostStore } from '@/stores/createPost';
+import { storeToRefs } from 'pinia';
 
 // --- Import Ikony z vue-material-design-icons ---
 import EarthIcon from 'vue-material-design-icons/Earth.vue';
@@ -39,19 +41,12 @@ const privacyOptions: PrivacyOption[] = [
   { id: 'custom_3', label: 'Opcja testowa 3', description: 'Testowy opis', iconComponent: AccountStarIcon },
 ];
 
+const createPostStore = useCreatePostStore();
+const { selectedPrivacy: storeSelectedPrivacy } = storeToRefs(createPostStore);
+
 // --- Stan Komponentu ---
-const props = defineProps<{
-  initialSelected?: string;
-}>();
-
-const selectedPrivacy = ref(props.initialSelected ?? 'friends');
+const tempSelectedOption = ref(storeSelectedPrivacy.value ?? 'friends');
 const setDefault = ref(false);
-
-// react to parent changes
-import { watch, computed } from 'vue';
-watch(() => props.initialSelected, (v) => {
-  if (v) selectedPrivacy.value = v;
-});
 
 // read default from localStorage or cookie (cookie fallback for compatibility)
 const readDefaultFromCookie = (): string | null => {
@@ -88,21 +83,21 @@ const defaultPrivacyLabel = computed(() => {
 
 // --- Funkcje ---
 const selectOption = (id: string) => {
-  selectedPrivacy.value = id;
+  tempSelectedOption.value = id;
   // if selecting the stored default, ensure setDefault reflects that
-  if (defaultPrivacyId.value && selectedPrivacy.value === defaultPrivacyId.value) {
+  if (defaultPrivacyId.value && tempSelectedOption.value === defaultPrivacyId.value) {
     setDefault.value = true;
   }
 };
 
 const toggleSetDefault = () => {
-  if (selectedPrivacy.value === defaultPrivacyId.value) return;
+  if (tempSelectedOption.value === defaultPrivacyId.value) return;
   setDefault.value = !setDefault.value;
 };
 
 const handleDone = () => {
   // Emit selected privacy and whether to save as default
-  emit('confirm', { id: selectedPrivacy.value, setDefault: setDefault.value });
+  emit('confirm', { id: tempSelectedOption.value, setDefault: setDefault.value });
 };
 
 const handleCancel = () => {
@@ -130,8 +125,8 @@ const handleCancel = () => {
         :key="option.id"
         class="flex items-center p-3 m-0 rounded-lg cursor-pointer transition-colors"
         :class="{
-            'bg-blue-50 hover:bg-blue-100': selectedPrivacy === option.id,
-            'hover:bg-gray-100': selectedPrivacy !== option.id
+            'bg-blue-50 hover:bg-blue-100': tempSelectedOption === option.id,
+            'hover:bg-gray-100': tempSelectedOption !== option.id
         }"
         @click="selectOption(option.id)"
       >
@@ -143,7 +138,7 @@ const handleCancel = () => {
         </div>
 
         <div class="ml-4 flex-shrink-0">
-          <div v-if="selectedPrivacy === option.id">
+          <div v-if="tempSelectedOption === option.id">
             <svg class="h-6 w-6 text-blue-500 fill-current" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="12" cy="12" r="6" fill="currentColor"/></svg>
           </div>
           <div v-else>
@@ -154,13 +149,13 @@ const handleCancel = () => {
     </div>
 
     <div class="pt-4 mt-2 border-t border-gray-200 flex-shrink-0">
-    <div class="flex items-center mb-4" :class="{ 'opacity-60 pointer-events-none': selectedPrivacy === defaultPrivacyId }">
+    <div class="flex items-center mb-4" :class="{ 'opacity-60 pointer-events-none': tempSelectedOption === defaultPrivacyId }">
   <button type="button" class="flex items-center" @click.prevent="toggleSetDefault">
         <component
-          :is="(selectedPrivacy === defaultPrivacyId) ? CheckboxMarkedIcon : (setDefault ? CheckboxMarkedIcon : CheckboxBlankOutlineIcon)"
+          :is="(tempSelectedOption === defaultPrivacyId) ? CheckboxMarkedIcon : (setDefault ? CheckboxMarkedIcon : CheckboxBlankOutlineIcon)"
           :size="24"
           class="mr-3"
-          :class="{ 'text-blue-500': (selectedPrivacy === defaultPrivacyId) || setDefault, 'text-gray-400': !(selectedPrivacy === defaultPrivacyId) && !setDefault }"
+          :class="{ 'text-blue-500': (tempSelectedOption === defaultPrivacyId) || setDefault, 'text-gray-400': !(tempSelectedOption === defaultPrivacyId) && !setDefault }"
         />
       </button>
       <span class="text-gray-700 text-sm">Ustaw jako domyślną grupę odbiorców.</span>

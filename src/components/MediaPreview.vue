@@ -11,6 +11,7 @@ const emit = defineEmits<{
   (e: 'remove-image'): void;
   (e: 'remove-gif'): void;
   (e: 'loaded'): void;
+  (e: 'edit-image'): void; // Added edit-image event
 }>();
 
 const onImageLoad = () => emit('loaded');
@@ -20,7 +21,7 @@ const onImageLoad = () => emit('loaded');
   <div>
     <div v-if="props.selectedImage" class="relative mb-4 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
       <img :src="props.selectedImage" class="w-full  object-cover" @load="onImageLoad" />
-      <div class="absolute top-2 left-2 bg-white flex items-center gap-1 px-2 py-1 rounded shadow text-blue-600 text-sm font-medium cursor-pointer hover:bg-gray-50">
+      <div @click="emit('edit-image')" class="absolute top-2 left-2 bg-white flex items-center gap-1 px-2 py-1 rounded shadow text-blue-600 text-sm font-medium cursor-pointer hover:bg-gray-50">
         <PencilIcon :size="16" class="mr-1" />
         Edytuj
       </div>

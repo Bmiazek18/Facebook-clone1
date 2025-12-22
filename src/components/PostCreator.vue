@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch } from 'vue';
 import type { DefineComponent } from 'vue';
+import { useCreatePostStore } from '@/stores/createPost';
+import { storeToRefs } from 'pinia';
 
 // --- FLOATING VUE ---
 // Ensure you import the CSS in main.ts or here if not globally available
@@ -39,14 +41,10 @@ export interface PostLocation {
 
 const props = defineProps<{
   sharedPost?: PostData | null;
-  taggedUsers?: User[];
-  selectedLocation?: PostLocation | null;
-  selectedGif?: string | null;
-  selectedPrivacy?: string | null;
 }>();
 
 const emit = defineEmits<{
-  (e: 'navigate', viewName: string): void;
+  (e: 'navigate', viewName: string, selectedImage: string | null): void;
   (e: 'back'): void;
   (e: 'publish', content: string): void;
   (e: 'close'): void;
@@ -56,18 +54,20 @@ const emit = defineEmits<{
   (e: 'removeLocation'): void;
   (e: 'openGifSelector'): void;
   (e: 'removeGif'): void;
+  (e: 'edit-image'): void; // Added edit-image event
 }>();
+
+const createPostStore = useCreatePostStore();
+const { taggedUsers, selectedLocation, selectedGif, selectedPrivacy, postContent, selectedImage } = storeToRefs(createPostStore);
 
 // --- STAN ---
 const userName = ref('Bartosz Miazek');
 const profilePicUrl = ref('https://i.pravatar.cc/150?img=12');
-const postContent = ref('');
-const selectedImage = ref<string | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
 
 const isPublishButtonDisabled = computed(() => {
   if (props.sharedPost) return false;
-  return !postContent.value.trim() && !selectedImage.value && !props.selectedLocation && !props.selectedGif;
+  return !postContent.value.trim() && !selectedImage.value && !selectedLocation.value && !selectedGif.value;
 });
 
 const privacyInfo = computed(() => {
@@ -80,8 +80,8 @@ const privacyInfo = computed(() => {
     specific_friends: { label: 'Konkretni znajomi', icon: AccountStarIcon },
 
   };
-  if (!props.selectedPrivacy) return { label: 'Tylko ja', icon: LockIcon };
-  return map[props.selectedPrivacy] || { label: props.selectedPrivacy, icon: null };
+  if (!selectedPrivacy.value) return { label: 'Tylko ja', icon: LockIcon };
+  return map[selectedPrivacy.value] || { label: selectedPrivacy.value, icon: null };
 });
 
 // --- OBSŁUGA INTERFEJSU ---
@@ -94,12 +94,16 @@ const handleImageSelect = (event: Event) => {
   if (file && file.type.startsWith('image/')) {
     const reader = new FileReader();
     reader.onload = async (e) => {
-      selectedImage.value = e.target?.result as string;
+      createPostStore.setSelectedImage(e.target?.result as string);
       await nextTick();
       emit('updateHeight');
     };
     reader.readAsDataURL(file);
   }
+};
+
+const handleEditImage = () => {
+  emit('navigate', 'imageEditor', selectedImage.value);
 };
 
 // --- STORY-LIKE TEXT CARD (mini) ---
@@ -126,7 +130,7 @@ const toggleTextCard = () => {
 
 const selectCardBackground = (id: number) => {
   if (id === 0) {
-    postContent.value = textCardContent.value;
+    createPostStore.setPostContent(textCardContent.value);
     showTextCard.value = false;
     nextTick(() => emit('updateHeight'));
   } else {
@@ -135,19 +139,19 @@ const selectCardBackground = (id: number) => {
 };
 
 const handleCardClose = () => {
-  postContent.value = textCardContent.value;
+  createPostStore.setPostContent(textCardContent.value);
   showTextCard.value = false;
   nextTick(() => emit('updateHeight'));
 };
 
 const removeImage = () => {
-  selectedImage.value = null;
+  createPostStore.setSelectedImage(null);
   if (fileInput.value) fileInput.value.value = '';
   nextTick(() => emit('updateHeight'));
 };
 
 const removeLocation = () => {
-  emit('removeLocation');
+  createPostStore.setLocation(null);
 };
 
 // --- EMOJI PICKER HANDLING ---
@@ -155,22 +159,20 @@ const addEmoji = (e: { native: string }) => {
   if (showTextCard.value) {
     textCardContent.value = textCardContent.value + e.native;
   } else {
-    postContent.value = postContent.value + e.native;
+    createPostStore.setPostContent(postContent.value + e.native);
   }
   // No need to manually close or toggle boolean, FloatingVue handles the DOM.
 };
 
 // Removed handleClickOutside and showPicker refs as FloatingVue handles this internally
 
-watch(() => props.selectedGif, () => {
+watch(() => selectedGif.value, () => {
   nextTick(() => emit('updateHeight'));
 });
 
 const handlePublish = () => {
   emit('publish', postContent.value);
-  emit('close');
-  postContent.value = '';
-  selectedImage.value = null;
+  // Reset is handled by parent component
 };
 </script>
 
@@ -182,17 +184,17 @@ const handlePublish = () => {
       <div class="flex flex-col">
         <div class="text-[15px] leading-tight mb-1 text-gray-900">
           <span class="font-bold">{{ userName }}</span>
-          <template v-if="props.taggedUsers && props.taggedUsers.length">
+          <template v-if="taggedUsers && taggedUsers.length">
             <span class="font-normal text-gray-600"> z: </span>
             <span class="font-bold">
-              <template v-for="(user, idx) in props.taggedUsers" :key="user.id">
+              <template v-for="(user, idx) in taggedUsers" :key="user.id">
                 <span v-if="idx > 0">, </span>
                 {{ user.name }}
               </template>
             </span>
           </template>
-          <template v-if="props.selectedLocation">
-             jest w: <span class="font-bold">{{ props.selectedLocation.title }}</span>
+          <template v-if="selectedLocation">
+             jest w: <span class="font-bold">{{ selectedLocation.title }}</span>
           </template>
         </div>
 
@@ -211,7 +213,7 @@ const handlePublish = () => {
       <div v-if="!showTextCard" class="relative mb-2">
         <textarea
           v-model="postContent"
-          :placeholder="sharedPost ? 'Powiedz coś o tym...' : (props.selectedLocation ? 'O czym myślisz, Bartosz?' : 'Co słychać?')"
+          :placeholder="sharedPost ? 'Powiedz coś o tym...' : (selectedLocation ? 'O czym myślisz, Bartosz?' : 'Co słychać?')"
           class="w-full min-h-[60px] border-none resize-none text-2xl placeholder-gray-500 focus:ring-0 focus:outline-none p-0 pt-2"
           :class="{'text-base': postContent.length > 80}"
         ></textarea>
@@ -248,14 +250,15 @@ const handlePublish = () => {
         @close="handleCardClose"
       />
 
-      <MapPreview :selectedLocation="props.selectedLocation" @removeLocation="removeLocation" v-if="props.selectedLocation" />
+      <MapPreview :selectedLocation="selectedLocation" @removeLocation="removeLocation" v-if="selectedLocation" />
 
       <MediaPreview
         :selectedImage="selectedImage"
-        :selectedGif="props.selectedGif"
+        :selectedGif="selectedGif"
         @remove-image="removeImage"
         @remove-gif="() => emit('removeGif')"
         @loaded="() => emit('updateHeight')"
+        @edit-image="handleEditImage"
       />
 
       <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleImageSelect" />

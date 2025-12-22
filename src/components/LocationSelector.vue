@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useCreatePostStore } from '@/stores/createPost';
 
 // --- IKONY (Material Design Icons) ---
 import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue';
@@ -9,18 +10,6 @@ import TreeIcon from 'vue-material-design-icons/Tree.vue';
 import NavigationIcon from 'vue-material-design-icons/Navigation.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
-
-
-
-export interface LocationResult {
-  title: string;
-  subtitle: string;
-  type: 'city' | 'attraction' | 'park' | 'place' | 'district' | 'current';
-  lat: string | null;
-  lon: string | null;
-  searchbox_id?: string; // Opcjonalne, potrzebne tylko dla sugestii
-}
-
 interface Suggestion {
   name: string;
   full_address: string;
@@ -30,12 +19,20 @@ interface Suggestion {
 }
 
 const emit = defineEmits<{
-  (e: 'confirm', location: LocationResult): void;
   (e: 'back'): void;
 }>();
 
+const createPostStore = useCreatePostStore();
 const searchQuery = ref('');
 const suggestions = ref<LocationResult[]>([]);
+interface LocationResult {
+  title: string;
+  subtitle: string;
+  type: 'city' | 'district' | 'attraction' | 'park' | 'current';
+  lat: string | null;
+  lon: string | null;
+  searchbox_id?: string;
+}
 const currentCity = ref<LocationResult | null>(null);
 const selectedLocation = ref<LocationResult | null>(null);
 const dynamicCenter = ref<{lat: string, lon: string} | null>(null);
@@ -151,6 +148,13 @@ const onInput = () => {
     return;
   }
   debounceTimeout = setTimeout(searchLocations, 400);
+};
+
+const handleConfirm = () => {
+  if (selectedLocation.value) {
+    createPostStore.setLocation(selectedLocation.value);
+  }
+  emit('back');
 };
 
 // --- GPS ---
@@ -287,7 +291,7 @@ onMounted(initLocation);
 
     <div class="p-4 bg-white border-t border-gray-100 sticky bottom-0 w-full shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
       <button
-        @click="emit('confirm', selectedLocation!)"
+        @click="handleConfirm"
         :disabled="!selectedLocation || !selectedLocation.lat"
         class="w-full py-3 rounded-lg font-bold text-white transition-all text-[16px]"
         :class="selectedLocation && selectedLocation.lat ? 'bg-[#1877f2] hover:bg-blue-700 active:scale-[0.98]' : 'bg-gray-200 cursor-not-allowed text-gray-400'"

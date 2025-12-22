@@ -39,12 +39,17 @@ const background = reactive<BackgroundSettings>({
 });
 
 const setBackgroundGradientFromImage = (imageUrl: string) => {
+  console.log('setBackgroundGradientFromImage called with:', imageUrl);
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = () => {
+    console.log('Image loaded for gradient calculation.');
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      console.error('Could not get 2D context from canvas.');
+      return;
+    }
 
     const SAMPLE_SIZE = 10;
     canvas.width = SAMPLE_SIZE;
@@ -79,10 +84,13 @@ const setBackgroundGradientFromImage = (imageUrl: string) => {
 
     background.type = 'gradient';
     background.value = `linear-gradient(180deg, rgba(${avgTop[0]}, ${avgTop[1]}, ${avgTop[2]}, 0.92), rgba(${avgBottom[0]}, ${avgBottom[1]}, ${avgBottom[2]}, 0.92))`;
+    console.log('Background gradient set to:', background.value);
   };
   img.onerror = () => {
+    console.error('Error loading image for gradient calculation. Falling back to default gradient.');
     background.type = 'gradient';
     background.value = 'linear-gradient(to bottom, #3b82f6, #86efac)';
+    console.log('Background gradient fallback set to:', background.value);
   };
   img.src = imageUrl;
 };
@@ -196,19 +204,45 @@ onMounted(() => {
   else if (props.initialImage) {
     const imgUrl = props.initialImage;
     const newId = `el_img_${Date.now()}`;
-    storyElements.value.push({
-      id: newId,
-      type: 'image',
-      content: imgUrl,
-      x: 60, y: 200,
-      width: 240, height: 320,
-      rotation: 0, scale: 1,
-      cropX: 0, cropY: 0, cropZoom: 1,
-      styles: {}
-    });
-    selectedElementId.value = newId;
-    setBackgroundGradientFromImage(imgUrl);
-  }
+
+    // Create a temporary image to get its dimensions
+    const tempImg = new Image();
+    tempImg.src = imgUrl;
+    tempImg.onload = () => {
+      const aspectRatio = tempImg.width / tempImg.height;
+      const targetWidth = bgDimensions.width * 0.9; // 90% of canvas width
+      const targetHeight = targetWidth / aspectRatio;
+
+      storyElements.value.push({
+        id: newId,
+        type: 'image',
+        content: imgUrl,
+        x: (bgDimensions.width - targetWidth) / 2, // Center the image horizontally
+        y: (bgDimensions.height - targetHeight) / 2, // Center the image vertically
+        width: targetWidth,
+        height: targetHeight,
+        rotation: 0, scale: 1,
+        cropX: 0, cropY: 0, cropZoom: 1,
+        styles: {}
+      });
+      selectedElementId.value = newId;
+      setBackgroundGradientFromImage(imgUrl);
+    };
+    tempImg.onerror = () => {
+      // Fallback if image fails to load
+      storyElements.value.push({
+        id: newId,
+        type: 'image',
+        content: imgUrl,
+        x: 60, y: 200,
+        width: 240, height: 320,
+        rotation: 0, scale: 1,
+        cropX: 0, cropY: 0, cropZoom: 1,
+        styles: {}
+      });
+      selectedElementId.value = newId;
+      setBackgroundGradientFromImage(imgUrl);
+  }}
 });
 
 onUnmounted(() => {
