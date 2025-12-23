@@ -3,6 +3,11 @@ import { ref,computed } from 'vue';
 import type { User } from '@/data/users';
 import type { LocationResult } from '@/components/LocationSelector.vue';
 
+interface SelectedImage {
+  url: string;
+  altText: string;
+}
+
 export const useCreatePostStore = defineStore('createPost', () => {
   // --- STATE (Stan) ---
   const taggedUsers = ref<User[]>([]);
@@ -10,8 +15,9 @@ export const useCreatePostStore = defineStore('createPost', () => {
   const selectedGif = ref<string | null>(null);
   const selectedPrivacy = ref<string>('friends');
   const imageToEdit = ref<string | null>(null);
+  const videoToEdit = ref<string | null>(null);
   const postContent = ref<string>('');
-  const selectedImage = ref<string | null>(null);
+  const selectedImage = ref<SelectedImage | null>(null);
   const selectedCardBgId = ref<number>(0);
 
   // --- ACTIONS (Akcje) ---
@@ -35,16 +41,32 @@ export const useCreatePostStore = defineStore('createPost', () => {
     imageToEdit.value = url;
   }
 
+  function setVideoToEdit(url: string | null) {
+    videoToEdit.value = url;
+  }
+
   function setPostContent(content: string) {
     postContent.value = content;
   }
 
-  function setSelectedImage(url: string | null) {
-    selectedImage.value = url;
+  function setSelectedImage(image: string | SelectedImage | null) {
+    if (typeof image === 'string') {
+      selectedImage.value = { url: image, altText: '' };
+    } else if (image === null) {
+      selectedImage.value = null;
+    } else {
+      selectedImage.value = image;
+    }
   }
 
   function setSelectedCardBgId(id: number) {
     selectedCardBgId.value = id;
+  }
+
+  function setAltText(text: string) {
+    if (selectedImage.value) {
+      selectedImage.value.altText = text;
+    }
   }
 
   // Funkcja resetująca stan (oprócz privacy)
@@ -53,6 +75,7 @@ export const useCreatePostStore = defineStore('createPost', () => {
     selectedLocation.value = null;
     selectedGif.value = null;
     imageToEdit.value = null;
+    videoToEdit.value = null;
     postContent.value = '';
     selectedImage.value = null;
     selectedCardBgId.value = 1; // Reset do wartości domyślnej
@@ -64,8 +87,9 @@ export const useCreatePostStore = defineStore('createPost', () => {
         selectedLocation.value !== null ||
         selectedGif.value !== null ||
         imageToEdit.value !== null ||
+        videoToEdit.value !== null ||
         postContent.value !== '' ||
-        selectedImage.value !== null
+        (selectedImage.value !== null && (selectedImage.value.url !== '' || selectedImage.value.altText !== ''))
       );
     });
   // --- RETURN (Udostępnienie publiczne) ---
@@ -75,18 +99,22 @@ export const useCreatePostStore = defineStore('createPost', () => {
     selectedGif,
     selectedPrivacy,
     imageToEdit,
+    videoToEdit,
     postContent,
     selectedImage,
     selectedCardBgId,
-  hasUnsavedChanges,
+    // altText, // No longer a direct state property
+    hasUnsavedChanges,
     setTaggedUsers,
     setLocation,
     setGif,
     setPrivacy,
     setImageToEdit,
+    setVideoToEdit,
     setPostContent,
     setSelectedImage,
     setSelectedCardBgId,
+    setAltText,
     reset,
   };
 });

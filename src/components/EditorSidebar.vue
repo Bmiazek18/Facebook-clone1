@@ -9,7 +9,7 @@ defineProps<{
   tags: ImageTagType[];
   isCroppingMode: boolean;
   showAltTextInput: boolean;
-  effectiveAltText: string;
+  altText: string;
 }>();
 
 // --- EMITS ---
@@ -19,7 +19,7 @@ const emit = defineEmits<{
   (e: 'confirm-crop'): void;
   (e: 'cancel-crop'): void;
   (e: 'cancel-edit'): void;
-  (e: 'update:effectiveAltText', value: string): void;
+  (e: 'update:altText', value: string): void;
   (e: 'done'): void;
 }>();
 </script>
@@ -45,8 +45,8 @@ const emit = defineEmits<{
                           </div>
                                           <AltTextEditor
                                             v-if="tool.action === 'toggleAltText' && showAltTextInput"
-                                            :alt-text="effectiveAltText"
-                                            @update:altText="(value) => emit('update:effectiveAltText', value)"
+                                            :alt-text="altText"
+                                            @update:altText="(value) => emit('update:altText', value)"
                                             @close="emit('tool-action', 'toggleAltText')"
                                           />                        </template>
                       </div>        

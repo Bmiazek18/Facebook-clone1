@@ -67,7 +67,7 @@ const fileInput = ref<HTMLInputElement | null>(null);
 
 const isPublishButtonDisabled = computed(() => {
   if (props.sharedPost) return false;
-  return !postContent.value.trim() && !selectedImage.value && !selectedLocation.value && !selectedGif.value;
+  return !postContent.value.trim() && !selectedImage.value?.url && !selectedLocation.value && !selectedGif.value;
 });
 
 const privacyInfo = computed(() => {
@@ -85,7 +85,7 @@ const privacyInfo = computed(() => {
 });
 
 // --- OBSŁUGA INTERFEJSU ---
-const openPrivacySelector = () => emit('navigate', 'privacy');
+const openPrivacySelector = () => emit('navigate', 'privacy', null);
 const handleImageClick = () => fileInput.value?.click();
 
 const handleImageSelect = (event: Event) => {
@@ -94,7 +94,7 @@ const handleImageSelect = (event: Event) => {
   if (file && file.type.startsWith('image/')) {
     const reader = new FileReader();
     reader.onload = async (e) => {
-      createPostStore.setSelectedImage(e.target?.result as string);
+      createPostStore.setSelectedImage({ url: e.target?.result as string, altText: '' });
       await nextTick();
       emit('updateHeight');
     };
@@ -103,11 +103,15 @@ const handleImageSelect = (event: Event) => {
 };
 
 const handleEditImage = () => {
-  emit('navigate', 'imageEditor', selectedImage.value);
+  if (selectedImage.value) {
+    emit('navigate', 'imageEditor', selectedImage.value.url);
+  }
 };
 
 const handleEditVideo = () => {
-  emit('navigate', 'videoEditor', selectedImage.value);
+  if (selectedImage.value) {
+    emit('navigate', 'videoEditor', selectedImage.value.url);
+  }
 };
 
 // --- STORY-LIKE TEXT CARD (mini) ---

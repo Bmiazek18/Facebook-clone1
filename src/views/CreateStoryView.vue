@@ -13,7 +13,7 @@
   const storyShareStore = useStoryShareStore();
 
   const mode = ref<StoryMode>('picker');
-  const selectedImage = ref<string | null>(null);
+  const selectedImage = ref<{ url: string; altText: string } | null>(null);
   const initialPost = ref<PostData | null>(null);
   const initialReel = ref<ReelData | null>(null);
 
@@ -33,7 +33,7 @@
 
   // Handlers from picker
   const onSelectImage = (imageUrl: string) => {
-    selectedImage.value = imageUrl;
+    selectedImage.value = { url: imageUrl, altText: '' };
     mode.value = 'image';
   };
 
@@ -44,8 +44,8 @@
   // Go back to picker
   const onBack = () => {
     // Revoke blob URL if exists
-    if (selectedImage.value?.startsWith('blob:')) {
-      URL.revokeObjectURL(selectedImage.value);
+    if (selectedImage.value?.url.startsWith('blob:')) {
+      URL.revokeObjectURL(selectedImage.value.url);
     }
     selectedImage.value = null;
     initialPost.value = null;
@@ -65,7 +65,7 @@
       <!-- Image editor -->
       <StoryImageEditor
         v-else-if="mode === 'image'"
-        :initial-image="selectedImage"
+        :initial-image="selectedImage?.url"
         :initial-post="initialPost"
         :initial-reel="initialReel"
         @back="onBack"

@@ -7,9 +7,11 @@ import Image from 'vue-material-design-icons/Image.vue'
 import EmoticonOutline from 'vue-material-design-icons/EmoticonOutline.vue'
 import BaseModal from './BaseModal.vue'
 import CreatePost from './CreatePost.vue'
+import { useCreatePostStore } from '@/stores/createPost'
 
 useI18n()
 
+const createPostStore = useCreatePostStore()
 const props = defineProps({
   image: String,
   placeholder: String,
@@ -17,11 +19,36 @@ const props = defineProps({
 
 const isOpen = ref(false)
 const { image, placeholder } = toRefs(props)
+const fileInput = ref<HTMLInputElement | null>(null)
 
 // Open modal to create post
 const openCreatePost = () => {
   isOpen.value = true
 }
+
+const handleFileClick = () => {
+  fileInput.value?.click()
+}
+
+const handleFileSelect = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      createPostStore.setSelectedImage({ url: e.target?.result as string, altText: '' });
+      isOpen.value = true;
+    };
+    reader.readAsDataURL(file);
+  }
+  
+  // Reset the input value
+  if(target) {
+    target.value = ''
+  }
+}
+
 
 // Close modal
 const closeCreatePost = () => {
@@ -58,11 +85,19 @@ const handlePostPublish = (content: string) => {
         <div class="text-[#6F7275] text-theme-text-secondary font-medium">{{ $t('post.addLive') }}</div>
       </RouterLink>
       <button
+        @click="handleFileClick"
         class="flex items-center justify-center hover:bg-theme-hover w-full rounded-lg cursor-pointer"
       >
         <Image :size="35" fillColor="#43BE62" />
         <div class="text-[#6F7275] text-theme-text-secondary font-medium">{{ $t('post.addPhoto') }}</div>
       </button>
+      <input
+        ref="fileInput"
+        type="file"
+        accept="image/*,video/mp4"
+        class="hidden"
+        @change="handleFileSelect"
+      />
       <button
         class="flex items-center justify-center hover:bg-theme-hover w-full rounded-lg cursor-pointer"
       >

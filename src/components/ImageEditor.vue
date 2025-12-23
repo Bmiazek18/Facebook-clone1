@@ -10,7 +10,7 @@ import FormatLetterCaseIcon from 'vue-material-design-icons/FormatLetterCase.vue
 import FileImageIcon from 'vue-material-design-icons/FileImage.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 
-import { ref, reactive, onMounted, onUnmounted, computed, watchEffect, nextTick } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, computed, watchEffect, nextTick, watch } from 'vue';
 import VueCropper from 'vue-cropperjs';
 import 'cropperjs/dist/cropper.css';
 
@@ -21,6 +21,8 @@ import TagList from './TagList.vue';
 import EditorSidebar from './EditorSidebar.vue';
 import type { StoryElement as StoryElementType } from '@/types/StoryElement';
 import type { ImageTagType } from '@/types/ImageTag';
+
+import { useCreatePostStore } from '@/stores/createPost';
 
 // --- TYPY DANYCH ---
 type CropData = {
@@ -55,6 +57,7 @@ const emit = defineEmits<{
 }>();
 
 // --- STATE ---
+const createPostStore = useCreatePostStore();
 const imageRotation = ref(0);
 const taggingMode = ref(false);
 const tags = ref<ImageTagType[]>([]);
@@ -73,8 +76,18 @@ const currentCropData = ref<CropData>({
   height: 0,
   rotate: 0
 });
-const imageUrl = ref(props.initialImage);
-const altText = ref('');
+const imageUrl = ref(createPostStore.selectedImage?.url || props.initialImage);
+const altText = ref(createPostStore.selectedImage?.altText || '');
+watch(altText, (newAltText) => {
+  if (createPostStore.selectedImage) {
+    createPostStore.selectedImage.altText = newAltText;
+  } else {
+    // If there's no selected image, but alt text is being set,
+    // this scenario might need further consideration based on UX.
+    // For now, we'll just set it if an image exists.
+    createPostStore.setSelectedImage({ url: imageUrl.value || '', altText: newAltText });
+  }
+});
 const showAltTextInput = ref(false);
 
 const cropperOptions = reactive({

@@ -39,7 +39,7 @@
             </div>
         </div>
 
-        <AltTextEditor v-if="isAltTextExpanded" @save-alt-text="(text) => emit('save-alt-text', text)" />
+        <AltTextEditor v-if="isAltTextExpanded" :alt-text="currentAltText" @update:altText="(text) => currentAltText = text" />
     </div>
 </template>
 
@@ -66,6 +66,7 @@ const emit = defineEmits<{
 }>();
 
 const isAltTextExpanded = ref(false);
+const currentAltText = ref('');
 
 const toggleAltTextSection = () => {
     if (!props.isImageSelected) {
