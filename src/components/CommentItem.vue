@@ -61,7 +61,7 @@ const avatarSizeClass = isRootComment ? 'w-8 h-8' : 'w-6 h-6'
             <div v-if="!isRootComment" class="w-8 mr-2 relative">
                 <div class="absolute w-[21px] h-4 border-b-2 border-l-2 border-gray-300 right-0 rounded-bl-[10px]"></div>
             </div>
-            <ProfilePopper :name="props.comment.userName">
+
 <a :class="[avatarSizeClass]">
 <img
                 :class="['rounded-full mt-1', avatarSizeClass,  ]"
@@ -69,7 +69,7 @@ const avatarSizeClass = isRootComment ? 'w-8 h-8' : 'w-6 h-6'
                 :alt="props.comment.userName + ' Avatar'"
             >
             </a>
-            </ProfilePopper>
+
 
 
             <div

@@ -58,7 +58,7 @@ const emit = defineEmits<{
 }>();
 
 const createPostStore = useCreatePostStore();
-const { taggedUsers, selectedLocation, selectedGif, selectedPrivacy, postContent, selectedImage } = storeToRefs(createPostStore);
+const { taggedUsers, selectedLocation, selectedGif, selectedPrivacy, postContent, selectedImage, selectedCardBgId } = storeToRefs(createPostStore);
 
 // --- STAN ---
 const userName = ref('Bartosz Miazek');
@@ -106,8 +106,12 @@ const handleEditImage = () => {
   emit('navigate', 'imageEditor', selectedImage.value);
 };
 
+const handleEditVideo = () => {
+  emit('navigate', 'videoEditor', selectedImage.value);
+};
+
 // --- STORY-LIKE TEXT CARD (mini) ---
-const showTextCard = ref(false);
+const showTextCard = ref( selectedCardBgId.value !== 0 );
 const textCardContent = ref('');
 interface CardBackground { id: number; class: string; textClass?: string }
 const cardBackgrounds: CardBackground[] = [
@@ -118,23 +122,30 @@ const cardBackgrounds: CardBackground[] = [
   { id: 4, class: 'bg-red-500', textClass: 'text-white' },
   { id: 5, class: 'bg-gradient-to-r from-green-400 to-teal-500', textClass: 'text-white' },
 ];
-const selectedCardBgId = ref<number>(1);
+
+const currentBackground = computed(() => {
+    return cardBackgrounds.find(bg => bg.id === selectedCardBgId.value) ?? cardBackgrounds[0]
+})
+
+const placeholderClass = computed(() => {
+    return currentBackground.value.textClass === 'text-white' ? 'placeholder-white' : 'placeholder-gray-500'
+})
 
 const toggleTextCard = () => {
   if (!showTextCard.value) {
     textCardContent.value = postContent.value || '';
   }
+   createPostStore.setSelectedCardBgId(1);
   showTextCard.value = !showTextCard.value;
   nextTick(() => emit('updateHeight'));
 };
 
 const selectCardBackground = (id: number) => {
+   createPostStore.setSelectedCardBgId(id);
   if (id === 0) {
     createPostStore.setPostContent(textCardContent.value);
     showTextCard.value = false;
     nextTick(() => emit('updateHeight'));
-  } else {
-    selectedCardBgId.value = id;
   }
 };
 
@@ -211,13 +222,25 @@ const handlePublish = () => {
 
     <HoverScrollbar :maxHeight="'360px'">
       <div v-if="!showTextCard" class="relative mb-2">
+        <div
+          v-if="selectedCardBgId !== 0"
+          :class="[currentBackground.class, currentBackground.textClass]"
+          class="w-full h-48 rounded-lg flex items-center justify-center text-center p-4"
+        >
+          <textarea
+            v-model="postContent"
+            :placeholder="sharedPost ? 'Powiedz coś o tym...' : (selectedLocation ? 'O czym myślisz, Bartosz?' : 'Co słychać?')"
+            class="w-full bg-transparent border-none resize-none text-2xl focus:ring-0 focus:outline-none p-0 pt-2 text-center"
+            :class="[{'text-base': postContent.length > 80}, placeholderClass]"
+          ></textarea>
+        </div>
         <textarea
+          v-else
           v-model="postContent"
           :placeholder="sharedPost ? 'Powiedz coś o tym...' : (selectedLocation ? 'O czym myślisz, Bartosz?' : 'Co słychać?')"
           class="w-full min-h-[60px] border-none resize-none text-2xl placeholder-gray-500 focus:ring-0 focus:outline-none p-0 pt-2"
           :class="{'text-base': postContent.length > 80}"
         ></textarea>
-
         <div class="absolute bottom-2 left-0 text-[#fe5b70] cursor-pointer" title="Stylizacja tekstu">
           <format-color-text-icon :size="24" @click="toggleTextCard" />
         </div>
@@ -259,6 +282,7 @@ const handlePublish = () => {
         @remove-gif="() => emit('removeGif')"
         @loaded="() => emit('updateHeight')"
         @edit-image="handleEditImage"
+        @edit-video="handleEditVideo"
       />
 
       <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleImageSelect" />
