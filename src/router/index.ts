@@ -33,6 +33,16 @@ const router = createRouter({
       component: () => import('@/views/RegisterView.vue'),
     },
      {
+      path: '/live/produce/create-live',
+      name: 'createLive',
+      component: () => import('@/views/CreateLiveView.vue'),
+    },
+     {
+      path: '/live/produce/create-event',
+      name: 'createEvent',
+      component: () => import('@/views/CreateEventView.vue'),
+    },
+     {
       path: '/friends',
       name: 'friends',
       component: () => import('@/views/FriendsView.vue'),
@@ -56,9 +66,15 @@ const router = createRouter({
       meta: { showMainLayout: false },
     },
      {
-      path: '/createReel',
+      path: '/stories/create',
       name: 'createReel',
       component: () => import('@/views/CreateStoryView.vue'),
+      meta: { showMainLayout: false },
+    },
+     {
+      path: '/live/produce',
+      name: 'liveProduce',
+      component: () => import('@/views/LiveProducer.vue'),
       meta: { showMainLayout: false },
     },
     {
