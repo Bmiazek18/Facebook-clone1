@@ -1,92 +1,120 @@
 <template>
-  <div class="bg-white dark:bg-[#3e4042] w-full ">
-    <header class="flex justify-between items-center p-4 border-b dark:border-gray-700">
-      <h1 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Ostatnie</h1>
-      <button class="text-blue-600 font-medium">Edytuj</button>
-    </header>
+  <div class="mt-2">
+    <div
+      v-for="contact in contacts"
+      :key="contact.id"
+      class="flex items-center justify-between p-2 hover:bg-[#F2F4F7] dark:hover:bg-[#3A3B3C] rounded-lg transition duration-150 ease-in-out cursor-pointer mx-2"
+    >
+      <div class="flex items-center space-x-3 w-full overflow-hidden">
+        <div class="relative flex-shrink-0">
+          <img
+            :src="contact.avatarUrl"
+            :alt="contact.name"
+            class="w-10 h-10 rounded-full object-cover border border-gray-100 dark:border-gray-700"
+            loading="lazy"
+          />
+        </div>
 
-    <div class="space-y-0.5 pb-2">
-      <div
-        v-for="contact in contacts"
-        :key="contact.id"
-        class="flex items-center justify-between p-2 hover:bg-gray-200 dark:hover:bg-[#4e5052] transition duration-150 ease-in-out cursor-pointer"
-      >
-        <div class="flex items-center space-x-3">
-          <div class="relative flex-shrink-0">
-            <img
-              :src="contact.avatarUrl"
-              :alt="contact.name"
-              class="w-12 h-12 rounded-full object-cover shadow-sm"
-              loading="lazy"
-            />
+        <div class="flex flex-col truncate">
+          <span class="text-[15px] font-medium text-[#050505] dark:text-[#E4E6EB] truncate">
+            {{ contact.name }}
+          </span>
 
-            <div
-              v-if="contact.newCount && contact.newCount > 0"
-              class="absolute bottom-0 right-0 w-3 h-3 bg-blue-600 rounded-full border-2 border-white dark:border-[#3e4042]"
-            ></div>
-          </div>
-
-          <div class="flex flex-col">
-            <span class="text-base font-normal text-gray-800 dark:text-gray-100">{{ contact.name }}</span>
+          <div class="flex items-center text-[13px] text-[#65676B] dark:text-[#B0B3B8] truncate">
             <span
-              v-if="contact.status"
-              class="text-sm text-gray-500 dark:text-gray-400"
-            >
+              v-if="contact.isNew"
+              class="block w-2 h-2 bg-blue-500 rounded-full mr-2 flex-shrink-0"
+            ></span>
+
+            <span :class="{ 'font-medium text-blue-500': contact.isNew }" class="truncate">
               {{ contact.status }}
             </span>
           </div>
         </div>
-
-        <button
-          @click.stop="removeContact(contact.id)"
-          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 rounded-full transition duration-150 ease-in-out"
-          aria-label="Usuń kontakt"
-        >
-          <CloseBoxOutlineIcon :size="24" :fillColor="isDark ? '#e4e6eb' : '#65676b'" />
-        </button>
       </div>
+
+      <button
+        @click.stop="removeContact(contact.id)"
+        class="text-[#65676B] dark:text-[#B0B3B8] hover:bg-gray-200 dark:hover:bg-gray-600 p-2 rounded-full transition duration-150 ease-in-out flex-shrink-0 ml-2"
+        aria-label="Usuń z historii"
+      >
+        <Close :size="20" />
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import CloseBoxOutlineIcon from 'vue-material-design-icons/CloseBoxOutline.vue';
-// Zakładam, że masz dostęp do Theme Composables, aby dostosować kolor ikon
-import { useTheme } from '@/composables/useTheme';
+import Close from 'vue-material-design-icons/Close.vue';
 
-// 1. Definicja Typu (Model Danych)
+// Definicja typu
 interface Contact {
   id: number;
   name: string;
   avatarUrl: string;
-  status?: 'Znajomy' | 'Inne' | string;
-  newCount?: number;
+  status?: string;
+  isNew?: boolean; // Czy pokazać niebieską kropkę i niebieski tekst
 }
 
-const { isDark } = useTheme();
-
-// 2. Wzorcowe Dane (na podstawie obrazka)
-// Zastąp "..." faktycznymi URL-ami lub użyj ścieżek do lokalnych zasobów
+// Dane odwzorowujące Twój zrzut ekranu
 const initialContacts: Contact[] = [
-  { id: 1, name: 'Kolegium Sędziów BOZPN', avatarUrl: 'https://via.placeholder.com/150/007AFF/FFFFFF?text=KS', status: 'Inne' },
-  { id: 2, name: 'soccersport futsal liga łuków', avatarUrl: 'https://via.placeholder.com/150/FF9500/FFFFFF?text=F', newCount: 0 },
-  { id: 3, name: 'Marcin Chwedoruk', avatarUrl: 'https://via.placeholder.com/150/34C759/FFFFFF?text=M', newCount: 0 },
-  { id: 4, name: 'ŁKS Orlęta Łuków', avatarUrl: 'https://via.placeholder.com/150/FF3B30/FFFFFF?text=O', newCount: 0 },
-  { id: 5, name: 'LKS Dwernicki Stoczek Łukowski', avatarUrl: 'https://via.placeholder.com/150/5AC8FA/FFFFFF?text=D', newCount: 2 },
-  { id: 6, name: 'Wiktoria Szerszeń', avatarUrl: 'https://via.placeholder.com/150/A2845E/FFFFFF?text=W', status: 'Znajomy', newCount: 0 },
-  { id: 7, name: 'GKS Armaty Stoczek Łukowski', avatarUrl: 'https://via.placeholder.com/150/C69C6E/FFFFFF?text=G', newCount: 0 },
-  { id: 8, name: 'Ar-Tig Huta Dąbrowa', avatarUrl: 'https://via.placeholder.com/150/7F00FF/FFFFFF?text=A', newCount: 2 },
+  {
+    id: 1,
+    name: 'Kolegium Sędziów BOZPN',
+    avatarUrl: 'https://scontent-waw2-2.xx.fbcdn.net/v/t39.30808-1/326752317_547526970768789_7336691129596307379_n.jpg?stp=cp0_dst-jpg_p40x40&_nc_cat=109&ccb=1-7&_nc_sid=e99d92&_nc_ohc=8wTzE0zPz3MAX-x6Yx_&_nc_ht=scontent-waw2-2.xx&oh=00_AfBv55qXwB4q0XwB4q0XwB4q0XwB4q0XwB4q0XwB4q0Xw&oe=65676B',
+    status: 'Odwiedzono stronę' // Domyślny tekst jeśli brak info
+  },
+  {
+    id: 2,
+    name: 'Soccersport Futsal Liga Łuków',
+    avatarUrl: 'https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/305775317_488243453315663_5613322137599723528_n.jpg?stp=cp0_dst-jpg_p40x40&_nc_cat=102&ccb=1-7&_nc_sid=e99d92&_nc_ohc=abcde12345&_nc_ht=scontent-waw2-1.xx&oh=00_AfD12345&oe=65676B',
+    status: '1 nowa',
+    isNew: true
+  },
+  {
+    id: 3,
+    name: 'Wiktoria Szerszeń',
+    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80',
+    status: 'Odwiedzono profil'
+  },
+  {
+    id: 4,
+    name: 'Vanessa rojewska',
+    avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80',
+    status: 'Jeszcze 9 nowa',
+    isNew: true
+  },
+  {
+    id: 5,
+    name: 'Bartosz Miazek',
+    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80',
+    status: 'Odwiedzono profil'
+  },
+  {
+    id: 6,
+    name: 'Adrian Kłosowski',
+    avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80',
+    status: 'Znajomy'
+  },
+  {
+    id: 7,
+    name: 'WRS ETI',
+    avatarUrl: 'https://via.placeholder.com/150?text=WRS',
+    status: '2 nowe',
+    isNew: true
+  },
+  {
+    id: 8,
+    name: 'Filip Ścioch',
+    avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80',
+    status: 'Znajomy'
+  },
 ];
 
 const contacts = ref<Contact[]>(initialContacts);
 
-// 3. Logika Usuwania
 const removeContact = (id: number): void => {
   contacts.value = contacts.value.filter(contact => contact.id !== id);
 };
 </script>
-
-<style scoped>
-/* Brak dodatkowych stylów, całość oparta na Tailwind */
-</style>

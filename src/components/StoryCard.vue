@@ -1,5 +1,6 @@
 <template>
-  <div
+  <RouterLink
+    to="/story"
     class="
       w-[113px]
       h-[200px]
@@ -33,12 +34,11 @@
         {{ story.id }}
       </p>
     </div>
-  </div>
+  </RouterLink>
 </template>
 
 <script setup lang="ts">
 import type { Story } from '../types/Story';
-
 defineProps<{
   story: Story;
 }>();
