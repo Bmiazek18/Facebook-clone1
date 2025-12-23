@@ -51,12 +51,12 @@ const handlePostPublish = (content: string) => {
     </div>
 
     <div class="flex items-center py-2">
-      <button
+      <RouterLink to="/live/produce"
         class="flex items-center justify-center hover:bg-theme-hover p-1 w-full rounded-lg cursor-pointer"
       >
         <VideoImage :size="35" fillColor="#F12848" />
         <div class="text-[#6F7275] text-theme-text-secondary font-medium">{{ $t('post.addLive') }}</div>
-      </button>
+      </RouterLink>
       <button
         class="flex items-center justify-center hover:bg-theme-hover w-full rounded-lg cursor-pointer"
       >

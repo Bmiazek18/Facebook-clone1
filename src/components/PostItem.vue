@@ -175,7 +175,7 @@ useVideoAutoplay(videoContainerRef)
 
       <!-- Video -->
       <div v-if="displayData.videoUrl" ref="videoContainerRef" class="w-full">
-        <PlayerVideo ref="videoRef" :url="displayData.videoUrl" />
+        <PlayerVideo :settings="true" :lightbox="true" ref="videoRef" :url="displayData.videoUrl" />
       </div>
 
       <!-- Images -->
