@@ -1,5 +1,5 @@
 <template>
-  <div class="w-[360px] bg-theme-bg-secondary p-4 rounded-lg relative overflow-hidden">
+  <div class="w-[360px] bg-theme-bg-secondary p-2 rounded-lg relative overflow-hidden">
     <div class="profile-menu-wrapper" ref="wrapperRef">
       <Transition :name="transitionName" mode="out-in" @before-enter="updateHeight()">
         <component

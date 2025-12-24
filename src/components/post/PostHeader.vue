@@ -5,12 +5,16 @@ import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
 import Close from 'vue-material-design-icons/Close.vue'
 import ProfilePopper from '../ProfilePopper.vue'
 import { useTheme } from '@/composables/useTheme'
+import type { User } from '@/data/users'
+import type { PostLocation } from '@/components/PostCreator.vue'
 
 const props = defineProps<{
   authorName: string
   authorAvatar: string
   authorId?: number
   date?: string
+  taggedUsers?: User[]
+  location?: PostLocation
 }>()
 
 defineEmits<{
@@ -40,7 +44,20 @@ const handleAvatarClick = () => {
       </button>
 
       <div class="flex-1 min-w-0 mt-0.5">
-        <ProfilePopper :name="authorName" :user-id="authorId" class="font-semibold text-theme-text text-[15px] hover:underline cursor-pointer leading-tight block" />
+        <div class="text-theme-text text-[15px] leading-tight">
+          <ProfilePopper :name="authorName" :user-id="authorId" class="font-semibold hover:underline cursor-pointer" />
+          <template v-if="taggedUsers && taggedUsers.length">
+            <span class="font-normal text-gray-600"> z: </span>
+            <template v-for="(user, idx) in taggedUsers" :key="user.id">
+              <span v-if="idx > 0">, </span>
+              <ProfilePopper :name="user.name" :user-id="user.id" class="font-semibold hover:underline cursor-pointer" />
+            </template>
+          </template>
+          <template v-if="location">
+            <span class="font-normal text-gray-600"> jest w: </span>
+            <span class="font-semibold">{{ location.title }}</span>
+          </template>
+        </div>
         <div class="flex items-center text-[13px] text-theme-text-secondary mt-0.5">
           <span class="hover:underline cursor-pointer">{{ date || '17 grudnia' }}</span>
           <span class="mx-1">·</span>

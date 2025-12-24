@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="shadow-xl p-3 rounded-lg bg-theme-bg-secondary">
+    <div class="shadow-[0_4px_12px_rgba(0,0,0,0.25)] p-3 mt-2 mx-3 rounded-lg bg-theme-bg-secondary">
       <RouterLink
         :to="profileLink"
         class="flex pt-2 items-center space-x-3 pb-3 border-b border-theme-border hover:bg-gray-100 cursor-pointer"
@@ -43,7 +43,7 @@
         </button>
       </li>
     </ul>
-     <div  class="px-2 text-xs font-bold text-theme-text-secondary leading-tight mt-4">
+     <div  class="px-2 pb-3 text-xs font-bold text-theme-text-secondary leading-tight mt-4">
       <a href="#" class="hover:underline">{{ $t('common.privacy') }}</a> ·
       <a href="#" class="hover:underline">{{ $t('common.terms') }}</a> ·
       <a href="#" class="hover:underline">{{ $t('common.advertising') }}</a> ·
