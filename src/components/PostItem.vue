@@ -19,6 +19,7 @@ import PostActions from './post/PostActions.vue'
 import { useStoryShareStore } from '@/stores/storyShare'
 import { usePostsStore, type SharedPost } from '@/stores/posts'
 import type { PostData } from '@/types/StoryElement'
+import { getUserById } from '@/data/users'
 
 useI18n()
 
@@ -99,6 +100,44 @@ const postData = computed<PostData>(() => {
   }
 })
 
+const processedContent = computed(() => {
+  const content = displayData.value.content;
+  if (!content) return [];
+
+  // Regex łapie dwie rzeczy:
+  // 1. ([@\d+]) -> Wzmianka o użytkowniku np. [@123]
+  // 2. (#[\w\u00C0-\u017F]+) -> Hashtag (w tym polskie znaki)
+  const combinedRegex = /(\[@\d+\]|#[\w\u00C0-\u017F]+)/g;
+
+  return content.split(combinedRegex)
+    .filter(part => part) // Filtrujemy puste stringi i undefined
+    .map((part) => {
+      // Przypadek 1: User Mention [@123]
+      if (part.startsWith('[@') && part.endsWith(']')) {
+        return {
+          type: 'mention',
+          value: part,
+          userId: part.slice(2, -1) // Wyciągamy samo ID jako string lub int
+        };
+      }
+
+      // Przypadek 2: Hashtag #słowo
+      if (part.startsWith('#')) {
+        return {
+          type: 'hashtag',
+          value: part,
+          hashtag: part.substring(1),
+        };
+      }
+
+      // Przypadek 3: Zwykły tekst
+      return {
+        type: 'text',
+        value: part
+      };
+    });
+});
+
 const shareToStory = () => {
   storyShareStore.setPostToShare(postData.value)
   router.push('/stories/create')
@@ -169,10 +208,29 @@ useVideoAutoplay(videoContainerRef)
         :author-id="(props.post as any)?.authorId"
       />
 
-      <div class="px-4 py-1 pb-3 text-[15px] text-theme-text leading-normal whitespace-pre-line">
-        {{ displayData.content }}
-      </div>
+<div class="px-4 py-1 pb-3 text-[15px] text-theme-text leading-normal whitespace-pre-line">
+  <template v-for="(part, index) in processedContent" :key="index">
 
+    <router-link
+      v-if="part.type === 'hashtag'"
+      :to="{ name: 'hashtag', params: { hashtag: part.hashtag } }"
+      class="text-blue-500 hover:underline"
+    >
+      {{ part.value }}
+    </router-link>
+
+    <router-link
+      v-else-if="part.type === 'mention'"
+      :to="{ name: 'userProfile', params: { userId: part.userId } }"
+      class="text-blue-500 hover:underline"
+    >
+      @{{ getUserById(parseInt(part.userId))?.name }}
+    </router-link>
+
+    <span v-else>{{ part.value }}</span>
+
+  </template>
+</div>
       <!-- Video -->
       <div v-if="displayData.videoUrl" ref="videoContainerRef" class="w-full">
         <PlayerVideo :settings="true" :lightbox="true" ref="videoRef" :url="displayData.videoUrl" />

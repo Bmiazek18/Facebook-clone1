@@ -1,3 +1,6 @@
+import type { User } from './users';
+import type { PostLocation } from '@/components/PostCreator.vue';
+
 export interface Post {
   id: number
   content: string
@@ -10,13 +13,16 @@ export interface Post {
   likesCount: number
   commentsCount: number
   sharesCount: number
+  taggedUsers?: User[]
+  location?: PostLocation
+  gif?: string
 }
 
 export const posts: Post[] = [
   // Post z video
   {
     id: 0,
-    content: 'Niesamowity zachód słońca nad oceanem 🌅',
+    content: 'Niesamowity zachód słońca nad oceanem 🌅 #zachod',
     images: [],
     videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
     authorName: 'Bartosz Miazek',

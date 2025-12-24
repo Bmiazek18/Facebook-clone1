@@ -2,10 +2,10 @@
 import { ref, computed, nextTick, watch } from 'vue';
 import type { DefineComponent } from 'vue';
 import { useCreatePostStore } from '@/stores/createPost';
+import { usePostsStore } from '@/stores/posts';
 import { storeToRefs } from 'pinia';
 
 // --- FLOATING VUE ---
-// Ensure you import the CSS in main.ts or here if not globally available
 import { Dropdown as VDropdown } from 'floating-vue';
 import 'floating-vue/dist/style.css';
 
@@ -18,7 +18,7 @@ import LazyEmojiPicker from './LazyEmojiPicker.vue';
 import StoryTextCard from './StoryTextCard.vue';
 import MediaPreview from './MediaPreview.vue';
 import EarthIcon from 'vue-material-design-icons/Earth.vue';
-import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue'; // Corrected missing import
+import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
 import AccountMultipleMinusIcon from 'vue-material-design-icons/AccountMultipleMinus.vue';
 import AccountStarIcon from 'vue-material-design-icons/AccountStar.vue';
 import HoverScrollbar from './HoverScrollbar.vue';
@@ -30,17 +30,13 @@ import MapPreview from './MapPreview.vue';
 // --- TYPY ---
 import type { PostData } from '@/types/StoryElement';
 import type { User } from '@/data/users';
-
-export interface PostLocation {
-  title: string;
-  subtitle: string;
-  type: string;
-  lat: string | null;
-  lon: string | null;
-}
+import { getAllUsers } from '@/data/users';
+import type { Post } from '@/types/Post';
 
 const props = defineProps<{
   sharedPost?: PostData | null;
+  authorName: string;
+  authorAvatar: string;
 }>();
 
 const emit = defineEmits<{
@@ -54,22 +50,191 @@ const emit = defineEmits<{
   (e: 'removeLocation'): void;
   (e: 'openGifSelector'): void;
   (e: 'removeGif'): void;
-  (e: 'edit-image'): void; // Added edit-image event
 }>();
 
 const createPostStore = useCreatePostStore();
+const postsStore = usePostsStore();
 const { taggedUsers, selectedLocation, selectedGif, selectedPrivacy, postContent, selectedImage, selectedCardBgId } = storeToRefs(createPostStore);
 
 // --- STAN ---
-const userName = ref('Bartosz Miazek');
-const profilePicUrl = ref('https://i.pravatar.cc/150?img=12');
+const userName = computed(() => props.authorName);
+const profilePicUrl = computed(() => props.authorAvatar);
 const fileInput = ref<HTMLInputElement | null>(null);
+const contentEditableDiv = ref<HTMLDivElement | null>(null);
+
+const matchingUsers = ref<User[]>([]);
+const showUserDropdown = ref(false);
+const isLocalUpdate = ref(false);
 
 const isPublishButtonDisabled = computed(() => {
   if (props.sharedPost) return false;
   return !postContent.value.trim() && !selectedImage.value?.url && !selectedLocation.value && !selectedGif.value;
 });
 
+// --- GLÓWNA LOGIKA EDYCJI ---
+
+const onContentInput = (e: Event) => {
+  if (!contentEditableDiv.value) return;
+
+  // Oznaczamy, że zmiana pochodzi z klawiatury (blokuje Watcher)
+  isLocalUpdate.value = true;
+
+  let newContent = '';
+  const nodes = contentEditableDiv.value.childNodes;
+
+  nodes.forEach(node => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      newContent += node.textContent;
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node as HTMLElement;
+
+      // Obsługa tagowania użytkownika
+      if (el.dataset.userId) {
+        newContent += `[@${el.dataset.userId}]`;
+      }
+      // Obsługa nowej linii
+      else if (el.tagName === 'BR') {
+        newContent += '\n';
+      }
+      // Obsługa Linków (pobieramy czysty tekst z wewnątrz <a>)
+      else if (el.tagName === 'A') {
+        newContent += el.innerText;
+      }
+      // Każdy inny element
+      else {
+        newContent += el.innerText;
+      }
+    }
+  });
+
+  createPostStore.setPostContent(newContent);
+
+  // KLUCZOWA POPRAWKA: Wywołujemy renderowanie ręcznie,
+  // ponieważ Watcher jest zablokowany przez isLocalUpdate.
+  // To pozwoli wykryć linki w locie.
+  renderContentEditable();
+
+  // Logika @User (bez zmian)
+  handleUserTagging();
+
+  // Reset flagi po zakończeniu cyklu
+  nextTick(() => {
+    isLocalUpdate.value = false;
+  });
+};
+
+const handleUserTagging = () => {
+  const selection = window.getSelection();
+  if (selection && selection.rangeCount > 0) {
+    const range = selection.getRangeAt(0);
+    if (range.startContainer.nodeType === Node.TEXT_NODE) {
+      const textNode = range.startContainer;
+      const textContent = textNode.textContent || '';
+      const textBeforeCaret = textContent.substring(0, range.startOffset);
+      const match = textBeforeCaret.match(/@([^\s]*)$/);
+
+      if (match) {
+        const searchTerm = match[1].toLowerCase();
+        const allUsers = getAllUsers();
+        if (searchTerm === '') {
+          matchingUsers.value = allUsers.slice(0, 5);
+        } else {
+          matchingUsers.value = allUsers.filter(user =>
+            user.name.toLowerCase().includes(searchTerm)
+          );
+        }
+        showUserDropdown.value = matchingUsers.value.length > 0;
+      } else {
+        showUserDropdown.value = false;
+      }
+    } else {
+      showUserDropdown.value = false;
+    }
+  }
+};
+
+// --- WATCHER ---
+watch(postContent, (newValue) => {
+  // Jeśli zmiana pochodzi z onContentInput (pisanie), ignorujemy Watcher,
+  // bo renderContentEditable wywołaliśmy już ręcznie wyżej.
+  // Jeśli zmiana pochodzi z zewnątrz (np. emoji picker), wykonujemy render.
+  if (isLocalUpdate.value) return;
+  renderContentEditable();
+});
+
+const renderContentEditable = () => {
+  if (!contentEditableDiv.value) return;
+
+  let htmlContent = postContent.value || '';
+
+  // 1. Sanityzacja
+  htmlContent = htmlContent
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, '<br>');
+
+  const allUsers = getAllUsers();
+
+  // 2. Obsługa @User
+  htmlContent = htmlContent.replace(/\[@(\d+)\]/g, (match, userId) => {
+    const user = allUsers.find(u => u.id === parseInt(userId));
+    if (user) {
+      return `<span contenteditable="false" class="bg-blue-100 text-blue-600 font-bold px-1 rounded mx-0.5 cursor-pointer align-middle text-sm" data-user-id="${user.id}">@${user.name}</span>`;
+    }
+    return match;
+  });
+
+  // 3. Obsługa LINKÓW
+  // Regex: Szuka http/https, potem znaków, które nie są spacją ani <.
+  // Lookahead (?=[\s\u00A0]|<br>|$): Wymaga, aby po linku była spacja (zwykła lub twarda), <br> lub koniec tekstu.
+  htmlContent = htmlContent.replace(/(https?:\/\/[^\s<]+)(?=[\s\u00A0]|<br>)/g, (match) => {
+    return `<a href="${match}" target="_blank" rel="noopener noreferrer" contenteditable="false" class="text-blue-600 hover:underline cursor-pointer font-medium">${match}</a>`;
+  });
+
+  // Ważne: Podmieniamy HTML tylko jeśli faktycznie się zmienił.
+  // Dzięki temu, gdy piszesz zwykły tekst, kursor nie wariuje.
+  if (contentEditableDiv.value.innerHTML !== htmlContent) {
+    contentEditableDiv.value.innerHTML = htmlContent;
+    // Kursor przenosimy na koniec tylko wtedy, gdy nastąpiła zmiana struktury (np. powstał link)
+    moveCursorToEnd();
+  }
+};
+
+const moveCursorToEnd = () => {
+  nextTick(() => {
+    if (contentEditableDiv.value) {
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(contentEditableDiv.value);
+      range.collapse(false);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+  });
+};
+
+const onBackspace = (e: KeyboardEvent) => {
+  // Opcjonalna obsługa
+};
+
+const selectUser = async (user: User) => {
+  if (!contentEditableDiv.value) return;
+  const currentText = postContent.value;
+  const newContent = currentText.replace(/@([^\s]*)$/, `[@${user.id}] `);
+  createPostStore.setPostContent(newContent);
+  showUserDropdown.value = false;
+
+  // Ponieważ to zmiana "zewnętrzna" (nie bezpośrednio z klawiatury w polu),
+  // musimy wymusić aktualizację widoku i fokusu.
+  isLocalUpdate.value = false; // Odblokuj watcher
+  nextTick(() => {
+      contentEditableDiv.value?.focus();
+      moveCursorToEnd();
+  });
+};
+
+// --- PRIVACY & UI ---
 const privacyInfo = computed(() => {
   type Info = { label: string; icon: DefineComponent | null };
   const map: Record<string, Info> = {
@@ -78,13 +243,11 @@ const privacyInfo = computed(() => {
     friends: { label: 'Znajomi', icon: AccountGroupIcon },
     friends_except: { label: 'Znajomi z wyjątkiem...', icon: AccountMultipleMinusIcon },
     specific_friends: { label: 'Konkretni znajomi', icon: AccountStarIcon },
-
   };
   if (!selectedPrivacy.value) return { label: 'Tylko ja', icon: LockIcon };
   return map[selectedPrivacy.value] || { label: selectedPrivacy.value, icon: null };
 });
 
-// --- OBSŁUGA INTERFEJSU ---
 const openPrivacySelector = () => emit('navigate', 'privacy', null);
 const handleImageClick = () => fileInput.value?.click();
 
@@ -114,9 +277,9 @@ const handleEditVideo = () => {
   }
 };
 
-// --- STORY-LIKE TEXT CARD (mini) ---
-const showTextCard = ref( selectedCardBgId.value !== 0 );
-const textCardContent = ref('');
+// --- STORY-LIKE TEXT CARD ---
+const showTextCard = ref(selectedCardBgId.value !== 0);
+
 interface CardBackground { id: number; class: string; textClass?: string }
 const cardBackgrounds: CardBackground[] = [
   { id: 0, class: 'bg-white', textClass: 'text-black' },
@@ -128,33 +291,26 @@ const cardBackgrounds: CardBackground[] = [
 ];
 
 const currentBackground = computed(() => {
-    return cardBackgrounds.find(bg => bg.id === selectedCardBgId.value) ?? cardBackgrounds[0]
-})
-
-const placeholderClass = computed(() => {
-    return currentBackground.value.textClass === 'text-white' ? 'placeholder-white' : 'placeholder-gray-500'
+  return cardBackgrounds.find(bg => bg.id === selectedCardBgId.value) ?? cardBackgrounds[0]
 })
 
 const toggleTextCard = () => {
-  if (!showTextCard.value) {
-    textCardContent.value = postContent.value || '';
+  if (!showTextCard.value && selectedCardBgId.value === 0) {
+      createPostStore.setSelectedCardBgId(1);
   }
-   createPostStore.setSelectedCardBgId(1);
   showTextCard.value = !showTextCard.value;
   nextTick(() => emit('updateHeight'));
 };
 
 const selectCardBackground = (id: number) => {
-   createPostStore.setSelectedCardBgId(id);
+  createPostStore.setSelectedCardBgId(id);
   if (id === 0) {
-    createPostStore.setPostContent(textCardContent.value);
     showTextCard.value = false;
     nextTick(() => emit('updateHeight'));
   }
 };
 
 const handleCardClose = () => {
-  createPostStore.setPostContent(textCardContent.value);
   showTextCard.value = false;
   nextTick(() => emit('updateHeight'));
 };
@@ -169,25 +325,36 @@ const removeLocation = () => {
   createPostStore.setLocation(null);
 };
 
-// --- EMOJI PICKER HANDLING ---
+// --- EMOJI ---
 const addEmoji = (e: { native: string }) => {
-  if (showTextCard.value) {
-    textCardContent.value = textCardContent.value + e.native;
-  } else {
-    createPostStore.setPostContent(postContent.value + e.native);
-  }
-  // No need to manually close or toggle boolean, FloatingVue handles the DOM.
+  // Emoji to zmiana zewnętrzna, więc watcher zadziała i sformatuje tekst
+  createPostStore.setPostContent(postContent.value + e.native);
 };
-
-// Removed handleClickOutside and showPicker refs as FloatingVue handles this internally
 
 watch(() => selectedGif.value, () => {
   nextTick(() => emit('updateHeight'));
 });
 
 const handlePublish = () => {
-  emit('publish', postContent.value);
-  // Reset is handled by parent component
+  const newPost: Post = {
+    id: Date.now(),
+    content: postContent.value,
+    images: selectedImage.value ? [selectedImage.value.url] : [],
+    videoUrl: null,
+    authorName: props.authorName,
+    authorAvatar: props.authorAvatar,
+    authorId: 1,
+    date: new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long' }),
+    likesCount: 0,
+    commentsCount: 0,
+    sharesCount: 0,
+    taggedUsers: taggedUsers.value,
+    location: selectedLocation.value,
+    gif: selectedGif.value,
+  };
+  postsStore.addPost(newPost);
+  emit('close');
+  createPostStore.reset();
 };
 </script>
 
@@ -225,52 +392,91 @@ const handlePublish = () => {
     </div>
 
     <HoverScrollbar :maxHeight="'360px'">
-      <div v-if="!showTextCard" class="relative mb-2">
-        <div
-          v-if="selectedCardBgId !== 0"
-          :class="[currentBackground.class, currentBackground.textClass]"
-          class="w-full h-48 rounded-lg flex items-center justify-center text-center p-4"
-        >
-          <textarea
-            v-model="postContent"
-            :placeholder="sharedPost ? 'Powiedz coś o tym...' : (selectedLocation ? 'O czym myślisz, Bartosz?' : 'Co słychać?')"
-            class="w-full bg-transparent border-none resize-none text-2xl focus:ring-0 focus:outline-none p-0 pt-2 text-center"
-            :class="[{'text-base': postContent.length > 80}, placeholderClass]"
-          ></textarea>
-        </div>
-        <textarea
-          v-else
-          v-model="postContent"
-          :placeholder="sharedPost ? 'Powiedz coś o tym...' : (selectedLocation ? 'O czym myślisz, Bartosz?' : 'Co słychać?')"
-          class="w-full min-h-[60px] border-none resize-none text-2xl placeholder-gray-500 focus:ring-0 focus:outline-none p-0 pt-2"
-          :class="{'text-base': postContent.length > 80}"
-        ></textarea>
-        <div class="absolute bottom-2 left-0 text-[#fe5b70] cursor-pointer" title="Stylizacja tekstu">
-          <format-color-text-icon :size="24" @click="toggleTextCard" />
-        </div>
 
-        <div class="absolute bottom-2 right-0 text-gray-500 cursor-pointer" title="Dodaj emoji">
+      <div class="relative w-full mb-2">
+
+          <div v-if="!showTextCard" class="relative w-full z-10">
+
+            <div
+               class="relative w-full transition-all duration-300"
+               :class="selectedCardBgId !== 0 ? [currentBackground.class, currentBackground.textClass, 'rounded-lg p-4 min-h-[12rem] flex items-center justify-center text-center'] : ''"
+            >
+              <div
+                ref="contentEditableDiv"
+                contenteditable="true"
+                @input="onContentInput"
+                @keydown.backspace="onBackspace"
+                class="w-full border-none resize-none text-xl focus:ring-0 focus:outline-none p-0 pt-2 cursor-text whitespace-pre-wrap bg-transparent"
+                :class="{
+                    'text-base': postContent.length > 80,
+                    'min-h-[60px]': selectedCardBgId === 0
+                }"
+              ></div>
+
+              <div
+                v-if="!postContent && selectedCardBgId === 0"
+                class="absolute top-2 left-0 text-gray-500 text-xl pointer-events-none"
+              >
+                {{ sharedPost ? 'Powiedz coś o tym...' : (selectedLocation ? 'O czym myślisz, Bartosz?' : 'Co słychać?') }}
+              </div>
+            </div>
+
+             <div class="absolute bottom-2 left-0 text-[#fe5b70] cursor-pointer" title="Stylizacja tekstu">
+              <format-color-text-icon :size="24" @click="toggleTextCard" />
+            </div>
+
+            <div class="absolute bottom-2 right-0 text-gray-500 cursor-pointer" title="Dodaj emoji">
+              <VDropdown
+                placement="top-end"
+                :distance="10"
+                :skidding="0"
+                :triggers="['click']"
+                :autoHide="true"
+              >
+                <emoticon-happy-icon :size="24" class="cursor-pointer hover:text-gray-700 transition" />
+
+                <template #popper>
+                  <div class="emoji-popper-content">
+                    <LazyEmojiPicker @select="(e) => { addEmoji(e); }" />
+                  </div>
+                </template>
+              </VDropdown>
+            </div>
+          </div>
+
           <VDropdown
-            placement="top-end"
-            :distance="10"
-            :skidding="0"
-            :triggers="['click']"
-            :autoHide="true"
+            :shown="showUserDropdown"
+            placement="bottom-start"
+            :triggers="[]"
+            :auto-hide="false"
+            :auto-focus="false"
+            :trap-focus="false"
+            class="absolute bottom-0 left-0 w-full h-0 pointer-events-none"
           >
-            <emoticon-happy-icon :size="24" class="cursor-pointer hover:text-gray-700 transition" />
+            <div class="w-full h-0"></div>
 
             <template #popper>
-              <div class="emoji-popper-content">
-                <LazyEmojiPicker @select="(e) => { addEmoji(e); }" />
+              <div class="user-dropdown-content w-64 max-h-60 overflow-y-auto pointer-events-auto">
+                <ul>
+                  <li
+                    v-for="user in matchingUsers"
+                    :key="user.id"
+                    class="px-4 py-2 cursor-pointer hover:bg-gray-100 flex items-center gap-2"
+                    @mousedown.prevent="selectUser(user)"
+                  >
+                    <div class="w-8 h-8 bg-gray-300 rounded-full flex-shrink-0"></div>
+                    <span class="font-medium text-sm">{{ user.name }}</span>
+                  </li>
+                </ul>
               </div>
             </template>
           </VDropdown>
-        </div>
+
       </div>
 
       <StoryTextCard
         v-if="showTextCard"
-        v-model="textCardContent"
+        v-model="postContent"
         :bgId="selectedCardBgId"
         :backgrounds="cardBackgrounds"
         @update:bgId="selectCardBackground"
@@ -304,7 +510,7 @@ const handlePublish = () => {
               </div>
             </div>
           </div>
-          <p class="text-gray-800 text-sm line-clamp-3">{{ sharedPost.content }}</p>.
+          <p class="text-gray-800 text-sm line-clamp-3">{{ sharedPost.content }}</p>
         </div>
       </div>
     </HoverScrollbar>
@@ -342,7 +548,6 @@ const handlePublish = () => {
   overflow: hidden;
 }
 
-/* Fix CSS dla Leaflet */
 :deep(.leaflet-container) {
     z-index: 1111;
     font-family: inherit;
@@ -355,9 +560,12 @@ const handlePublish = () => {
     z-index: 1111;
 }
 
-/* Optional: Customize the floating vue container if needed */
 .emoji-popper-content {
-
   overflow: hidden;
+}
+
+/* Styl dla VDropdown żeby był na szerokość inputa */
+:deep(.v-popper) {
+  width: 100%;
 }
 </style>

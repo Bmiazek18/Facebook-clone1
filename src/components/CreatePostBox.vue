@@ -15,7 +15,17 @@ const createPostStore = useCreatePostStore()
 const props = defineProps({
   image: String,
   placeholder: String,
+  authorName: {
+    type: String,
+    required: true,
+  },
+  authorAvatar: {
+    type: String,
+    required: true,
+  },
 })
+
+
 
 const isOpen = ref(false)
 const { image, placeholder } = toRefs(props)
@@ -42,7 +52,7 @@ const handleFileSelect = (event: Event) => {
     };
     reader.readAsDataURL(file);
   }
-  
+
   // Reset the input value
   if(target) {
     target.value = ''
@@ -55,12 +65,7 @@ const closeCreatePost = () => {
   isOpen.value = false
 }
 
-// Handle post publish
-const handlePostPublish = (content: string) => {
-  console.log('Post published:', content)
-  // Add any additional handling here if needed
-  closeCreatePost()
-}
+
 </script>
 
 <template>
@@ -108,6 +113,11 @@ const handlePostPublish = (content: string) => {
   </div>
 
   <BaseModal v-if="isOpen" title="Utwórz post" @close="closeCreatePost">
-    <CreatePost @publish="handlePostPublish" />
+    <CreatePost
+      :author-name="authorName"
+      :author-avatar="authorAvatar"
+
+      @close="closeCreatePost"
+    />
   </BaseModal>
 </template>

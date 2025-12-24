@@ -25,6 +25,10 @@ export const useCreatePostStore = defineStore('createPost', () => {
     taggedUsers.value = users;
   }
 
+  function addTaggedUser(user: User) {
+    taggedUsers.value.push(user);
+  }
+
   function setLocation(location: LocationResult | null) {
     selectedLocation.value = location;
   }
@@ -78,7 +82,7 @@ export const useCreatePostStore = defineStore('createPost', () => {
     videoToEdit.value = null;
     postContent.value = '';
     selectedImage.value = null;
-    selectedCardBgId.value = 1; // Reset do wartości domyślnej
+    selectedCardBgId.value = 0; // Reset do wartości domyślnej
     // Nie resetujemy privacy, ponieważ jest ładowane z localStorage
   }
   const hasUnsavedChanges = computed(() => {
@@ -106,6 +110,7 @@ export const useCreatePostStore = defineStore('createPost', () => {
     // altText, // No longer a direct state property
     hasUnsavedChanges,
     setTaggedUsers,
+    addTaggedUser,
     setLocation,
     setGif,
     setPrivacy,

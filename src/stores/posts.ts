@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { PostData } from '@/types/StoryElement'
+import { posts as postsData, type Post } from '@/data/posts';
 
 export interface SharedPost {
   id: string
@@ -14,6 +15,7 @@ export interface SharedPost {
 }
 
 export const usePostsStore = defineStore('posts', () => {
+  const posts = ref<Post[]>(postsData);
   const sharedPosts = ref<SharedPost[]>([])
 
   // Current user info (in real app this would come from auth)
@@ -45,12 +47,18 @@ export const usePostsStore = defineStore('posts', () => {
 
   const getSharedPostsCount = computed(() => sharedPosts.value.length)
 
+  function addPost(post: Post) {
+    posts.value.unshift(post); // Add new post to the beginning of the array
+  }
+
   return {
+    posts,
     sharedPosts,
     currentUser,
     addSharedPost,
     removeSharedPost,
     getSharedPosts,
-    getSharedPostsCount
+    getSharedPostsCount,
+    addPost
   }
 })

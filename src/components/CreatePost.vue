@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { type DefineComponent, ref, onUnmounted } from 'vue';
+import { type DefineComponent } from 'vue';
 import { storeToRefs } from 'pinia';
 import PostCreator from './PostCreator.vue';
 import PrivacySelector from './PrivacySelector.vue';
 import TagUsers from './TagUsers.vue';
-import LocationSelector, { type LocationResult } from './LocationSelector.vue';
+import LocationSelector from './LocationSelector.vue';
 import GifSelector from './GifSelector.vue';
 import ImageEditor from './ImageEditor.vue';
+import VideoEditor from './VideoEditor.vue';
 import '@/assets/animations/slideTransition.css';
 import { useSlideTransition } from '@/composables/useSlideTransition';
 import { useCreatePostStore } from '@/stores/createPost';
@@ -15,32 +16,36 @@ import type { User } from '@/data/users';
 
 defineProps<{
   sharedPost?: PostData | null;
+  authorName: string;
+  authorAvatar: string;
 }>();
 
 const emit = defineEmits<{
-  (e: 'publish', content: string): void;
   (e: 'close'): void;
 }>();
+
 
 const { wrapperRef, currentView, previousView, updateHeight, transitionName } = useSlideTransition();
 const createPostStore = useCreatePostStore();
 const {
-  taggedUsers,
-  selectedLocation,
-  selectedGif,
-  selectedPrivacy,
   imageToEdit,
+  videoToEdit,
 } = storeToRefs(createPostStore);
 
 const viewComponents: Record<string, DefineComponent> = {
   creator: PostCreator as DefineComponent,
   privacy: PrivacySelector as DefineComponent,
   imageEditor: ImageEditor as DefineComponent,
+  videoEditor: VideoEditor as DefineComponent,
 };
 
 const handleNavigation = (viewName: string, data: string | null = null) => {
   if (viewName === 'imageEditor' && data) {
-    createPostStore.setImageToEdit(data);
+    const existingAltText = createPostStore.selectedImage?.altText || '';
+    createPostStore.setImageToEdit({ url: data, altText: existingAltText });
+  }
+  if (viewName === 'videoEditor' && data) {
+    createPostStore.setVideoToEdit(data);
   }
   if (viewComponents[viewName]) {
     previousView.value = currentView.value;
@@ -50,10 +55,9 @@ const handleNavigation = (viewName: string, data: string | null = null) => {
   }
 };
 
-const handlePublish = (content: string) => {
-  emit('publish', content);
-  createPostStore.reset();
-};
+
+
+
 
 const handleClose = () => {
   emit('close');
@@ -72,8 +76,20 @@ const handleImageEditorBack = () => {
 };
 
 const handleImageEdited = (editedImageUrl: string) => {
-  createPostStore.setSelectedImage(editedImageUrl);
+  const currentAltText = createPostStore.selectedImage?.altText || '';
+  createPostStore.setSelectedImage({ url: editedImageUrl, altText: currentAltText });
   createPostStore.setImageToEdit(null);
+  currentView.value = 'creator';
+};
+
+const handleVideoEditorBack = () => {
+  createPostStore.setVideoToEdit(null);
+  currentView.value = 'creator';
+};
+
+const handleVideoEdited = (editedVideoUrl: string) => {
+  createPostStore.setSelectedImage(editedVideoUrl);
+  createPostStore.setVideoToEdit(null);
   currentView.value = 'creator';
 };
 
@@ -128,7 +144,7 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
 </script>
 
 <template>
-  <div :class="{'w-[1200px]': currentView === 'imageEditor',}"  class='p-4 w-[500px] mx-auto rounded-xl relative overflow-hidden' >
+  <div :class="{'w-[1200px]': currentView === 'imageEditor' || currentView === 'videoEditor',}"  class='p-4 w-[500px] mx-auto rounded-xl relative overflow-hidden' >
     <div class="transition-wrapper" ref="wrapperRef">
       <Transition :name="transitionName" mode="out-in" @before-enter="updateHeight()">
         <PostCreator
@@ -137,15 +153,18 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
           class="view-container bg-white"
           data-view="creator"
           :shared-post="sharedPost"
+          :author-name="authorName"
+          :author-avatar="authorAvatar"
           @navigate="handleNavigation"
           @back="handleNavigationBack"
-          @publish="handlePublish"
+
           @close="handleClose"
           @updateHeight="updateHeight"
           @openTagUsers="openTagUsers"
           @openLocation="openLocation"
           @openGifSelector="openGifSelector"
           @removeGif="handleRemoveGif"
+
         />
         <PrivacySelector
           v-else-if="currentView === 'privacy'"
@@ -186,6 +205,16 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
           :initial-image="imageToEdit"
           @back="handleImageEditorBack"
           @done="handleImageEdited"
+          @updateHeight="updateHeight"
+        />
+        <VideoEditor
+          v-else-if="currentView === 'videoEditor'"
+          key="videoEditor"
+          class="view-container bg-white"
+          data-view="videoEditor"
+          :video="videoToEdit"
+          @back="handleVideoEditorBack"
+          @done="handleVideoEdited"
           @updateHeight="updateHeight"
         />
       </Transition>

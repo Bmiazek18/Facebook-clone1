@@ -43,10 +43,6 @@ export const getUserById = (id: number): User | undefined => {
   return users.find(user => user.id === id)
 }
 
-export const getUserByName = (name: string): User | undefined => {
-  return users.find(user => user.name === name)
-}
-
 export const getAllUsers = (): User[] => {
   return [...users]
 }

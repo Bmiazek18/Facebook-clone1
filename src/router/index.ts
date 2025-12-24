@@ -92,13 +92,18 @@ const router = createRouter({
       name: 'loginAs',
       component: () => import('@/views/LoginAsView.vue'),
     },
-{
+    {
       path: '/photo/:postId/:imageIndex',
       name: 'photo',
       component: () => import('../views/GalleryView.vue'),
       props: true
     },
+    {
+      path: '/hashtag/:hashtag',
+      name: 'hashtag',
+      component: () => import('../views/HashtagView.vue'),
+      props: true
+    },
   ],
 })
-
 export default router

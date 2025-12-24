@@ -134,7 +134,6 @@ const onTimeUpdate = () => {
   }
 };
 
-// --- INTEGRACJA LOGIKI ZE SNIPPETU ---
 const transcode = async () => {
   isProcessing.value = true;
   message.value = 'Ładowanie silnika FFmpeg...';

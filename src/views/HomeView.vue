@@ -5,14 +5,22 @@ import PeopleYouMayKnow from '../components/PeopleYouMayKnow.vue'
 import StoriesList from '../components/StoriesList.vue'
 import LeftSidebar from '../components/home/LeftSidebar.vue'
 import RightSidebar from '../components/home/RightSidebar.vue'
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useVirtualList } from '@vueuse/core'
 import PostItemSceleton from '@/components/PostItemSceleton.vue'
-import { posts } from '@/data/posts'
+import { usePostsStore } from '@/stores/posts'
 import { onBeforeRouteLeave, useRouter } from 'vue-router' // Dodano useRouter
 import { useCreatePostStore } from '@/stores/createPost'
 import ConfirmationModal from '@/components/ConfirmationModal.vue'
 
+const postsStore = usePostsStore()
+const localPosts = ref([...postsStore.posts]);
+
+watch(() => postsStore.posts, (newPosts) => {
+  localPosts.value = [...newPosts];
+}, { deep: true });
+
+const authorName = "Bartosz Miazek"; // Define authorName here
 
 const isLoading = ref(true)
 setTimeout(() => { isLoading.value = false }, 2000)
@@ -23,7 +31,7 @@ const router = useRouter() // Instancja routera do manualnej nawigacji
 // Virtual list setup
 const rowHeight = 10
 const { list: virtualPosts, containerProps } = useVirtualList(
-  posts,
+  localPosts,
   { itemHeight: rowHeight }
 )
 
@@ -85,8 +93,10 @@ const handleCancelLeave = () => {
           v-bind="containerProps"
         >
           <CreatePostBox
-            :image="'https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg'"
+            :image="userAvatar"
             :placeholder="$t('home.whatsOnYourMind')"
+            :author-name="authorName"
+            :author-avatar="userAvatar"
           />
           <StoriesList/>
 

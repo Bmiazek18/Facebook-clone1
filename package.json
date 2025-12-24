@@ -20,6 +20,9 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@ffmpeg/core": "^0.12.10",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "@giphy/js-components": "^5.13.0",
     "@giphy/js-fetch-api": "^5.7.0",
     "@tailwindcss/vite": "^4.1.16",

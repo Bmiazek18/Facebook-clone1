@@ -16,6 +16,10 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+ optimizeDeps: {
+    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util']
+  },
+
   build: {
   rollupOptions: {
     output: {
@@ -33,12 +37,12 @@ export default defineConfig({
             return 'framework';
           }
 
-          
+
           if (id.includes('vue-material-design-icons')) {
             return 'icons';
           }
 
-      
+
           if (id.includes('emoji-mart')) {
             return 'emoji';
           }
@@ -46,7 +50,7 @@ export default defineConfig({
             return 'giphy';
           }
 
-         
+
         }
       },
     },
