@@ -4,12 +4,12 @@
   <router-view class="mt-[60px]"/>
   <div class="fixed flex flex-row bottom-0 right-[60px]">
 
-     <!-- <MessageBox
+      <MessageBox
 
         v-for="boxId in chatStore.getBoxIds"
         :key="boxId"
-        :boxId="1"
-     /> -->
+        :boxId="boxId"
+     />
   </div>
 
 <ProfileIcon/>
@@ -25,10 +25,11 @@ import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 
 import 'floating-vue/dist/style.css'
-
+import { useChatStore } from './stores/chat'
+const chatStore = useChatStore()
 import ProfileIcon from './components/ProfileIcon.vue'
 import { useTheme } from './composables/useTheme'
-
+import MessageBox from './components/MessageBox.vue'
 
 useTheme()
 
