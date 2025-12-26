@@ -23,14 +23,14 @@
 
       <div
         ref="carouselRef"
-        class="flex overflow-x-scroll pb-2 h-[80px] scrollbar-hide"
+        class="flex overflow-x-scroll pb-2 h-[288px] scrollbar-hide"
 
       >
         <Card
           v-for="person in people"
           :key="person.id"
           :person="person"
-          class="flex-shrink-0 mr-2"
+          class="max-w-[180px]  flex-shrink-0 mr-3"
           @remove="removeCard"
         />
 
@@ -89,21 +89,21 @@ const {
 
 // --- DANE (bez zmian) ---
 const initialPeople: Person[] = [
-  { id: 1, name: 'Maria Tumi', imageUrl: 'path/to/maria_tumi.jpg', commonFriends: 1, isFriend: false },
-  { id: 2, name: 'Maja Misiura', imageUrl: 'path/to/maja_misiura.jpg', commonFriends: 1, isFriend: false },
-  { id: 3, name: 'Marcin Lem', imageUrl: 'path/to/marcin_lem.jpg', commonFriends: 8, isFriend: false },
-  { id: 4, name: 'Dariusz Z.', imageUrl: 'path/to/dariusz_z.jpg', commonFriends: 25, isFriend: false },
-  { id: 5, name: 'Katarzyna N.', imageUrl: 'path/to/kasia_n.jpg', commonFriends: 3, isFriend: false },
-  { id: 6, name: 'Wojciech S.', imageUrl: 'path/to/wojciech_s.jpg', commonFriends: 5, isFriend: false },
-  { id: 7, name: 'Anna K.', imageUrl: 'path/to/anna_k.jpg', commonFriends: 12, isFriend: false },
-  { id: 1, name: 'Maria Tumi', imageUrl: 'path/to/maria_tumi.jpg', commonFriends: 1, isFriend: false },
-  { id: 2, name: 'Maja Misiura', imageUrl: 'path/to/maja_misiura.jpg', commonFriends: 1, isFriend: false },
-  { id: 3, name: 'Marcin Lem', imageUrl: 'path/to/marcin_lem.jpg', commonFriends: 8, isFriend: false },
-  { id: 4, name: 'Dariusz Z.', imageUrl: 'path/to/dariusz_z.jpg', commonFriends: 25, isFriend: false },
-  { id: 5, name: 'Katarzyna N.', imageUrl: 'path/to/kasia_n.jpg', commonFriends: 3, isFriend: false },
-  { id: 6, name: 'Wojciech S.', imageUrl: 'path/to/wojciech_s.jpg', commonFriends: 5, isFriend: false },
-  { id: 7, name: 'Anna K.', imageUrl: 'path/to/anna_k.jpg', commonFriends: 12, isFriend: false },
-   { id: 7, name: 'Anna K.', imageUrl: 'path/to/anna_k.jpg', commonFriends: 12, isFriend: false },
+  { id: 1, name: 'Maria Tumi', imageUrl: 'https://randomuser.me/api/portraits/women/68.jpg', commonFriends: 1, isFriend: false },
+  { id: 2, name: 'Maja Misiura', imageUrl: 'https://randomuser.me/api/portraits/women/69.jpg', commonFriends: 1, isFriend: false },
+  { id: 3, name: 'Marcin Lem', imageUrl: 'https://randomuser.me/api/portraits/men/68.jpg', commonFriends: 8, isFriend: false },
+  { id: 4, name: 'Dariusz Z.', imageUrl: 'https://randomuser.me/api/portraits/men/69.jpg', commonFriends: 25, isFriend: false },
+  { id: 5, name: 'Katarzyna N.', imageUrl: 'https://randomuser.me/api/portraits/women/70.jpg', commonFriends: 3, isFriend: false },
+  { id: 6, name: 'Wojciech S.', imageUrl: 'https://randomuser.me/api/portraits/men/70.jpg', commonFriends: 5, isFriend: false },
+  { id: 7, name: 'Anna K.', imageUrl: 'https://randomuser.me/api/portraits/women/71.jpg', commonFriends: 12, isFriend: false },
+  { id: 1, name: 'Maria Tumi', imageUrl: 'https://randomuser.me/api/portraits/women/72.jpg', commonFriends: 1, isFriend: false },
+  { id: 2, name: 'Maja Misiura', imageUrl: 'https://randomuser.me/api/portraits/women/73.jpg', commonFriends: 1, isFriend: false },
+  { id: 3, name: 'Marcin Lem', imageUrl: 'https://randomuser.me/api/portraits/men/71.jpg', commonFriends: 8, isFriend: false },
+  { id: 4, name: 'Dariusz Z.', imageUrl: 'https://randomuser.me/api/portraits/men/72.jpg', commonFriends: 25, isFriend: false },
+  { id: 5, name: 'Katarzyna N.', imageUrl: 'https://randomuser.me/api/portraits/women/74.jpg', commonFriends: 3, isFriend: false },
+  { id: 6, name: 'Wojciech S.', imageUrl: 'https://randomuser.me/api/portraits/men/73.jpg', commonFriends: 5, isFriend: false },
+  { id: 7, name: 'Anna K.', imageUrl: 'https://randomuser.me/api/portraits/women/75.jpg', commonFriends: 12, isFriend: false },
+   { id: 7, name: 'Anna K.', imageUrl: 'https://randomuser.me/api/portraits/women/76.jpg', commonFriends: 12, isFriend: false },
 ];
 
 const people = ref<Person[]>(initialPeople);
