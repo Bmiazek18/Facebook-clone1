@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onUnmounted, computed, nextTick, onMounted, watch } from 'vue';
-import { storeToRefs } from 'pinia'; // Dodano dla lepszej reaktywności
+import { storeToRefs } from 'pinia';
 import MultiMediaLightbox from './MessageBox/MediaLightbox.vue';
 import MessageBoxHeader from './MessageBoxHeader.vue';
 import MessageBoxFooter from './MessageBoxFooter.vue';
@@ -9,6 +9,9 @@ import { useConversationsStore } from '@/stores/conversations';
 import { useAudioPlayer } from '@/composables/useAudioPlayer';
 import { useMessageGrouper } from '@/composables/useMessageGrouper';
 import { useLightbox } from '@/composables/useLightbox';
+
+// IMPORT ANIMACJI
+import { useFlipAnimation } from '@/composables/useFlipAnimation';
 
 import type { Theme } from '@/stores/messengerTheme';
 import type { Message, ImageMessage, VideoMessage } from '@/types/Message';
@@ -34,22 +37,96 @@ const messagesList = computed((): Message[] => {
   return props.messages?.length ? props.messages : localMessages.value;
 });
 
+// ==========================================
+// 1. STAN ODCZYTANIA (Cursor-based)
+// Klucz: User ID, Wartość: Message ID (ostatnio przeczytana)
+// ==========================================
+const lastRead = ref<Record<string, number>>({
+  'user_1': 0,
+  'user_2': 0,
+  'ghost_tester': 0 // Init
+});
+
+// ==========================================
+// 2. ANIMACJA FLIP (Obsługa zmian stanu)
+// ==========================================
+const { capturePositions } = useFlipAnimation();
+setTimeout(() => {
+    const msgs = messagesList.value;
+    if (msgs.length > 0) {
+      const lastMsgId = msgs[msgs.length - 1].id;
+const lastMsgId2 = msgs[msgs.length - 2].id;
+      // Aktualizujemy wszystkich naraz
+      lastRead.value['user_1'] = lastMsgId;
+      lastRead.value['user_2'] = lastMsgId2;
+
+    }
+  }, 1000);
+// Obserwujemy zmiany w obiekcie lastRead.
+// flush: 'pre' -> Zapisz pozycje ZANIM Vue przerysuje zmiany w DOM.
+watch(lastRead, () => {
+  capturePositions();
+}, { deep: true, flush: 'pre' });
+
+
+// ==========================================
+// 3. SYMULACJA (Skrypt testowy)
+// ==========================================
+let simulationInterval: any = null;
+const TEST_USER_ID = 'ghost_tester';
+
+onMounted(() => {
+  scrollToBottom();
+
+  // Opóźniony start symulacji
+  setTimeout(() => {
+    console.log('🚀 Start symulacji Cursor-based...');
+    let currentIndex = 0;
+
+    simulationInterval = setInterval(() => {
+      const msgs = messagesList.value;
+      if (!msgs || msgs.length === 0) return;
+
+      // Pobieramy ID wiadomości, na którą chcemy "przeskoczyć"
+      const targetMessageId = msgs[currentIndex].id;
+
+      // ZMIANA STANU: Aktualizujemy wskaźnik
+      // To spowoduje usunięcie awatara z poprzedniego MessageItem i dodanie do nowego
+      lastRead.value[TEST_USER_ID] = targetMessageId;
+
+      // Przesuwamy indeks (pętla)
+      currentIndex++;
+      if (currentIndex >= msgs.length) currentIndex = 0;
+
+    }, 1500); // Co 1.5 sekundy
+  }, 2000);
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isLightboxOpen.value) isLightboxOpen.value = false;
+  });
+});
+
+onUnmounted(() => {
+  if (simulationInterval) clearInterval(simulationInterval);
+  messagesList.value.forEach((msg: Message) => {
+    if ('audioUrl' in msg && msg.audioUrl?.startsWith('blob:')) URL.revokeObjectURL(msg.audioUrl);
+  });
+});
+
+// --- Reszta standardowej logiki (Store, Themes, Drag&Drop) ---
+
 watch(() => props.messages, (newVal) => {
   if (newVal) localMessages.value = [...newVal];
 }, { immediate: true });
 
 const boxTheme = computed(() => {
   if (!props.boxId) return selectedTheme.value;
-
   const chatId = Number(props.boxId);
   const settings = convStore.settings.find(x => x.chatId === chatId);
-
   if (!settings || settings.themeId === undefined) return selectedTheme.value;
-
   if (typeof settings.themeId === 'number') {
     return themes.value[settings.themeId] || selectedTheme.value;
   }
-
   return themes.value.find((t: Theme) => t.id === settings.themeId) || selectedTheme.value;
 });
 
@@ -59,7 +136,6 @@ function scrollToBottom() {
   nextTick(() => {
     if (chatContainer.value) {
       chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
-    chatContainer.value.scrollTo({ top: chatContainer.value.scrollHeight, behavior: 'smooth' });
     }
   });
 }
@@ -80,7 +156,6 @@ function scrollToMessage(messageId: number) {
 const { audioStates, toggleAudioPlayback } = useAudioPlayer(props.boxId);
 const { getDisplayTime, getMessagePositionInGroup } = useMessageGrouper(messagesList);
 const { isLightboxOpen, currentMediaIndex, filteredMedia, openLightbox } = useLightbox(messagesList);
-
 
 const isDragging = ref(false);
 
@@ -203,23 +278,26 @@ defineExpose({ scrollToMessage });
       >
         <div v-if="boxTheme?.gradientClass" :class="['absolute inset-0 pointer-events-none opacity-30', boxTheme.gradientClass]"></div>
 
-  <div v-for="(message, index) in messagesList" :key="message.id" :id="`msg-${props.boxId ?? '0'}-${message.id}`" class="relative z-10 mb-1">
+        <div v-for="(message, index) in messagesList" :key="message.id" :id="`msg-${props.boxId ?? '0'}-${message.id}`" class="relative z-10 mb-1">
           <div v-if="getDisplayTime(index)" class="text-[11px] font-medium text-gray-400 text-center my-3 select-none uppercase tracking-wide opacity-80">
             {{ getDisplayTime(index) }}
           </div>
 
-                  <MessageItem
-                    :message="message"
-                    :index="index"
-                    :audioStates="audioStates"
-                    :positionInGroup="getMessagePositionInGroup(index)"
-                    :boxId="props.boxId"
-                    @open-lightbox="openLightbox"
-                    @reply="replyTarget = $event"
-                    @toggle-audio-playback="toggleAudioPlayback"
-                    @add-reaction="({ messageId, emoji }) => handleAddReaction(messageId, emoji)"
-                    @open-modal="emit('open-modal', $event)"
-                  />
+          <MessageItem
+            :message="message"
+            :index="index"
+            :audioStates="audioStates"
+            :positionInGroup="getMessagePositionInGroup(index)"
+            :boxId="props.boxId"
+
+            :last-read-map="lastRead"
+
+            @open-lightbox="openLightbox"
+            @reply="replyTarget = $event"
+            @toggle-audio-playback="toggleAudioPlayback"
+            @add-reaction="({ messageId, emoji }) => handleAddReaction(messageId, emoji)"
+            @open-modal="emit('open-modal', $event)"
+          />
         </div>
       </main>
 
