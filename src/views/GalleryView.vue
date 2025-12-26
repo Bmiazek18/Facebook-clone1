@@ -19,9 +19,9 @@
             </router-link>
 
             <GalleryImageViewer
-                v-if="currentImage"
+
                 v-model:is-full-screen="isFullScreen"
-                :image="currentImage"
+                :image="(currentComment ? { src: currentComment.image || '', altText: 'Comment Image' } : currentImage)"
                 :has-prev="hasPrevImage"
                 :has-next="hasNextImage"
                 @prev="goToPrevImage"
@@ -29,7 +29,7 @@
             />
 
             <div
-                v-if="!isFullScreen && currentPost"
+                v-if="!isFullScreen && (currentPost || currentComment)"
                 class="w-full max-w-[490px] flex flex-col min-w-[370px] bg-theme-bg-secondary border-l border-gray-200"
             >
             <div class="w-full flex justify-end-safe py-2 px-5 border-b border-gray-200 ">
@@ -44,15 +44,15 @@
                             <div class="flex items-center gap-2.5">
                                 <img
                                     class="rounded-full w-10 h-10 object-cover border border-gray-200 cursor-pointer hover:brightness-95"
-                                    :src="currentPost.authorAvatar"
+                                    :src="(currentComment || currentPost).authorAvatar"
                                     alt="Avatar"
                                 >
                                 <div class="flex flex-col">
                                     <div class="font-semibold text-[15px] text-theme-text leading-5 cursor-pointer hover:underline">
-                                        {{ currentPost.authorName }}
+                                        {{ (currentComment || currentPost).authorName }}
                                     </div>
                                     <div class="flex items-center text-[13px] text-theme-text-secondary font-normal mt-0.5">
-                                        <span class="hover:underline cursor-pointer">{{ currentPost.date }}</span>
+                                        <span class="hover:underline cursor-pointer">{{ (currentComment || currentPost).date }}</span>
                                         <span class="mx-1 font-bold">·</span>
                                         <Earth :size="13" fillColor="#65686C"/>
                                     </div>
@@ -65,7 +65,7 @@
                     </div>
 
                     <div class="px-4 pb-3 text-[15px] text-theme-text whitespace-pre-wrap leading-relaxed">
-                        {{ currentPost.content }}
+                        {{ currentComment ? currentComment.content : currentPost.content }}
                     </div>
 
                     <div class="mx-4 flex items-center justify-between py-3 border-b border-gray-200 text-theme-text-secondary text-sm">
@@ -73,10 +73,10 @@
                             <div class="bg-blue-500 rounded-full p-1 mr-1.5 flex items-center justify-center w-[18px] h-[18px]">
                                 <ThumbUp fillColor="#FFFFFF" :size="10"/>
                             </div>
-                            <span class="hover:underline cursor-pointer">{{ currentPost.likesCount }}</span>
+                            <span class="hover:underline cursor-pointer">{{ (currentPost || currentComment).likesCount }}</span>
                         </div>
                         <div class="flex items-center gap-3">
-                             <span class="cursor-pointer hover:underline">{{ $t('comments.count', { count: currentPost.commentsCount }) }}</span>
+                             <span class="cursor-pointer hover:underline">{{ $t('comments.count', { count: (currentPost || currentComment).commentsCount }) }}</span>
                              <span class="cursor-pointer hover:underline">2 udostępnienia</span>
                         </div>
                     </div>
@@ -101,29 +101,26 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-between items-center px-4 pt-3 mb-2">
-                        <span class="font-semibold text-theme-text-secondary text-sm">Najtrafniejsze</span>
-                        <button class="text-theme-text font-normal text-sm hover:underline">
-                           <span class="flex items-center gap-1">Wszystkie komentarze <span class="text-[10px]">▼</span></span>
-                        </button>
+                    <div v-if="!currentComment" class="flex justify-between items-center px-4 pt-3 mb-2">
+                        <CommentFilter />
                     </div>
 
-                    <div class="pt-1 px-4">
+                    <div v-if="!currentComment" class="pt-1 px-4">
                           <CommentItem
                             v-for="comment in currentPost.comments"
                             :key="comment.id"
                             :comment="comment"
-                            :post-avatar-src="currentPost.authorAvatar"
+                            :post-avatar-src="(currentComment || currentPost).authorAvatar"
                             :depth="0"
                             :post-id="currentPost.id"
                         />
                     </div>
                 </HoverScrollbar>
 
-                <div class="p-4 border-t border-gray-200 flex items-center bg-theme-bg-secondary sticky bottom-0 z-10">
+                <div v-if="!currentComment" class="p-4 border-t border-gray-200 flex items-center bg-theme-bg-secondary sticky bottom-0 z-10">
                     <CommentReplyInput
-                        :post-avatar-src="currentPost.authorAvatar"
-                        :placeholder="`Napisz komentarz jako ${currentPost.authorName}...`"
+                        :post-avatar-src="(currentPost || currentComment).authorAvatar"
+                        :placeholder="`Napisz komentarz jako ${(currentPost || currentComment).authorName}...`"
                         :post-id="currentPost.id"
                     />
                 </div>
@@ -150,8 +147,9 @@ import GalleryImageViewer from '@/components/gallery/GalleryImageViewer.vue'
 import { usePostsStore } from '@/stores/posts';
 import CommentReplyInput from '@/components/CommentReplyInput.vue'
 import NavbarRight from '@/components/NavbarRight.vue'
-import type { ImageTagType } from '@/types/ImageTag';
-
+import type {  Comment } from '@/types/Post';
+import type { ImageTagType } from '@/types//ImageTag';
+import CommentFilter from '@/components/CommentFilter.vue'
 const route = useRoute()
 const router = useRouter()
 const postsStore = usePostsStore()
@@ -159,14 +157,22 @@ const postsStore = usePostsStore()
 const isFullScreen = ref(false)
 
 // Get postId and imageIndex from route params
-const postId = computed(() => Number(route.params.postId))
-const currentImageIndex = ref(Number(route.params.imageIndex) || 0)
+const postId = computed(() => String(route.params.postId || route.query.postId))
+const imageIndexParam = computed(() => Number(route.params.imageIndex) || 0)
+
+
+const commentId = computed(() => String(route.params.commentId) || undefined);
+
+const currentImageIndex = ref(imageIndexParam.value)
+
+const currentComment = ref<Comment | null>(null); // New ref for the current comment
 
 // Get the current post data
 const currentPost = computed(() => postsStore.posts.find(p => p.id === postId.value))
 
 // Current image URL
 const currentImage = computed((): { src: string; altText?: string; tags?: ImageTagType[]; } | undefined => {
+
     return currentPost.value?.images[currentImageIndex.value]
 })
 
@@ -174,28 +180,70 @@ const currentImage = computed((): { src: string; altText?: string; tags?: ImageT
 const hasPrevImage = computed(() => currentImageIndex.value > 0)
 const hasNextImage = computed(() => {
     if (!currentPost.value) return false
-    return currentImageIndex.value < currentPost.value.images.length - 1
+    return currentImageIndex.value < (currentPost.value.images?.length || 0) - 1
 })
 
 const goToPrevImage = () => {
     if (hasPrevImage.value) {
         currentImageIndex.value--
-        router.replace(`/photo/${postId.value}/${currentImageIndex.value}`)
+        router.replace({ params: { postId: postId.value, imageIndex: currentImageIndex.value } })
     }
 }
 
 const goToNextImage = () => {
     if (hasNextImage.value) {
         currentImageIndex.value++
-        router.replace(`/photo/${postId.value}/${currentImageIndex.value}`)
+        router.replace({ params: { postId: postId.value, imageIndex: currentImageIndex.value } })
     }
 }
+
+const findCommentById = (comments: Comment[] | undefined, idToFind: number): Comment | null => {
+  if (!comments || isNaN(idToFind)) return null;
+  for (const comment of comments) {
+    if (comment.id === idToFind) {
+      return comment;
+    }
+    if (comment.replies && comment.replies.length > 0) {
+      const found = findCommentById(comment.replies, idToFind);
+      if (found) {
+        return found;
+      }
+    }
+  }
+  return null;
+};
 
 // Watch route params changes
 watch(() => route.params.imageIndex, (newIndex) => {
     currentImageIndex.value = Number(newIndex) || 0
 })
 
-
+// Watch for commentId and currentPost changes to populate currentComment
+watch([commentId, currentPost], ([newCommentId, newCurrentPost]) => {
+    if (newCommentId) { // Only proceed if a commentId is provided
+        const idToSearch = Number(commentId.value);
+        if (!isNaN(idToSearch)) {
+            if (newCurrentPost) {
+                // Search for the comment within the current post's comments
+                currentComment.value = findCommentById(newCurrentPost.comments || [], idToSearch);
+                if (!currentComment.value) {
+                    // Comment ID provided but not found in post, redirect to post view
+                    router.replace({ params: { postId: postId.value, imageIndex: currentImageIndex.value } });
+                }
+            } else {
+                // Comment ID provided but no post found, redirect to clear commentId
+                router.replace({ params: { postId: postId.value, imageIndex: currentImageIndex.value } });
+                currentComment.value = null;
+            }
+        } else {
+            // Comment ID is invalid (NaN), redirect to post view
+            router.replace({ params: { postId: postId.value, imageIndex: currentImageIndex.value } });
+            currentComment.value = null;
+        }
+    } else {
+        // No commentId provided, so no specific comment to find
+        currentComment.value = null;
+    }
+}, { immediate: true });
 
 </script>

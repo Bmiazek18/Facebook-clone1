@@ -8,6 +8,7 @@ import CommentItem from './CommentItem.vue'
 import PostItem from './PostItem.vue'
 import type { Post } from '@/types/Post';
 import CommentReplyInput from './CommentReplyInput.vue'
+import CommentFilter from './CommentFilter.vue';
 
 const props = defineProps<{
     post: Post
@@ -21,6 +22,7 @@ const props = defineProps<{
 
 <PostItem :post="props.post" />
                 <div class="p-3 sm:p-4">
+                  <CommentFilter />
                     <CommentItem
                         v-for="comment in props.post.comments"
                         :key="comment.id"
