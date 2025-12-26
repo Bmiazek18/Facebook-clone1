@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import type { DefineComponent } from 'vue';
 import { useCreatePostStore } from '@/stores/createPost';
 import { storeToRefs } from 'pinia';
@@ -109,7 +109,7 @@ const handleCancel = () => {
 <template>
   <div class="privacy-selector-modal flex flex-col p-0 h-[500px]">
 
-    <div class="p-0 pb-4 border-b border-gray-200 flex-shrink-0">
+    <div class="p-0 pb-4 border-b border-gray-200 shrink-0">
       <h2 class="text-xl font-bold text-gray-800">Kto może zobaczyć Twój post?</h2>
       <p class="text-gray-600 text-sm mt-1">
         Post pojawi się w Aktualnościach, w Twoim profilu oraz w wynikach wyszukiwania.
@@ -119,7 +119,7 @@ const handleCancel = () => {
           </p>
     </div>
 
-    <div class="flex-grow overflow-y-auto pt-2">
+    <div class="grow overflow-y-auto pt-2">
       <div
         v-for="option in privacyOptions"
         :key="option.id"
@@ -130,14 +130,14 @@ const handleCancel = () => {
         }"
         @click="selectOption(option.id)"
       >
-        <component :is="option.iconComponent" :size="30" class="text-gray-600 mr-4 flex-shrink-0" />
+        <component :is="option.iconComponent" :size="30" class="text-gray-600 mr-4 shrink-0" />
 
-        <div class="flex-grow min-w-0">
+        <div class="grow min-w-0">
           <p class="font-semibold text-gray-800">{{ option.label }}</p>
           <p class="text-gray-500 text-sm truncate">{{ option.description }}</p>
         </div>
 
-        <div class="ml-4 flex-shrink-0">
+        <div class="ml-4 shrink-0">
           <div v-if="tempSelectedOption === option.id">
             <svg class="h-6 w-6 text-blue-500 fill-current" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="12" cy="12" r="6" fill="currentColor"/></svg>
           </div>
@@ -148,7 +148,7 @@ const handleCancel = () => {
       </div>
     </div>
 
-    <div class="pt-4 mt-2 border-t border-gray-200 flex-shrink-0">
+    <div class="pt-4 mt-2 border-t border-gray-200 shrink-0">
     <div class="flex items-center mb-4" :class="{ 'opacity-60 pointer-events-none': tempSelectedOption === defaultPrivacyId }">
   <button type="button" class="flex items-center" @click.prevent="toggleSetDefault">
         <component

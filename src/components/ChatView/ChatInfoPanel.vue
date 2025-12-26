@@ -205,7 +205,7 @@
       v-if="showEditNicknamesModal"
       :chat-type="chatMeta.type"
       :chat-name="chatMeta.name"
-      :members="chatMeta.type === ChatType.Group ? chatMeta.groupMembers : undefined"
+      :members="chatMeta.type === ChatType.Group ? chatMeta.groupMembers || [] : []"
       :current-private-nickname="chatMeta.type === ChatType.Private ? chatMeta.otherUserNickname || chatMeta.name : undefined"
       @update-nicknames="handleUpdateNicknames"
       @close="closeEditNicknamesModal"
@@ -248,7 +248,9 @@ const convStore = useConversationsStore();
 
 // chat metadata (name/avatar) shown in the right panel and header
 const chatMeta = computed(() => {
-  const meta = convStore.chats.find(c => c.id === props.chatId) ?? {
+  const meta = convStore.chats.find(c => c.id === Number(props.chatId));
+  if (meta) return meta;
+  return {
     id: props.chatId,
     name: `Czat ${props.chatId}`,
     avatarUrl: '',
@@ -258,8 +260,8 @@ const chatMeta = computed(() => {
     isActive: false,
     type: ChatType.Private, // Default to Private
     groupMembers: [],
+    otherUserNickname: '',
   };
-  return meta;
 });
 
 // apply chat-specific theme and emoji when chat changes
@@ -306,7 +308,9 @@ function closeEditNicknamesModal() {
   showEditNicknamesModal.value = false;
 }
 function handleUpdateNicknames(updatedData: string | GroupMember[]) {
-  convStore.updateGroupMembersNicknames(Number(props.chatId), updatedData);
+  if (Array.isArray(updatedData)) {
+    convStore.updateGroupMembersNicknames(Number(props.chatId), updatedData);
+  }
   // For private chat, updatedData is a string with the new nickname.
   if (typeof updatedData === 'string') {
     convStore.messages.push({

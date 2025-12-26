@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-[#f0f2f5] flex flex-col font-sans">
 
-    <div class="flex-grow flex flex-col md:flex-row items-center justify-center w-full max-w-[980px] mx-auto px-4 pt-10 pb-10 md:pt-20 gap-x-0 md:gap-x-16">
+    <div class="grow flex flex-col md:flex-row items-center justify-center w-full max-w-[980px] mx-auto px-4 pt-10 pb-10 md:pt-20 gap-x-0 md:gap-x-16">
 
       <div class="w-full md:w-[500px] mb-10 md:mb-0 flex flex-col items-center md:items-start text-center md:text-left">
         <h1 class="text-[#1877f2] text-6xl font-bold -ml-1 mb-2 tracking-tighter">facebook</h1>

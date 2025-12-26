@@ -32,7 +32,7 @@
         class="flex items-center justify-between px-6 py-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
       >
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm">
+          <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
             <img
               v-if="reaction.avatarUrl"
               :src="reaction.avatarUrl"
@@ -49,7 +49,7 @@
           </div>
         </div>
 
-        <span class="text-2xl flex-shrink-0 select-none">{{ reaction.emoji }}</span>
+        <span class="text-2xl shrink-0 select-none">{{ reaction.emoji }}</span>
       </div>
     </HoverScrollbar>
 

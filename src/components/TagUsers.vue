@@ -79,11 +79,11 @@ const confirmSelection = () => {
 
       <div v-if="selectedUsers.length > 0" class="mb-6">
         <h3 class="text-xs font-bold text-gray-500 tracking-wide mb-3 uppercase">Oznaczeni</h3>
-        <div class="border border-gray-200 rounded-lg p-2 min-h-[40px] flex flex-wrap gap-2">
+        <div class="border border-gray-200 rounded-lg p-2 min-h-10 flex flex-wrap gap-2">
           <div
             v-for="user in selectedUsers"
             :key="user.id"
-            class="flex items-center bg-blue-50 text-blue-600 px-2 py-1.5 rounded-[4px] cursor-default"
+            class="flex items-center bg-blue-50 text-blue-600 px-2 py-1.5 rounded-sm cursor-default"
           >
             <span class="font-semibold text-sm mr-1">{{ user.name }}</span>
             <button @click="removeUser(user)" class="hover:text-blue-800 flex items-center">

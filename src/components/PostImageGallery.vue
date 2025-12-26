@@ -15,17 +15,18 @@ defineProps<{
 <template>
   <div class="w-full">
     <!-- 1 zdjęcie -->
-    <div v-if="images.length === 1" class="w-full">
+    <div v-if="images.length === 1 && images[0]" class="w-full">
       <router-link
         :to="`/photo/${postId}/0`"
         class="block w-full bg-black/5 relative"
       >
         <img
+          v-if="images[0]"
           class="w-full h-auto object-cover max-h-[600px] cursor-pointer"
           :src="images[0].src"
           :alt="images[0].altText || 'Post content'"
         />
-        <template v-if="images[0].tags">
+        <template v-if="images[0]?.tags">
           <ImageTag
             v-for="tag in images[0].tags"
             :key="tag.id"

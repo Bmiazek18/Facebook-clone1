@@ -5,11 +5,11 @@ import PeopleYouMayKnow from '../components/PeopleYouMayKnow.vue'
 import StoriesList from '../components/StoriesList.vue'
 import LeftSidebar from '../components/home/LeftSidebar.vue'
 import RightSidebar from '../components/home/RightSidebar.vue'
-import { ref, computed, watch } from 'vue'
+import { ref,  watch } from 'vue'
 import { useVirtualList } from '@vueuse/core'
 import PostItemSceleton from '@/components/PostItemSceleton.vue'
 import { usePostsStore } from '@/stores/posts'
-import { onBeforeRouteLeave, useRouter } from 'vue-router' // Dodano useRouter
+import { onBeforeRouteLeave, useRouter, type RouteLocation } from 'vue-router' // Dodano useRouter
 import { useCreatePostStore } from '@/stores/createPost'
 import ConfirmationModal from '@/components/ConfirmationModal.vue'
 import ReelSGalerry from '@/components/ReelSGalerry.vue'
@@ -42,7 +42,7 @@ const createPostStore = useCreatePostStore()
 
 // --- LOGIKA MODALA ---
 const showConfirmModal = ref(false)
-const pendingRoute = ref<any>(null) // Przechowuje trasę, na którą chciał iść user
+const pendingRoute = ref<RouteLocation | null>(null)
 
 onBeforeRouteLeave((to, from, next) => {
   if (createPostStore.hasUnsavedChanges) {

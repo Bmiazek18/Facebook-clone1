@@ -88,7 +88,7 @@ const isPublishButtonDisabled = computed(() => {
 
 // --- GLÓWNA LOGIKA EDYCJI ---
 
-const onContentInput = (e: Event) => {
+const onContentInput = () => {
   if (!contentEditableDiv.value) return;
   isLocalUpdate.value = true;
 
@@ -494,7 +494,7 @@ const handlePublish = () => {
 
                 <template #popper>
                   <div class="emoji-popper-content">
-                    <LazyEmojiPicker @select="(e) => { addEmoji(e); }" />
+                    <LazyEmojiPicker @select="(_e) => { addEmoji(_e); }" />
                   </div>
                 </template>
               </VDropdown>

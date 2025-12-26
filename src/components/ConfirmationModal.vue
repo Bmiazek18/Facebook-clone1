@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import BaseModal from './BaseModal.vue';
-import { ref } from 'vue';
 
 const emit = defineEmits(['confirm', 'cancel']);
 
 
-const props = defineProps<{
+ defineProps<{
   title?: string;
   message?: string;
   confirmLabel?: string;

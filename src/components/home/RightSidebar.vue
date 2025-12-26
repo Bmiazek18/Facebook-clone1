@@ -25,7 +25,9 @@ const contacts = computed(() => {
     id: chat.id,
     name: chat.name,
     avatarUrl: chat.avatarUrl,
-    status: true,
+    status: chat.isActive, // Assuming isActive maps to status
+    isMeta: chat.isMeta,
+    lastActive: chat.lastActive,
   }));
 });
 
@@ -69,7 +71,7 @@ const openChatBox = (id: number) => {
             @click="openChatBox(contact.id)"
             class="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer transition-colors group relative"
           >
-            <div class="relative flex-shrink-0"> <div v-if="contact.isMeta" class="w-[38px] h-[38px] rounded-full p-[2px] bg-gradient-to-tr from-blue-400 via-purple-500 to-pink-500">
+            <div class="relative shrink-0"> <div v-if="contact.isMeta" class="w-[38px] h-[38px] rounded-full p-[2px] bg-gradient-to-tr from-blue-400 via-purple-500 to-pink-500">
                  <div class="w-full h-full bg-white rounded-full flex items-center justify-center overflow-hidden">
                     <div class="w-full h-full bg-gradient-to-tr from-blue-500 to-purple-600 opacity-20"></div>
                  </div>
@@ -103,7 +105,7 @@ const openChatBox = (id: number) => {
                 {{ contact.name }}
               </span>
 
-              <span v-if="contact.isMeta" class="ml-1 flex-shrink-0">
+              <span v-if="contact.isMeta" class="ml-1 shrink-0">
                 <CheckCircle :size="16" fillColor="#1877F2" />
               </span>
             </div>

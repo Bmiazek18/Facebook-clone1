@@ -25,14 +25,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, inject, computed } from 'vue';
+import { ref, watch, inject, computed, type Ref } from 'vue';
 import type { StoryElement } from '@/types/StoryElement';
 
 const emit = defineEmits<{
     (e: 'save-alt-text', text: string): void;
 }>();
 
-const selectedElement = inject<globalThis.Ref<StoryElement | undefined>>('selectedElement');
+const selectedElement = inject<Ref<StoryElement | undefined>>('selectedElement');
 
 const currentAltText = computed(() => {
     if (selectedElement?.value?.type === 'image') {

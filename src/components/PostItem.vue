@@ -20,12 +20,12 @@ import PostHeader from './post/PostHeader.vue'
 import PostActions from './post/PostActions.vue'
 import { useStoryShareStore } from '@/stores/storyShare'
 import { usePostsStore, type SharedPost } from '@/stores/posts'
-import type { PostData } from '@/types/StoryElement'
-import { getUserById, type User } from '@/data/users'
+
+import { getUserById } from '@/data/users'
 
 useI18n()
 
-import type { Post } from '@/data/posts'
+import type { Post } from '@/types/Post';
 
 // ... other imports
 
@@ -66,7 +66,7 @@ const currentBackground = computed(() => {
 })
 
 // Determine if this is a shared post view
-const isSharedPostView = computed(() => !!props.sharedPost)
+const isSharedPostView = computed(() => !!props.sharedPost);
 
 // Get display data based on whether it's a shared post or regular post
 const displayData = computed(() => {
@@ -76,7 +76,7 @@ const displayData = computed(() => {
       authorAvatar: props.sharedPost.originalPost.authorAvatar,
       content: props.sharedPost.originalPost.content,
       imageUrl: props.sharedPost.originalPost.imageUrl,
-      images: props.sharedPost.originalPost.images || (props.sharedPost.originalPost.imageUrl ? [props.sharedPost.originalPost.imageUrl] : []),
+      images: props.sharedPost.originalPost.images || (props.sharedPost.originalPost.imageUrl ? [{ src: props.sharedPost.originalPost.imageUrl }] : []),
       videoUrl: props.sharedPost.originalPost.videoUrl,
       sharedBy: props.sharedPost.sharedBy,
       comment: props.sharedPost.comment
@@ -87,7 +87,7 @@ const displayData = computed(() => {
     authorAvatar: props.post?.authorAvatar || 'https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg',
     content: props.post?.content || '',
     imageUrl: props.post?.imageUrl || '',
-    images: props.post?.images || (props.post?.imageUrl ? [props.post.imageUrl] : []),
+    images: (props.post?.images ?? []).map(img => (typeof img === 'string' ? { src: img } : img)),
     videoUrl: props.post?.videoUrl,
     sharedBy: null,
     comment: null
@@ -95,18 +95,35 @@ const displayData = computed(() => {
 })
 
 // Convert to PostData format for sharing
-const postData = computed<PostData>(() => {
+const postData = computed<Post>(() => {
   if (props.sharedPost) {
-    return props.sharedPost.originalPost
+    // If it's a shared post, we return the original post data (which should be of type Post)
+    return props.sharedPost.originalPost as Post;
   }
   return {
-    id: String(props.post?.id || 0),
+    id: String(props.post?.id || Date.now()), // Use current timestamp as ID if not available
     authorName: displayData.value.authorName,
     authorAvatar: displayData.value.authorAvatar,
     content: displayData.value.content,
-    imageUrl: displayData.value.images[0] || displayData.value.imageUrl,
+    imageUrl: displayData.value.imageUrl,
     images: displayData.value.images,
-    timestamp: Date.now()
+    videoUrl: displayData.value.videoUrl,
+    authorId: props.post?.authorId ?? 0,
+    date: props.post?.date ?? '',
+    likesCount: props.post?.likesCount ?? 0,
+    commentsCount: props.post?.commentsCount ?? 0,
+    sharesCount: props.post?.sharesCount ?? 0,
+    timestamp: props.post?.timestamp ?? Date.now(),
+    taggedUsers: props.post?.taggedUsers ?? [],
+    location: props.post?.location,
+    gif: props.post?.gif,
+    isLiked: props.post?.isLiked ?? false,
+    likedType: props.post?.likedType ?? null,
+    reactionCount: props.post?.reactionCount ?? 0,
+    commentCount: props.post?.commentCount ?? 0,
+    comments: props.post?.comments ?? [],
+    selectedCardBgId: props.post?.selectedCardBgId ?? 0,
+    privacy: props.post?.privacy ?? '',
   }
 })
 
@@ -189,7 +206,7 @@ const handleHidePost = (postId: number) => {
 };
 
 // Reactions - using composable
-const { userReaction, likesCount, getReactionIcon, handleReaction } = usePostReactions(24)
+const { userReaction, likesCount, handleReaction } = usePostReactions(24)
 
 
 // Konfiguracja wyglądu reakcji
@@ -288,12 +305,12 @@ useVideoAutoplay(videoContainerRef)
 
 <div class="px-4 py-1 pb-3 text-[15px] leading-normal whitespace-pre-line"
      :class="{
-       [currentBackground.class]: props.post?.selectedCardBgId !== undefined, // Apply background if ID is set
-       [currentBackground.textClass || 'text-theme-text']: props.post?.selectedCardBgId !== undefined, // Apply text color if ID is set
-       'p-4 h-[383px] flex items-center justify-center text-center': props.post?.selectedCardBgId !== undefined, // Enforce height and centering if ID is set
-       'text-xl': props.post?.selectedCardBgId !== undefined && displayData.content.length <= 80,
-       'text-base': props.post?.selectedCardBgId !== undefined && displayData.content.length > 80,
-       'text-theme-text': props.post?.selectedCardBgId === undefined, // Default text color if no card background
+       [((currentBackground as CardBackground).class ?? '')]: (props.post?.selectedCardBgId ?? 0) !== 0, // Apply background if ID is set
+       [((currentBackground as CardBackground).textClass ?? 'text-theme-text')]: (props.post?.selectedCardBgId ?? 0) !== 0, // Apply text color if ID is set
+       'p-4 h-[383px] flex items-center justify-center text-center': (props.post?.selectedCardBgId ?? 0) !== 0, // Enforce height and centering if ID is set
+       'text-xl': (props.post?.selectedCardBgId ?? 0) !== 0 && displayData.content.length <= 80,
+       'text-base': (props.post?.selectedCardBgId ?? 0) !== 0 && displayData.content.length > 80,
+       'text-theme-text': (props.post?.selectedCardBgId ?? 0) === 0, // Default text color if no card background
      }"
 >
   <template v-for="(part, index) in processedContent" :key="index">
@@ -302,7 +319,7 @@ useVideoAutoplay(videoContainerRef)
       v-if="part.type === 'hashtag'"
       :to="{ name: 'hashtag', params: { hashtag: part.hashtag } }"
       class="text-blue-500 hover:underline"
-      :class="{ 'text-white ': props.post?.selectedCardBgId > 0 }"
+      :class="{ 'text-white ': (props.post?.selectedCardBgId ?? 0) > 0 }"
     >
       {{ part.value }}
     </router-link>
@@ -311,12 +328,12 @@ useVideoAutoplay(videoContainerRef)
       v-else-if="part.type === 'mention'"
       :to="{ name: 'userProfile', params: { userId: part.userId } }"
       class="text-blue-500 hover:underline"
-      :class="{ 'text-white': props.post?.selectedCardBgId > 0 }"
+      :class="{ 'text-white': (props.post?.selectedCardBgId ?? 0) > 0 }"
     >
-      @{{ getUserById(parseInt(part.userId))?.name }}
+      @{{ getUserById(parseInt(part.userId || ''))?.name }}
     </router-link>
 
-    <span v-else :class="{ ' text-[30px]': props.post?.selectedCardBgId > 0 }">{{ part.value }}</span>
+    <span v-else :class="{ ' text-[30px]': (props.post?.selectedCardBgId ?? 0) > 0 }">{{ part.value }}</span>
 
   </template>
 </div>
@@ -326,7 +343,7 @@ useVideoAutoplay(videoContainerRef)
       </div>
 
       <!-- Images -->
-      <PostImageGallery v-else-if="displayData.images.length > 0" :images="displayData.images" :post-id="props.post?.id ?? 0" />
+      <PostImageGallery v-else-if="displayData.images.length > 0" :images="displayData.images" :post-id="props.post?.id ?? ''" />
     </div>
 
     <div v-else class="mx-3 mb-3 border border-theme-border rounded-lg overflow-hidden cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
@@ -375,10 +392,10 @@ useVideoAutoplay(videoContainerRef)
 
             <div
               v-if="userReaction"
-              class="relative z-0 rounded-full w-[20px] h-[20px] flex items-center justify-center ring-2 ring-white dark:ring-[#242526]"
+              class="relative z-0 rounded-full w-5 h-5 flex items-center justify-center ring-2 ring-white dark:ring-[#242526]"
               :class="[
                 getReactionConfig(userReaction).wrapperClass,
-                likesCount > 1 ? '-ml-[4px]' : '' // Przesunięcie w lewo
+                likesCount > 1 ? '-ml-1' : '' // Przesunięcie w lewo
               ]"
             >
               <component

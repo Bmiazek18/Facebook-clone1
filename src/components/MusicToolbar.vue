@@ -18,11 +18,11 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="absolute -right-[115px] top-15 mt-20 bg-white rounded-2xl shadow-2xl p-4 w-[320px] z-[900] animate-pop">
+  <div class="absolute -right-[115px] top-15 mt-20 bg-white rounded-2xl shadow-2xl p-4 w-[320px] z-900 animate-pop">
     <div class="flex items-start justify-between mb-4 border-b border-gray-100 pb-3">
         <div class="flex items-center gap-3">
             <img v-if="coverUrl" :src="coverUrl" class="w-10 h-10 rounded-md object-cover border border-gray-200" />
-            <div class="flex flex-col overflow-hidden max-w-[160px]">
+            <div class="flex flex-col overflow-hidden max-w-40">
                 <span class="text-sm font-bold text-gray-900 truncate">{{ trackTitle }}</span>
                 <span class="text-xs text-gray-500 truncate">{{ trackArtist }}</span>
             </div>

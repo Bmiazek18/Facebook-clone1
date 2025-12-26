@@ -23,24 +23,24 @@
 
       <div
         ref="carouselRef"
-        class="flex overflow-x-scroll pb-2 h-[288px] scrollbar-hide"
+        class="flex overflow-x-scroll pb-2 h-72 scrollbar-hide"
 
       >
         <Card
           v-for="person in people"
           :key="person.id"
           :person="person"
-          class="max-w-[180px]  flex-shrink-0 mr-3"
+          class="max-w-[180px]  shrink-0 mr-3"
           @remove="removeCard"
         />
 
         <div
-          class="flex flex-col items-center justify-center p-4 cursor-pointer w-49 h-72 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-200 bg-gray-50 flex-shrink-0 mr-3"
+          class="flex flex-col items-center justify-center p-4 cursor-pointer w-49 h-72 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-200 bg-gray-50 shrink-0 mr-3"
         >
           <PlusCircleIcon :size="32" class="text-blue-600 mb-2" fillColor="#2563EB" />
           <span class="text-blue-600 font-semibold text-sm">{{ $t('home.showAll') }}</span>
         </div>
-        <div class="flex-shrink-0" style="width: 0.75rem;"></div>
+        <div class="shrink-0" style="width: 0.75rem;"></div>
       </div>
 
       <button

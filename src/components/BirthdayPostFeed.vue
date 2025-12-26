@@ -29,14 +29,14 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import BirthdayPost from './BirthdayPostItem.vue';
-import type { Post } from './BirthdayPostItem.vue';
+import type { Post } from '@/types/Post';
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
 
 // Dane symulujące te ze zrzutu ekranu
 const posts = ref<Post[]>([
   // POST 1: Prosty post bez komentarzy
   {
-    id: 1,
+    id: '1',
     authorName: 'Andrzej Prokop',
     authorAvatar: 'https://i.pravatar.cc/150?u=andrzej',
     date: '24 lutego',
@@ -44,12 +44,18 @@ const posts = ref<Post[]>([
     isLiked: false,
     reactionCount: 2,
     commentCount: 0,
+    images: [],
+    authorId: 1,
+    likesCount: 2,
+    commentsCount: 0,
+    sharesCount: 0,
     comments: [], // Brak komentarzy
+    timestamp: Date.now(),
   },
 
   // POST 2: Post Trenera (Głębokie zagnieżdżenie - test rekurencji)
   {
-    id: 2,
+    id: '2',
     authorName: 'Przemysław Wereszczyński',
     authorAvatar: 'https://i.pravatar.cc/150?u=przemek',
     date: '23 lutego',
@@ -58,28 +64,33 @@ const posts = ref<Post[]>([
     likedType: 'super',
     reactionCount: 15,
     commentCount: 4,
+    images: [],
+    authorId: 2,
+    likesCount: 15,
+    commentsCount: 4,
+    sharesCount: 0,
     comments: [
         {
             id: 101,
-            userName: 'Bartosz Miazek', // Główny komentarz
-            avatarSrc: 'https://i.pravatar.cc/150?u=me',
-            text: 'Dziękuję trenerze 😊',
+            authorName: 'Bartosz Miazek', // Główny komentarz
+            authorAvatar: 'https://i.pravatar.cc/150?u=me',
+            content: 'Dziękuję trenerze 😊',
             date: '41 tyg.',
             likesCount: 3,
             replies: [
                 {
                     id: 201,
-                    userName: 'Przemysław Wereszczyński', // Odpowiedź trenera (Poziom 1)
-                    avatarSrc: 'https://i.pravatar.cc/150?u=przemek',
-                    text: 'Nie ma za co, widzimy się na treningu!',
+                    authorName: 'Przemysław Wereszczyński', // Odpowiedź trenera (Poziom 1)
+                    authorAvatar: 'https://i.pravatar.cc/150?u=przemek',
+                    content: 'Nie ma za co, widzimy się na treningu!',
                     date: '41 tyg.',
                     likesCount: 1,
                     replies: [
                         {
                             id: 301,
-                            userName: 'Bartosz Miazek', // Odpowiedź Bartosza (Poziom 2 - test linii bocznej)
-                            avatarSrc: 'https://i.pravatar.cc/150?u=me',
-                            text: 'Będę na pewno! 💪',
+                            authorName: 'Bartosz Miazek', // Odpowiedź Bartosza (Poziom 2 - test linii bocznej)
+                            authorAvatar: 'https://i.pravatar.cc/150?u=me',
+                            content: 'Będę na pewno! 💪',
                             date: '41 tyg.',
                             likesCount: 0,
                             replies: []
@@ -90,19 +101,20 @@ const posts = ref<Post[]>([
         },
         {
             id: 102,
-            userName: 'Klub Sportowy "Olimp"',
-            avatarSrc: 'https://i.pravatar.cc/150?u=olimp',
-            text: 'Dołączamy się do życzeń! 🥇',
+            authorName: 'Klub Sportowy "Olimp"',
+            authorAvatar: 'https://i.pravatar.cc/150?u=olimp',
+            content: 'Dołączamy się do życzeń! 🥇',
             date: '40 tyg.',
             likesCount: 5,
             replies: []
         }
     ],
+    timestamp: Date.now(),
   },
 
   // POST 3: Post z wieloma krótkimi komentarzami (Test listy)
   {
-    id: 3,
+    id: '3',
     authorName: 'Mateusz Sak',
     authorAvatar: 'https://i.pravatar.cc/150?u=mateusz',
     date: '23 lutego',
@@ -111,29 +123,34 @@ const posts = ref<Post[]>([
     likedType: 'like',
     reactionCount: 8,
     commentCount: 3,
+    images: [],
+    authorId: 3,
+    likesCount: 8,
+    commentsCount: 3,
+    sharesCount: 0,
     comments: [
         {
             id: 103,
-            userName: 'Bartosz Miazek',
-            avatarSrc: 'https://i.pravatar.cc/150?u=me',
-            text: 'Dzięki wielkie byku 💪',
+            authorName: 'Bartosz Miazek',
+            authorAvatar: 'https://i.pravatar.cc/150?u=me',
+            content: 'Dzięki wielkie byku 💪',
             date: '41 tyg.',
             likesCount: 1,
             replies: []
         },
         {
             id: 104,
-            userName: 'Kamil Nowak',
-            avatarSrc: 'https://i.pravatar.cc/150?u=kamil',
-            text: 'Sto lat Bartek!',
+            authorName: 'Kamil Nowak',
+            authorAvatar: 'https://i.pravatar.cc/150?u=kamil',
+            content: 'Sto lat Bartek!',
             date: '41 tyg.',
             likesCount: 0,
             replies: [
                  {
                     id: 205,
-                    userName: 'Bartosz Miazek',
-                    avatarSrc: 'https://i.pravatar.cc/150?u=me',
-                    text: 'Dzięki Kamil!',
+                    authorName: 'Bartosz Miazek',
+                    authorAvatar: 'https://i.pravatar.cc/150?u=me',
+                    content: 'Dzięki Kamil!',
                     date: '41 tyg.',
                     likesCount: 0,
                     replies: []
@@ -141,11 +158,12 @@ const posts = ref<Post[]>([
             ]
         }
     ],
+    timestamp: Date.now(),
   },
 
   // POST 4: Długi tekst i dużo reakcji (Test layoutu)
   {
-    id: 4,
+    id: '4',
     authorName: 'Anna Kowalska',
     authorAvatar: 'https://i.pravatar.cc/150?u=anna',
     date: '22 lutego',
@@ -153,18 +171,23 @@ const posts = ref<Post[]>([
     isLiked: false,
     reactionCount: 42,
     commentCount: 1,
+    images: [],
+    authorId: 4,
+    likesCount: 42,
+    commentsCount: 1,
+    sharesCount: 0,
     comments: [
          {
             id: 105,
-            userName: 'Bartosz Miazek',
-            avatarSrc: 'https://i.pravatar.cc/150?u=me',
-            text: 'Ania, dziękuję za piękne słowa! 🥰',
+            authorName: 'Bartosz Miazek',
+            authorAvatar: 'https://i.pravatar.cc/150?u=me',
+            content: 'Ania, dziękuję za piękne słowa! 🥰',
             date: '41 tyg.',
             likesCount: 2,
             replies: []
         }
-    ]
+    ],
+    timestamp: Date.now(),
   }
 ]);
 </script>
-

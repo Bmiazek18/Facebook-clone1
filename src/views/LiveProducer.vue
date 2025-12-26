@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, type DefineComponent } from 'vue';
 
 // Import ikon (vue-material-design-icons)
 import HomeIcon from 'vue-material-design-icons/Home.vue';
-import AccountCircleIcon from 'vue-material-design-icons/AccountCircle.vue';
 import VideoIcon from 'vue-material-design-icons/Video.vue';
 import CalendarIcon from 'vue-material-design-icons/Calendar.vue';
 import MessageAlertIcon from 'vue-material-design-icons/MessageAlert.vue';
@@ -17,14 +16,14 @@ import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue';
 
 // Typy danych dla kart
 interface FeatureList {
-  icon: any;
+  icon: DefineComponent;
   text: string;
 }
 
 interface ActionCard {
   title: string;
   iconColor: string; // klasa tailwind np. bg-red-600
-  mainIcon: any;
+  mainIcon: DefineComponent;
   description: string; // Tytuł nad listą
   features: FeatureList[];
   buttonText: string;
@@ -133,7 +132,7 @@ const actionCards: ActionCard[] = [
 
           <h3 class="font-bold text-lg mb-6">{{ card.description }}</h3>
 
-          <ul class="space-y-5 mb-8 flex-grow">
+          <ul class="space-y-5 mb-8 grow">
             <li v-for="(feature, fIndex) in card.features" :key="fIndex" class="flex items-start">
               <div class="mr-3 mt-0.5 text-gray-400">
                 <component :is="feature.icon" :size="20" />

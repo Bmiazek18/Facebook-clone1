@@ -1,8 +1,8 @@
-import { ref, reactive } from 'vue';
-import type { StoryElement as StoryElementType, BackgroundSettings } from '@/types/StoryElement';
+import { ref, reactive, type Ref } from 'vue';
+import type { StoryElement as StoryElementType } from '@/types/StoryElement';
 import { calculateSnaps, type Guide } from '@/utils/snapping';
 
-export function useStoryElementInteraction(storyElements: ref<StoryElementType[]>, bgDimensions: { width: number, height: number }) {
+export function useStoryElementInteraction(storyElements: Ref<StoryElementType[]>, bgDimensions: { width: number, height: number }) {
     const activeDragId = ref<string | null>(null);
     const activeResizeId = ref<string | null>(null);
     const activeRotateId = ref<string | null>(null);
@@ -70,14 +70,14 @@ export function useStoryElementInteraction(storyElements: ref<StoryElementType[]
                 };
                 const { snappedX, snappedY, guides } = calculateSnaps(
                     elementWithDimensions, newX, newY,
-                    storyElements.value.map(el => ({ ...el, width: el.width || 100, height: el.height || 100 })),
+                    storyElements.value.map((el: StoryElementType) => ({ ...el, width: el.width || 100, height: el.height || 100 })),
                     { threshold: SNAP_THRESHOLD, canvasWidth: bgDimensions.width, canvasHeight: bgDimensions.height }
                 );
                 activeGuides.value = guides;
 
                 // If element is text or music image, apply specific clamping, otherwise apply snapping
                 if (element.type === 'text' || (element.type === 'image' && element.musicArtist)) {
-                    const mainImage = storyElements.value.find(el => el.id === 'main-image');
+                    const mainImage = storyElements.value.find((el: StoryElementType) => el.id === 'main-image');
                     if (mainImage) {
                         // Clamp horizontally to main image boundaries
                         const minX = mainImage.x;

@@ -2,10 +2,18 @@
 import TagList from './TagList.vue';
 import AltTextEditor from './AltTextEditor.vue';
 import type { ImageTagType } from '@/types/ImageTag';
+import type { DefineComponent } from 'vue';
+
+interface Tool {
+  id: number;
+  label: string;
+  icon: DefineComponent;
+  action?: string;
+}
 
 // --- PROPS ---
 defineProps<{
-  tools: { id: number; label: string; icon: any; action?: string }[];
+  tools: Tool[];
   tags: ImageTagType[];
   isCroppingMode: boolean;
   showAltTextInput: boolean;

@@ -8,7 +8,6 @@ import RotateRightIcon from 'vue-material-design-icons/RotateRight.vue';
 import TagIcon from 'vue-material-design-icons/Tag.vue';
 import FormatLetterCaseIcon from 'vue-material-design-icons/FormatLetterCase.vue';
 import FileImageIcon from 'vue-material-design-icons/FileImage.vue';
-import CloseIcon from 'vue-material-design-icons/Close.vue';
 
 import { ref, reactive, onMounted, onUnmounted, computed, watchEffect, nextTick, watch } from 'vue';
 import VueCropper from 'vue-cropperjs';
@@ -17,7 +16,6 @@ import 'cropperjs/dist/cropper.css';
 import { useStoryElementInteraction } from '@/composables/useStoryElementInteraction';
 import StoryElement from './StoryElement.vue';
 import ImageTag from './ImageTag.vue';
-import TagList from './TagList.vue';
 import EditorSidebar from './EditorSidebar.vue';
 import type { StoryElement as StoryElementType } from '@/types/StoryElement';
 import type { ImageTagType } from '@/types/ImageTag';
@@ -71,7 +69,7 @@ const newTag = ref<{ x: number, y: number, name: string, isCreating: boolean, us
 const newTagInputRef = ref<HTMLInputElement | null>(null);
 const searchQuery = ref('');
 
-const cropperRef = ref<any | null>(null);
+const cropperRef = ref<InstanceType<typeof VueCropper> | null>(null);
 const isCroppingMode = ref(false);
 
 const currentCropData = ref<CropData>({

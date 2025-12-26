@@ -158,7 +158,7 @@ const selectTrack = (track: MusicTrack) => {
 
                  <div v-for="track in displayedMusic" :key="track.id" class="group flex items-center justify-between py-2 px-2 hover:bg-gray-100 rounded-lg transition cursor-pointer" @click="selectTrack(track)">
                      <div class="flex items-center gap-3 overflow-hidden">
-                         <div class="relative w-10 h-10 flex-shrink-0 rounded overflow-hidden bg-gray-200">
+                         <div class="relative w-10 h-10 shrink-0 rounded overflow-hidden bg-gray-200">
                              <img :src="track.coverUrl" class="w-full h-full object-cover"/>
                              <div class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                  <button @click.stop="togglePreviewTrack(track)" class="text-white hover:scale-110 transition"><Pause v-if="currentPreviewTrackId === track.id && isPreviewPlaying" :size="18"/><Play v-else :size="18"/></button>

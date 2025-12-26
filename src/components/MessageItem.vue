@@ -94,18 +94,6 @@ const isSingleImageOrGif = computed(() => (isImageMessage(props.message) || isGi
 
 // --- CALL LOGIC HELPERS ---
 
-// Helper do formatowania czasu trwania
-const formatCallDuration = (duration: string | number | undefined) => {
-  if (!duration) return 'Zakończono';
-  if (typeof duration === 'string') return duration;
-
-  const minutes = Math.floor(duration / 60);
-  const seconds = duration % 60;
-
-  if (minutes > 0) return `${minutes} min`;
-  return `${seconds} s`;
-};
-
 // Tylko stylizacja ikony (kolor i komponent) - napisy są w template
 const callStyle = computed(() => {
   if (isCallRejectedMessage(props.message)) {
@@ -301,7 +289,7 @@ const toggleAudio = (msg: Message) => emit('toggle-audio-playback', msg);
             <PlayIcon v-else :size="18" class="ml-0.5" />
           </button>
 
-          <div class="flex-grow h-8 relative overflow-hidden flex items-center cursor-pointer" @click="toggleAudio(message)">
+          <div class="grow h-8 relative overflow-hidden flex items-center cursor-pointer" @click="toggleAudio(message)">
             <div class="flex items-center justify-between space-x-[2px] w-full px-1">
               <div
                 v-for="(height, idx) in visualizerBars"

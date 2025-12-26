@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { computed, DefineComponent } from 'vue'
+import { computed, type DefineComponent } from 'vue'
 import { useRouter } from 'vue-router'
-import Earth from 'vue-material-design-icons/Earth.vue'
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
 import Close from 'vue-material-design-icons/Close.vue'
 import ProfilePopper from '../ProfilePopper.vue'
 import { useTheme } from '@/composables/useTheme'
 import type { User } from '@/data/users'
-import type { PostLocation } from '@/components/PostCreator.vue'
+import type { PostLocation } from '@/types/Post'
 import LockIcon from 'vue-material-design-icons/Lock.vue'
 import EarthIcon from 'vue-material-design-icons/Earth.vue'
 import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue'
@@ -25,10 +24,10 @@ const props = defineProps<{
   taggedUsers?: User[]
   location?: PostLocation
   privacy?: string
-  postId?: number; // Add postId prop
+  postId?: string; // Add postId prop
 }>()
 
-const emit = defineEmits<{
+const _emit = defineEmits<{
   (e: 'menu'): void
   (e: 'close'): void
   (e: 'editPost', postId: number): void;
@@ -94,7 +93,7 @@ const privacyInfo = computed(() => {
 
       <div class="flex items-center -mr-2">
         <VDropdown placement="bottom-end" :triggers="['click']">
-          <button @click="$emit('menu')" class="rounded-full p-2 hover:bg-theme-hover transition-colors">
+          <button @click="_emit('menu')" class="rounded-full p-2 hover:bg-theme-hover transition-colors">
             <DotsHorizontal :size="20" :fillColor="isDark ? '#B0B3B8' : '#65676B'" />
           </button>
           <template #popper>
@@ -106,7 +105,7 @@ const privacyInfo = computed(() => {
             />
           </template>
         </VDropdown>
-        <button @click="$emit('close')" class="rounded-full p-2 hover:bg-theme-hover transition-colors">
+        <button @click="_emit('close')" class="rounded-full p-2 hover:bg-theme-hover transition-colors">
           <Close :size="20" :fillColor="isDark ? '#B0B3B8' : '#65676B'" />
         </button>
       </div>

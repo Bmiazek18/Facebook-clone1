@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
 import Cog from 'vue-material-design-icons/Cog.vue';
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue';
 import TextModeOptions from './StorySidebar/TextModeOptions.vue';
@@ -12,7 +11,7 @@ interface FontStyle {
   class: string;
 }
 
-const props = defineProps<{
+ defineProps<{
   isMusicModalOpen: boolean;
   isImageSelected: boolean;
   mode?: 'image' | 'text';

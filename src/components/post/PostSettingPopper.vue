@@ -110,7 +110,7 @@ const handleClick = (item: MenuItem) => {
         @click="handleClick(item)"
         class="group flex items-start w-full px-3 py-1.5 hover:bg-gray-100 transition-colors duration-200 text-left"
       >
-        <div class="mr-2 mt-0.5 text-[#1c1e21] flex-shrink-0">
+        <div class="mr-2 mt-0.5 text-[#1c1e21] shrink-0">
           <component :is="item.icon" :size="20" />
         </div>
 

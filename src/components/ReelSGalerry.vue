@@ -33,7 +33,7 @@
         <div
           v-for="reel in reels"
           :key="reel.id"
-          class="flex-shrink-0 mr-3 relative w-[160px] md:w-[200px] aspect-[9/16] rounded-xl overflow-hidden cursor-pointer group snap-start shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] bg-black"
+          class="shrink-0 mr-3 relative w-40 md:w-[200px] aspect-9/16 rounded-xl overflow-hidden cursor-pointer group snap-start shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] bg-black"
         >
           <video
             class="w-full h-full object-cover"
@@ -48,7 +48,7 @@
         </div>
 
         <div
-          class="flex flex-col items-center justify-center cursor-pointer w-[160px] md:w-[200px] aspect-[9/16] border border-gray-200 rounded-xl shadow-sm hover:bg-gray-100 transition duration-200 bg-gray-50 flex-shrink-0 snap-start"
+          class="flex flex-col items-center justify-center cursor-pointer w-40 md:w-[200px] aspect-[9/16] border border-gray-200 rounded-xl shadow-sm hover:bg-gray-100 transition duration-200 bg-gray-50 shrink-0 snap-start"
         >
           <div class="bg-white p-3 rounded-full shadow-sm mb-3">
              <ArrowRightIcon :size="24" fillColor="#4B5563" />
@@ -56,7 +56,7 @@
           <span class="text-gray-700 font-semibold text-sm">Zobacz wszystkie</span>
         </div>
 
-        <div class="flex-shrink-0" style="width: 1rem;"></div>
+        <div class="shrink-0" style="width: 1rem;"></div>
       </div>
 
       <button
@@ -104,19 +104,17 @@ const reels = ref<Reel[]>([
   { id: 6, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4' },
 ]);
 
-// --- LOGIKA ODTWARZANIA ---
-// Używamy async/await, aby obsłużyć Promise zwracany przez play()
+
 const handleMouseEnter = async (event: Event) => {
   const videoElement = event.target as HTMLVideoElement;
 
   try {
     videoElement.currentTime = 0;
-    // play() zwraca Promise. Jeśli szybko zjedziesz myszką, przeglądarka może wyrzucić błąd przerwania.
-    // Ignorujemy ten błąd w bloku catch.
+
     await videoElement.play();
-  } catch (err) {
-    // Błąd "The play() request was interrupted" jest normalny przy szybkim ruch myszką
-    // console.log(err);
+  } catch {
+    // Obsługa błędu (np. brak zgody użytkownika na autoplay)
+    console.warn('Nie można odtworzyć wideo automatycznie.');
   }
 };
 

@@ -67,9 +67,9 @@ const containerClass = computed(() =>
 <template>
   <div class="flex h-screen w-full bg-[#F0F2F5] font-sans text-[#050505] overflow-hidden antialiased">
 
-    <div class="w-[360px] flex-shrink-0 flex flex-col bg-white shadow-[2px_0_5px_rgba(0,0,0,0.05)] h-full z-20 relative border-r border-[#E5E5E5]">
+    <div class="w-[360px] shrink-0 flex flex-col bg-white shadow-[2px_0_5px_rgba(0,0,0,0.05)] h-full z-20 relative border-r border-[#E5E5E5]">
 
-      <div class="h-[60px] flex items-center px-4 border-b border-[#E5E5E5] flex-shrink-0">
+      <div class="h-[60px] flex items-center px-4 border-b border-[#E5E5E5] shrink-0">
         <h1 class="text-[20px] font-bold tracking-tight">Utwórz wydarzenie</h1>
       </div>
 
@@ -182,7 +182,7 @@ const containerClass = computed(() =>
 
     <div class="flex-1 flex flex-col h-full bg-[#F0F2F5] overflow-hidden">
 
-      <div class="bg-white px-5 py-3 shadow-sm flex items-center justify-between z-10 border-b border-[#E5E5E5] h-[60px] flex-shrink-0">
+      <div class="bg-white px-5 py-3 shadow-sm flex items-center justify-between z-10 border-b border-[#E5E5E5] h-[60px] shrink-0">
         <span class="font-bold text-[#65676B] text-[15px]">{{ previewTitle }}</span>
         <div class="flex gap-2 text-[#65676B]">
            <div
@@ -228,7 +228,7 @@ const containerClass = computed(() =>
                 <h2 :class="['font-bold text-[#050505] leading-tight break-words flex-1', form.eventName ? '' : 'text-[#BCC0C4]', viewMode === 'mobile' ? 'text-[22px]' : 'text-[28px]']">
                   {{ form.eventName || 'Nazwa wydarzenia' }}
                 </h2>
-                <button class="bg-[#1877F2] text-white font-semibold text-[14px] px-3 py-2 rounded-md hover:bg-[#166FE5] transition flex-shrink-0">
+                <button class="bg-[#1877F2] text-white font-semibold text-[14px] px-3 py-2 rounded-md hover:bg-[#166FE5] transition shrink-0">
                   Dołącz do transmisji na żywo
                 </button>
              </div>

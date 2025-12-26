@@ -32,11 +32,11 @@ const {
   videoToEdit,
 } = storeToRefs(createPostStore);
 
-const viewComponents: Record<string, DefineComponent> = {
-  creator: PostCreator as DefineComponent,
-  privacy: PrivacySelector as DefineComponent,
-  imageEditor: ImageEditor as DefineComponent,
-  videoEditor: VideoEditor as DefineComponent,
+const viewComponents: Record<string> = {
+  creator: PostCreator,
+  privacy: PrivacySelector,
+  imageEditor: ImageEditor,
+  videoEditor: videoEditor,
 };
 
 const handleNavigation = (viewName: string, data: string | null = null) => {

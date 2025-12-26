@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, type DefineComponent } from 'vue'
+import { ref, computed } from 'vue'
 import ThumbUp from 'vue-material-design-icons/ThumbUp.vue'
 import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
 import Heart from 'vue-material-design-icons/Heart.vue' // Add Heart icon for 'love' reaction
@@ -8,13 +8,13 @@ import Heart from 'vue-material-design-icons/Heart.vue' // Add Heart icon for 'l
 import CommentReplyInput from './CommentReplyInput.vue'
 import ProfilePopper from './ProfilePopper.vue'
 import { usePostReactions } from '@/composables/usePostReactions' // Re-use usePostReactions for comments
-import type { Comment } from '@/data/posts' // Import Comment interface
+import type { Comment } from '@/types/Post' // Import Comment interface
 
 const props = defineProps<{
     comment: Comment
     postAvatarSrc: string
     depth: number,
-    postId: number
+    postId: string
 }>()
 
 const replyPlaceholder = "Napisz odpowiedź..."
@@ -44,7 +44,7 @@ const avatarSizeClass = isRootComment ? 'w-8 h-8' : 'w-6 h-6'
 // --- Reactions for comments ---
 // Use a unique ID for comment reactions (e.g., combining post ID and comment ID)
 // For simplicity, using comment.id here directly.
-const { userReaction, likesCount, getReactionIcon, handleReaction } = usePostReactions(props.comment.id)
+const { userReaction, likesCount, handleReaction } = usePostReactions(props.comment.id)
 
 // Konfiguracja wyglądu reakcji (copied from PostItem)
 const getReactionConfig = (type: string) => {
@@ -129,7 +129,7 @@ const getReactionConfig = (type: string) => {
                          :class="{'rounded-lg max-h-40': !props.comment.content, 'max-h-40': props.comment.content}"/>
                 </div>
                  <div class="flex items-center ml-2 space-x-2 text-xs font-semibold text-gray-500 mt-1">
-                    <span class="cursor-pointer hover:underline" @click="handleReaction">{{ $t('reaction.like') }}</span>
+<span class="cursor-pointer hover:underline" @click="handleReaction('like')">{{ $t('reaction.like') }}</span>
                     <span
                         @click="toggleReplyInput"
                         class="cursor-pointer hover:underline"
@@ -174,7 +174,7 @@ const getReactionConfig = (type: string) => {
                         class="flex items-center ml-2 text-sm font-semibold text-blue-500 hover:text-blue-700 focus:outline-none"
                     >
                         <ChevronDown :size="18" class="mr-1 transition-transform" />
-                        <span>Pokaż {{ props.comment.replies.length }} odpowiedzi</span>
+                        <span>Pokaż {{ props.comment.replies?.length ?? 0 }} odpowiedzi</span>
                     </button>
                 </div>
 
@@ -217,7 +217,7 @@ const getReactionConfig = (type: string) => {
                          :class="{'rounded-lg max-h-40': !props.comment.content, 'max-h-40': props.comment.content}"/>
                 </div>
             <div class="flex items-center ml-2 space-x-2 text-xs font-semibold text-gray-500 mt-1">
-                <span class="cursor-pointer hover:underline" @click="handleReaction">{{ $t('reaction.like') }}</span>
+                <span class="cursor-pointer hover:underline" @click="handleReaction('like')">{{ $t('reaction.like') }}</span>
                   <span
                         @click="toggleReplyInput"
                         class="cursor-pointer hover:underline"
@@ -251,7 +251,7 @@ const getReactionConfig = (type: string) => {
                     class="flex items-center text-sm font-semibold text-blue-500 hover:text-blue-700 focus:outline-none"
                 >
                     <ChevronDown :size="18" class="mr-1 transition-transform" />
-                    <span>Pokaż {{ props.comment.replies.length }} odpowiedzi</span>
+                    <span>Pokaż {{ props.comment.replies?.length ?? 0 }} odpowiedzi</span>
                 </button>
             </div>
 

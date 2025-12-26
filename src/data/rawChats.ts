@@ -1,4 +1,4 @@
-import { users, getUserById } from './users'; // Import users data
+import { getUserById } from './users'; // Import users data
 
 
 

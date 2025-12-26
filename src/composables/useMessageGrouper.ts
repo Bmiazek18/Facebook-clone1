@@ -1,4 +1,3 @@
-import { computed } from 'vue';
 import type { Message } from '@/types/Message';
 
 const MAX_TIME_DIFF_MS = 5 * 60 * 1000;

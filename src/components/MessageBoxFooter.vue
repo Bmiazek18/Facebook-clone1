@@ -105,15 +105,6 @@ const addMessage = (content: string, sizeState: 'default' | 'small' | 'medium' |
 
 const newMessage = ref('');
 
-const fileInput = ref<HTMLInputElement | null>(null);
-const selectedImageUrl = ref<string | null>(null);
-const selectedGifUrl = ref<string | null>(null);
-
-
-const isInputEmpty = computed(() => {
-  return newMessage.value.trim().length === 0 && !selectedImageUrl.value && !selectedGifUrl.value;
-});
-
 
 // Media Selection
 const clearMediaSelection = () => {

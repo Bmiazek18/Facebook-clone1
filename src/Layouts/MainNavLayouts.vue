@@ -16,24 +16,17 @@ import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue'
 
 import ContactList from '@/components/ContactList.vue'
 
-import { useTheme } from '@/composables/useTheme'
 import NavbarRight from '@/components/NavbarRight.vue'
 
 type ActiveMenuType = 'profile' | 'notifications' | 'message' | null;
 
 const route = useRoute()
-const { isDark } = useTheme()
 
 // Referencje
 const activeMenu = ref<ActiveMenuType>(null)
 const isSearchFocused = ref(false)
 const navLeft = ref(null)
 const menuTarget = ref(null)
-
-const toggleMenu = (menuName: ActiveMenuType) => {
-  isSearchFocused.value = false;
-  activeMenu.value = activeMenu.value === menuName ? null : menuName
-}
 
 // Zamykanie wyszukiwarki po kliknięciu poza nią
 onClickOutside(navLeft, () => {
@@ -71,7 +64,7 @@ onClickOutside(menuTarget, () => {
 
       <div class="z-20 flex items-center w-full">
         <Transition name="slide-fade" mode="out-in">
-          <RouterLink v-if="!isSearchFocused" to="/" class="mr-2 min-w-[40px]">
+          <RouterLink v-if="!isSearchFocused" to="/" class="mr-2 min-w-10">
             <img class="w-10" src="../assets/images/FacebookLogoCircle.png" />
           </RouterLink>
 

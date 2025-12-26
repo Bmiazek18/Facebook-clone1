@@ -17,7 +17,7 @@
       </button>
     </div>
 
-    <div class="p-3 flex flex-col flex-grow">
+    <div class="p-3 flex flex-col grow">
       <h3 class="text-[17px] font-semibold text-[#050505] mb-1 cursor-pointer hover:underline truncate">
         {{ person.name }}
       </h3>

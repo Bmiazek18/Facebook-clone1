@@ -7,7 +7,7 @@
       <button
         v-if="!isStart"
         @click="scrollLeft"
-        class="absolute top-1/2 z-30 left-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg border dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-150 z-10"
+        class="absolute top-1/2 z-30 left-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg border dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-150"
         style="margin-left: 64.5px;"
       >
         <ChevronLeftIcon :size="24" fillColor="#4B5563" />

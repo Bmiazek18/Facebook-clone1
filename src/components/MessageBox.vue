@@ -218,7 +218,7 @@ defineExpose({ scrollToMessage });
                     @reply="replyTarget = $event"
                     @toggle-audio-playback="toggleAudioPlayback"
                     @add-reaction="({ messageId, emoji }) => handleAddReaction(messageId, emoji)"
-                    @open-modal="$emit('open-modal', $event)"
+                    @open-modal="emit('open-modal', $event)"
                   />
         </div>
       </main>

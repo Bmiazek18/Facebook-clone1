@@ -4,9 +4,9 @@ import HoverScrollbar from './HoverScrollbar.vue'
 
 import CommentItem from './CommentItem.vue'
 
-import type { Comment } from '@/data/posts'
+
 import PostItem from './PostItem.vue'
-import type { Post } from '@/data/posts'
+import type { Post } from '@/types/Post';
 import CommentReplyInput from './CommentReplyInput.vue'
 
 const props = defineProps<{
@@ -34,7 +34,7 @@ const props = defineProps<{
 
         </HoverScrollbar>
 
-        <div class="p-3 sm:p-4 border-t border-theme-border flex-shrink-0 bg-white dark:bg-[#242526] z-10">
+        <div class="p-3 sm:p-4 border-t border-theme-border shrink-0 bg-white dark:bg-[#242526] z-10">
            <CommentReplyInput
                 :post-avatar-src="props.post.authorAvatar"
                 placeholder="Napisz komentarz..."
@@ -46,11 +46,7 @@ const props = defineProps<{
 </template>
 
 <style scoped>
-/* TO JEST KLUCZOWE ROZWIĄZANIE:
-   Używamy :deep(), aby zmusić wewnętrzny div komponentu HoverScrollbar
-   do zajęcia 100% wysokości dostępnej w flex-1.
-   Bez tego div w środku rośnie razem z treścią i scroll się nie pojawia.
-*/
+
 :deep(.force-scroll-height) > div {
     height: 100%;
 }

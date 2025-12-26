@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, computed, onUnmounted } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import type { LogEvent } from '@ffmpeg/ffmpeg/dist/esm/types';
@@ -107,7 +107,9 @@ const generateFrames = async () => {
         ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
         frames.value.push(canvas.toDataURL('image/jpeg', 0.5));
       }
-    } catch (e) {}
+    } catch {
+      // ignore
+    }
   }
 };
 
@@ -155,11 +157,11 @@ const transcode = async () => {
     }
 
     message.value = 'Pobieranie pliku wideo...';
-    // Zapis pliku do pamięci WASM
+
     await ffmpeg.writeFile('input.mp4', await fetchFile(props.video));
 
     message.value = 'Przycinanie wideo...';
-    // Wykonanie komendy cięcia (zachowujemy logikę edytora: -ss, -t, -c copy)
+
     await ffmpeg.exec([
       '-i', 'input.mp4',
       '-ss', range.start.toString(),
@@ -192,7 +194,7 @@ const transcode = async () => {
 <template>
   <div class="flex h-[90vh] w-full bg-[#2c2c2c] overflow-hidden font-sans select-none">
 
-    <aside class="w-80 bg-white flex flex-col shadow-lg z-20 flex-shrink-0">
+    <aside class="w-80 bg-white flex flex-col shadow-lg z-20 shrink-0">
       <div>
         <div class="bg-blue-50 border-l-4 border-blue-600 p-4 flex items-center justify-between cursor-pointer">
           <div class="flex items-center gap-3 text-blue-700 font-semibold">
@@ -230,7 +232,7 @@ const transcode = async () => {
       </div>
 
       <div class="h-32 bg-[#1f1f1f] border-t border-gray-700 flex items-center px-8 gap-6 z-10">
-        <button @click="togglePlay" class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-black hover:bg-gray-800 text-white rounded-full transition border border-gray-600">
+        <button @click="togglePlay" class="shrink-0 w-12 h-12 flex items-center justify-center bg-black hover:bg-gray-800 text-white rounded-full transition border border-gray-600">
           <Pause v-if="isPlaying" :size="24" />
           <Play v-else :size="24" />
         </button>
@@ -267,7 +269,7 @@ const transcode = async () => {
              <div class="font-mono text-white text-lg font-bold">{{ (range.end - range.start).toFixed(1) }}s</div>
         </div>
 
-        <button @click="transcode" :disabled="isProcessing" class="flex-shrink-0 w-14 h-14 flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition shadow-xl disabled:opacity-50">
+        <button @click="transcode" :disabled="isProcessing" class="shrink-0 w-14 h-14 flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition shadow-xl disabled:opacity-50">
           <span v-if="isProcessing" class="animate-spin w-6 h-6 border-2 border-white rounded-full border-t-transparent"></span>
           <Check v-else :size="28"/>
         </button>

@@ -38,16 +38,16 @@
       {{ post.content }}
     </div>
 
-    <div v-if="post.reactionCount > 0 || post.commentCount > 0" class="flex items-center justify-between text-[13px] text-gray-500 py-2.5">
+    <div v-if="(post.reactionCount ?? 0) > 0 || (post.commentCount ?? 0) > 0" class="flex items-center justify-between text-[13px] text-gray-500 py-2.5">
         <div class="flex items-center">
-            <div v-if="post.reactionCount > 0" class="z-10 bg-[#fb404b] rounded-full p-[3px] border-2 border-white flex items-center justify-center -mr-1">
+            <div v-if="(post.reactionCount ?? 0) > 0" class="z-10 bg-[#fb404b] rounded-full p-[3px] border-2 border-white flex items-center justify-center -mr-1">
                 <HeartIcon class="text-white fill-current w-2.5 h-2.5" />
             </div>
              <span v-if="post.isLiked" class="hover:underline cursor-pointer ml-2">Bartosz Miazek</span>
         </div>
 
-        <div v-if="post.commentCount > 0" class="hover:underline cursor-pointer">
-             {{ post.commentCount }} komentarz<span v-if="post.commentCount > 1">y</span>
+        <div v-if="(post.commentCount ?? 0) > 0" class="hover:underline cursor-pointer">
+             {{ post.commentCount }} komentarz<span v-if="(post.commentCount ?? 0) > 1">y</span>
         </div>
     </div>
 
@@ -95,14 +95,13 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue';
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
 import HeartOutlineIcon from 'vue-material-design-icons/HeartOutline.vue';
 import HeartIcon from 'vue-material-design-icons/Heart.vue';
 import CommentOutlineIcon from 'vue-material-design-icons/CommentOutline.vue';
 import ShareOutlineIcon from 'vue-material-design-icons/ShareOutline.vue'; // Uwaga: ShareVariant często wygląda inaczej, ShareOutline jest bliższe
 import CommentItem from './CommentItem.vue';
-import type { Post, Comment } from '@/data/posts';
+import type { Post } from '@/types/Post';
 import CommentReplyInput from './CommentReplyInput.vue';
 const currentUserAvatar = "https://i.pravatar.cc/150?u=me";
 

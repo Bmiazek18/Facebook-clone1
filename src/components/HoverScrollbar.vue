@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted, toRefs, watchEffect } from 'vue'
+import { ref, onMounted, toRefs, watchEffect, onBeforeUnmount } from 'vue'
 import { useElementHover, useResizeObserver } from '@vueuse/core'
 
 const props = defineProps<{
@@ -124,6 +124,10 @@ onMounted(() => {
   }
   contentRef.value?.addEventListener('wheel', wheelHandler, { passive: true })
 })
+
+onBeforeUnmount(() => {
+  contentRef.value?.removeEventListener('wheel', wheelHandler);
+});
 </script>
 
 <style scoped>

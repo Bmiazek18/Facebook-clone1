@@ -14,12 +14,12 @@
       group
       transition duration-300 ease-in-out
       cursor-pointer
-      flex-shrink-0
+      shrink-0
     "
     :style="{ backgroundImage: `url(${story.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }"
   >
 
-    <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/50 to-transparent z-10"></div>
+    <div class="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-black via-black/50 to-transparent z-10"></div>
 
     <div class="absolute inset-x-0 top-0 h-[70%] z-20 p-2">
       <div

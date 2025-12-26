@@ -1,6 +1,6 @@
 <template>
   <div class="
-     w-[113px] h-[200px] mt-3 rounded-xl shadow-sm overflow-hidden flex flex-col relative group transition duration-300 ease-in-out cursor-pointer flex-shrink-0
+     w-[113px] h-[200px] mt-3 rounded-xl shadow-sm overflow-hidden flex flex-col relative group transition duration-300 ease-in-out cursor-pointer shrink-0
     ">
 
     <div class="absolute inset-x-0 top-0 h-[70%] z-0">

@@ -49,7 +49,7 @@ const messageInput = ref('');
 <template>
   <div class="flex h-screen w-full bg-black overflow-hidden font-sans">
 
-    <aside class="w-[360px] flex-shrink-0 bg-white border-r border-gray-300 flex flex-col h-full z-10 hidden md:flex">
+    <aside class="w-[360px] shrink-0 bg-white border-r border-gray-300 flex flex-col h-full z-10 hidden md:flex">
       <div class="p-4 border-b border-gray-200">
         <h1 class="text-2xl font-bold text-black">Relacje</h1>
         <div class="flex gap-4 mt-2 text-sm font-medium text-blue-500 cursor-pointer">

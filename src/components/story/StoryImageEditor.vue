@@ -117,7 +117,7 @@ const {
   selectedElementId,
   startDrag,
   startResize,
-  stopInteraction,
+
   enableEdit,
   disableEdit,
   onBackgroundClick,

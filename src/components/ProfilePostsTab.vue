@@ -74,6 +74,8 @@ const handleDeletePost = (postId: string) => {
             <CreatePostBox
                 :image="userImage"
                 :placeholder="`Co słychać, ${userName.split(' ')[0]}?`"
+                :author-name="userName"
+                :author-avatar="userImage"
             />
 
             <!-- Shared Posts using PostItem -->

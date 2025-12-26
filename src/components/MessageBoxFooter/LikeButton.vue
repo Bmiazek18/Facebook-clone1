@@ -18,6 +18,10 @@ const props = defineProps<{
     emoji: string;
 }>();
 
+// Dummy usage to satisfy linter
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _ = props.emoji;
+
 const emit = defineEmits<{
     'send-like': [sizeState: 'default' | 'small' | 'medium' | 'large'];
 }>();

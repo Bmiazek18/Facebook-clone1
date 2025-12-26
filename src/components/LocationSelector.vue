@@ -266,7 +266,7 @@ onMounted(initLocation);
               class="flex items-center gap-4 p-3 hover:bg-gray-100 cursor-pointer rounded-xl transition"
               :class="{'bg-blue-50': selectedLocation?.title === loc.title}">
 
-            <div class="w-10 h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center flex-shrink-0">
+            <div class="w-10 h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center shrink-0">
               <map-marker-icon v-if="loc.type === 'city'" :size="22" />
               <office-building-icon v-else-if="loc.type === 'district'" :size="22" />
               <tree-icon v-else-if="loc.type === 'park'" :size="22" />

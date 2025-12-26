@@ -105,7 +105,7 @@ const getPercentage = (votes: number): string => {
 </script>
 
 <template>
-  <div class="w-64 bg-[#F2F2F7] rounded-[24px] p-4 shadow-sm font-sans select-none">
+  <div class="w-64 bg-[#F2F2F7] rounded-3xl p-4 shadow-sm font-sans select-none">
 
     <h2 class="text-center text-base font-bold text-black mb-3 leading-tight">
       {{ question }}
@@ -124,7 +124,7 @@ const getPercentage = (votes: number): string => {
           </span>
 
           <div
-            class="w-5 h-5 rounded-full border-[2px] transition-all duration-200 flex items-center justify-center"
+            class="w-5 h-5 rounded-full border-2 transition-all duration-200 flex items-center justify-center"
             :class="[
               selectedIds.has(option.id)
                 ? 'border-black bg-black'

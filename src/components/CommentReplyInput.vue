@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import EmoticonCoolOutline from 'vue-material-design-icons/EmoticonCoolOutline.vue';
 import EmoticonHappyOutline from 'vue-material-design-icons/EmoticonHappyOutline.vue';
 import CameraOutline from 'vue-material-design-icons/CameraOutline.vue';
 import FileGifBox from 'vue-material-design-icons/FileGifBox.vue';
-import StickerEmoji from 'vue-material-design-icons/StickerEmoji.vue';
 import Send from 'vue-material-design-icons/Send.vue';
 import ChevronDown from 'vue-material-design-icons/ChevronDown.vue';
 import GifSelector from './GifSelector.vue';
@@ -15,7 +13,7 @@ import LazyEmojiPicker from './LazyEmojiPicker.vue';
 const props = defineProps<{
     postAvatarSrc: string
     placeholder?: string,
-    postId: number,
+    postId: string,
     parentId?: number | null
 }>()
 
@@ -85,7 +83,7 @@ const autoResize = (event: Event) => {
 
 <template>
     <div class="flex items-start w-full font-sans">
-        <div class="relative flex-shrink-0 mr-1.5 group cursor-pointer">
+        <div class="relative shrink-0 mr-1.5 group cursor-pointer">
             <img
                 class="w-8 h-8 rounded-full object-cover"
                 :src="props.postAvatarSrc"
@@ -96,7 +94,7 @@ const autoResize = (event: Event) => {
             </div>
         </div>
 
-        <div class="flex-grow bg-[#f0f2f5] rounded-[18px] px-3 py-2 relative group-focus-within:bg-gray-100 transition-colors">
+        <div class="grow bg-[#f0f2f5] rounded-[18px] px-3 py-2 relative group-focus-within:bg-gray-100 transition-colors">
             <div v-if="selectedImage" class="relative mb-2">
                 <img :src="selectedImage" class="rounded-lg max-h-40" />
                 <button @click="removeImage" class="absolute top-2 right-2 bg-gray-800 text-white rounded-full p-1 text-xs">X</button>
