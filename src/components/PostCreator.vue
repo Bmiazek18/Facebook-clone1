@@ -14,6 +14,8 @@ import LockIcon from 'vue-material-design-icons/Lock.vue';
 import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue';
 import FormatColorTextIcon from 'vue-material-design-icons/FormatColorText.vue';
 import EmoticonHappyIcon from 'vue-material-design-icons/EmoticonHappy.vue';
+import CloseIcon from 'vue-material-design-icons/Close.vue'; // Dodano ikonę zamknięcia
+import WebIcon from 'vue-material-design-icons/Web.vue'; // Dodano ikonę web
 import LazyEmojiPicker from './LazyEmojiPicker.vue';
 import StoryTextCard from './StoryTextCard.vue';
 import MediaPreview from './MediaPreview.vue';
@@ -31,7 +33,8 @@ import MapPreview from './MapPreview.vue';
 import type { PostData } from '@/types/StoryElement';
 import type { User } from '@/data/users';
 import { getAllUsers } from '@/data/users';
-import type { Post } from '@/types/Post';
+import type { Post } from '@/data/posts';
+// import { getPostById } from '@/data/posts'; // (nieużywane w tym fragmencie)
 
 const props = defineProps<{
   sharedPost?: PostData | null;
@@ -66,17 +69,27 @@ const matchingUsers = ref<User[]>([]);
 const showUserDropdown = ref(false);
 const isLocalUpdate = ref(false);
 
+// --- LINK PREVIEW STATE ---
+interface LinkPreviewData {
+  url: string;
+  title: string;
+  description: string;
+  image?: string;
+  domain: string;
+}
+const linkPreview = ref<LinkPreviewData | null>(null);
+const isPreviewDismissed = ref(false); // Flaga, czy użytkownik ręcznie zamknął podgląd
+let linkCheckTimeout: ReturnType<typeof setTimeout> | null = null;
+
 const isPublishButtonDisabled = computed(() => {
   if (props.sharedPost) return false;
-  return !postContent.value.trim() && !selectedImage.value?.url && !selectedLocation.value && !selectedGif.value;
+  return !postContent.value.trim() && !selectedImage.value?.url && !selectedLocation.value && !selectedGif.value && !linkPreview.value;
 });
 
 // --- GLÓWNA LOGIKA EDYCJI ---
 
 const onContentInput = (e: Event) => {
   if (!contentEditableDiv.value) return;
-
-  // Oznaczamy, że zmiana pochodzi z klawiatury (blokuje Watcher)
   isLocalUpdate.value = true;
 
   let newContent = '';
@@ -87,37 +100,22 @@ const onContentInput = (e: Event) => {
       newContent += node.textContent;
     } else if (node.nodeType === Node.ELEMENT_NODE) {
       const el = node as HTMLElement;
-
-      // Obsługa tagowania użytkownika
       if (el.dataset.userId) {
         newContent += `[@${el.dataset.userId}]`;
-      }
-      // Obsługa nowej linii
-      else if (el.tagName === 'BR') {
+      } else if (el.tagName === 'BR') {
         newContent += '\n';
-      }
-      // Obsługa Linków (pobieramy czysty tekst z wewnątrz <a>)
-      else if (el.tagName === 'A') {
+      } else if (el.tagName === 'A') {
         newContent += el.innerText;
-      }
-      // Każdy inny element
-      else {
+      } else {
         newContent += el.innerText;
       }
     }
   });
 
   createPostStore.setPostContent(newContent);
-
-  // KLUCZOWA POPRAWKA: Wywołujemy renderowanie ręcznie,
-  // ponieważ Watcher jest zablokowany przez isLocalUpdate.
-  // To pozwoli wykryć linki w locie.
   renderContentEditable();
-
-  // Logika @User (bez zmian)
   handleUserTagging();
 
-  // Reset flagi po zakończeniu cyklu
   nextTick(() => {
     isLocalUpdate.value = false;
   });
@@ -153,21 +151,95 @@ const handleUserTagging = () => {
   }
 };
 
-// --- WATCHER ---
+// --- WATCHER DLA TREŚCI ---
 watch(postContent, (newValue) => {
-  // Jeśli zmiana pochodzi z onContentInput (pisanie), ignorujemy Watcher,
-  // bo renderContentEditable wywołaliśmy już ręcznie wyżej.
-  // Jeśli zmiana pochodzi z zewnątrz (np. emoji picker), wykonujemy render.
-  if (isLocalUpdate.value) return;
-  renderContentEditable();
+  // 1. Rendering (istniejąca logika)
+  if (!isLocalUpdate.value) {
+    renderContentEditable();
+  }
+
+  // 2. Wykrywanie linków (debounce 500ms)
+  if (linkCheckTimeout) clearTimeout(linkCheckTimeout);
+
+  linkCheckTimeout = setTimeout(() => {
+    checkForLinks(newValue);
+  }, 500);
 });
+
+// --- LOGIKA LINK PREVIEW ---
+const checkForLinks = async (text: string) => {
+  // Prosty regex do wykrywania pierwszego URL
+  const urlRegex = /(https?:\/\/[^\s]+)/;
+  const match = text.match(urlRegex);
+
+  if (match) {
+    const url = match[0];
+
+    // Jeśli to ten sam URL co wcześniej i użytkownik go zamknął, nie pokazuj ponownie
+    if (linkPreview.value?.url === url || (isPreviewDismissed.value && lastCheckedUrl === url)) {
+      return;
+    }
+
+    lastCheckedUrl = url;
+    isPreviewDismissed.value = false; // Reset flagi przy nowym linku
+
+    await fetchLinkMetadata(url);
+  } else {
+    // Jeśli usunięto link z tekstu, usuwamy podgląd
+    linkPreview.value = null;
+    lastCheckedUrl = '';
+  }
+};
+
+let lastCheckedUrl = '';
+
+// Symulacja Backendu (normalnie tu byłby fetch do Twojego API proxy)
+const fetchLinkMetadata = async (url: string) => {
+  // Tutaj normalnie: const response = await fetch(`/api/meta-tags?url=${encodeURIComponent(url)}`);
+
+  // MOCK: Symulacja odpowiedzi dla przykładu ze screena
+  if (url.includes('wp.pl')) {
+    linkPreview.value = {
+      url: url,
+      domain: 'www.wp.pl',
+      title: 'Wirtualna Polska - Wszystko co ważne',
+      description: 'Najnowsze wiadomości z Polski i świata.',
+      image: 'https://v.wpimg.pl/QUstbi80YyUlCnc_Tgx_IE8kKVx4Cz0_Bi9MLwI-PihLeA', // Przykładowy obrazek z WP
+    };
+  } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+     linkPreview.value = {
+      url: url,
+      domain: 'youtube.com',
+      title: 'YouTube Video',
+      description: 'Oglądaj filmy i muzykę, którą kochasz.',
+      image: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
+    };
+  } else {
+    // Generyczny fallback dla innych linków
+     linkPreview.value = {
+      url: url,
+      domain: new URL(url).hostname,
+      title: 'Podgląd linku',
+      description: url,
+      image: undefined
+    };
+  }
+
+  nextTick(() => emit('updateHeight'));
+};
+
+const removeLinkPreview = () => {
+  linkPreview.value = null;
+  isPreviewDismissed.value = true; // Zapamiętaj, że dla tego URL user nie chce podglądu
+  nextTick(() => emit('updateHeight'));
+};
+
+// --- ISTNIEJĄCE FUNKCJE POMOCNICZE ---
 
 const renderContentEditable = () => {
   if (!contentEditableDiv.value) return;
 
   let htmlContent = postContent.value || '';
-
-  // 1. Sanityzacja
   htmlContent = htmlContent
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -176,7 +248,6 @@ const renderContentEditable = () => {
 
   const allUsers = getAllUsers();
 
-  // 2. Obsługa @User
   htmlContent = htmlContent.replace(/\[@(\d+)\]/g, (match, userId) => {
     const user = allUsers.find(u => u.id === parseInt(userId));
     if (user) {
@@ -185,18 +256,12 @@ const renderContentEditable = () => {
     return match;
   });
 
-  // 3. Obsługa LINKÓW
-  // Regex: Szuka http/https, potem znaków, które nie są spacją ani <.
-  // Lookahead (?=[\s\u00A0]|<br>|$): Wymaga, aby po linku była spacja (zwykła lub twarda), <br> lub koniec tekstu.
   htmlContent = htmlContent.replace(/(https?:\/\/[^\s<]+)(?=[\s\u00A0]|<br>)/g, (match) => {
     return `<a href="${match}" target="_blank" rel="noopener noreferrer" contenteditable="false" class="text-blue-600 hover:underline cursor-pointer font-medium">${match}</a>`;
   });
 
-  // Ważne: Podmieniamy HTML tylko jeśli faktycznie się zmienił.
-  // Dzięki temu, gdy piszesz zwykły tekst, kursor nie wariuje.
   if (contentEditableDiv.value.innerHTML !== htmlContent) {
     contentEditableDiv.value.innerHTML = htmlContent;
-    // Kursor przenosimy na koniec tylko wtedy, gdy nastąpiła zmiana struktury (np. powstał link)
     moveCursorToEnd();
   }
 };
@@ -214,9 +279,7 @@ const moveCursorToEnd = () => {
   });
 };
 
-const onBackspace = (e: KeyboardEvent) => {
-  // Opcjonalna obsługa
-};
+const onBackspace = (e: KeyboardEvent) => { /* Opcjonalne */ };
 
 const selectUser = async (user: User) => {
   if (!contentEditableDiv.value) return;
@@ -224,17 +287,13 @@ const selectUser = async (user: User) => {
   const newContent = currentText.replace(/@([^\s]*)$/, `[@${user.id}] `);
   createPostStore.setPostContent(newContent);
   showUserDropdown.value = false;
-
-  // Ponieważ to zmiana "zewnętrzna" (nie bezpośrednio z klawiatury w polu),
-  // musimy wymusić aktualizację widoku i fokusu.
-  isLocalUpdate.value = false; // Odblokuj watcher
+  isLocalUpdate.value = false;
   nextTick(() => {
       contentEditableDiv.value?.focus();
       moveCursorToEnd();
   });
 };
 
-// --- PRIVACY & UI ---
 const privacyInfo = computed(() => {
   type Info = { label: string; icon: DefineComponent | null };
   const map: Record<string, Info> = {
@@ -266,18 +325,13 @@ const handleImageSelect = (event: Event) => {
 };
 
 const handleEditImage = () => {
-  if (selectedImage.value) {
-    emit('navigate', 'imageEditor', selectedImage.value.url);
-  }
+  if (selectedImage.value) emit('navigate', 'imageEditor', selectedImage.value.url);
 };
 
 const handleEditVideo = () => {
-  if (selectedImage.value) {
-    emit('navigate', 'videoEditor', selectedImage.value.url);
-  }
+  if (selectedImage.value) emit('navigate', 'videoEditor', selectedImage.value.url);
 };
 
-// --- STORY-LIKE TEXT CARD ---
 const showTextCard = ref(selectedCardBgId.value !== 0);
 
 interface CardBackground { id: number; class: string; textClass?: string }
@@ -325,9 +379,7 @@ const removeLocation = () => {
   createPostStore.setLocation(null);
 };
 
-// --- EMOJI ---
 const addEmoji = (e: { native: string }) => {
-  // Emoji to zmiana zewnętrzna, więc watcher zadziała i sformatuje tekst
   createPostStore.setPostContent(postContent.value + e.native);
 };
 
@@ -336,10 +388,11 @@ watch(() => selectedGif.value, () => {
 });
 
 const handlePublish = () => {
+  // Tutaj możesz dodać linkPreview do obiektu Post, jeśli chcesz go zapisać
   const newPost: Post = {
     id: Date.now(),
     content: postContent.value,
-    images: selectedImage.value ? [selectedImage.value.url] : [],
+    images: selectedImage.value ? [{ src: selectedImage.value.url, tags: selectedImage.value.tags }] : [],
     videoUrl: null,
     authorName: props.authorName,
     authorAvatar: props.authorAvatar,
@@ -351,10 +404,14 @@ const handlePublish = () => {
     taggedUsers: taggedUsers.value,
     location: selectedLocation.value,
     gif: selectedGif.value,
+    selectedCardBgId: selectedCardBgId.value,
+    privacy: selectedPrivacy.value, // Add privacy here
+    // linkPreview: linkPreview.value // Opcjonalnie rozszerz interfejs Post
   };
   postsStore.addPost(newPost);
   emit('close');
   createPostStore.reset();
+  linkPreview.value = null; // Reset
 };
 </script>
 
@@ -454,7 +511,6 @@ const handlePublish = () => {
             class="absolute bottom-0 left-0 w-full h-0 pointer-events-none"
           >
             <div class="w-full h-0"></div>
-
             <template #popper>
               <div class="user-dropdown-content w-64 max-h-60 overflow-y-auto pointer-events-auto">
                 <ul>
@@ -472,6 +528,34 @@ const handlePublish = () => {
             </template>
           </VDropdown>
 
+      </div>
+
+      <div v-if="linkPreview && !selectedImage && !selectedGif" class="relative mb-3 group">
+        <button
+          @click="removeLinkPreview"
+          class="absolute top-2 right-2 z-20 bg-gray-900 bg-opacity-60 hover:bg-opacity-80 rounded-full p-1 text-white transition-all opacity-0 group-hover:opacity-100"
+        >
+          <close-icon :size="16" />
+        </button>
+
+        <a :href="linkPreview.url" target="_blank" class="block bg-gray-100 rounded-lg overflow-hidden border border-gray-300 hover:bg-gray-200 transition-colors cursor-pointer no-underline">
+           <div v-if="linkPreview.image" class="w-full h-48 overflow-hidden bg-gray-200 relative border-b border-gray-300">
+             <img :src="linkPreview.image" class="w-full h-full object-cover" alt="Link preview" />
+           </div>
+
+           <div class="p-3">
+             <div class="text-xs text-gray-500 uppercase font-semibold mb-1 flex items-center truncate">
+               <web-icon :size="12" class="mr-1" v-if="!linkPreview.image" />
+               {{ linkPreview.domain }}
+             </div>
+             <div class="font-bold text-gray-900 text-[15px] leading-snug mb-0.5 line-clamp-2">
+               {{ linkPreview.title }}
+             </div>
+             <div class="text-gray-600 text-sm leading-snug line-clamp-1">
+               {{ linkPreview.description }}
+             </div>
+           </div>
+        </a>
       </div>
 
       <StoryTextCard
@@ -497,20 +581,20 @@ const handlePublish = () => {
 
       <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleImageSelect" />
 
-      <div v-if="sharedPost" class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
-        <img v-if="sharedPost.imageUrl" :src="sharedPost.imageUrl" class="w-full h-48 object-cover" />
+      <div v-if="props.sharedPost" class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+        <img v-if="props.sharedPost.imageUrl" :src="props.sharedPost.imageUrl" class="w-full h-48 object-cover" />
         <div class="p-3 bg-gray-50">
           <div class="flex items-center gap-2 mb-2">
-            <img :src="sharedPost.authorAvatar" class="w-8 h-8 rounded-full object-cover" />
+            <img :src="props.sharedPost.authorAvatar" class="w-8 h-8 rounded-full object-cover" />
             <div>
-              <p class="font-semibold text-gray-900 text-sm">{{ sharedPost.authorName }}</p>
+              <p class="font-semibold text-gray-900 text-sm">{{ props.sharedPost.authorName }}</p>
               <div class="flex items-center gap-1 text-xs text-gray-500">
                 <earth-icon :size="10" />
                 <span>Publiczny</span>
               </div>
             </div>
           </div>
-          <p class="text-gray-800 text-sm line-clamp-3">{{ sharedPost.content }}</p>
+          <p class="text-gray-800 text-sm line-clamp-3">{{ props.sharedPost.content }}</p>
         </div>
       </div>
     </HoverScrollbar>
@@ -540,6 +624,20 @@ const handlePublish = () => {
 </template>
 
 <style scoped>
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .line-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
