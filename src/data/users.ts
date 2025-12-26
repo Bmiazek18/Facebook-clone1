@@ -12,6 +12,7 @@ export interface User {
   postsCount: number
   cover: string
   status: 'online' | 'offline'
+  lastActive?: string // Add this line
   job?: string
   company?: string
   education?: string

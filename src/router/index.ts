@@ -63,7 +63,7 @@ const router = createRouter({
       name: 'chatMessages',
       component: () => import('@/views/ChatView.vue'),
       props: true,
-      meta: { showMainLayout: false },
+
     },
      {
       path: '/stories/create',
@@ -96,7 +96,8 @@ const router = createRouter({
       path: '/photo/:postId/:imageIndex',
       name: 'photo',
       component: () => import('../views/GalleryView.vue'),
-      props: true
+      props: true,
+        meta: { showMainLayout: false },
     },
     {
       path: '/hashtag/:hashtag',

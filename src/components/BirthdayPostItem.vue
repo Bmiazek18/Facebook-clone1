@@ -84,10 +84,11 @@
              :comment="comment"
              :postAvatarSrc="currentUserAvatar"
              :depth="0"
+             :postId="post.id"
         />
 
     <div class="flex items-start mt-2">
-         <CommentReplyInput :postAvatarSrc="currentUserAvatar" placeholder="Napisz komentarz..." />
+         <CommentReplyInput :postAvatarSrc="currentUserAvatar" placeholder="Napisz komentarz..." :postId="post.id" />
     </div>
 
   </div>
@@ -101,23 +102,9 @@ import HeartIcon from 'vue-material-design-icons/Heart.vue';
 import CommentOutlineIcon from 'vue-material-design-icons/CommentOutline.vue';
 import ShareOutlineIcon from 'vue-material-design-icons/ShareOutline.vue'; // Uwaga: ShareVariant często wygląda inaczej, ShareOutline jest bliższe
 import CommentItem from './CommentItem.vue';
-import type { Comment } from './CommentItem.vue';
+import type { Post, Comment } from '@/data/posts';
 import CommentReplyInput from './CommentReplyInput.vue';
 const currentUserAvatar = "https://i.pravatar.cc/150?u=me";
-
-
-export interface Post {
-  id: number;
-  authorName: string;
-  authorAvatar: string;
-  date: string;
-  content: string;
-  isLiked: boolean;
-  likedType?: 'like' | 'super' | null;
-  reactionCount: number;
-  commentCount: number;
-  comments: Comment[];
-}
 
 defineProps<{
   post: Post;

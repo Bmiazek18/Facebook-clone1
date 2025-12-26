@@ -4,7 +4,7 @@ import { defineStore } from 'pinia';
 type ChatId = string | number;
 
 export const useChatStore = defineStore('chat', () => {
-  const activeBoxIds = ref<ChatId[]>(['chat-1', 'chat-2']);
+  const activeBoxIds = ref<ChatId[]>([]);
   const minimizedBoxCache = ref<ChatId[]>([]);
 
   const getBoxIds = computed(() => activeBoxIds.value);

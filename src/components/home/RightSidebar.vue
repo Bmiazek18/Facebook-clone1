@@ -11,14 +11,7 @@ defineProps<{
   birthdayUser?: string;
 }>();
 
-interface Contact {
-  id: number | string;
-  name: string;
-  avatar: string;
-  isMeta?: boolean;
-  isOnline?: boolean;
-  lastActive?: string;
-}
+
 
 
 import rawChats from '@/data/rawChats';

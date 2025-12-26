@@ -1,5 +1,5 @@
 <template>
-  <div class="list-container py-6 fixed bottom-0 right-2">
+  <div class="list-container py-6 fixed bottom-0 right-2 z-50">
     <div class="reversed-list">
 
       <transition-group name="list" tag="div" class="flex flex-col-reverse pb-3">
