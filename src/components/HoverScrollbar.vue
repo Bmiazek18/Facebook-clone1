@@ -124,10 +124,6 @@ onMounted(() => {
   }
   contentRef.value?.addEventListener('wheel', wheelHandler, { passive: true })
 })
-
-onBeforeUnmount(() => {
-  contentRef.value?.removeEventListener('wheel', wheelHandler);
-});
 </script>
 
 <style scoped>
