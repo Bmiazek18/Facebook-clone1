@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia';
-import { ref,computed } from 'vue';
+import { ref, computed } from 'vue';
 import type { User } from '@/data/users';
 import type { LocationResult } from '@/components/LocationSelector.vue';
+import type { ImageTagType } from '@/types/ImageTag';
 
 interface SelectedImage {
   url: string;
   altText: string;
+  tags?: ImageTagType[];
 }
 
 export const useCreatePostStore = defineStore('createPost', () => {
@@ -55,7 +57,7 @@ export const useCreatePostStore = defineStore('createPost', () => {
 
   function setSelectedImage(image: string | SelectedImage | null) {
     if (typeof image === 'string') {
-      selectedImage.value = { url: image, altText: '' };
+      selectedImage.value = { url: image, altText: '', tags: [] };
     } else if (image === null) {
       selectedImage.value = null;
     } else {
@@ -93,7 +95,7 @@ export const useCreatePostStore = defineStore('createPost', () => {
         imageToEdit.value !== null ||
         videoToEdit.value !== null ||
         postContent.value !== '' ||
-        (selectedImage.value !== null && (selectedImage.value.url !== '' || selectedImage.value.altText !== ''))
+        (selectedImage.value !== null && (selectedImage.value.url !== '' || selectedImage.value.altText !== '' || (selectedImage.value.tags && selectedImage.value.tags.length > 0)))
       );
     });
   // --- RETURN (Udostępnienie publiczne) ---
@@ -107,7 +109,6 @@ export const useCreatePostStore = defineStore('createPost', () => {
     postContent,
     selectedImage,
     selectedCardBgId,
-    // altText, // No longer a direct state property
     hasUnsavedChanges,
     setTaggedUsers,
     addTaggedUser,

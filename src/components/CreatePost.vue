@@ -76,8 +76,9 @@ const handleImageEditorBack = () => {
 };
 
 const handleImageEdited = (editedImageUrl: string) => {
-  const currentAltText = createPostStore.selectedImage?.altText || '';
-  createPostStore.setSelectedImage({ url: editedImageUrl, altText: currentAltText });
+  if (createPostStore.selectedImage) {
+    createPostStore.selectedImage.url = editedImageUrl;
+  }
   createPostStore.setImageToEdit(null);
   currentView.value = 'creator';
 };

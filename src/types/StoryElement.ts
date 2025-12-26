@@ -1,6 +1,8 @@
 // --- Element Types ---
 export type ElementType = 'text' | 'image' | 'link' | 'post' | 'reel'
 
+import type { ImageTagType } from './ImageTag';
+
 // --- Shared Data Types ---
 export interface PostData {
   id: string;
@@ -8,7 +10,11 @@ export interface PostData {
   authorAvatar: string;
   content: string;
   imageUrl?: string;
-  images?: string[];
+  images?: {
+    src: string;
+    altText?: string;
+    tags?: ImageTagType[];
+  }[];
   videoUrl?: string;
   timestamp: number;
 }

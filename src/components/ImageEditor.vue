@@ -33,19 +33,18 @@ type CropData = {
   rotate: number;
 };
 
-// --- MOCK DANYCH UŻYTKOWNIKÓW ---
-const MOCK_USERS = [
-  { id: 1, name: 'Marcin Chwedoruk', avatar: 'https://ui-avatars.com/api/?name=Marcin+Chwedoruk&background=random&color=fff' },
-  { id: 2, name: 'Mateusz Sak', avatar: 'https://ui-avatars.com/api/?name=Mateusz+Sak&background=random&color=fff' },
-  { id: 3, name: 'Paweł Szlaski', avatar: 'https://ui-avatars.com/api/?name=Paweł+Szlaski&background=random&color=fff' },
-  { id: 4, name: 'Kornel Boguś', avatar: 'https://ui-avatars.com/api/?name=Kornel+Boguś&background=random&color=fff' },
-  { id: 5, name: 'Marcin Krasnodębski', avatar: 'https://ui-avatars.com/api/?name=Marcin+Krasnodębski&background=random&color=fff' },
-  { id: 6, name: 'Łukasz Bieńczak', avatar: 'https://ui-avatars.com/api/?name=Łukasz+Bieńczak&background=random&color=fff' },
-  { id: 7, name: 'Jakub Wierzbicki', avatar: 'https://ui-avatars.com/api/?name=Jakub+Wierzbicki&background=random&color=fff' },
-  { id: 8, name: 'Mateusz Golian', avatar: 'https://ui-avatars.com/api/?name=Mateusz+Golian&background=random&color=fff' },
-  { id: 9, name: 'Marcin Klamka', avatar: 'https://ui-avatars.com/api/?name=Marcin+Klamka&background=random&color=fff' },
-  { id: 10, name: 'Artur Sieraj', avatar: 'https://ui-avatars.com/api/?name=Artur+Sieraj&background=random&color=fff' },
-];
+import { getAllUsers, type User } from '@/data/users';
+import type { Person } from '@/types/Person';
+
+const REAL_USERS = getAllUsers();
+
+const userToPerson = (user: User): Person => ({
+  id: user.id,
+  name: user.name,
+  imageUrl: user.avatar,
+  commonFriends: user.mutualFriendsCount || 0,
+  isFriend: true, // Assuming all users in this context are friends
+});
 
 // --- PROPS ---
 const props = defineProps<{
@@ -60,9 +59,15 @@ const emit = defineEmits<{
 const createPostStore = useCreatePostStore();
 const imageRotation = ref(0);
 const taggingMode = ref(false);
-const tags = ref<ImageTagType[]>([]);
+const tags = ref<ImageTagType[]>(createPostStore.selectedImage?.tags || []);
 
-const newTag = ref<{ x: number, y: number, name: string, isCreating: boolean } | null>(null);
+watch(tags, (newTags) => {
+  if (createPostStore.selectedImage) {
+    createPostStore.selectedImage.tags = newTags;
+  }
+}, { deep: true });
+
+const newTag = ref<{ x: number, y: number, name: string, isCreating: boolean, user?: User } | null>(null);
 const newTagInputRef = ref<HTMLInputElement | null>(null);
 const searchQuery = ref('');
 
@@ -82,10 +87,7 @@ watch(altText, (newAltText) => {
   if (createPostStore.selectedImage) {
     createPostStore.selectedImage.altText = newAltText;
   } else {
-    // If there's no selected image, but alt text is being set,
-    // this scenario might need further consideration based on UX.
-    // For now, we'll just set it if an image exists.
-    createPostStore.setSelectedImage({ url: imageUrl.value || '', altText: newAltText });
+    createPostStore.setSelectedImage({ url: imageUrl.value || '', altText: newAltText, tags: [] });
   }
 });
 const showAltTextInput = ref(false);
@@ -109,9 +111,9 @@ watchEffect(() => {
 });
 
 const filteredUsers = computed(() => {
-  if (!searchQuery.value) return MOCK_USERS;
+  if (!searchQuery.value) return REAL_USERS;
   const lowerQuery = searchQuery.value.toLowerCase();
-  return MOCK_USERS.filter(user =>
+  return REAL_USERS.filter(user =>
     user.name.toLowerCase().includes(lowerQuery)
   );
 });
@@ -253,6 +255,11 @@ const handleCropCancel = () => {
 
 const handleDone = () => {
   if (imageUrl.value) {
+    createPostStore.setSelectedImage({
+      url: imageUrl.value,
+      altText: altText.value,
+      tags: tags.value,
+    });
     emit('done', imageUrl.value);
   }
 };
@@ -263,8 +270,44 @@ const handleCancel = () => console.log('Anuluj');
 const rotateImage = () => {
   if (isCroppingMode.value && cropperRef.value) {
     cropperRef.value.rotate(90);
-  } else {
-    imageRotation.value = (imageRotation.value + 90) % 360;
+  } else if (imageUrl.value) {
+    const img = new Image();
+    img.src = imageUrl.value;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) return;
+
+      const rotationAngle = 90; // Always rotate by 90 degrees
+
+      const width = img.width;
+      const height = img.height;
+      let rotatedWidth = width;
+      let rotatedHeight = height;
+
+      // Swap width and height for 90/270 degree rotations
+      // This is a common mistake: the new width becomes the old height and vice-versa
+      if (rotationAngle === 90 || rotationAngle === 270) {
+        rotatedWidth = height;
+        rotatedHeight = width;
+      }
+
+      canvas.width = rotatedWidth;
+      canvas.height = rotatedHeight;
+
+      ctx.save();
+      // Translate to the center of the new canvas
+      ctx.translate(rotatedWidth / 2, rotatedHeight / 2);
+      // Rotate by the desired angle
+      ctx.rotate(rotationAngle * Math.PI / 180);
+      // Draw the image, centered, taking into account its original dimensions
+      ctx.drawImage(img, -width / 2, -height / 2, width, height);
+      ctx.restore();
+
+      imageUrl.value = canvas.toDataURL('image/png'); // Update source image
+      imageRotation.value = 0; // Reset CSS rotation after physical rotation
+    };
   }
 };
 
@@ -303,24 +346,30 @@ const handleImageClickForTagging = async (event: MouseEvent) => {
 
 const createTag = () => {
   const nameToSave = searchQuery.value || newTag.value?.name;
+  const user = newTag.value?.user;
 
   if (newTag.value && nameToSave && nameToSave.trim()) {
-    tags.value.push({
+    const tag: ImageTagType = {
       id: `tag_${Date.now()}`,
       x: newTag.value.x,
       y: newTag.value.y,
       name: nameToSave,
       isTemp: false,
-    });
+    };
+    if (user) {
+      tag.user = userToPerson(user);
+    }
+    tags.value.push(tag);
   }
   newTag.value = null;
   searchQuery.value = '';
 };
 
-const selectUser = (userName: string) => {
+const selectUser = (user: User) => {
   if (newTag.value) {
-    newTag.value.name = userName;
-    searchQuery.value = userName;
+    newTag.value.name = user.name;
+    newTag.value.user = user;
+    searchQuery.value = user.name;
     createTag();
   }
 };
@@ -481,7 +530,7 @@ const updateElementContent = (id: string, value: string) => {
                       <div
                         v-for="user in filteredUsers"
                         :key="user.id"
-                        @click="selectUser(user.name)"
+                        @click="selectUser(user)"
                         class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer transition-colors group"
                       >
                         <div class="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-100">

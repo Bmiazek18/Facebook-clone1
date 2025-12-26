@@ -6,11 +6,17 @@ import ArrowExpand from 'vue-material-design-icons/ArrowExpand.vue';
 import ArrowCollapse from 'vue-material-design-icons/ArrowCollapse.vue';
 import ChevronLeft from 'vue-material-design-icons/ChevronLeft.vue';
 import ChevronRight from 'vue-material-design-icons/ChevronRight.vue';
+import ImageTag from '../ImageTag.vue';
+import type { ImageTagType } from '@/types/ImageTag';
+
 
 // --- PROPS & EMITS ---
-defineProps<{
-  imageSrc: string;
-  imageAlt?: string;
+const props = defineProps<{
+  image: {
+    src: string;
+    altText?: string;
+    tags?: ImageTagType[];
+  };
   hasPrev?: boolean;
   hasNext?: boolean;
 }>();
@@ -210,7 +216,7 @@ onUnmounted(() => {
     <!-- Image container -->
     <div
       ref="imageContainer"
-      class="flex items-center justify-center overflow-hidden w-full h-full"
+      class="flex items-center justify-center overflow-hidden w-full h-full relative"
     >
       <img
         ref="imageElement"
@@ -223,11 +229,19 @@ onUnmounted(() => {
           transform: `scale(${currentZoom}) translate(${imageOffsetX}px, ${imageOffsetY}px)`,
           transition: isDragging ? 'none' : 'transform 100ms ease-in-out'
         }"
-        :src="imageSrc"
-        :alt="imageAlt || 'Image'"
+        :src="props.image.src"
+        :alt="props.image.altText || 'Image'"
         @mousedown="startDrag"
         @touchstart="startDrag"
       />
+      <template v-if="props.image.tags && props.image.tags.length > 0">
+        <ImageTag
+          v-for="tag in props.image.tags"
+          :key="tag.id"
+          :tag="tag"
+          class="absolute"
+        />
+      </template>
     </div>
   </div>
 </template>

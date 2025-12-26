@@ -1,15 +1,15 @@
 <template>
     <div
+        style="margin-top: 0 !important;"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 overflow-y-auto"
     >
         <div
-            class="bg-theme-bg-secondary shadow-2xl w-full relative flex h-full "
+            class="bg-theme-bg-secondary shadow-2xl w-full relative flex h-full"
             :class="{
                 'rounded-lg': !isFullScreen,
                 'max-h-full': isFullScreen
             }"
         >
-
             <router-link
                 to="/"
                 class="absolute top-4 left-4 p-2 text-theme-text rounded-full hover:bg-white/10 z-50"
@@ -19,10 +19,9 @@
             </router-link>
 
             <GalleryImageViewer
-                v-if="currentPost"
+                v-if="currentImage"
                 v-model:is-full-screen="isFullScreen"
-                :image-src="currentImageUrl"
-                image-alt="Post content"
+                :image="currentImage"
                 :has-prev="hasPrevImage"
                 :has-next="hasNextImage"
                 @prev="goToPrevImage"
@@ -31,98 +30,110 @@
 
             <div
                 v-if="!isFullScreen && currentPost"
-                class="w-full max-w-md flex flex-col min-w-[370px] "
+                class="w-full max-w-[490px] flex flex-col min-w-[370px] bg-theme-bg-secondary border-l border-gray-200"
             >
-                <HoverScrollbar class="grow p-4 overflow-y-auto">
-                    <div class="p-4 ">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <img class="rounded-full w-10 h-10 mr-3" :src="currentPost.authorAvatar" alt="Avatar">
-                                <div>
-                                    <div class="font-extrabold text-[15px] text-theme-text">{{ currentPost.authorName }}</div>
-                                    <div class="flex items-center font-semibold text-[13px] text-theme-text-secondary">
-                                        {{ currentPost.date }} <Earth class="ml-1" :size="15" fillColor="#64676B"/>
+            <div class="w-full flex justify-end-safe py-2 px-5 border-b border-gray-200 ">
+<NavbarRight/>
+            </div>
+<div class="flex-1 flex flex-row-reverse overflow-hidden ">
+  <div class="w-[90px] border-l border-gray-200"></div>
+<div class="w-full">
+                <HoverScrollbar class=" grow overflow-y-auto">
+                    <div  class=" px-4 pt-4 pb-2">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <img
+                                    class="rounded-full w-10 h-10 object-cover border border-gray-200 cursor-pointer hover:brightness-95"
+                                    :src="currentPost.authorAvatar"
+                                    alt="Avatar"
+                                >
+                                <div class="flex flex-col">
+                                    <div class="font-semibold text-[15px] text-theme-text leading-5 cursor-pointer hover:underline">
+                                        {{ currentPost.authorName }}
+                                    </div>
+                                    <div class="flex items-center text-[13px] text-theme-text-secondary font-normal mt-0.5">
+                                        <span class="hover:underline cursor-pointer">{{ currentPost.date }}</span>
+                                        <span class="mx-1 font-bold">·</span>
+                                        <Earth :size="13" fillColor="#65686C"/>
                                     </div>
                                 </div>
                             </div>
-                            <button class="text-theme-text-secondary hover:bg-theme-hover rounded-full p-2">
+                            <button class="text-theme-text-secondary hover:bg-gray-100 rounded-full p-2 -mr-2 transition-colors">
                                 <DotsHorizontal :size="20" fillColor="#65686C" />
                             </button>
                         </div>
                     </div>
 
-                    <div class="px-4 pb-3 text-[15px] text-theme-text">
+                    <div class="px-4 pb-3 text-[15px] text-theme-text whitespace-pre-wrap leading-relaxed">
                         {{ currentPost.content }}
                     </div>
 
-                    <div class="flex items-center justify-between pb-3 border-b text-theme-text-secondary text-sm font-semibold">
-                            <div class="flex items-center">
-                                <ThumbUp fillColor="#1D72E2" :size="16" class="mr-1"/> {{ currentPost.likesCount }}
+                    <div class="mx-4 flex items-center justify-between py-3 border-b border-gray-200 text-theme-text-secondary text-sm">
+                        <div class="flex items-center">
+                            <div class="bg-blue-500 rounded-full p-1 mr-1.5 flex items-center justify-center w-[18px] h-[18px]">
+                                <ThumbUp fillColor="#FFFFFF" :size="10"/>
                             </div>
-                            <div class="flex items-center">
-                                <span class="cursor-pointer hover:underline">{{ $t('comments.count', { count: currentPost.commentsCount }) }}</span>
-                                </div>
+                            <span class="hover:underline cursor-pointer">{{ currentPost.likesCount }}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                             <span class="cursor-pointer hover:underline">{{ $t('comments.count', { count: currentPost.commentsCount }) }}</span>
+                             <span class="cursor-pointer hover:underline">2 udostępnienia</span>
+                        </div>
                     </div>
-                    <div class="flex items-center justify-between py-2 px-4  text-theme-text-secondary text-sm font-semibold">
-                        <div class="flex items-center space-x-4">
-                            <div class="flex items-center">
 
+                    <div class="mx-4 py-1 border-b border-gray-200 flex items-center justify-between text-theme-text-secondary text-sm font-semibold">
+                        <div class="flex-1 flex justify-center hover:bg-gray-100 rounded-md py-1.5 cursor-pointer transition-colors">
+                            <div class="flex items-center gap-2">
                                 <ReactionButton/>
                             </div>
-                            <div class="flex items-center">
-                                <CommentTextMultiple :size="20" fillColor="#65686C" class="mr-1" />
+                        </div>
+                        <div class="flex-1 flex justify-center hover:bg-gray-100 rounded-md py-1.5 cursor-pointer transition-colors">
+                            <div class="flex items-center gap-2">
+                                <CommentTextMultiple :size="20" fillColor="#65686C" />
                                 <span>{{ $t('actions.comment') }}</span>
                             </div>
                         </div>
-                        <div class="flex items-center">
-                            <Share :size="20" fillColor="#65686C" class="mr-1" />
-                            <span>{{ $t('actions.send') }}</span>
+                        <div class="flex-1 flex justify-center hover:bg-gray-100 rounded-md py-1.5 cursor-pointer transition-colors">
+                            <div class="flex items-center gap-2">
+                                <Share :size="20" fillColor="#65686C" />
+                                <span>{{ $t('actions.send') }}</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex justify-between items-center pt-3 mb-2">
-                        <span class="font-bold text-gray-700 text-sm">Najtrafniejsze</span>
-                        <button class="text-blue-500 text-xs font-semibold hover:underline">
-                            {{ $t('comments.viewAll') }}
+
+                    <div class="flex justify-between items-center px-4 pt-3 mb-2">
+                        <span class="font-semibold text-theme-text-secondary text-sm">Najtrafniejsze</span>
+                        <button class="text-theme-text font-normal text-sm hover:underline">
+                           <span class="flex items-center gap-1">Wszystkie komentarze <span class="text-[10px]">▼</span></span>
                         </button>
                     </div>
 
-                    <div class="pt-3">
+                    <div class="pt-1 px-4">
                           <CommentItem
-                            v-for="comment in comments"
+                            v-for="comment in currentPost.comments"
                             :key="comment.id"
                             :comment="comment"
                             :post-avatar-src="currentPost.authorAvatar"
                             :depth="0"
+                            :post-id="currentPost.id"
                         />
                     </div>
                 </HoverScrollbar>
 
-                <div class="p-4 border-t flex items-center bg-theme-bg-secondary sticky bottom-0">
-                    <img class="rounded-full w-8 h-8 mr-2 shrink-0" src="https://picsum.photos/40/40?random=11" alt="Twój Avatar">
-                    <div class="grow relative">
-                        <input
-                            type="text"
-                            :placeholder="$t('comments.placeholder')"
-                            class="w-full border-none bg-gray-100 p-2 rounded-full text-sm pr-16 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                        <div class="absolute inset-y-0 right-0 pr-2 flex items-center space-x-1">
-                            <button class="p-1 rounded-full hover:bg-gray-200">
-                                <EmoticonOutline :size="20" fillColor="#65686C" />
-                            </button>
-                            <button class="p-1 rounded-full hover:bg-gray-200">
-                                <CameraOutline :size="20" fillColor="#65686C" />
-                            </button>
-                            <button class="p-1 rounded-full hover:bg-gray-200">
-                                <span>GIF</span>
-                            </button>
-                        </div>
-                    </div>
+                <div class="p-4 border-t border-gray-200 flex items-center bg-theme-bg-secondary sticky bottom-0 z-10">
+                    <CommentReplyInput
+                        :post-avatar-src="currentPost.authorAvatar"
+                        :placeholder="`Napisz komentarz jako ${currentPost.authorName}...`"
+                        :post-id="currentPost.id"
+                    />
+                </div>
+                </div>
+                </div>
                 </div>
             </div>
         </div>
-    </div>
-</template>
 
+</template>
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -138,10 +149,14 @@ import HoverScrollbar from '@/components/HoverScrollbar.vue'
 import ReactionButton from '@/components/ReactionButton.vue'
 import CommentItem from '@/components/CommentItem.vue'
 import GalleryImageViewer from '@/components/gallery/GalleryImageViewer.vue'
-import { getPostById } from '@/data/posts'
+import { usePostsStore } from '@/stores/posts';
+import CommentReplyInput from '@/components/CommentReplyInput.vue'
+import NavbarRight from '@/components/NavbarRight.vue'
+import type { ImageTagType } from '@/types/ImageTag';
 
 const route = useRoute()
 const router = useRouter()
+const postsStore = usePostsStore()
 
 const isFullScreen = ref(false)
 
@@ -150,11 +165,11 @@ const postId = computed(() => Number(route.params.postId))
 const currentImageIndex = ref(Number(route.params.imageIndex) || 0)
 
 // Get the current post data
-const currentPost = computed(() => getPostById(postId.value))
+const currentPost = computed(() => postsStore.posts.find(p => p.id === postId.value))
 
 // Current image URL
-const currentImageUrl = computed((): string => {
-    return currentPost.value?.images[currentImageIndex.value] ?? ''
+const currentImage = computed((): { src: string; altText?: string; tags?: ImageTagType[]; } | undefined => {
+    return currentPost.value?.images[currentImageIndex.value]
 })
 
 // Navigation helpers
@@ -183,79 +198,6 @@ watch(() => route.params.imageIndex, (newIndex) => {
     currentImageIndex.value = Number(newIndex) || 0
 })
 
-interface CommentData {
-    id: number;
-    userName: string;
-    text: string;
-    date: string;
-    likesCount: number;
-    avatarSrc: string;
-    replies: CommentData[];
-}
 
-const comments: CommentData[] = [
-    {
-        id: 1,
-        userName: "Marek Kowalski",
-        text: "Super inicjatywa! Wsparcie dla sędziów jest kluczowe. Oby tak dalej!",
-        date: "5 min",
-        likesCount: 2,
-        avatarSrc: "https://picsum.photos/40/40?random=3",
-        replies: []
-    },
-    {
-        id: 2,
-        userName: "Anna Zając",
-        text: "Świetnie! Zgadzam się z komunikacją. Ostatnio było z tym kiepsko. 💪",
-        date: "3 min",
-        likesCount: 5,
-        avatarSrc: "https://picsum.photos/40/40?random=4",
-        replies: [
-            {
-                id: 21,
-                userName: "Jan Nowak",
-                text: "Dokładnie, transparentność jest najważniejsza!",
-                date: "2 min",
-                likesCount: 1,
-                avatarSrc: "https://picsum.photos/40/40?random=6",
-                replies: [
-                     {
-                        id: 211,
-                        userName: "Komentator Rekurencyjny",
-                        text: "To działa! Trzeci poziom komentarzy.",
-                        date: "1 min",
-                        likesCount: 0,
-                        avatarSrc: "https://picsum.photos/40/40?random=8",
-                        replies: [{id: 211,
-                        userName: "Komentator Rekurencyjny",
-                        text: "To działa! 4 poziom komentarzy.",
-                        date: "1 min",
-                        likesCount: 0,
-                        avatarSrc: "https://picsum.photos/40/40?random=8",
-                        replies: []}]
-                    }
-                ]
-            },
-            {
-                id: 22,
-                userName: "Tester",
-                text: "Popieram, jest nadzieja na poprawę.",
-                date: "1 min",
-                likesCount: 0,
-                avatarSrc: "https://picsum.photos/40/40?random=7",
-                replies: []
-            }
-        ]
-    },
-    {
-        id: 3,
-        userName: "Sportowiec",
-        text: "Kto będzie sędziował mecz ligowy w ten weekend?",
-        date: "1 min",
-        likesCount: 0,
-        avatarSrc: "https://picsum.photos/40/40?random=5",
-        replies: []
-    }
-]
 
 </script>
