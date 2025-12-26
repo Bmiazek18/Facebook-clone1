@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen w-full bg-white overflow-hidden font-sans text-gray-900">
+  <div class="flex h-[calc(100vh-64px)] w-full bg-white overflow-hidden font-sans text-gray-900">
 
     <MessageMenu />
 

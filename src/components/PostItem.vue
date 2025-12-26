@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
+import Heart from 'vue-material-design-icons/Heart.vue'
+
 import Earth from 'vue-material-design-icons/Earth.vue'
 import ThumbUp from 'vue-material-design-icons/ThumbUp.vue'
 import Close from 'vue-material-design-icons/Close.vue'
@@ -19,22 +21,16 @@ import PostActions from './post/PostActions.vue'
 import { useStoryShareStore } from '@/stores/storyShare'
 import { usePostsStore, type SharedPost } from '@/stores/posts'
 import type { PostData } from '@/types/StoryElement'
-import { getUserById } from '@/data/users'
+import { getUserById, type User } from '@/data/users'
 
 useI18n()
 
-interface PostProp {
-  id: number
-  content: string
-  imageUrl?: string
-  images?: string[]
-  videoUrl?: string
-  authorName?: string
-  authorAvatar?: string
-}
+import type { Post } from '@/data/posts'
+
+// ... other imports
 
 const props = defineProps<{
-  post?: PostProp
+  post?: Post
   sharedPost?: SharedPost
 }>()
 
@@ -54,6 +50,20 @@ const toggleModal = () => {
 }
 
 const { isDark } = useTheme()
+
+interface CardBackground { id: number; class: string; textClass?: string }
+const cardBackgrounds: CardBackground[] = [
+  { id: 0, class: 'bg-white', textClass: 'text-black' },
+  { id: 1, class: 'bg-gradient-to-b from-blue-500 to-blue-700', textClass: 'text-white' },
+  { id: 2, class: 'bg-gradient-to-tr from-pink-500 via-red-500 to-yellow-500', textClass: 'text-white' },
+  { id: 3, class: 'bg-gradient-to-br from-purple-900 via-indigo-800 to-blue-900', textClass: 'text-white' },
+  { id: 4, class: 'bg-red-500', textClass: 'text-white' },
+  { id: 5, class: 'bg-gradient-to-r from-green-400 to-teal-500', textClass: 'text-white' },
+];
+
+const currentBackground = computed(() => {
+  return cardBackgrounds.find(bg => bg.id === props.post?.selectedCardBgId) ?? cardBackgrounds[0]
+})
 
 // Determine if this is a shared post view
 const isSharedPostView = computed(() => !!props.sharedPost)
@@ -159,9 +169,69 @@ const handleDelete = () => {
   }
 }
 
+// Handlers for PostSettingPopper actions
+const handleDeletePost = (postId: number) => {
+  if (props.sharedPost) {
+    postsStore.removeSharedPost(String(postId)); // Assuming sharedPost.id is string
+  } else if (props.post) {
+    postsStore.removePost(props.post.id);
+  }
+};
+
+const handleEditPost = (postId: number) => {
+  console.log('Edit Post:', postId);
+  // Implement actual edit logic here (e.g., open an edit modal)
+};
+
+const handleHidePost = (postId: number) => {
+  console.log('Hide Post:', postId);
+  // Implement actual hide logic here
+};
+
 // Reactions - using composable
 const { userReaction, likesCount, getReactionIcon, handleReaction } = usePostReactions(24)
 
+
+// Konfiguracja wyglądu reakcji
+const getReactionConfig = (type: string) => {
+  switch (type) {
+    // 1. IKONY Z TŁEM (Like, Love)
+    case 'like':
+      return {
+        mode: 'icon',
+        component: ThumbUp,
+        wrapperClass: 'bg-[#1877F2]', // Niebieskie tło
+        color: '#FFFFFF'
+      }
+    case 'love':
+      return {
+        mode: 'icon',
+        component: Heart,
+        wrapperClass: 'bg-[#F3425F]', // Czerwone tło
+        color: '#FFFFFF'
+      }
+
+    // 2. ZWYKŁE EMOTKI (Haha, Wow, Sad, Angry)
+    // Tło jest 'bg-white', aby przykryć ikonę pod spodem, ale dla oka to "sama emotka"
+    case 'haha':
+      return { mode: 'emoji', char: '😆', wrapperClass: 'bg-white dark:bg-[#242526]' }
+    case 'wow':
+      return { mode: 'emoji', char: '😮', wrapperClass: 'bg-white dark:bg-[#242526]' }
+    case 'sad':
+      return { mode: 'emoji', char: '😢', wrapperClass: 'bg-white dark:bg-[#242526]' }
+    case 'angry':
+      return { mode: 'emoji', char: '😡', wrapperClass: 'bg-white dark:bg-[#242526]' }
+
+    // Domyślny fallback
+    default:
+      return {
+        mode: 'icon',
+        component: ThumbUp,
+        wrapperClass: 'bg-[#1877F2]',
+        color: '#FFFFFF'
+      }
+  }
+}
 // Video autoplay - using composable
 const videoContainerRef = ref<HTMLElement | null>(null)
 const videoRef = ref<InstanceType<typeof PlayerVideo> | null>(null)
@@ -206,15 +276,33 @@ useVideoAutoplay(videoContainerRef)
         :author-name="displayData.authorName"
         :author-avatar="displayData.authorAvatar"
         :author-id="(props.post as any)?.authorId"
+        :tagged-users="props.post?.taggedUsers"
+        :date="props.post?.date"
+        :privacy="props.post?.privacy"
+        :post-id="props.post?.id"
+        @delete-post="handleDeletePost"
+        @edit-post="handleEditPost"
+        @hide-post="handleHidePost"
       />
 
-<div class="px-4 py-1 pb-3 text-[15px] text-theme-text leading-normal whitespace-pre-line">
+
+<div class="px-4 py-1 pb-3 text-[15px] leading-normal whitespace-pre-line"
+     :class="{
+       [currentBackground.class]: props.post?.selectedCardBgId !== undefined, // Apply background if ID is set
+       [currentBackground.textClass || 'text-theme-text']: props.post?.selectedCardBgId !== undefined, // Apply text color if ID is set
+       'p-4 h-[383px] flex items-center justify-center text-center': props.post?.selectedCardBgId !== undefined, // Enforce height and centering if ID is set
+       'text-xl': props.post?.selectedCardBgId !== undefined && displayData.content.length <= 80,
+       'text-base': props.post?.selectedCardBgId !== undefined && displayData.content.length > 80,
+       'text-theme-text': props.post?.selectedCardBgId === undefined, // Default text color if no card background
+     }"
+>
   <template v-for="(part, index) in processedContent" :key="index">
 
     <router-link
       v-if="part.type === 'hashtag'"
       :to="{ name: 'hashtag', params: { hashtag: part.hashtag } }"
       class="text-blue-500 hover:underline"
+      :class="{ 'text-white ': props.post?.selectedCardBgId > 0 }"
     >
       {{ part.value }}
     </router-link>
@@ -223,11 +311,12 @@ useVideoAutoplay(videoContainerRef)
       v-else-if="part.type === 'mention'"
       :to="{ name: 'userProfile', params: { userId: part.userId } }"
       class="text-blue-500 hover:underline"
+      :class="{ 'text-white': props.post?.selectedCardBgId > 0 }"
     >
       @{{ getUserById(parseInt(part.userId))?.name }}
     </router-link>
 
-    <span v-else>{{ part.value }}</span>
+    <span v-else :class="{ ' text-[30px]': props.post?.selectedCardBgId > 0 }">{{ part.value }}</span>
 
   </template>
 </div>
@@ -270,35 +359,61 @@ useVideoAutoplay(videoContainerRef)
       </div>
     </div>
 
-    <div class="px-4 pt-2.5">
+<div class="px-4 pt-2.5">
       <div class="flex items-center justify-between text-theme-text-secondary text-[15px]">
-        <div class="flex items-center gap-1.5 cursor-pointer hover:underline">
-          <!-- Reaction icon based on user's reaction or default like -->
-          <div
-            class="rounded-full p-0.5 flex items-center justify-center w-[18px] h-[18px]"
 
-          >
-            <img
-              v-if="userReaction"
-              :src="getReactionIcon(userReaction).src"
-              class="w-5 h-5"
-              alt=""
+        <div class="flex items-center gap-1.5 cursor-pointer group" v-if="likesCount > 0">
+
+          <div class="flex items-center relative pl-1">
+
+            <div
+              v-if="likesCount > 1 || (likesCount === 1 && !userReaction)"
+              class="relative z-10 rounded-full w-[20px] h-[20px] flex items-center justify-center bg-[#1877F2]"
             >
+               <ThumbUp :size="12" fillColor="#FFFFFF" />
+            </div>
 
+            <div
+              v-if="userReaction"
+              class="relative z-0 rounded-full w-[20px] h-[20px] flex items-center justify-center ring-2 ring-white dark:ring-[#242526]"
+              :class="[
+                getReactionConfig(userReaction).wrapperClass,
+                likesCount > 1 ? '-ml-[4px]' : '' // Przesunięcie w lewo
+              ]"
+            >
+              <component
+                v-if="getReactionConfig(userReaction).mode === 'icon'"
+                :is="getReactionConfig(userReaction).component"
+                :size="10"
+                :fillColor="getReactionConfig(userReaction).color"
+              />
+
+              <span
+                v-else
+                class="text-[20px] leading-none  select-none"
+              >
+                {{ getReactionConfig(userReaction).char }}
+              </span>
+            </div>
           </div>
-<ThumbUp fillColor="#0000FF" :size="18" />
 
-
-          <span class="text-theme-text-secondary hover:underline">
+          <span class="text-theme-text-secondary group-hover:underline leading-snug ml-0.5">
             <template v-if="userReaction">
-              <span >Ty</span><span v-if="likesCount > 1">, Anna Kowalska i {{ likesCount - 2 }} {{ likesCount - 2 === 1 ? 'osoba' : 'osoby' }}</span>
+              <span v-if="likesCount === 1">Ty</span>
+              <span v-else-if="likesCount === 2">Ty i Anna Kowalska</span>
+              <span v-else>Ty, Anna Kowalska i {{ likesCount - 2 }} innych</span>
             </template>
+
             <template v-else>
-              <span >Anna Kowalska</span> i {{ likesCount - 1 }} {{ likesCount - 1 === 1 ? 'osoba' : 'innych osób' }}
+              <span>Anna Kowalska</span>
+              <span v-if="likesCount > 1"> i {{ likesCount - 1 }} innych</span>
             </template>
           </span>
         </div>
-        <div class="flex items-center gap-3">
+
+        <div v-else></div>
+
+        <div class="flex items-center gap-3 text-theme-text-secondary">
           <span class="hover:underline cursor-pointer">3 komentarze</span>
           <span class="hover:underline cursor-pointer">1 udostępnienie</span>
         </div>
@@ -312,7 +427,9 @@ useVideoAutoplay(videoContainerRef)
       @share-to-story="shareToStory"
     />
 
-    <BaseModal v-if="isModalOpen" @close="toggleModal"><PostModal/></BaseModal>
+    <BaseModal v-if="isModalOpen" @close="toggleModal">
+      <PostModal v-if="props.post" :post="props.post" />
+    </BaseModal>
     <ShareAsPostModal :is-open="isShareAsPostModalOpen" :post="postData" @close="isShareAsPostModalOpen = false" @share="handleShareAsPost"/>
   </div>
 </template>

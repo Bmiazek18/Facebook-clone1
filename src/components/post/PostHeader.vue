@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, DefineComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import Earth from 'vue-material-design-icons/Earth.vue'
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
@@ -7,6 +8,14 @@ import ProfilePopper from '../ProfilePopper.vue'
 import { useTheme } from '@/composables/useTheme'
 import type { User } from '@/data/users'
 import type { PostLocation } from '@/components/PostCreator.vue'
+import LockIcon from 'vue-material-design-icons/Lock.vue'
+import EarthIcon from 'vue-material-design-icons/Earth.vue'
+import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue'
+import AccountMultipleMinusIcon from 'vue-material-design-icons/AccountMultipleMinus.vue'
+import AccountStarIcon from 'vue-material-design-icons/AccountStar.vue'
+import { Dropdown as VDropdown } from 'floating-vue';
+import 'floating-vue/dist/style.css';
+import PostSettingPopper from './PostSettingPopper.vue';
 
 const props = defineProps<{
   authorName: string
@@ -15,11 +24,16 @@ const props = defineProps<{
   date?: string
   taggedUsers?: User[]
   location?: PostLocation
+  privacy?: string
+  postId?: number; // Add postId prop
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'menu'): void
   (e: 'close'): void
+  (e: 'editPost', postId: number): void;
+  (e: 'deletePost', postId: number): void;
+  (e: 'hidePost', postId: number): void;
 }>()
 
 const { isDark } = useTheme()
@@ -30,6 +44,19 @@ const handleAvatarClick = () => {
     router.push({ name: 'userProfile', params: { userId: props.authorId } })
   }
 }
+
+const privacyInfo = computed(() => {
+  type Info = { label: string; icon: DefineComponent | null };
+  const map: Record<string, Info> = {
+    only_me: { label: 'Tylko ja', icon: LockIcon },
+    public: { label: 'Publiczne', icon: EarthIcon },
+    friends: { label: 'Znajomi', icon: AccountGroupIcon },
+    friends_except: { label: 'Znajomi z wyjątkiem...', icon: AccountMultipleMinusIcon },
+    specific_friends: { label: 'Konkretni znajomi', icon: AccountStarIcon },
+  };
+  if (!props.privacy) return { label: 'Publiczne', icon: EarthIcon };
+  return map[props.privacy] || { label: props.privacy, icon: null };
+});
 </script>
 
 <template>
@@ -61,14 +88,24 @@ const handleAvatarClick = () => {
         <div class="flex items-center text-[13px] text-theme-text-secondary mt-0.5">
           <span class="hover:underline cursor-pointer">{{ date || '17 grudnia' }}</span>
           <span class="mx-1">·</span>
-          <Earth :size="12" fillColor="#65676B" v-tooltip="'Publiczne'" />
+          <component :is="privacyInfo.icon" :size="12" :fillColor="isDark ? '#E4E6EB' : '#65676B'" v-tooltip="privacyInfo.label" />
         </div>
       </div>
 
       <div class="flex items-center -mr-2">
-        <button @click="$emit('menu')" class="rounded-full p-2 hover:bg-theme-hover transition-colors">
-          <DotsHorizontal :size="20" :fillColor="isDark ? '#B0B3B8' : '#65676B'" />
-        </button>
+        <VDropdown placement="bottom-end" :triggers="['click']">
+          <button @click="$emit('menu')" class="rounded-full p-2 hover:bg-theme-hover transition-colors">
+            <DotsHorizontal :size="20" :fillColor="isDark ? '#B0B3B8' : '#65676B'" />
+          </button>
+          <template #popper>
+            <PostSettingPopper
+              v-if="postId"
+              :post-id="postId"
+              :author-id="authorId ?? 0"
+
+            />
+          </template>
+        </VDropdown>
         <button @click="$emit('close')" class="rounded-full p-2 hover:bg-theme-hover transition-colors">
           <Close :size="20" :fillColor="isDark ? '#B0B3B8' : '#65676B'" />
         </button>

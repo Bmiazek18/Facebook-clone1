@@ -2,13 +2,11 @@
 import { ref, onMounted } from 'vue';
 import { GiphyFetch } from '@giphy/js-fetch-api';
 import type { IGif } from '@giphy/js-types';
-import { useCreatePostStore } from '@/stores/createPost';
 
 const emit = defineEmits<{
-  (e: 'back'): void;
+  (e: 'select', url: string): void;
 }>();
 
-const createPostStore = useCreatePostStore();
 const searchTerm = ref('');
 const gifs = ref<IGif[]>([]);
 const loading = ref(false);
@@ -38,15 +36,14 @@ const debounce = (func: (...args: string[]) => void, wait: number) => {
 const handleGifSearch = debounce(() => fetchGifs(), 500);
 
 const selectGif = (url: string) => {
-  createPostStore.setGif(url);
-  emit('back');
+  emit('select', url);
 };
 
 onMounted(() => fetchGifs());
 </script>
 
 <template>
-  <div class="flex flex-col h-[600px] bg-white rounded-t-xl overflow-hidden">
+  <div class="flex flex-col h-[400px] w-[300px] bg-white rounded-lg shadow-lg overflow-hidden">
     <div class="p-3 sticky top-0 bg-white z-10 border-b border-gray-50">
       <div class="relative flex items-center">
         <span class="absolute left-4 text-gray-400">
@@ -91,13 +88,3 @@ onMounted(() => fetchGifs());
     </div>
   </div>
 </template>
-
-<style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #e0e0e0;
-  border-radius: 10px;
-}
-</style>
