@@ -12,6 +12,7 @@ import { usePostsStore } from '@/stores/posts'
 import { onBeforeRouteLeave, useRouter } from 'vue-router' // Dodano useRouter
 import { useCreatePostStore } from '@/stores/createPost'
 import ConfirmationModal from '@/components/ConfirmationModal.vue'
+import ReelSGalerry from '@/components/ReelSGalerry.vue'
 
 const postsStore = usePostsStore()
 const localPosts = ref([...postsStore.posts]);
@@ -107,9 +108,11 @@ const handleCancelLeave = () => {
             </template>
 
             <template v-else>
-              <template v-for="post in virtualPosts" :key="post.data.id">
+              <template v-for="post in virtualPosts" :key="post.data.id" >
                 <PostItem :post="post.data" />
+
                 <PeopleYouMayKnow v-if="post.data.id + 1 === peopleYouMayKnowIndex" />
+                 <ReelSGalerry v-if="post.data.id + 2 === peopleYouMayKnowIndex" />
               </template>
             </template>
           </div>
