@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, toRefs, watchEffect, onBeforeUnmount } from 'vue'
+import { ref, onMounted, toRefs, watchEffect } from 'vue'
 import { useElementHover, useResizeObserver } from '@vueuse/core'
 
 const props = defineProps<{

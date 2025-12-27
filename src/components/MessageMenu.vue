@@ -143,7 +143,7 @@ const filteredChats = computed(() => {
   if (activeTab.value === 'unread') {
     return chats.value.filter(n => n.unread);
   }
-  // Pomijamy sekcję "Inne" w głównej liście (jest renderowana oddzielnie)
+
   return chats.value;
 });
 

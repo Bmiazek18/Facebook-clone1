@@ -198,6 +198,12 @@
     "sad": "Sad",
     "angry": "Angry"
   },
+  "sharePost": {
+    "title": "Share Post",
+    "searchPlaceholder": "Search by name",
+    "messagePlaceholder": "Write an optional message...",
+    "shareButton": "Share"
+  },
   "ui": {
     "friend": "Friend",
     "message": "Message",

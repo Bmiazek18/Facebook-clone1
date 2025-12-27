@@ -1,7 +1,7 @@
 <template>
   <MainNavLayout v-if="showMainLayout"/>
 
-  <router-view class="mt-[60px]"/>
+  <router-view :class="showMainLayout ? 'mt-[60px]' : ''"/>
   <div class="fixed flex flex-row bottom-0 right-[60px]">
 
       <MessageBox
