@@ -1,9 +1,12 @@
 import type { User } from '@/data/users';
 import type { ImageTagType } from './ImageTag';
 export interface PostLocation {
-  id: string;
-  name: string;
-  description: string;
+  title: string;
+  subtitle: string;
+  type: 'city' | 'district' | 'attraction' | 'park' | 'current'| 'place';
+  lat: string | null;
+  lon: string | null;
+  searchbox_id?: string;
 }
 
 export interface Comment {
@@ -48,4 +51,16 @@ export interface Post {
   selectedCardBgId?: number;
   privacy?: string;
   timestamp: number;
+  feeling?: {
+    emoji: string;
+    label: string;
+  } | null;
+  activity?: {
+    parent: string;
+    item: {
+      label: string;
+      icon: any;
+      color: string;
+    }
+  } | null;
 }

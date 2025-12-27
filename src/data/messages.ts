@@ -14,6 +14,14 @@ export type ChatMessage = Message & { chatId: number };
 const messages: ChatMessage[] = [
   // chat 1 - mixed
   {
+    id: 1000,
+    chatId: 1,
+    sender: 'me',
+    type: 'post_link',
+   sharedPostId: 'post_12345',
+    time: createTimestamp(15),
+  },
+  {
     id: 1001,
     chatId: 1,
     sender: 'other',
