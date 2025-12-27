@@ -2,97 +2,97 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 
-// Importy nowych komponentów zakładek
+// --- IMPORTY KOMPONENTÓW ---
 import ProfilePostsTab from '@/components/ProfilePostsTab.vue';
 import ProfileInfoTab from '@/components/ProfileInfoTab.vue';
-import FriendsSection from '@/components/FriendsSection.vue'; // Pełny widok znajomych
-
-// Importy dla UI
-import Camera from 'vue-material-design-icons/Camera.vue';
-import Check from 'vue-material-design-icons/Check.vue';
-import Message from 'vue-material-design-icons/Message.vue';
-import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'; // Dodany do górnego paska
+import FriendsSection from '@/components/FriendsSection.vue';
 import ImageWithGradient from '@/components/ImageWithGradient.vue';
 
-// Importy do pobrania danych użytkownika
+// --- IMPORTY IKON (Vue Material Design Icons) ---
+import Camera from 'vue-material-design-icons/Camera.vue';
+import Pencil from 'vue-material-design-icons/Pencil.vue';
+import Plus from 'vue-material-design-icons/Plus.vue';
+import ChevronDown from 'vue-material-design-icons/ChevronDown.vue';
+import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
+import Message from 'vue-material-design-icons/Message.vue';
+
+// --- DANE (MOCK) ---
 import { getUserById } from '@/data/users';
 import type { User } from '@/data/users';
 
 const route = useRoute();
-const activeTab = ref('posts'); // Ustawiamy domyślnie na 'friends' jak w przykładzie
 
-// Domyślny użytkownik (aktualnie zalogowany)
+// --- KONFIGURACJA ZAKŁADEK ---
+const activeTab = ref('posts');
+const tabs = [
+    { key: 'posts', label: 'Posty' },
+    { key: 'info', label: 'Informacje' },
+    { key: 'friends', label: 'Znajomi' },
+    { key: 'photos', label: 'Zdjęcia' },
+    { key: 'videos', label: 'Filmy' },
+    { key: 'checkins', label: 'Miejsca' },
+    { key: 'sport', label: 'Sport' },
+    { key: 'more', label: 'Więcej', hasDropdown: true },
+];
+
+function setActiveTab(tabKey: string) {
+    activeTab.value = tabKey;
+}
+
+// --- DANE UŻYTKOWNIKA ---
 const currentUser: User = {
-  id: 1,
-  name: 'Bartosz Miazek',
-  avatar: 'https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg',
-  bio: 'Developer & Tech Enthusiast',
-  location: 'Białystok, Polska',
-  website: 'https://bartoszmiazek.com',
-  joinDate: '2020-05-15',
-  followersCount: 1250,
-  followingCount: 342,
-  friendsCount: 856,
-  postsCount: 124,
-  cover: 'https://picsum.photos/1200/300?random=101',
-  status: 'online'
+    id: 1,
+    name: 'Bartosz Miazek',
+    avatar: 'https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg',
+    bio: 'Developer & Tech Enthusiast',
+    location: 'Białystok, Polska',
+    website: 'https://bartoszmiazek.com',
+    joinDate: '2020-05-15',
+    followersCount: 1250,
+    followingCount: 342,
+    friendsCount: 541,
+    postsCount: 124,
+    cover: 'https://picsum.photos/1200/300?random=101',
+    status: 'online'
 };
 
-// Pobranie danych użytkownika na podstawie userId z URL lub użycie domyślnego
 const userIdParam = computed(() => {
-  const id = route.params.userId;
-  return id ? parseInt(id as string, 10) : null;
+    const id = route.params.userId;
+    return id ? parseInt(id as string, 10) : null;
 });
 
 const profileUser = computed(() => {
-  if (userIdParam.value) {
-    return getUserById(userIdParam.value) || currentUser;
-  }
-  return currentUser;
+    if (userIdParam.value) {
+        return getUserById(userIdParam.value) || currentUser;
+    }
+    return currentUser;
 });
 
-const userName = computed(() => profileUser.value.name);
-const userImage = computed(() => profileUser.value.avatar);
+// Czy to profil zalogowanego użytkownika?
+const isOwner = computed(() => profileUser.value.id === currentUser.id);
 
-function setActiveTab(tab: string) {
-    activeTab.value = tab;
-}
-
-function updateTitle() {
-        document.title = `${userName.value} | Facebook`;
-}
-
-// ----------------------------------------------------
-// LOGIKA "PRZYKLEJANIA" (Sticky Tabs)
-// ----------------------------------------------------
+// --- STICKY HEADER LOGIC ---
 const tabsContainerRef = ref<HTMLElement | null>(null);
 const isTabsFixed = ref(false);
-const tabOffsetTop = ref(0);
 
 const handleScroll = () => {
-    if (window.scrollY > tabOffsetTop.value) {
-        isTabsFixed.value = true;
-    } else {
-        isTabsFixed.value = false;
+    if (tabsContainerRef.value) {
+        // Jeśli element zakładek dotyka górnego paska nawigacji (ok. 56px)
+        const rect = tabsContainerRef.value.getBoundingClientRect();
+        isTabsFixed.value = rect.top <= 56;
     }
 };
 
 onMounted(() => {
-    updateTitle();
-    if (tabsContainerRef.value) {
-        tabOffsetTop.value = tabsContainerRef.value.getBoundingClientRect().top + window.scrollY;
-    }
+    document.title = `${profileUser.value.name} | Facebook`;
     window.addEventListener('scroll', handleScroll);
 });
 
 onUnmounted(() => {
     window.removeEventListener('scroll', handleScroll);
 });
-// ----------------------------------------------------
-// KONIEC LOGIKI "PRZYKLEJANIA"
-// ----------------------------------------------------
 
-
+// --- LISTA ZNAJOMYCH (MOCK) ---
 const friendsList = ref([
     { name: 'Natalia Wójcik', mutual: 71, isFriend: true, imageId: 35 },
     { name: 'Kacper Szymański', mutual: 10, isFriend: false, imageId: 36 },
@@ -101,222 +101,162 @@ const friendsList = ref([
     { name: 'Ewa Lipińska', mutual: 45, isFriend: true, imageId: 39 },
     { name: 'Marek Pająk', mutual: 8, isFriend: false, imageId: 40 },
     { name: 'Piotr Zieliński', mutual: 99, isFriend: true, imageId: 20 },
-    { name: 'Katarzyna Nowak', mutual: 56, isFriend: true, imageId: 21 },
-    { name: 'Tomasz Dąbrowski', mutual: 139, isFriend: true, imageId: 22 },
-    { name: 'Anna Kozłowska', mutual: 34, isFriend: false, imageId: 23 },
-    { name: 'Rafał Woźniak', mutual: 157, isFriend: true, imageId: 24 },
-    { name: 'Joanna Błaszczyk', mutual: 142, isFriend: true, imageId: 25 },
-    { name: 'Łukasz Cichy', mutual: 144, isFriend: true, imageId: 26 },
-    { name: 'Zuzanna Górska', mutual: 114, isFriend: true, imageId: 27 },
-    { name: 'Maciej Kamiński', mutual: 52, isFriend: false, imageId: 28 },
-    { name: 'Kinga Bartosiewicz', mutual: 38, isFriend: false, imageId: 29 },
-    { name: 'Adam Wróbel', mutual: 46, isFriend: false, imageId: 30 },
-    { name: 'Justyna Jurek', mutual: 128, isFriend: true, imageId: 31 },
-    { name: 'Robert Kubiak', mutual: 89, isFriend: false, imageId: 32 },
-    { name: 'Karolina Sęk', mutual: 80, isFriend: false, imageId: 33 },
 ]);
 
 const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109];
 </script>
 
 <template>
+    <div class="w-full min-h-screen pb-20 bg-[#F0F2F5]">
 
-    <div class="w-full min-h-screen pb-20 bg-theme-bg">
         <div
             v-if="isTabsFixed"
-            class="fixed top-[50px] left-0 right-0 h-[60px] bg-theme-bg-secondary shadow-md z-30 animate-slide-down"
+            class="fixed top-[50px] left-0 right-0 h-[60px] bg-white shadow-sm border-b border-gray-300 z-30 animate-slide-down flex items-center"
         >
-            <div class="max-w-[1250px] mx-auto flex items-center justify-between h-full px-4 md:px-0">
-
+            <div class="max-w-[1095px] flex items-center justify-between w-full mx-auto px-4 lg:px-0">
                 <div class="flex items-center space-x-3">
-                    <img
-                        class="rounded-full w-9 h-9 border-theme-border border-2 object-cover"
-                        :src="userImage"
-                        alt="Avatar"
-                    >
-                    <div class="text-[17px] text-theme-text font-bold">
-                       {{ userName }}
+                    <img class="rounded-full w-[40px] h-[40px] border border-gray-200 object-cover" :src="profileUser.avatar" alt="Avatar">
+                    <div class="text-[17px] text-[#050505] font-bold leading-5">
+                        {{ profileUser.name }}
                     </div>
                 </div>
-
                 <div class="flex items-center space-x-2">
-                    <a
-                        class="
-                            flex
-                            justify-center
-                            items-baseline
-                            bg-blue-500
-                            hover:bg-blue-600
-                            rounded-lg
-                            cursor-pointer
-                            text-white
-                        "
-                    >
-                        <button class="flex items-center px-3 py-1.5 font-bold text-sm">
-                            <Message class="mr-1" :size="20"/> Wiadomość
-                        </button>
-                    </a>
-
-                    <button
-                        class="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full cursor-pointer"
-                    >
-                        <DotsHorizontal :size="20"/>
+                    <button class="w-9 h-9 flex items-center justify-center bg-[#E4E6EB] hover:bg-[#D8DADF] rounded-full transition-colors">
+                        <DotsHorizontal :size="20" fillColor="#050505"/>
                     </button>
                 </div>
-
             </div>
         </div>
 
-        <div class="w-full bg-theme-bg-secondary">
-            <ImageWithGradient :image-url="profileUser.cover" class="rounded-b-xl"/>
-            <div class="max-w-[1250px]  mx-auto pb-1">
+        <div class="w-full bg-white shadow-sm">  <ImageWithGradient :image-url="profileUser.cover" class="rounded-b-xl" />
+            <div class="max-w-[1250px] mx-auto relative">
 
-                <div id="ProfileInfo" class="flex md:flex-row flex-col items-center justify-between px-4">
-                    <div class="flex md:flex-row flex-col gap-4 md:-mt-6 -mt-16 items-center">
-                        <div class="relative">
-                            <img
-                                class="rounded-full w-[165px] h-[165px] border-theme-border border-4"
-                                :src="userImage"
-                            >
-                            <button
-                                class="absolute right-0 top-[100px] bg-gray-200 hover:bg-gray-300 p-1.5 rounded-full cursor-pointer"
-                            >
-                                <Camera :size="25"/>
-                            </button>
-                        </div>
-                        <div class="md:mt-4 text-center md:text-left -mt-3">
-                            <div class="text-[28px] text-theme-text font-extrabold pt-1">
-                                {{ userName }}
+
+
+                <div id="ProfileInfo" class="px-4 lg:px-[32px]  relative">
+
+                    <div class="flex flex-col lg:flex-row items-center lg:items-end justify-between relative z-10">
+
+                        <div class="relative -mt-[86px] lg:mr-4">
+                            <div class="relative group">
+                                <img
+                                    class="rounded-full w-[168px] h-[168px] border-[4px] border-white bg-white object-cover shadow-sm"
+                                    :src="profileUser.avatar"
+                                    alt="Avatar"
+                                >
+                                <button class="absolute bottom-2 right-2 bg-[#E4E6EB] hover:bg-[#D8DADF] p-2 rounded-full cursor-pointer transition-colors border-2 border-white">
+                                    <Camera :size="20" fillColor="#050505"/>
+                                </button>
                             </div>
-                            <div class="text-[17px] font-bold text-theme-text-secondary mb-1.5 text-center md:text-left">{{ profileUser.friendsCount }} znajomi · {{ profileUser.mutualFriendsCount || 0 }} wspólnych znajomych</div>
-                            <div class="flex md:justify-start justify-center md:-ml-1">
+                        </div>
+
+                        <div class="flex flex-col items-center lg:items-start -mt-3 lg:mt-0 lg:mb-4 flex-1">
+                            <h1 class="text-[32px] text-[#050505] font-bold leading-tight text-center lg:text-left">
+                                {{ profileUser.name }}
+                            </h1>
+                            <div class="text-[15px] font-semibold text-gray-500 mt-1">
+                                {{ profileUser.friendsCount }} znajomi
+                            </div>
+
+                            <div class="flex items-center justify-center lg:justify-start mt-2 cursor-pointer">
                                 <img v-for="i in 7" :key="i"
-                                    class="rounded-full -ml-3 z-[10 - i] w-[40px] h-[40px] border-white border-2"
-                                    :src="`https://picsum.photos/id/${140 + i}/2000/320`"
+                                    class="rounded-full -ml-2 first:ml-0 w-[32px] h-[32px] border-2 border-white object-cover relative z-0"
+                                    :src="`https://picsum.photos/id/${140 + i}/100/100`"
                                 >
                             </div>
                         </div>
-                    </div>
 
-                    <div class="flex items-center md:my-0 my-4 gap-2">
-                         <a
-                            class="flex justify-center items-baseline bg-gray-200 hover:bg-gray-300 rounded-lg cursor-pointer"
-                        >
-                            <button class="flex items-center px-4 py-2 font-bold">
-                                <Check class="-ml-2 mr-1" :size="22"/> {{ $t('ui.friend') }}
-                            </button>
-                        </a>
-                         <a
-                            class="flex justify-center items-baseline bg-blue-500 hover:bg-blue-600 rounded-lg cursor-pointer text-white"
-                        >
-                            <button class="flex items-center px-4 py-2 font-bold">
-                                <Message class="-ml-2 mr-1" :size="22"/> {{ $t('ui.message') }}
-                            </button>
-                        </a>
-                    </div>
-                </div>
+                        <div class="flex flex-col sm:flex-row items-center gap-3 mt-4 lg:mt-0 lg:mb-6 lg:self-end">
+                            <template v-if="isOwner">
+                                <button class="flex items-center px-3 py-[7px] bg-[#1877F2] hover:bg-[#166fe5] text-white rounded-md font-semibold text-[15px] transition-colors">
+                                    <Plus :size="20" class="mr-1.5" fillColor="#FFFFFF"/>
+                                    Dodaj do relacji
+                                </button>
+                                <button class="flex items-center px-3 py-[7px] bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] rounded-md font-semibold text-[15px] transition-colors">
+                                    <Pencil :size="18" class="mr-1.5" fillColor="#050505"/>
+                                    Edytuj profil
+                                </button>
+                                <button class="flex items-center justify-center w-[36px] h-[36px] bg-[#E4E6EB] hover:bg-[#D8DADF] rounded-md transition-colors">
+                                    <ChevronDown :size="24" fillColor="#050505"/>
+                                </button>
+                            </template>
 
-                <div
-                    ref="tabsContainerRef"
-                    class="w-full"
-                    :class="{'h-[50px]': isTabsFixed}"
-                >
-                    <div
-                        class="flex items-center w-full border-t h-[50px] text-theme-text-secondary py-[4px]"
-                    >
-                        <div class="max-w-[1250px] mx-auto flex w-full h-full px-4 md:px-0">
-                            <button class="w-[85px]" @click="setActiveTab('posts')">
-                                <div
-                                    :class="[
-                                        'flex items-center text-[15px] justify-center h-[45px] hover:bg-[#F2F2F2] w-full font-bold rounded-lg cursor-pointer',
-                                        activeTab === 'posts' ? 'text-blue-500' : ''
-                                    ]"
-                                >
-                                    Posty
-                                </div>
-                                <div v-if="activeTab === 'posts'" class="border-b-4 border-b-blue-400 rounded-md"></div>
-                            </button>
-
-                            <button class="flex items-center text-[15px] justify-center h-[48px] p-1 hover:bg-[#F2F2F2] w-[100px] font-bold rounded-lg mx-1 cursor-pointer" @click="setActiveTab('info')">
-                                <div
-                                    :class="[
-                                        'flex items-center text-[15px] justify-center h-[45px] w-full font-bold rounded-lg cursor-pointer',
-                                        activeTab === 'info' ? 'text-blue-500' : ''
-                                    ]"
-                                >
-                                    Informacje
-                                </div>
-                                <div v-if="activeTab === 'info'" class="border-b-4 border-b-blue-400 rounded-md -mt-[4px]"></div>
-                            </button>
-
-                            <button class="flex items-center text-[15px] justify-center h-[48px] p-1 hover:bg-[#F2F2F2] w-[85px] font-bold rounded-lg mx-1 cursor-pointer" @click="setActiveTab('friends')">
-                                <div
-                                    :class="[
-                                        'flex items-center text-[15px] justify-center h-[45px] w-full font-bold rounded-lg cursor-pointer',
-                                        activeTab === 'friends' ? 'text-blue-500' : ''
-                                    ]"
-                                >
-                                    Znajomi
-                                </div>
-                                <div v-if="activeTab === 'friends'" class="border-b-4 border-b-blue-400 rounded-md -mt-[4px]"></div>
-                            </button>
-
-                            <button class="flex items-center text-[15px] justify-center h-[48px] p-1 hover:bg-[#F2F2F2] w-[85px] font-bold rounded-lg mx-1 cursor-pointer">
-                                Zdjęcia
-                            </button>
-                            <button class="flex items-center text-[15px] justify-center h-[48px] p-1 hover:bg-[#F2F2F2] w-[110px] font-bold rounded-lg mx-1 cursor-pointer">
-                                Miejsca
-                            </button>
-                            <button class="flex items-center text-[15px] justify-center h-[48px] p-1 hover:bg-[#F2F2F2] w-[70px] font-bold rounded-lg mx-1 cursor-pointer">
-                                Sport
-                            </button>
-                            <button class="flex items-center text-[15px] justify-center h-[48px] p-1 hover:bg-[#F2F2F2] w-[90px] font-bold rounded-lg mx-1 cursor-pointer">
-                                Więcej
-                            </button>
+                            <template v-else>
+                                <button class="flex items-center px-3 py-[7px] bg-[#1877F2] text-white rounded-md font-semibold">
+                                    <Message :size="20" class="mr-1.5" /> Wyślij wiadomość
+                                </button>
+                            </template>
                         </div>
+
+                    </div>
+
+                    <div class="h-[1px] bg-gray-300 mt-6 lg:mt-4 mb-1 mx-auto opacity-70"></div>
+
+                    <div ref="tabsContainerRef" class="flex flex-wrap items-center justify-start lg:gap-1">
+                        <button
+                            v-for="tab in tabs"
+                            :key="tab.key"
+                            @click="setActiveTab(tab.key)"
+                            class="relative h-[60px] px-4 flex items-center justify-center cursor-pointer rounded-lg hover:bg-gray-100 transition-colors group"
+                        >
+                            <span
+                                class="text-[15px] font-semibold"
+                                :class="activeTab === tab.key ? 'text-[#1877F2]' : 'text-gray-600'"
+                            >
+                                {{ tab.label }}
+                                <ChevronDown v-if="tab.hasDropdown" :size="16" class="inline-block ml-1 opacity-70"/>
+                            </span>
+
+                            <div
+                                v-if="activeTab === tab.key"
+                                class="absolute bottom-0 left-0 w-full h-[3px] bg-[#1877F2] rounded-t-sm"
+                            ></div>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="max-w-[1250px] mx-auto md:px-0 px-2">
+        <div class="max-w-[1250px] mx-auto md:px-0 px-2 ">
+            <div class="grid grid-cols-1 gap-4">
 
-            <ProfilePostsTab
-                v-if="activeTab === 'posts'"
-                :friends-list="friendsList"
-                :mini-photos-list="miniPhotosList"
-                :user-name="userName"
-                :user-image="userImage"
-            />
-
-            <ProfileInfoTab
-                v-if="activeTab === 'info'"
-            />
-
-            <div v-if="activeTab === 'friends'" class="mt-4">
-                <FriendsSection
+                <ProfilePostsTab
+                    v-if="activeTab === 'posts'"
                     :friends-list="friendsList"
-                    :is-full-view="true"
+                    :mini-photos-list="miniPhotosList"
+                    :user-name="profileUser.name"
+                    :user-image="profileUser.avatar"
                 />
-            </div>
+
+                <ProfileInfoTab v-if="activeTab === 'info'" />
+
+                <div v-if="activeTab === 'friends'" class="bg-white rounded-lg shadow-sm p-4">
+                    <FriendsSection :friends-list="friendsList" :is-full-view="true" />
+                </div>
+
+                <div v-if="!['posts', 'info', 'friends'].includes(activeTab)" class="bg-white p-8 rounded-lg shadow-sm text-center text-gray-500">
+                    <h3 class="font-bold text-xl mb-2">Sekcja: {{ activeTab }}</h3>
+                    <p>Ta część interfejsu jest jeszcze w budowie.</p>
+                </div>
 
             </div>
+        </div>
     </div>
-    </template>
-    <style>
-    @keyframes slide-down {
-        from {
-            opacity: 0;
-            transform: translateY(-100%);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
+</template>
 
-    .animate-slide-down {
-        animation: slide-down 0.3s ease-out;
+<style scoped>
+@keyframes slide-down {
+    from {
+        opacity: 0;
+        transform: translateY(-100%);
     }
-    </style>
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
+.animate-slide-down {
+    animation: slide-down 0.3s ease-out;
+}
+</style>
