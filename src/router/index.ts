@@ -93,12 +93,17 @@ const router = createRouter({
       path: '/video',
       name: 'video',
       component: () => import('@/views/VideoCallView.vue'),
+    }, {
+      path: '/event',
+      name: 'event',
+      component: () => import('@/views/EventView.vue'),
     },
  {
       path: '/login/2',
       name: 'loginAs',
       component: () => import('@/views/LoginAsView.vue'),
     },
+
     {
       path: '/photo/:postId/:imageIndex',
       name: 'photo',

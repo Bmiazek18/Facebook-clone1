@@ -13,6 +13,7 @@ import NotificationMenu from '@/components/NotificationMenu.vue'
 import MessageMenu from '@/components/MessageMenu.vue'
 
 import { useTheme } from '@/composables/useTheme'
+import MainMenu from './MainMenu.vue'
 
 type ActiveMenuType = 'profile' | 'notifications' | 'message' | null;
 
@@ -34,7 +35,7 @@ onClickOutside(menuTarget, () => {
 
 <template>
    <div class="flex items-center justify-end w-[260px] relative">
-      <button v-tooltip.bottom.no-arrow="'Menu'" class="rounded-full bg-[#E3E6EA] dark:bg-[#3b3d3f] p-2 hover:bg-gray-300 dark:hover:bg-gray-600 mx-1">
+      <button @click="toggleMenu('main')" v-tooltip.bottom.no-arrow="'Menu'" class="rounded-full bg-[#E3E6EA] dark:bg-[#3b3d3f] p-2 hover:bg-gray-300 dark:hover:bg-gray-600 mx-1">
         <DotsGrid :size="23" :fillColor="isDark ? '#fff' : '#050505'" />
       </button>
 
@@ -57,6 +58,7 @@ onClickOutside(menuTarget, () => {
       </div>
 
       <div v-if="activeMenu" ref="menuTarget" class="absolute top-12 right-0 z-50">
+        <MainMenu v-if="activeMenu === 'main'" />
         <ProfileMenu v-if="activeMenu === 'profile'" />
         <MessageMenu v-if="activeMenu === 'message'" />
         <NotificationMenu v-if="activeMenu === 'notifications'" />
