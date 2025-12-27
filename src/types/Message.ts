@@ -101,7 +101,14 @@ export interface LinkMessage extends BaseMessage {
 
 
 }
+export interface PostLinkMessage extends BaseMessage {
 
+  type: 'post_link';
+
+  sharedPostId: string;
+
+
+}
 
 
 // ----------------
@@ -128,7 +135,8 @@ export type Message =
 
   | CallRejectedMessage
   | ActionsMessage
-  | LinkMessage;
+  | LinkMessage
+  | PostLinkMessage;
 
 
 

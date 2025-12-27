@@ -12,6 +12,12 @@ const router = createRouter({
       component: HomeView,
     },
     {
+      path: '/post/:id',
+      name: 'post',
+      component: HomeView,
+      props: true
+    },
+    {
       path: '/profile',
       name: 'profile',
       component: ProfileView,
@@ -80,6 +86,7 @@ const router = createRouter({
     {
       path: '/story',
       name: 'story',
+       meta: { showMainLayout: false },
       component: () => import('@/views/StoryView.vue'),
     },
      {
@@ -97,7 +104,14 @@ const router = createRouter({
       name: 'photo',
       component: () => import('../views/GalleryView.vue'),
       props: true,
-        meta: { showMainLayout: false },
+      meta: { showMainLayout: false },
+    },
+     {
+      path: '/comment/:postId/:commentId',
+      name: 'comment',
+      component: () => import('../views/GalleryView.vue'),
+      props: true,
+      meta: { showMainLayout: false },
     },
     {
       path: '/hashtag/:hashtag',

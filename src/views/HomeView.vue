@@ -13,6 +13,9 @@ import { onBeforeRouteLeave, useRouter, type RouteLocation } from 'vue-router' /
 import { useCreatePostStore } from '@/stores/createPost'
 import ConfirmationModal from '@/components/ConfirmationModal.vue'
 import ReelSGalerry from '@/components/ReelSGalerry.vue'
+import { getPostById } from '@/data/posts'
+import PostModal from '@/components/PostModal.vue'
+import BaseModal from '@/components/BaseModal.vue'
 
 const postsStore = usePostsStore()
 const localPosts = ref([...postsStore.posts]);
@@ -28,6 +31,9 @@ setTimeout(() => { isLoading.value = false }, 2000)
 
 const peopleYouMayKnowIndex = Math.floor(Math.random() * 10) + 2
 const router = useRouter() // Instancja routera do manualnej nawigacji
+const route = router.currentRoute
+
+const post = getPostById(String(route.value.params.id))
 
 // Virtual list setup
 const rowHeight = 10
@@ -132,6 +138,9 @@ const handleCancelLeave = () => {
       @confirm="handleConfirmLeave"
       @cancel="handleCancelLeave"
     />
+<BaseModal v-if="post" :title="post.authorName" @close="post = undefined; router.push('/')">
+<PostModal :post="post" />
+</BaseModal>
 
 
   </div>

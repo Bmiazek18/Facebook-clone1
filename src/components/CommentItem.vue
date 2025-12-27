@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router' // New import
 import ThumbUp from 'vue-material-design-icons/ThumbUp.vue'
 import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
 import Heart from 'vue-material-design-icons/Heart.vue' // Add Heart icon for 'love' reaction
@@ -16,6 +17,8 @@ const props = defineProps<{
     depth: number,
     postId: string
 }>()
+
+const router = useRouter() // New router instance
 
 const replyPlaceholder = "Napisz odpowiedź..."
 
@@ -35,6 +38,17 @@ const toggleReplyInput = () => {
 const handleCommentSubmitted = () => {
     showReplyInput.value = false;
 }
+
+const viewCommentImage = ( commentId: number, postId: string) => {
+  router.push({
+    name: 'comment',
+    params: {
+      postId: postId,
+      commentId: commentId
+    },
+
+  });
+};
 
 const isRootComment = props.depth === 0
 const isDepthTwo = props.depth === 1
@@ -112,7 +126,7 @@ const getReactionConfig = (type: string) => {
             <div
                 v-if=" hasReplies"
                 :class="[isRootComment? 'top-[40px]' : 'left-[50px] top-[35px]']"
-                class="absolute   h-[calc(100%-70px)] bottom-0 w-0 border-l-2 border-gray-300"
+                class="absolute   h-[calc(100%-100px)] bottom-0 w-0 border-l-2 border-gray-300"
             ></div>
 
             <div v-if="!isRootComment" class="flex-grow ml-2">
@@ -126,7 +140,9 @@ const getReactionConfig = (type: string) => {
                 <div v-if="props.comment.image || props.comment.gif"
                      :class="{'ml-2 mt-1': props.comment.content && (props.comment.image || props.comment.gif), 'bg-gray-100 w-fit p-2 rounded-xl dark:bg-[#333333]': !props.comment.content}">
                     <img :src="props.comment.image || props.comment.gif"
-                         :class="{'rounded-lg max-h-40': !props.comment.content, 'max-h-40': props.comment.content}"/>
+                         :class="{'rounded-lg max-h-40': !props.comment.content, 'max-h-40': props.comment.content}"
+                         @click="viewCommentImage( props.comment.id, props.postId)"
+                         class="cursor-pointer" />
                 </div>
                  <div class="flex items-center ml-2 space-x-2 text-xs font-semibold text-gray-500 mt-1">
 <span class="cursor-pointer hover:underline" @click="handleReaction('like')">{{ $t('reaction.like') }}</span>
@@ -214,7 +230,9 @@ const getReactionConfig = (type: string) => {
              <div v-if="props.comment.image || props.comment.gif"
                      :class="{'ml-2 mt-1': props.comment.content && (props.comment.image || props.comment.gif), 'bg-gray-100 ml-2 w-fit p-2 rounded-xl dark:bg-[#333333]': !props.comment.content}">
                     <img :src="props.comment.image || props.comment.gif"
-                         :class="{'rounded-lg max-h-40': !props.comment.content, 'max-h-40': props.comment.content}"/>
+                         :class="{'rounded-lg max-h-40': !props.comment.content, 'max-h-40': props.comment.content}"
+                         @click="viewCommentImage( props.comment.id, props.postId)"
+                         class="cursor-pointer" />
                 </div>
             <div class="flex items-center ml-2 space-x-2 text-xs font-semibold text-gray-500 mt-1">
                 <span class="cursor-pointer hover:underline" @click="handleReaction('like')">{{ $t('reaction.like') }}</span>
