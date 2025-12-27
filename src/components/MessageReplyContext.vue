@@ -11,7 +11,7 @@ defineProps<{
   <div
     class="flex flex-col"
     :class="{
-      'items-start ml-[35px]': reply.sender === 'other',
+      'items-start ml-10': reply.sender === 'other',
       'items-end': reply.sender === 'me'
     }"
   >

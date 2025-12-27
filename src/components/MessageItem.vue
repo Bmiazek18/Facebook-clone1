@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, inject } from 'vue'; // Dodano 'inject'
 import PlayIcon from 'vue-material-design-icons/Play.vue';
 import PauseIcon from 'vue-material-design-icons/Pause.vue';
 import PhoneMissedIcon from 'vue-material-design-icons/PhoneMissed.vue';
@@ -16,8 +16,8 @@ import MessageMediaGallery from './MessageMediaGallery.vue';
 import MessageFileAttachment from './MessageFileAttachment.vue';
 import MessageReactions from './MessageReactions.vue';
 
-// --- IMPORT ANIMACJI FLIP ---
-import { useFlipAnimation } from '@/composables/useFlipAnimation';
+// UWAGA: Usunięto bezpośredni import useFlipAnimation, teraz używamy inject
+// import { useFlipAnimation } from '@/composables/useFlipAnimation';
 
 // Types
 import type { Message, ImageMessage, GifMessage, AudioMessage, FileMessage, VideoMessage, AudioState, LinkMessage } from '@/types/Message';
@@ -37,7 +37,7 @@ const props = defineProps<{
   currentTheme?: Theme;
   boxId?: string | number;
 
-  // NOWOŚĆ: Mapa odczytania przekazywana z rodzica
+  // Mapa odczytania przekazywana z rodzica
   lastReadMap: Record<string, number>;
 }>();
 
@@ -49,8 +49,17 @@ const emit = defineEmits<{
   (e: 'open-modal', type: 'CHANGE_E' | 'CHANGE_NICKNAME' | 'CHANGE_THEME'): void;
 }>();
 
-// --- FLIP ANIMATION HOOK ---
-const { onAvatarEnter, onAvatarLeave } = useFlipAnimation();
+// --- FLIP ANIMATION INJECTION ---
+// Wstrzykujemy funkcje od rodzica (MessageBox), co naprawia błędy przy wielu oknach
+const flipContext = inject<{
+  onAvatarEnter: (el: Element, done: () => void) => void,
+  onAvatarLeave: (el: Element, done: () => void) => void
+}>('flip-animation');
+
+// Fallback (zabezpieczenie)
+const onAvatarEnter = flipContext?.onAvatarEnter || ((el, done) => done());
+const onAvatarLeave = flipContext?.onAvatarLeave || ((el, done) => done());
+
 
 // --- LOGIKA "SEEN BY" ---
 const MAX_VISIBLE_AVATARS = 3;
@@ -87,7 +96,7 @@ const isCallRejectedMessage = (msg: Message): boolean => msg.type === 'call_reje
 const isLinkMessage = (msg: Message): msg is LinkMessage => msg.type === 'link';
 const isAnyCallType = (msg: Message): boolean => isCallMessage(msg) || isCallRejectedMessage(msg);
 const isTextMessage = (msg: Message): boolean => msg.type === 'text' && !isEmojiOnly(msg.content);
-
+const isPostLinkMessage = (msg: Message): boolean => msg.type === 'post_link';
 const isMe = computed(() => props.message.sender === 'me');
 
 const isEmojiOnly = (content: string): boolean => {
@@ -206,7 +215,7 @@ const toggleAudio = (msg: Message) => emit('toggle-audio-playback', msg);
       'mb-3': positionInGroup === 'last' || positionInGroup === 'single'
     }"
   >
-    <div class="flex items-end" :class="{ 'flex-row': !isMe, 'flex-row-reverse': isMe }">
+    <div class="flex items-end w-full" :class="{ 'flex-row': !isMe, 'flex-row-reverse': isMe }">
 
         <div
             v-if="shouldDisplayAvatar"
@@ -369,6 +378,50 @@ const toggleAudio = (msg: Message) => emit('toggle-audio-playback', msg);
             </div>
 
             <div
+              v-else-if="isPostLinkMessage(message)"
+              class="flex flex-col overflow-hidden rounded-2xl shadow-sm min-w-[280px] max-w-full border border-gray-100 bg-gray-200"
+            >
+              <div class="flex items-center px-4 py-3">
+                <div class="w-10 h-10 rounded-full overflow-hidden mr-3 border border-gray-200 bg-black">
+                  <img
+                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80"
+                    class="w-full h-full object-cover opacity-90"
+                    alt="Author"
+                  />
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-bold text-gray-900 text-[15px] leading-tight">
+                    Coding Tips
+                  </span>
+                </div>
+              </div>
+
+              <div class="w-full relative bg-gray-800">
+                <img
+                  src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                  class="w-full h-auto object-cover max-h-[250px]"
+                  alt="Code example"
+                />
+                <div class="absolute bottom-0 w-full bg-yellow-100/90 text-center py-1 text-xs font-bold text-gray-800 border-t border-yellow-200">
+                    Takeaway: Unused Code Create Confusion.
+                </div>
+              </div>
+
+              <div class="px-4 py-3 flex flex-col justify-between min-h-[80px]">
+                <h3 class="font-bold text-gray-900 text-[17px] leading-tight mb-1">
+                  Golden Rules of Writing Good Code.
+                </h3>
+
+                <div class="flex items-center justify-between mt-auto pt-1">
+                  <div class="flex items-center text-gray-500 text-sm font-medium">
+                    <span>Facebook</span>
+                  </div>
+                  <span class="text-gray-400 font-bold text-xl leading-none pb-2 cursor-pointer hover:text-gray-600">...</span>
+                </div>
+              </div>
+            </div>
+
+            <div
             v-else-if="isTextMessage(message)"
             class="relative px-4 py-2 text-[15px] leading-relaxed shadow-sm break-words max-w-full"
             :class="[bubbleRadiusClass, bubbleColorClass]"
@@ -404,7 +457,7 @@ const toggleAudio = (msg: Message) => emit('toggle-audio-playback', msg);
 
         <TransitionGroup
           tag="div"
-          class="flex justify-end items-center  overflow-visible p-1"
+          class="flex justify-end items-center overflow-visible p-1"
           @enter="onAvatarEnter"
           @leave="onAvatarLeave"
           :css="false"

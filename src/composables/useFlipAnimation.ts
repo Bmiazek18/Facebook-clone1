@@ -1,27 +1,42 @@
+// src/composables/useFlipAnimation.ts
+import { type Ref } from 'vue';
 
-const avatarPositions = new Map<string, DOMRect>();
+export function useFlipAnimation(containerRef: Ref<HTMLElement | null>) {
 
-export function useFlipAnimation() {
+  // 1. Mapa jest teraz LOKALNA dla każdego wywołania tej funkcji
+  const avatarPositions = new Map<string, DOMRect>();
 
   const capturePositions = () => {
-    const elements = document.querySelectorAll('[data-avatar-userid]');
+    // Zabezpieczenie
+    if (!containerRef.value) return;
+
+    avatarPositions.clear();
+
+    // 2. Szukamy TYLKO wewnątrz konkretnego kontenera (boxa)
+    // Zamiast document.querySelectorAll używamy containerRef.value.querySelectorAll
+    const elements = containerRef.value.querySelectorAll('[data-avatar-userid]');
+
     elements.forEach((el) => {
       const htmlEl = el as HTMLElement;
       const userId = htmlEl.dataset.avatarUserid;
-      if (userId) {
-        avatarPositions.set(userId, htmlEl.getBoundingClientRect());
+      const rect = htmlEl.getBoundingClientRect();
+
+      if (userId && rect.width > 0) {
+        avatarPositions.set(userId, rect);
       }
     });
   };
 
-  // Animacja wejścia (FLIP - lot)
   const onAvatarEnter = (el: Element, done: () => void) => {
     const htmlEl = el as HTMLElement;
     const userId = htmlEl.dataset.avatarUserid;
 
+    // Sprawdzamy lokalną mapę tego konkretnego boxa
     if (!userId || !avatarPositions.has(userId)) {
-      // Fade In dla nowych
-      htmlEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 }).onfinish = done;
+      htmlEl.style.opacity = '0';
+      requestAnimationFrame(() => {
+        htmlEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 }).onfinish = done;
+      });
       return;
     }
 
@@ -35,41 +50,38 @@ export function useFlipAnimation() {
       return;
     }
 
-    // Lot do nowej pozycji
-    htmlEl.animate(
-      [
-        { transform: `translate(${deltaX}px, ${deltaY}px) scale(1.1)`, opacity: 0.9 },
-        { transform: `translate(0, 0) scale(1)`, opacity: 1 }
-      ],
-      {
-        duration: 500,
-        easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-        fill: 'both'
-      }
-    ).onfinish = done;
-  };
+    htmlEl.style.transition = 'none';
+    htmlEl.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.1)`;
+    htmlEl.style.opacity = '0.9';
 
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const animation = htmlEl.animate(
+          [
+            { transform: `translate(${deltaX}px, ${deltaY}px) scale(1.1)`, opacity: 0.9 },
+            { transform: `translate(0, 0) scale(1)`, opacity: 1 }
+          ],
+          { duration: 600, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'both' }
+        );
+        animation.onfinish = () => {
+          htmlEl.style.transform = '';
+          htmlEl.style.opacity = '';
+          htmlEl.style.transition = '';
+          done();
+        };
+      });
+    });
+  };
 
   const onAvatarLeave = (el: Element, done: () => void) => {
     const htmlEl = el as HTMLElement;
-
-
-
-    htmlEl.animate(
-      [
-        { opacity: 0, width: '14px' }, // Start: widoczny
-        { opacity: 0, width: '0' } // Koniec: znika
-      ],
-      {
-        duration: 150,
-        easing: 'ease-in'
-      }
-    ).onfinish = done;
+    htmlEl.style.pointerEvents = 'none';
+    htmlEl.animate([
+      { opacity: 1, transform: 'scale(1)' },
+      { opacity: 0, transform: 'scale(0.01)' }
+    ], { duration: 300, easing: 'ease-in', fill: 'both' }).onfinish = done;
   };
 
-  return {
-    capturePositions,
-    onAvatarEnter,
-    onAvatarLeave // <--- Eksportujemy nową funkcję
-  };
+  // Zwracamy funkcje, które będą używane w Provide/Inject
+  return { capturePositions, onAvatarEnter, onAvatarLeave };
 }

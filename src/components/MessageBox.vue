@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onUnmounted, computed, nextTick, onMounted, watch } from 'vue';
+import { ref, onUnmounted, computed, nextTick, onMounted, watch, provide } from 'vue';
 import { storeToRefs } from 'pinia';
 import MultiMediaLightbox from './MessageBox/MediaLightbox.vue';
 import MessageBoxHeader from './MessageBoxHeader.vue';
@@ -38,39 +38,51 @@ const messagesList = computed((): Message[] => {
 });
 
 // ==========================================
-// 1. STAN ODCZYTANIA (Cursor-based)
-// Klucz: User ID, Wartość: Message ID (ostatnio przeczytana)
+// 1. REF KONTENERA (Przeniesiony na górę)
+// ==========================================
+// Musi być zdefiniowany przed useFlipAnimation, żeby go przekazać
+const chatContainer = ref<HTMLElement | null>(null);
+
+// ==========================================
+// 2. STAN ODCZYTANIA (Cursor-based)
 // ==========================================
 const lastRead = ref<Record<string, number>>({
   'user_1': 0,
   'user_2': 0,
-  'ghost_tester': 0 // Init
+  'ghost_tester': 0
 });
 
 // ==========================================
-// 2. ANIMACJA FLIP (Obsługa zmian stanu)
+// 3. ANIMACJA FLIP (IZOLOWANA)
 // ==========================================
-const { capturePositions } = useFlipAnimation();
-setTimeout(() => {
-    const msgs = messagesList.value;
-    if (msgs.length > 0) {
-      const lastMsgId = msgs[msgs.length - 1].id;
-const lastMsgId2 = msgs[msgs.length - 2].id;
-      // Aktualizujemy wszystkich naraz
-      lastRead.value['user_1'] = lastMsgId;
-      lastRead.value['user_2'] = lastMsgId2;
+// Przekazujemy chatContainer, aby szukać awatarów tylko w tym oknie
+const { capturePositions, onAvatarEnter, onAvatarLeave } = useFlipAnimation(chatContainer);
 
-    }
-  }, 1000);
-// Obserwujemy zmiany w obiekcie lastRead.
-// flush: 'pre' -> Zapisz pozycje ZANIM Vue przerysuje zmiany w DOM.
+// Udostępniamy funkcje animacji dzieciom (MessageItem) przez Provide/Inject
+provide('flip-animation', {
+  onAvatarEnter,
+  onAvatarLeave
+});
+
+
+  const msgs = messagesList.value;
+  if (msgs.length > 0) {
+    const lastMsgId = msgs[msgs.length - 1].id;
+    const lastMsgId2 = msgs.length > 1 ? msgs[msgs.length - 2].id : lastMsgId;
+
+    lastRead.value['user_1'] = lastMsgId;
+    lastRead.value['user_2'] = lastMsgId2;
+  }
+
+
+// Watcher pozycji (flush: 'pre' jest kluczowe)
 watch(lastRead, () => {
   capturePositions();
 }, { deep: true, flush: 'pre' });
 
 
 // ==========================================
-// 3. SYMULACJA (Skrypt testowy)
+// 4. SYMULACJA CIĄGŁA (Skrypt testowy)
 // ==========================================
 let simulationInterval: any = null;
 const TEST_USER_ID = 'ghost_tester';
@@ -80,25 +92,26 @@ onMounted(() => {
 
   // Opóźniony start symulacji
   setTimeout(() => {
-    console.log('🚀 Start symulacji Cursor-based...');
+    console.log(`🚀 [Box ${props.boxId}] Start symulacji Cursor-based...`);
     let currentIndex = 0;
 
     simulationInterval = setInterval(() => {
       const msgs = messagesList.value;
       if (!msgs || msgs.length === 0) return;
 
-      // Pobieramy ID wiadomości, na którą chcemy "przeskoczyć"
       const targetMessageId = msgs[currentIndex].id;
 
-      // ZMIANA STANU: Aktualizujemy wskaźnik
-      // To spowoduje usunięcie awatara z poprzedniego MessageItem i dodanie do nowego
+      // ZMIANA STANU:
+      // Ważne: przy manualnej symulacji warto wymusić capturePositions tutaj,
+      // jeśli watch nie zdąży (opcjonalne, ale bezpieczne)
+      capturePositions();
+
       lastRead.value[TEST_USER_ID] = targetMessageId;
 
-      // Przesuwamy indeks (pętla)
       currentIndex++;
       if (currentIndex >= msgs.length) currentIndex = 0;
 
-    }, 1500); // Co 1.5 sekundy
+    }, 1500);
   }, 2000);
 
   window.addEventListener('keydown', (e) => {
@@ -113,7 +126,7 @@ onUnmounted(() => {
   });
 });
 
-// --- Reszta standardowej logiki (Store, Themes, Drag&Drop) ---
+// --- Reszta standardowej logiki ---
 
 watch(() => props.messages, (newVal) => {
   if (newVal) localMessages.value = [...newVal];
@@ -130,7 +143,7 @@ const boxTheme = computed(() => {
   return themes.value.find((t: Theme) => t.id === settings.themeId) || selectedTheme.value;
 });
 
-const chatContainer = ref<HTMLElement | null>(null);
+// (chatContainer zdefiniowany wyżej)
 
 function scrollToBottom() {
   nextTick(() => {

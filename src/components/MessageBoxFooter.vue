@@ -28,7 +28,12 @@ const emit = defineEmits<{
 
 const props = defineProps<{reply: Message | null; boxId?: string | number}>();
 
-// translations available in templates via $t
+const fileInput = ref<HTMLInputElement | null>(null);
+const selectedImageUrl = ref<string | null>(null);
+const selectedGifUrl = ref<string | null>(null);
+
+
+
 
 // connect selected emoji/icon to the shared messenger theme store
 import { useConversationsStore } from '@/stores/conversations'
