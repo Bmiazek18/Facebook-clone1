@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type DefineComponent, ref, onMounted } from 'vue';
+import {  onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import PostCreator from './PostCreator.vue';
 import PrivacySelector from './PrivacySelector.vue';

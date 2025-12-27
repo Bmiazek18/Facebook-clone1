@@ -89,8 +89,8 @@ const handleShareToMessage = () => { // New handler
                 <Pencil :size="20" :fillColor="isDark ? '#E4E6EB' : '#050505'" />
               </div>
               <div class="flex-1">
-                <p class="text-[15px] font-medium text-theme-text">Udostępnij w aktualnościach</p>
-                <p class="text-xs text-theme-text-secondary">Udostępnij swój post</p>
+                <p class="text-[15px] font-medium text-theme-text">{{ t('post.shareInFeed') }}</p>
+                <p class="text-xs text-theme-text-secondary">{{ t('post.shareYourPost') }}</p>
               </div>
             </button>
             <button
@@ -101,7 +101,7 @@ const handleShareToMessage = () => { // New handler
                 <BookOpenPageVariant :size="20" :fillColor="isDark ? '#E4E6EB' : '#050505'" />
               </div>
               <div class="flex-1">
-                <p class="text-[15px] font-medium text-theme-text">Udostępnij w relacji</p>
+                <p class="text-[15px] font-medium text-theme-text">{{ t('post.shareInStory') }}</p>
               </div>
             </button>
             <button
@@ -112,7 +112,7 @@ const handleShareToMessage = () => { // New handler
                 <ChatProcessingOutline :size="20" :fillColor="isDark ? '#E4E6EB' : '#050505'" />
               </div>
               <div class="flex-1">
-                <p class="text-[15px] font-medium text-theme-text">Udostępnij w wiadomości</p>
+                <p class="text-[15px] font-medium text-theme-text">{{ t('post.shareInMessage') }}</p>
               </div>
             </button>
           </div>

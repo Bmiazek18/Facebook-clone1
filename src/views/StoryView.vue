@@ -18,6 +18,9 @@ import AccountCircle from 'vue-material-design-icons/AccountCircle.vue';
 import ThumbUp from 'vue-material-design-icons/ThumbUp.vue';
 import Heart from 'vue-material-design-icons/Heart.vue';
 import NavbarRight from '@/components/NavbarRight.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 // --- TYPY DANYCH ---
 interface StoryUser {
@@ -124,7 +127,7 @@ const nextStory = () => {
     if (currentStoryIndex.value < storyItems.value.length - 1) {
         currentStoryIndex.value++;
     } else {
-        console.log("Koniec relacji");
+        console.log(t('story.endOfStory'));
         isPaused.value = true;
     }
 };
@@ -149,14 +152,14 @@ const prevStory = () => {
                 <Facebook :size="40" />
             </div>
         </div>
-        <h1 class="text-2xl font-bold text-black tracking-tight">Relacje</h1>
+        <h1 class="text-2xl font-bold text-black tracking-tight">{{ t('story.stories') }}</h1>
         <div class="flex gap-4 mt-1 text-[15px] font-medium text-blue-600">
-          <span class="cursor-pointer hover:underline">Archiwum</span>
-          <span class="cursor-pointer hover:underline">Ustawienia</span>
+          <span class="cursor-pointer hover:underline">{{ t('story.archive') }}</span>
+          <span class="cursor-pointer hover:underline">{{ t('story.settings') }}</span>
         </div>
       </div>
       <div class="px-2 py-2">
-         <h2 class="px-2 text-[17px] font-semibold text-black mb-2">Twoja relacja</h2>
+         <h2 class="px-2 text-[17px] font-semibold text-black mb-2">{{ t('story.yourStory') }}</h2>
          <RouterLink to="/stories/create">
 
 
@@ -169,14 +172,14 @@ const prevStory = () => {
               </div>
             </div>
             <div>
-              <p class="font-semibold text-black text-[15px]">Utwórz relację</p>
-              <p class="text-[13px] text-gray-500">Udostępnij zdjęcie lub coś napisz.</p>
+              <p class="font-semibold text-black text-[15px]">{{ t('story.createStory') }}</p>
+              <p class="text-[13px] text-gray-500">{{ t('story.sharePhotoOrWriteSomething') }}</p>
             </div>
 
          </div>
            </RouterLink>
       </div>
-      <div class="px-4 py-2 text-[17px] font-semibold text-black mt-2">Wszystkie relacje</div>
+      <div class="px-4 py-2 text-[17px] font-semibold text-black mt-2">{{ t('story.allStories') }}</div>
       <div class="flex-1 overflow-y-auto custom-scrollbar px-2 pb-4">
         <div v-for="story in stories" :key="story.id" class="flex items-center gap-3 p-2 rounded-lg cursor-pointer transition mb-1" :class="story.isActive ? 'bg-gray-100' : 'hover:bg-gray-50'">
           <div class="relative p-[2px] rounded-full shrink-0" :class="story.isUnseen && !story.isActive ? 'bg-blue-600' : 'bg-transparent'">
@@ -268,7 +271,7 @@ const prevStory = () => {
         </div>
 <div class="shrink-0 w-[650px] flex items-end justify-between gap-3 pt-4 pb-2 z-30">
                 <div class="relative flex-1 h-[44px]">
-                   <input v-model="messageInput" type="text" placeholder="Wyślij wiadomość..." class="w-full h-full bg-black border-[2px] border-white rounded-full px-6 text-white placeholder-gray-300 focus:outline-none focus:border-gray-200 transition text-[16px] font-normal tracking-wide"/>
+                   <input v-model="messageInput" type="text" :placeholder="t('story.sendMessage')" class="w-full h-full bg-black border-[2px] border-white rounded-full px-6 text-white placeholder-gray-300 focus:outline-none focus:border-gray-200 transition text-[16px] font-normal tracking-wide"/>
                 </div>
                 <div class="flex items-center gap-2 pb-0.5">
                     <div v-for="(reaction, idx) in reactions" :key="idx" class="cursor-pointer hover:scale-125 active:scale-95 transition-transform duration-200 origin-bottom">

@@ -4,7 +4,7 @@
     <div class="w-[360px] bg-white shadow-lg h-screen fixed left-0 top-[50px] pt-4 px-2 flex flex-col overflow-y-auto z-10">
 
       <div class="flex justify-between items-center px-2 mb-4">
-        <h1 class="text-[24px] font-bold text-[#050505]">Znajomi</h1>
+        <h1 class="text-[24px] font-bold text-[#050505]">{{ t('friends.friends') }}</h1>
         <div class="bg-[#e4e6eb] w-9 h-9 rounded-full flex items-center justify-center cursor-pointer hover:bg-[#d8dadf] transition-colors">
           <CogIcon :size="20" />
         </div>
@@ -17,7 +17,7 @@
             <div class="bg-[#1877f2] rounded-full p-1.5 text-white">
               <AccountGroupIcon :size="20" />
             </div>
-            <span class="text-[17px] font-medium text-[#050505]">Strona główna</span>
+            <span class="text-[17px] font-medium text-[#050505]">{{ t('friends.home') }}</span>
           </div>
         </div>
 
@@ -39,8 +39,8 @@
       <div class="max-w-[1400px] mx-auto">
 
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-[20px] font-bold text-[#050505]">Zaproszenia do grona znajomych</h2>
-          <a href="#" class="text-[#1877f2] hover:bg-[#f0f2f5] px-2 py-1 rounded text-[15px] font-medium">Pokaż wszystkie</a>
+          <h2 class="text-[20px] font-bold text-[#050505]">{{ t('friends.friendRequests') }}</h2>
+          <a href="#" class="text-[#1877f2] hover:bg-[#f0f2f5] px-2 py-1 rounded text-[15px] font-medium">{{ t('friends.showAll') }}</a>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-3">
@@ -64,8 +64,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
 const handleAddFriend = (id: number) => {
-  console.log('Wysłano zaproszenie do:', id);
+  console.log(t('friends.sentFriendRequestTo'), id);
   const person = friendRequests.value.find((p: { id: number }) => p.id === id);
   if (person) person.isFriend = true;
 };
@@ -80,11 +84,11 @@ import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
 import FriendCard from '../components/PeopleYouMayKnowCard.vue'
 // --- Menu Data ---
 const menuItems = [
-  { label: 'Zaproszenia do grona znajomych', icon: AccountPlusIcon },
-  { label: 'Propozycje', icon: AccountPlusIcon }, // Używam podobnej ikony dla uproszczenia
-  { label: 'Wszyscy znajomi', icon: AccountMultipleIcon },
-  { label: 'Urodziny', icon: GiftIcon },
-  { label: 'Listy niestandardowe', icon: FormatListBulletedIcon },
+  { label: 'friends.friendRequests', icon: AccountPlusIcon },
+  { label: 'friends.suggestions', icon: AccountPlusIcon }, // Używam podobnej ikony dla uproszczenia
+  { label: 'friends.allFriends', icon: AccountMultipleIcon },
+  { label: 'friends.birthdays', icon: GiftIcon },
+  { label: 'friends.customLists', icon: FormatListBulletedIcon },
 ];
 
 // --- Mock Data (Dane ze screenshota) ---

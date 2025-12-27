@@ -34,7 +34,9 @@ import type { PostData } from '@/types/StoryElement';
 import type { User } from '@/data/users';
 import { getAllUsers } from '@/data/users';
 import { type Post } from '@/types/Post';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 
 const props = defineProps<{
   sharedPost?: PostData | null;
@@ -203,8 +205,8 @@ const fetchLinkMetadata = async (url: string) => {
     linkPreview.value = {
       url: url,
       domain: 'www.wp.pl',
-      title: 'Wirtualna Polska - Wszystko co ważne',
-      description: 'Najnowsze wiadomości z Polski i świata.',
+      title: t('post.wpTitle'),
+      description: t('post.wpDescription'),
       image: 'https://v.wpimg.pl/QUstbi80YyUlCnc_Tgx_IE8kKVx4Cz0_Bi9MLwI-PihLeA', // Przykładowy obrazek z WP
     };
   } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
@@ -212,7 +214,7 @@ const fetchLinkMetadata = async (url: string) => {
       url: url,
       domain: 'youtube.com',
       title: 'YouTube Video',
-      description: 'Oglądaj filmy i muzykę, którą kochasz.',
+      description: t('post.youtubeDescription'),
       image: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
     };
   } else {
@@ -220,7 +222,7 @@ const fetchLinkMetadata = async (url: string) => {
      linkPreview.value = {
       url: url,
       domain: new URL(url).hostname,
-      title: 'Podgląd linku',
+      title: t('post.linkPreview'),
       description: url,
       image: undefined
     };
@@ -298,13 +300,13 @@ const selectUser = async (user: User) => {
 const privacyInfo = computed(() => {
   type Info = { label: string; icon: DefineComponent | null };
   const map: Record<string, Info> = {
-    only_me: { label: 'Tylko ja', icon: LockIcon },
-    public: { label: 'Publiczne', icon: EarthIcon },
-    friends: { label: 'Znajomi', icon: AccountGroupIcon },
-    friends_except: { label: 'Znajomi z wyjątkiem...', icon: AccountMultipleMinusIcon },
-    specific_friends: { label: 'Konkretni znajomi', icon: AccountStarIcon },
+    only_me: { label: t('post.only_me'), icon: LockIcon },
+    public: { label: t('post.public'), icon: EarthIcon },
+    friends: { label: t('post.friends'), icon: AccountGroupIcon },
+    friends_except: { label: t('post.friends_except'), icon: AccountMultipleMinusIcon },
+    specific_friends: { label: t('post.specific_friends'), icon: AccountStarIcon },
   };
-  if (!selectedPrivacy.value) return { label: 'Tylko ja', icon: LockIcon };
+  if (!selectedPrivacy.value) return { label: t('post.only_me'), icon: LockIcon };
   return map[selectedPrivacy.value] || { label: selectedPrivacy.value, icon: null };
 });
 
@@ -428,7 +430,7 @@ const handlePublish = () => {
         <div class="text-[15px] leading-tight mb-1 text-gray-900">
           <span class="font-bold">{{ userName }}</span>
           <template v-if="taggedUsers && taggedUsers.length">
-            <span class="font-normal text-gray-600"> z: </span>
+            <span class="font-normal text-gray-600"> {{ t('post.with') }} </span>
             <span class="font-bold">
               <template v-for="(user, idx) in taggedUsers" :key="user.id">
                 <span v-if="idx > 0">, </span>
@@ -437,13 +439,13 @@ const handlePublish = () => {
             </span>
           </template>
           <template v-if="selectedFeeling">
-            <span class="font-normal text-gray-600"> — czuje się <button @click="emit('openFeelingSelector')" class="font-bold  hover:underline rounded-md px-1">{{ selectedFeeling.label }}</button> {{ selectedFeeling.emoji }}</span>
+            <span class="font-normal text-gray-600"> {{ t('post.feelingWith') }} <button @click="emit('openFeelingSelector')" class="font-bold  hover:underline rounded-md px-1">{{ selectedFeeling.label }}</button> {{ selectedFeeling.emoji }}</span>
           </template>
           <template v-if="selectedActivity">
-            <button @click="emit('openFeelingSelector')" class="font-normal text-gray-600   rounded-md px-1"> — {{ selectedActivity.parent.slice(0,-3) }} <span class="font-semibold hover:underline">{{ selectedActivity.item.label }}</span>  {{ selectedActivity.item.emoji }} </button>
+            <button @click="emit('openFeelingSelector')" class="font-normal text-gray-600   rounded-md px-1"> {{ t('post.feelingWith') }} {{ selectedActivity.parent.slice(0,-3) }} <span class="font-semibold hover:underline">{{ selectedActivity.item.label }}</span>  {{ selectedActivity.item.emoji }} </button>
           </template>
           <template v-if="location">
-            <span class="font-normal text-gray-600"> jest w: </span>
+            <span class="font-normal text-gray-600"> {{ t('post.isAt') }} </span>
             <span class="font-semibold">{{ location.title }}</span>
           </template>
         </div>
@@ -485,15 +487,15 @@ const handlePublish = () => {
                 v-if="!postContent && selectedCardBgId === 0"
                 class="absolute top-2 left-0 text-gray-500 text-xl pointer-events-none"
               >
-                {{ sharedPost ? 'Powiedz coś o tym...' : (selectedLocation ? 'O czym myślisz, Bartosz?' : 'Co słychać?') }}
+                {{ sharedPost ? t('post.saySomething') : (selectedLocation ? t('post.whatAreYouThinking', { name: 'Bartosz' }) : t('post.whatsUp')) }}
               </div>
             </div>
 
-             <div class="absolute bottom-2 left-0 text-[#fe5b70] cursor-pointer" title="Stylizacja tekstu">
+             <div class="absolute bottom-2 left-0 text-[#fe5b70] cursor-pointer" :title="t('post.textStyling')">
               <format-color-text-icon :size="24" @click="toggleTextCard" />
             </div>
 
-            <div class="absolute bottom-2 right-0 text-gray-500 cursor-pointer" title="Dodaj emoji">
+            <div class="absolute bottom-2 right-0 text-gray-500 cursor-pointer" :title="t('post.addEmoji')">
               <VDropdown
                 placement="top-end"
                 :distance="10"
@@ -601,7 +603,7 @@ const handlePublish = () => {
               <p class="font-semibold text-gray-900 text-sm">{{ props.sharedPost.authorName }}</p>
               <div class="flex items-center gap-1 text-xs text-gray-500">
                 <earth-icon :size="10" />
-                <span>Publiczny</span>
+                <span>{{ t('post.public') }}</span>
               </div>
             </div>
           </div>
@@ -629,7 +631,7 @@ const handlePublish = () => {
       }"
       @click="handlePublish"
     >
-      Opublikuj
+      {{ t('post.publish') }}
     </button>
 
   </div>

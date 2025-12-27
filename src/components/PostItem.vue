@@ -134,9 +134,11 @@ const postData = computed<Post>(() => {
   }
 })
 
+const { t } = useI18n()
+
 const displayFeeling = computed(() => {
   if (displayData.value.feeling) {
-    return ` — czuje się ${displayData.value.feeling.label} ${displayData.value.feeling.emoji}`;
+    return ` ${t('post.feelingWith')} ${displayData.value.feeling.label} ${displayData.value.feeling.emoji}`;
   }
   return '';
 });
@@ -295,11 +297,11 @@ useVideoAutoplay(videoContainerRef)
             <span class="font-semibold text-theme-text text-[15px] hover:underline cursor-pointer">
               {{ displayData.authorName }}
             </span>
-            <span v-if="displayData.feeling" class="ml-1 text-theme-text-secondary"> — czuje się {{ displayData.feeling.label }} {{ displayData.feeling.emoji }}</span>
+            <span v-if="displayData.feeling" class="ml-1 text-theme-text-secondary"> {{ t('post.feelingWith') }} {{ displayData.feeling.label }} {{ displayData.feeling.emoji }}</span>
             <span v-if="displayActivity" class="ml-1 text-theme-text-secondary">{{ displayActivity }} <component :is="displayData.activity.item.icon" :size="16" class="inline-block" /></span>
           </div>
           <div class="flex items-center text-xs text-theme-text-secondary mt-0.5">
-             <span class="hover:underline cursor-pointer">25 czerwca</span>
+             <span class="hover:underline cursor-pointer">{{ new Date(post.timestamp).toLocaleDateString(t.locale.value, { day: 'numeric', month: 'long' }) }}</span>
              <span class="mx-1">·</span>
              <Earth :size="12" fillColor="#65676B" />
           </div>
@@ -393,14 +395,13 @@ useVideoAutoplay(videoContainerRef)
            <div class="text-[13px] font-semibold text-theme-text leading-none">
               {{ displayData.authorName }}
            </div>
-           <span v-if="displayData.feeling" class="ml-1 text-theme-text-secondary"> — czuje się {{ displayData.feeling.label }} {{ displayData.feeling.emoji }}</span>
+           <span v-if="displayData.feeling" class="ml-1 text-theme-text-secondary"> {{ t('post.feelingWith') }} {{ displayData.feeling.label }} {{ displayData.feeling.emoji }}</span>
         </div>
 
         <div class="text-[14px] font-bold text-theme-text leading-tight mb-0.5 line-clamp-1">
           {{ displayData.content.substring(0, 50) }}{{ displayData.content.length > 50 ? '...' : '' }}
         </div>
         <div class="text-[13px] text-theme-text-secondary line-clamp-1">
-           LZPN ODDZIAŁ BIAŁA PODLASKA
         </div>
       </div>
     </div>
@@ -445,14 +446,14 @@ useVideoAutoplay(videoContainerRef)
 
           <span class="text-theme-text-secondary group-hover:underline leading-snug ml-0.5">
             <template v-if="userReaction">
-              <span v-if="likesCount === 1">Ty</span>
-              <span v-else-if="likesCount === 2">Ty i Anna Kowalska</span>
-              <span v-else>Ty, Anna Kowalska i {{ likesCount - 2 }} innych</span>
+              <span v-if="likesCount === 1">{{ t('post.likedByYou') }}</span>
+              <span v-else-if="likesCount === 2">{{ t('post.likedByYouAnd', { name: 'Anna Kowalska' }) }}</span>
+              <span v-else>{{ t('post.likedByYouAndOthers', { name: 'Anna Kowalska', count: likesCount - 2 }) }}</span>
             </template>
 
             <template v-else>
-              <span>Anna Kowalska</span>
-              <span v-if="likesCount > 1"> i {{ likesCount - 1 }} innych</span>
+              <span>{{ t('post.likedBy', { name: 'Anna Kowalska' }) }}</span>
+              <span v-if="likesCount > 1"> {{ t('post.andOthers', { count: likesCount - 1 }) }}</span>
             </template>
           </span>
         </div>
@@ -460,8 +461,8 @@ useVideoAutoplay(videoContainerRef)
         <div v-else></div>
 
         <div class="flex items-center gap-3 text-theme-text-secondary">
-          <span class="hover:underline cursor-pointer">3 komentarze</span>
-          <span class="hover:underline cursor-pointer">1 udostępnienie</span>
+          <span class="hover:underline cursor-pointer">{{ t('post.commentsCount', { count: post.commentsCount }) }}</span>
+          <span class="hover:underline cursor-pointer">{{ t('post.sharesCount', { count: post.sharesCount }) }}</span>
         </div>
       </div>
     </div>
@@ -477,7 +478,7 @@ useVideoAutoplay(videoContainerRef)
     <BaseModal v-if="isModalOpen" @close="toggleModal">
       <PostModal v-if="props.post" :post="props.post" />
     </BaseModal>
-    <BaseModal :title="'Wyślij do'" v-if="isShareAsMessageModalOpen" @close="isShareAsMessageModalOpen = false">
+    <BaseModal :title="t('post.sendTo')" v-if="isShareAsMessageModalOpen" @close="isShareAsMessageModalOpen = false">
       <ShareAsMessageModal  />
     </BaseModal>
 

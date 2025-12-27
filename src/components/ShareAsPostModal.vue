@@ -2,6 +2,9 @@
 import BaseModal from './BaseModal.vue';
 import CreatePost from './CreatePost.vue';
 import type { Post } from '@/types/Post';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 defineProps<{
   isOpen: boolean;
@@ -25,7 +28,7 @@ const close = () => {
 <template>
   <BaseModal
     v-if="isOpen"
-    title="Utwórz post"
+    :title="t('post.createPost')"
     @close="close"
   >
     <CreatePost

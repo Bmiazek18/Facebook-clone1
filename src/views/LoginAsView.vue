@@ -18,12 +18,12 @@
       </div>
 
       <h2 class="text-[18px] text-[#1c1e21] font-medium mb-1">
-        Log in as Bartosz Miazek
+        {{ t('login.logInAs', { name: 'Bartosz Miazek' }) }}
       </h2>
 
       <div class="mb-5">
         <a href="#" class="text-[#1877f2] text-[14px] hover:underline cursor-pointer">
-          Not you?
+          {{ t('login.notYou') }}
         </a>
       </div>
 
@@ -32,7 +32,7 @@
           <input
             v-model="password"
             type="password"
-            placeholder="Password"
+            :placeholder="t('login.password')"
             class="w-full h-[52px] px-4 text-[17px] border border-[#dddfe2] rounded-md focus:outline-none focus:border-[#1877f2] focus:ring-1 focus:ring-[#1877f2] placeholder-gray-500"
           />
         </div>
@@ -41,19 +41,19 @@
           type="submit"
           class="w-full bg-[#1877f2] hover:bg-[#166fe5] text-white text-[20px] font-bold py-2.5 rounded-md transition-colors leading-[48px] px-4 shadow-sm"
         >
-          Log in
+          {{ t('login.logIn') }}
         </button>
       </form>
 
       <div class="mt-4 mb-5">
         <a href="#" class="text-[#1877f2] text-[14px] hover:underline font-medium">
-          Forgotten account?
+          {{ t('login.forgottenAccount') }}
         </a>
       </div>
 
       <div class="flex items-center justify-between my-2">
         <div class="h-[1px] bg-[#dadde1] w-full"></div>
-        <span class="px-3 text-[#96999e] text-[13px]">or</span>
+        <span class="px-3 text-[#96999e] text-[13px]">{{ t('login.or') }}</span>
         <div class="h-[1px] bg-[#dadde1] w-full"></div>
       </div>
 
@@ -62,7 +62,7 @@
           type="button"
           class="bg-[#42b72a] hover:bg-[#36a420] text-white text-[17px] font-bold py-2 px-4 rounded-md transition-colors leading-[48px] h-[48px]"
         >
-          Create new account
+          {{ t('login.createNewAccount') }}
         </button>
       </div>
 
@@ -72,7 +72,7 @@
       <div class="max-w-[980px] mx-auto px-4">
         <div class="flex flex-wrap gap-x-2.5 gap-y-1 mb-2 items-center justify-center md:justify-start">
           <span v-for="(lang, index) in languages" :key="index">
-            <a href="#" class="hover:underline" :class="{'text-[#737373]': index === 0, 'text-[#8a8d91]': index !== 0}">{{ lang }}</a>
+            <a href="#" class="hover:underline" :class="{'text-[#737373]': index === 0, 'text-[#8a8d91]': index !== 0}">{{ t(lang.key) }}</a>
           </span>
           <button class="bg-[#f5f6f7] border border-[#ccd0d5] px-2 hover:bg-[#ebedf0]">+</button>
         </div>
@@ -81,7 +81,7 @@
 
         <div class="flex flex-wrap gap-x-4 gap-y-1 mb-4 text-[#8a8d91] justify-center md:justify-start">
           <a href="#" v-for="(link, index) in footerLinks" :key="index" class="hover:underline">
-            {{ link }}
+            {{ t(link.key) }}
           </a>
         </div>
 
@@ -96,6 +96,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 // State
 const password = ref('');
@@ -111,16 +114,51 @@ const handleLogin = () => {
 
 // Footer Data (Konsystentne z poprzednimi ekranami)
 const languages = [
-  'English (UK)', 'Polski', 'ślůnsko godka', 'Русский', 'Deutsch',
-  'Français (France)', 'Italiano', 'Українська', 'Español (España)', 'Português (Brasil)', 'العربية'
+  { key: 'language.english' },
+  { key: 'login.polish' },
+  { key: 'login.silesian' },
+  { key: 'login.russian' },
+  { key: 'login.german' },
+  { key: 'login.french' },
+  { key: 'login.italian' },
+  { key: 'login.ukrainian' },
+  { key: 'login.spanish' },
+  { key: 'login.portuguese' },
+  { key: 'login.arabic' }
 ];
 
 const footerLinks = [
-  'Sign Up', 'Log in', 'Messenger', 'Facebook Lite', 'Video', 'Places', 'Games',
-  'Marketplace', 'Meta Pay', 'Meta Store', 'Meta Quest', 'Ray-Ban Meta', 'Meta AI',
-  'Instagram', 'Threads', 'Fundraisers', 'Services', 'Voting Information Centre',
-  'Privacy Policy', 'Privacy Centre', 'Groups', 'About', 'Create ad', 'Create Page',
-  'Developers', 'Careers', 'Cookies', 'AdChoices', 'Terms', 'Help', 'Contact uploading and non-users'
+  { key: 'login.signUp' },
+  { key: 'login.logIn' },
+  { key: 'login.messenger' },
+  { key: 'login.facebookLite' },
+  { key: 'login.video' },
+  { key: 'login.places' },
+  { key: 'login.games' },
+  { key: 'login.marketplace' },
+  { key: 'login.metaPay' },
+  { key: 'login.metaStore' },
+  { key: 'login.metaQuest' },
+  { key: 'login.rayBanMeta' },
+  { key: 'login.metaAI' },
+  { key: 'login.instagram' },
+  { key: 'login.threads' },
+  { key: 'login.fundraisers' },
+  { key: 'login.services' },
+  { key: 'login.votingInformationCentre' },
+  { key: 'login.privacyPolicy' },
+  { key: 'login.privacyCentre' },
+  { key: 'login.groups' },
+  { key: 'login.about' },
+  { key: 'login.createAd' },
+  { key: 'login.createPage' },
+  { key: 'login.developers' },
+  { key: 'login.careers' },
+  { key: 'login.cookies' },
+  { key: 'login.adChoices' },
+  { key: 'login.terms' },
+  { key: 'login.help' },
+  { key: 'login.contactUploadingAndNonUsers' }
 ];
 </script>
 

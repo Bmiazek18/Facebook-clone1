@@ -131,10 +131,10 @@ const handleCancelLeave = () => {
     </div>
 <ConfirmationModal
       v-if="showConfirmModal"
-      title="Masz niezapisane zmiany"
-      message="Masz niezapisane zmiany w swoim poście. Czy na pewno chcesz opuścić tę stronę i stracić te zmiany?"
-      confirm-label="Opuść stronę"
-      cancel-label="Zostań"
+      :title="t('confirmation.unsavedChanges')"
+      :message="t('confirmation.unsavedChangesMessage')"
+      :confirm-label="t('confirmation.leavePage')"
+      :cancel-label="t('confirmation.stay')"
       @confirm="handleConfirmLeave"
       @cancel="handleCancelLeave"
     />

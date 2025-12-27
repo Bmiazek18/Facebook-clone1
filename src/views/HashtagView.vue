@@ -10,13 +10,13 @@
             #{{ hashtag }}
           </h1>
           <span class="text-gray-500 text-[15px] font-medium block">
-            {{ formatCount(filteredPosts.length) }} postów
+            {{ formatCount(filteredPosts.length) }} {{ t('hashtag.posts') }}
           </span>
         </div>
 
         <button
           class="flex items-center justify-center w-12 h-9 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
-          aria-label="Więcej opcji"
+          :aria-label="t('hashtag.moreOptions')"
         >
           <span class="text-black font-bold text-lg pb-1 tracking-widest leading-none">...</span>
         </button>
@@ -40,7 +40,9 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { usePostsStore } from '@/stores/posts'
 import PostItem from '@/components/PostItem.vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const route = useRoute()
 const postsStore = usePostsStore()
 
@@ -54,9 +56,9 @@ const filteredPosts = computed(() => {
 
 // Pomocnicza funkcja do formatowania liczby (np. 525 tys.)
 const formatCount = (count: number) => {
-  if (count === 0) return '525 tys.' // Placeholder dla wyglądu jak na screenie, gdy brak danych
+  if (count === 0) return `525 ${t('hashtag.thousand')}` // Placeholder dla wyglądu jak na screenie, gdy brak danych
   if (count > 1000) {
-    return (count / 1000).toFixed(0) + ' tys.'
+    return (count / 1000).toFixed(0) + ` ${t('hashtag.thousand')}`
   }
   return count
 }

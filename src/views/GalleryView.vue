@@ -77,7 +77,7 @@
                         </div>
                         <div class="flex items-center gap-3">
                              <span class="cursor-pointer hover:underline">{{ $t('comments.count', { count: (currentPost || currentComment).commentsCount }) }}</span>
-                             <span class="cursor-pointer hover:underline">2 udostępnienia</span>
+                             <span class="cursor-pointer hover:underline">{{ $t('post.sharesCount', { count: (currentPost || currentComment).sharesCount }) }}</span>
                         </div>
                     </div>
 
@@ -120,7 +120,7 @@
                 <div v-if="!currentComment" class="p-4 border-t border-gray-200 flex items-center bg-theme-bg-secondary sticky bottom-0 z-10">
                     <CommentReplyInput
                         :post-avatar-src="(currentPost || currentComment).authorAvatar"
-                        :placeholder="`Napisz komentarz jako ${(currentPost || currentComment).authorName}...`"
+                        :placeholder="$t('post.writeCommentAs', { name: (currentPost || currentComment).authorName })"
                         :post-id="currentPost.id"
                     />
                 </div>
