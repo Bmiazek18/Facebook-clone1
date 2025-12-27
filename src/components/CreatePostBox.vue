@@ -36,6 +36,11 @@ const openCreatePost = () => {
   isOpen.value = true
 }
 
+const openCreatePostWithFeeling = () => {
+  createPostStore.setInitialView('feeling');
+  openCreatePost();
+}
+
 const handleFileClick = () => {
   fileInput.value?.click()
 }
@@ -104,6 +109,7 @@ const closeCreatePost = () => {
         @change="handleFileSelect"
       />
       <button
+        @click="openCreatePostWithFeeling"
         class="flex items-center justify-center hover:bg-theme-hover w-full rounded-lg cursor-pointer"
       >
         <EmoticonOutline :size="35" fillColor="#F8B927" />

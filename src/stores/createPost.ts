@@ -1,13 +1,26 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { User } from '@/data/users';
-import type { LocationResult } from '@/components/LocationSelector.vue';
+import type { LocationResult } from '@/types/Location';
 import type { ImageTagType } from '@/types/ImageTag';
 
 interface SelectedImage {
   url: string;
   altText: string;
   tags?: ImageTagType[];
+}
+
+interface Feeling {
+  emoji: string;
+  label: string;
+}
+interface Activity {
+  parent: string;
+  item: {
+    label: string;
+    icon: any;
+    color: string;
+  }
 }
 
 export const useCreatePostStore = defineStore('createPost', () => {
@@ -21,6 +34,9 @@ export const useCreatePostStore = defineStore('createPost', () => {
   const postContent = ref<string>('');
   const selectedImage = ref<SelectedImage | null>(null);
   const selectedCardBgId = ref<number>(0);
+  const initialView = ref<string | null>(null);
+  const selectedFeeling = ref<Feeling | null>(null);
+  const selectedActivity = ref<Activity | null>(null);
 
   // --- ACTIONS (Akcje) ---
   function setTaggedUsers(users: User[]) {
@@ -75,6 +91,18 @@ export const useCreatePostStore = defineStore('createPost', () => {
     }
   }
 
+  function setInitialView(view: string | null) {
+    initialView.value = view;
+  }
+
+  function setSelectedFeeling(feeling: Feeling | null) {
+    selectedFeeling.value = feeling;
+  }
+
+  function setSelectedActivity(activity: Activity | null) {
+    selectedActivity.value = activity;
+  }
+
   // Funkcja resetująca stan (oprócz privacy)
   function reset() {
     taggedUsers.value = [];
@@ -85,6 +113,8 @@ export const useCreatePostStore = defineStore('createPost', () => {
     postContent.value = '';
     selectedImage.value = null;
     selectedCardBgId.value = 0; // Reset do wartości domyślnej
+    selectedFeeling.value = null;
+    selectedActivity.value = null;
     // Nie resetujemy privacy, ponieważ jest ładowane z localStorage
   }
   const hasUnsavedChanges = computed(() => {
@@ -95,7 +125,9 @@ export const useCreatePostStore = defineStore('createPost', () => {
         imageToEdit.value !== null ||
         videoToEdit.value !== null ||
         postContent.value !== '' ||
-        (selectedImage.value !== null && (selectedImage.value.url !== '' || selectedImage.value.altText !== '' || (selectedImage.value.tags && selectedImage.value.tags.length > 0)))
+        (selectedImage.value !== null && (selectedImage.value.url !== '' || selectedImage.value.altText !== '' || (selectedImage.value.tags && selectedImage.value.tags.length > 0))) ||
+        selectedFeeling.value !== null ||
+        selectedActivity.value !== null
       );
     });
   // --- RETURN (Udostępnienie publiczne) ---
@@ -109,6 +141,9 @@ export const useCreatePostStore = defineStore('createPost', () => {
     postContent,
     selectedImage,
     selectedCardBgId,
+    initialView,
+    selectedFeeling,
+    selectedActivity,
     hasUnsavedChanges,
     setTaggedUsers,
     addTaggedUser,
@@ -121,6 +156,9 @@ export const useCreatePostStore = defineStore('createPost', () => {
     setSelectedImage,
     setSelectedCardBgId,
     setAltText,
+    setInitialView,
+    setSelectedFeeling,
+    setSelectedActivity,
     reset,
   };
 });

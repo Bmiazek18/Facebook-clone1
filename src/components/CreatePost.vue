@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type DefineComponent } from 'vue';
+import { type DefineComponent, ref, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import PostCreator from './PostCreator.vue';
 import PrivacySelector from './PrivacySelector.vue';
@@ -7,7 +7,8 @@ import TagUsers from './TagUsers.vue';
 import LocationSelector from './LocationSelector.vue';
 import GifSelector from './GifSelector.vue';
 import ImageEditor from './ImageEditor.vue';
-import VideoEditor from './VideoEditor.vue';
+import VideoEditor from './videoEditor.vue';
+import FeelingModal from './FeelingModal.vue';
 import '@/assets/animations/slideTransition.css';
 import { useSlideTransition } from '@/composables/useSlideTransition';
 import { useCreatePostStore } from '@/stores/createPost';
@@ -24,7 +25,12 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-
+onMounted(() => {
+  if (createPostStore.initialView === 'feeling') {
+    openFeelingView();
+    createPostStore.setInitialView(null);
+  }
+});
 const { wrapperRef, currentView, previousView, updateHeight, transitionName } = useSlideTransition();
 const createPostStore = useCreatePostStore();
 const {
@@ -32,11 +38,19 @@ const {
   videoToEdit,
 } = storeToRefs(createPostStore);
 
-const viewComponents: Record<string> = {
+const openFeelingView = () => {
+  previousView.value = currentView.value;
+  currentView.value = 'feeling';
+};
+
+
+
+const viewComponents: Record<string, any> = {
   creator: PostCreator,
   privacy: PrivacySelector,
   imageEditor: ImageEditor,
-  videoEditor: videoEditor,
+  videoEditor: VideoEditor,
+  feeling: FeelingModal,
 };
 
 const handleNavigation = (viewName: string, data: string | null = null) => {
@@ -142,6 +156,17 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
 };
 
 
+const handleFeelingOrActivitySelected = (payload: { type: string; data: any }) => {
+  if (payload.type === 'feeling') {
+    createPostStore.setSelectedFeeling(payload.data);
+    createPostStore.setSelectedActivity(null);
+  } else if (payload.type === 'activity') {
+    createPostStore.setSelectedActivity(payload.data);
+    createPostStore.setSelectedFeeling(null);
+  }
+  currentView.value = 'creator';
+};
+
 </script>
 
 <template>
@@ -165,6 +190,7 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
           @openLocation="openLocation"
           @openGifSelector="openGifSelector"
           @removeGif="handleRemoveGif"
+          @open-feeling-selector="openFeelingView"
 
         />
         <PrivacySelector
@@ -217,6 +243,14 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
           @back="handleVideoEditorBack"
           @done="handleVideoEdited"
           @updateHeight="updateHeight"
+        />
+        <FeelingModal
+          v-else-if="currentView === 'feeling'"
+          key="feeling"
+          class="view-container bg-white"
+          data-view="feeling"
+          @back="backToCreator"
+          @feeling-selected="handleFeelingOrActivitySelected"
         />
       </Transition>
     </div>

@@ -89,7 +89,7 @@ export const usePostsStore = defineStore('posts', () => {
     }
   }
 
-  function removePost(postId: number) {
+  function removePost(postId: string) {
     const index = posts.value.findIndex(p => p.id === postId);
     if (index !== -1) {
       posts.value.splice(index, 1);

@@ -10,6 +10,7 @@ import TreeIcon from 'vue-material-design-icons/Tree.vue';
 import NavigationIcon from 'vue-material-design-icons/Navigation.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
+import type { PostLocation } from '@/types/Post';
 interface Suggestion {
   name: string;
   full_address: string;
@@ -24,17 +25,10 @@ const emit = defineEmits<{
 
 const createPostStore = useCreatePostStore();
 const searchQuery = ref('');
-const suggestions = ref<LocationResult[]>([]);
-interface LocationResult {
-  title: string;
-  subtitle: string;
-  type: 'city' | 'district' | 'attraction' | 'park' | 'current';
-  lat: string | null;
-  lon: string | null;
-  searchbox_id?: string;
-}
-const currentCity = ref<LocationResult | null>(null);
-const selectedLocation = ref<LocationResult | null>(null);
+const suggestions = ref<PostLocation[]>([]);
+
+const currentCity = ref<PostLocation | null>(null);
+const selectedLocation = ref<PostLocation | null>(null);
 const dynamicCenter = ref<{lat: string, lon: string} | null>(null);
 const loading = ref(false);
 const sessionToken = ref<string | null>(null);
@@ -73,7 +67,7 @@ const searchLocations = async () => {
 
     suggestions.value = data.suggestions.map((item: Suggestion) => {
       const featureType = item.feature_type;
-      let type: LocationResult['type'] = 'place';
+      let type: PostLocation['type'] = 'place';
 
       if (featureType === 'place' || featureType === 'locality') type = 'city';
       else if (featureType === 'neighborhood' || featureType === 'district') type = 'district';
@@ -96,7 +90,7 @@ const searchLocations = async () => {
 };
 
 // Pobieranie współrzędnych dla wybranego elementu z listy sugestii
-const retrieveLocationCoordinates = async (item: LocationResult) => {
+const retrieveLocationCoordinates = async (item: PostLocation) => {
   if (!item.searchbox_id) return item;
 
   try {
@@ -125,7 +119,7 @@ const retrieveLocationCoordinates = async (item: LocationResult) => {
 };
 
 // Główna funkcja obsługująca kliknięcie w lokalizację
-const handleSelect = async (loc: LocationResult) => {
+const handleSelect = async (loc: PostLocation) => {
   loading.value = true;
 
   // Jeśli lokalizacja nie ma jeszcze koordynatów (pochodzi z suggest), pobierz je

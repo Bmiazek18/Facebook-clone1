@@ -26,6 +26,7 @@ import { getUserById } from '@/data/users'
 useI18n()
 
 import type { Post } from '@/types/Post';
+import ShareAsMessageModal from './ShareAsMessageModal.vue'
 
 // ... other imports
 
@@ -79,7 +80,9 @@ const displayData = computed(() => {
       images: props.sharedPost.originalPost.images || (props.sharedPost.originalPost.imageUrl ? [{ src: props.sharedPost.originalPost.imageUrl }] : []),
       videoUrl: props.sharedPost.originalPost.videoUrl,
       sharedBy: props.sharedPost.sharedBy,
-      comment: props.sharedPost.comment
+      comment: props.sharedPost.comment,
+      feeling: props.sharedPost.originalPost.feeling,
+      activity: props.sharedPost.originalPost.activity
     }
   }
   return {
@@ -90,7 +93,9 @@ const displayData = computed(() => {
     images: (props.post?.images ?? []).map(img => (typeof img === 'string' ? { src: img } : img)),
     videoUrl: props.post?.videoUrl,
     sharedBy: null,
-    comment: null
+    comment: null,
+    feeling: props.post?.feeling,
+    activity: props.post?.activity
   }
 })
 
@@ -124,8 +129,24 @@ const postData = computed<Post>(() => {
     comments: props.post?.comments ?? [],
     selectedCardBgId: props.post?.selectedCardBgId ?? 0,
     privacy: props.post?.privacy ?? '',
+    feeling: props.post?.feeling,
+    activity: props.post?.activity,
   }
 })
+
+const displayFeeling = computed(() => {
+  if (displayData.value.feeling) {
+    return ` — czuje się ${displayData.value.feeling.label} ${displayData.value.feeling.emoji}`;
+  }
+  return '';
+});
+
+const displayActivity = computed(() => {
+  if (displayData.value.activity) {
+    return ` — ${displayData.value.activity.parent} ${displayData.value.activity.item.label}`;
+  }
+  return '';
+});
 
 const processedContent = computed(() => {
   const content = displayData.value.content;
@@ -175,6 +196,7 @@ const shareAsMyPost = () => {
 }
 
 const handleShareAsPost = (comment: string) => {
+  console.log('Sharing as post with comment:' + comment);
   postsStore.addSharedPost(postData.value, comment)
   isShareAsPostModalOpen.value = false
   router.push('/profile')
@@ -185,7 +207,10 @@ const handleDelete = () => {
     emit('delete', props.sharedPost.id)
   }
 }
-
+const isShareAsMessageModalOpen = ref(false);
+const shareToMessage = () => {
+  isShareAsMessageModalOpen.value = true;
+};
 // Handlers for PostSettingPopper actions
 const handleDeletePost = (postId: number) => {
   if (props.sharedPost) {
@@ -268,8 +293,10 @@ useVideoAutoplay(videoContainerRef)
         <div class="flex-1 min-w-0">
           <div class="flex items-center flex-wrap">
             <span class="font-semibold text-theme-text text-[15px] hover:underline cursor-pointer">
-              {{ displayData.sharedBy.name }}
+              {{ displayData.authorName }}
             </span>
+            <span v-if="displayData.feeling" class="ml-1 text-theme-text-secondary"> — czuje się {{ displayData.feeling.label }} {{ displayData.feeling.emoji }}</span>
+            <span v-if="displayActivity" class="ml-1 text-theme-text-secondary">{{ displayActivity }} <component :is="displayData.activity.item.icon" :size="16" class="inline-block" /></span>
           </div>
           <div class="flex items-center text-xs text-theme-text-secondary mt-0.5">
              <span class="hover:underline cursor-pointer">25 czerwca</span>
@@ -297,6 +324,7 @@ useVideoAutoplay(videoContainerRef)
         :date="props.post?.date"
         :privacy="props.post?.privacy"
         :post-id="props.post?.id"
+        :feeling="displayData.feeling"
         @delete-post="handleDeletePost"
         @edit-post="handleEditPost"
         @hide-post="handleHidePost"
@@ -365,6 +393,7 @@ useVideoAutoplay(videoContainerRef)
            <div class="text-[13px] font-semibold text-theme-text leading-none">
               {{ displayData.authorName }}
            </div>
+           <span v-if="displayData.feeling" class="ml-1 text-theme-text-secondary"> — czuje się {{ displayData.feeling.label }} {{ displayData.feeling.emoji }}</span>
         </div>
 
         <div class="text-[14px] font-bold text-theme-text leading-tight mb-0.5 line-clamp-1">
@@ -442,11 +471,16 @@ useVideoAutoplay(videoContainerRef)
       @comment="toggleModal"
       @share-as-post="shareAsMyPost"
       @share-to-story="shareToStory"
+      @share-to-message="shareToMessage"
     />
 
     <BaseModal v-if="isModalOpen" @close="toggleModal">
       <PostModal v-if="props.post" :post="props.post" />
     </BaseModal>
+    <BaseModal :title="'Wyślij do'" v-if="isShareAsMessageModalOpen" @close="isShareAsMessageModalOpen = false">
+      <ShareAsMessageModal  />
+    </BaseModal>
+
     <ShareAsPostModal :is-open="isShareAsPostModalOpen" :post="postData" @close="isShareAsPostModalOpen = false" @share="handleShareAsPost"/>
   </div>
 </template>

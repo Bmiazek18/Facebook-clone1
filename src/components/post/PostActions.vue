@@ -4,6 +4,7 @@ import MessageOutline from 'vue-material-design-icons/MessageOutline.vue'
 import ShareIcon from 'vue-material-design-icons/ShareVariant.vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import BookOpenPageVariant from 'vue-material-design-icons/BookOpenPageVariant.vue'
+import ChatProcessingOutline from 'vue-material-design-icons/ChatProcessingOutline.vue' // New import
 import ReactionButton from '../ReactionButton.vue'
 import { useI18n } from 'vue-i18n'
 import { useTheme } from '@/composables/useTheme'
@@ -26,6 +27,7 @@ const emit = defineEmits<{
   (e: 'comment'): void
   (e: 'shareAsPost'): void
   (e: 'shareToStory'): void
+  (e: 'shareToMessage'): void // New emit event
 }>()
 
 const handleShareAsPost = () => {
@@ -36,6 +38,11 @@ const handleShareAsPost = () => {
 const handleShareToStory = () => {
   closeShareMenu()
   emit('shareToStory')
+}
+
+const handleShareToMessage = () => { // New handler
+  closeShareMenu()
+  emit('shareToMessage')
 }
 </script>
 
@@ -82,8 +89,8 @@ const handleShareToStory = () => {
                 <Pencil :size="20" :fillColor="isDark ? '#E4E6EB' : '#050505'" />
               </div>
               <div class="flex-1">
-                <p class="text-[15px] font-medium text-theme-text">Udostępnij teraz</p>
-                <p class="text-xs text-theme-text-secondary">Udostępnij w aktualnościach</p>
+                <p class="text-[15px] font-medium text-theme-text">Udostępnij w aktualnościach</p>
+                <p class="text-xs text-theme-text-secondary">Udostępnij swój post</p>
               </div>
             </button>
             <button
@@ -95,6 +102,17 @@ const handleShareToStory = () => {
               </div>
               <div class="flex-1">
                 <p class="text-[15px] font-medium text-theme-text">Udostępnij w relacji</p>
+              </div>
+            </button>
+            <button
+              @click="handleShareToMessage"
+              class="w-full px-3 py-2 flex items-center gap-3 hover:bg-theme-hover rounded-lg transition-colors text-left mt-1"
+            >
+              <div class="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                <ChatProcessingOutline :size="20" :fillColor="isDark ? '#E4E6EB' : '#050505'" />
+              </div>
+              <div class="flex-1">
+                <p class="text-[15px] font-medium text-theme-text">Udostępnij w wiadomości</p>
               </div>
             </button>
           </div>

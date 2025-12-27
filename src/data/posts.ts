@@ -1,49 +1,9 @@
 import type { User } from './users';
 import { getUserById } from './users';
-import type { PostLocation } from '@/components/PostCreator.vue';
-import type { ImageTagType } from '@/types/ImageTag';
+
 import type { Person } from '@/types/Person';
 
-export interface Comment {
-  id: number;
-  authorName: string;
-  authorAvatar: string;
-  content: string;
-  date: string;
-  likesCount: number; // Add this
-  isLiked?: boolean; // Add this
-  userReaction?: string; // Add this
-  image?: string;
-  gif?: string;
-  replies?: Comment[];
-}
-
-export interface Post {
-  id: number
-  content: string
-  images: {
-    src: string
-    altText?: string
-    tags?: ImageTagType[]
-  }[]
-  videoUrl?: string
-  authorName: string
-  authorAvatar: string
-  authorId: number
-  date: string
-  likesCount: number
-  commentsCount: number
-  sharesCount: number
-  taggedUsers?: User[]
-  location?: PostLocation
-  gif?: string
-  isLiked?: boolean
-  reactionCount?: number
-  commentCount?: number
-  comments?: Comment[]
-  selectedCardBgId?: number;
-  privacy?: string;
-}
+import type { Post } from '@/types/Post';
 
 const anna = getUserById(2)
 
@@ -58,7 +18,7 @@ const userToPerson = (user: User): Person => ({
 export const posts: Post[] = [
   // Post z video
   {
-    id: 0,
+    id: '0',
     content: 'Niesamowity zachód słońca nad oceanem 🌅 #zachod',
     images: [],
     videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
@@ -74,10 +34,11 @@ export const posts: Post[] = [
     reactionCount: 156,
     commentCount: 23,
     comments: [],
+    timestamp: Date.now(),
   },
   // Post z 1 zdjęciem
   {
-    id: 1,
+    id: '1',
     content: 'Piękny dzień na spacer! 🌞',
     images: [
       {
@@ -106,10 +67,11 @@ export const posts: Post[] = [
     reactionCount: 24,
     commentCount: 3,
     comments: [],
+    timestamp: Date.now(),
   },
   // Post z 2 zdjęciami
   {
-    id: 2,
+    id: '2',
     content: 'Weekendowy wypad z rodziną 👨‍👩‍👧‍👦',
     images: [
       { src: 'https://picsum.photos/800/600?random=2', altText: 'Family weekend trip' },
@@ -126,10 +88,11 @@ export const posts: Post[] = [
     reactionCount: 56,
     commentCount: 8,
     comments: [],
+    timestamp: Date.now(),
   },
   // Post z 3 zdjęciami
   {
-    id: 3,
+    id: '3',
     content: 'Nowa kolekcja zdjęć z podróży ✈️',
     images: [
       { src: 'https://picsum.photos/800/800?random=4', altText: 'Travel photo' },
@@ -147,10 +110,11 @@ export const posts: Post[] = [
     reactionCount: 112,
     commentCount: 15,
     comments: [],
+    timestamp: Date.now(),
   },
   // Post z 4 zdjęciami
   {
-    id: 4,
+    id: '4',
     content: 'Cztery pory roku w jednym poście 🍂🌸☀️❄️',
     images: [
       { src: 'https://picsum.photos/800/600?random=7', altText: 'Four seasons in one post' },
@@ -169,10 +133,11 @@ export const posts: Post[] = [
     reactionCount: 89,
     commentCount: 12,
     comments: [],
+    timestamp: Date.now(),
   },
   // Post z 5 zdjęciami
   {
-    id: 5,
+    id: '5',
     content: 'Album z imprezy urodzinowej 🎂🎉',
     images: [
       { src: 'https://picsum.photos/800/600?random=11', altText: 'Birthday party album' },
@@ -192,10 +157,11 @@ export const posts: Post[] = [
     reactionCount: 234,
     commentCount: 45,
     comments: [],
+    timestamp: Date.now(),
   },
   // Post z 7 zdjęciami (więcej niż 5)
   {
-    id: 6,
+    id: '6',
     content: 'Cały album z wakacji w Grecji 🇬🇷🏖️',
     images: [
       { src: 'https://picsum.photos/800/600?random=16', altText: 'Greece vacation album' },
@@ -217,10 +183,11 @@ export const posts: Post[] = [
     reactionCount: 567,
     commentCount: 89,
     comments: [],
+    timestamp: Date.now(),
   },
   // Post z 10 zdjęciami
   {
-    id: 7,
+    id: '7',
     content: 'Mega album - 10 najlepszych zdjęć tego roku! 📸',
     images: [
       { src: 'https://picsum.photos/800/600?random=23', altText: 'Top 10 photos of the year' },
@@ -245,10 +212,11 @@ export const posts: Post[] = [
     reactionCount: 1234,
     commentCount: 156,
     comments: [],
+    timestamp: Date.now(),
   },
   // Post z 1 zdjęciem (dla porównania)
   {
-    id: 8,
+    id: '8',
     content: 'Kolejne piękne ujęcie 📷',
     images: [{ src: 'https://picsum.photos/800/600?random=33', altText: 'Another beautiful shot' }],
     authorName: 'Ewa Kamińska',
@@ -262,10 +230,11 @@ export const posts: Post[] = [
     reactionCount: 45,
     commentCount: 6,
     comments: [],
+    timestamp: Date.now(),
   },
   // Post z 2 zdjęciami
   {
-    id: 9,
+    id: '9',
     content: 'Przed i po remoncie 🏠',
     images: [
       { src: 'https://picsum.photos/800/600?random=34', altText: 'Before and after renovation' },
@@ -282,10 +251,11 @@ export const posts: Post[] = [
     reactionCount: 78,
     commentCount: 23,
     comments: [],
+    timestamp: Date.now(),
   },
   // Post z 3 zdjęciami
   {
-    id: 10,
+    id: '10',
     content: 'Trzy wspaniałe momenty 💫',
     images: [
       { src: 'https://picsum.photos/800/800?random=36', altText: 'Three wonderful moments' },
@@ -303,15 +273,16 @@ export const posts: Post[] = [
     reactionCount: 167,
     commentCount: 34,
     comments: [],
+    timestamp: Date.now(),
   },
 ]
 
-export const getPostById = (id: number): Post | undefined => {
+export const getPostById = (id: string): Post | undefined => {
   return posts.find(post => post.id === id)
 }
 
 export const getPostImage = (
-  postId: number,
+  postId: string,
   imageIndex: number,
 ): string | undefined => {
   const post = getPostById(postId)

@@ -25,6 +25,10 @@ const props = defineProps<{
   location?: PostLocation
   privacy?: string
   postId?: string; // Add postId prop
+  feeling?: {
+    emoji: string;
+    label: string;
+  } | null;
 }>()
 
 const _emit = defineEmits<{
@@ -78,6 +82,9 @@ const privacyInfo = computed(() => {
               <span v-if="idx > 0">, </span>
               <ProfilePopper :name="user.name" :user-id="user.id" class="font-semibold hover:underline cursor-pointer" />
             </template>
+          </template>
+          <template v-if="feeling">
+            <span class="font-normal text-gray-600"> — czuje się <span class="font-semibold">{{ feeling.label }}</span> {{ feeling.emoji }}</span>
           </template>
           <template v-if="location">
             <span class="font-normal text-gray-600"> jest w: </span>

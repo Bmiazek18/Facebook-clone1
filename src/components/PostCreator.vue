@@ -33,8 +33,8 @@ import MapPreview from './MapPreview.vue';
 import type { PostData } from '@/types/StoryElement';
 import type { User } from '@/data/users';
 import { getAllUsers } from '@/data/users';
-import type { Post } from '@/data/posts';
-// import { getPostById } from '@/data/posts'; // (nieużywane w tym fragmencie)
+import { type Post } from '@/types/Post';
+
 
 const props = defineProps<{
   sharedPost?: PostData | null;
@@ -53,11 +53,12 @@ const emit = defineEmits<{
   (e: 'removeLocation'): void;
   (e: 'openGifSelector'): void;
   (e: 'removeGif'): void;
+  (e: 'openFeelingSelector'): void;
 }>();
 
 const createPostStore = useCreatePostStore();
 const postsStore = usePostsStore();
-const { taggedUsers, selectedLocation, selectedGif, selectedPrivacy, postContent, selectedImage, selectedCardBgId } = storeToRefs(createPostStore);
+const { taggedUsers, selectedLocation, selectedGif, selectedPrivacy, postContent, selectedImage, selectedCardBgId, selectedFeeling, selectedActivity } = storeToRefs(createPostStore);
 
 // --- STAN ---
 const userName = computed(() => props.authorName);
@@ -390,10 +391,10 @@ watch(() => selectedGif.value, () => {
 const handlePublish = () => {
   // Tutaj możesz dodać linkPreview do obiektu Post, jeśli chcesz go zapisać
   const newPost: Post = {
-    id: Date.now(),
+    id: `${Date.now()}`,
     content: postContent.value,
     images: selectedImage.value ? [{ src: selectedImage.value.url, tags: selectedImage.value.tags }] : [],
-    videoUrl: null,
+    videoUrl: undefined,
     authorName: props.authorName,
     authorAvatar: props.authorAvatar,
     authorId: 1,
@@ -405,7 +406,10 @@ const handlePublish = () => {
     location: selectedLocation.value,
     gif: selectedGif.value,
     selectedCardBgId: selectedCardBgId.value,
-    privacy: selectedPrivacy.value, // Add privacy here
+    privacy: selectedPrivacy.value,
+    feeling: selectedFeeling.value,
+    activity: selectedActivity.value,
+    timestamp: Date.now(),
     // linkPreview: linkPreview.value // Opcjonalnie rozszerz interfejs Post
   };
   postsStore.addPost(newPost);
@@ -432,8 +436,15 @@ const handlePublish = () => {
               </template>
             </span>
           </template>
-          <template v-if="selectedLocation">
-             jest w: <span class="font-bold">{{ selectedLocation.title }}</span>
+          <template v-if="selectedFeeling">
+            <span class="font-normal text-gray-600"> — czuje się <button @click="emit('openFeelingSelector')" class="font-bold  hover:underline rounded-md px-1">{{ selectedFeeling.label }}</button> {{ selectedFeeling.emoji }}</span>
+          </template>
+          <template v-if="selectedActivity">
+            <button @click="emit('openFeelingSelector')" class="font-normal text-gray-600   rounded-md px-1"> — {{ selectedActivity.parent.slice(0,-3) }} <span class="font-semibold hover:underline">{{ selectedActivity.item.label }}</span>  {{ selectedActivity.item.emoji }} </button>
+          </template>
+          <template v-if="location">
+            <span class="font-normal text-gray-600"> jest w: </span>
+            <span class="font-semibold">{{ location.title }}</span>
           </template>
         </div>
 
@@ -582,7 +593,7 @@ const handlePublish = () => {
       <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleImageSelect" />
 
       <div v-if="props.sharedPost" class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
-        <img v-if="props.sharedPost.imageUrl" :src="props.sharedPost.imageUrl" class="w-full h-48 object-cover" />
+        <img v-if="props.sharedPost.images && props.sharedPost.images[0]?.src" :src="props.sharedPost.images[0].src" class="w-full h-48 object-cover" />
         <div class="p-3 bg-gray-50">
           <div class="flex items-center gap-2 mb-2">
             <img :src="props.sharedPost.authorAvatar" class="w-8 h-8 rounded-full object-cover" />
@@ -606,6 +617,7 @@ const handlePublish = () => {
         @openTagUsers="emit('openTagUsers')"
         @openLocation="emit('openLocation')"
         @openGifSelector="emit('openGifSelector')"
+        @openFeelingModal="emit('openFeelingSelector')"
     />
 
     <button
