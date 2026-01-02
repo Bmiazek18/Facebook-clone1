@@ -37,6 +37,7 @@ const props = defineProps<{
       color: string;
     }
   } | null;
+  isShared?: boolean
 }>()
 
 const _emit = defineEmits<{
@@ -109,7 +110,7 @@ const privacyInfo = computed(() => {
         </div>
       </div>
 
-      <div class="flex items-center -mr-2">
+      <div v-if="!isShared" class="flex items-center -mr-2">
         <VDropdown placement="bottom-end" :triggers="['click']">
           <button @click="_emit('menu')" class="rounded-full p-2 hover:bg-theme-hover transition-colors">
             <DotsHorizontal :size="20" :fillColor="isDark ? '#B0B3B8' : '#65676B'" />

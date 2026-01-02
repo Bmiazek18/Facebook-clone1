@@ -241,6 +241,7 @@ useVideoAutoplay(videoContainerRef)
   <div class="w-full bg-theme-bg-secondary rounded-lg"
        :class="isShared ? 'border border-theme-border' : 'my-4 shadow-sm dark:shadow-lg'">
 
+    <template v-if="!isShared">
     <PostHeader
       :author-name="post.authorName"
       :author-avatar="post.authorAvatar"
@@ -251,11 +252,11 @@ useVideoAutoplay(videoContainerRef)
       :post-id="post.id"
       :feeling="post.feeling"
       :activity="post.activity"
+      :is-shared="isShared"
       @delete-post="handleDeletePost"
       @edit-post="handleEditPost"
       @hide-post="handleHidePost"
     />
-
     <div v-if="post.content" class="px-4 py-1 pb-3 text-[15px] leading-normal whitespace-pre-line"
          :class="{
        [((currentBackground as CardBackground).class ?? '')]: (props.post?.selectedCardBgId ?? 0) !== 0, // Apply background if ID is set
@@ -296,6 +297,63 @@ useVideoAutoplay(videoContainerRef)
       <!-- Images -->
       <PostImageGallery v-else-if="post.images && post.images.length > 0" :images="post.images" :post-id="post.id ?? ''" />
     </div>
+    </template>
+    <template v-else>
+        <div v-if="!post.sharedFromId">
+            <!-- Video -->
+            <div v-if="post.videoUrl" ref="videoContainerRef" class="w-full">
+                <PlayerVideo :settings="true" :lightbox="true" ref="videoRef" :url="post.videoUrl" />
+            </div>
+
+            <!-- Images -->
+            <PostImageGallery v-else-if="post.images && post.images.length > 0" :images="post.images" :post-id="post.id ?? ''" />
+        </div>
+    <PostHeader
+      :author-name="post.authorName"
+      :author-avatar="post.authorAvatar"
+      :author-id="post.authorId"
+      :tagged-users="post.taggedUsers"
+      :date="post.date"
+      :privacy="post.privacy"
+      :post-id="post.id"
+      :feeling="post.feeling"
+      :activity="post.activity"
+      :is-shared="isShared"
+      @delete-post="handleDeletePost"
+      @edit-post="handleEditPost"
+      @hide-post="handleHidePost"
+    />
+        <div v-if="post.content" class="px-4 py-1 pb-3 text-[15px] leading-normal whitespace-pre-line"
+             :class="{
+           [((currentBackground as CardBackground).class ?? '')]: (props.post?.selectedCardBgId ?? 0) !== 0, // Apply background if ID is set
+           [((currentBackground as CardBackground).textClass ?? 'text-theme-text')]: (props.post?.selectedCardBgId ?? 0) !== 0, // Apply text color if ID is set
+           'p-4 h-[383px] flex items-center justify-center text-center': (props.post?.selectedCardBgId ?? 0) !== 0, // Enforce height and centering if ID is set
+           'text-xl': (props.post?.selectedCardBgId ?? 0) !== 0 && props.post?.content.length <= 80,
+           'text-base': (props.post?.selectedCardBgId ?? 0) !== 0 && props.post?.content.length > 80,
+           'text-theme-text': (props.post?.selectedCardBgId ?? 0) === 0, // Default text color if no card background
+             }"
+        >
+          <template v-for="(part, index) in processedContent" :key="index">
+            <router-link
+              v-if="part.type === 'hashtag'"
+              :to="{ name: 'hashtag', params: { hashtag: part.hashtag } }"
+              class="text-blue-500 hover:underline"
+              :class="{ 'text-white ': (post.selectedCardBgId ?? 0) > 0 }"
+            >
+              {{ part.value }}
+            </router-link>
+            <router-link
+              v-else-if="part.type === 'mention'"
+              :to="{ name: 'userProfile', params: { userId: part.userId } }"
+              class="text-blue-500 hover:underline"
+              :class="{ 'text-white': (post.selectedCardBgId ?? 0) > 0 }"
+            >
+              @{{ getUserById(parseInt(part.userId || ''))?.name }}
+            </router-link>
+            <span v-else :class="{ ' text-[30px]': (post.selectedCardBgId ?? 0) > 0 }">{{ part.value }}</span>
+          </template>
+        </div>
+    </template>
 
     <div v-if="post.sharedFromId && originalPost" class="mx-3 mb-3 mt-2 rounded-lg overflow-hidden">
         <PostItem :post="originalPost" :is-shared="true" />
