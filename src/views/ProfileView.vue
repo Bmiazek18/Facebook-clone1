@@ -19,6 +19,8 @@ import Message from 'vue-material-design-icons/Message.vue';
 // --- DANE (MOCK) ---
 import { getUserById } from '@/data/users';
 import type { User } from '@/data/users';
+import BaseModal from '@/components/BaseModal.vue';
+import EditProfileImgModal from '@/components/editProfileImgModal.vue';
 
 const route = useRoute();
 
@@ -91,7 +93,10 @@ onMounted(() => {
 onUnmounted(() => {
     window.removeEventListener('scroll', handleScroll);
 });
-
+const isPickerOpen = ref(false);
+const openImagePicker = () => {
+    isPickerOpen.value = true;
+};
 // --- LISTA ZNAJOMYCH (MOCK) ---
 const friendsList = ref([
     { name: 'Natalia Wójcik', mutual: 71, isFriend: true, imageId: 35 },
@@ -144,7 +149,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109];
                                     :src="profileUser.avatar"
                                     alt="Avatar"
                                 >
-                                <button class="absolute bottom-2 right-2 bg-[#E4E6EB] hover:bg-[#D8DADF] p-2 rounded-full cursor-pointer transition-colors border-2 border-white">
+                                <button @click="openImagePicker" class="absolute bottom-2 right-2 bg-[#E4E6EB] hover:bg-[#D8DADF] p-2 rounded-full cursor-pointer transition-colors border-2 border-white">
                                     <Camera :size="20" fillColor="#050505"/>
                                 </button>
                             </div>
@@ -242,6 +247,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109];
             </div>
         </div>
     </div>
+    <BaseModal v-if="true" @close="()=>!isPickerOpen" :title="'Wybierz zdjecie profileowe'"> <EditProfileImgModal /></BaseModal>
 </template>
 
 <style scoped>
