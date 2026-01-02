@@ -23,6 +23,7 @@ defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void;
+  (e: 'publish', content: string): void;
 }>();
 
 onMounted(() => {
@@ -167,6 +168,10 @@ const handleFeelingOrActivitySelected = (payload: { type: string; data: any }) =
   currentView.value = 'creator';
 };
 
+const handleInternalPublish = (content: string) => {
+  emit('publish', content);
+};
+
 </script>
 
 <template>
@@ -183,6 +188,7 @@ const handleFeelingOrActivitySelected = (payload: { type: string; data: any }) =
           :author-avatar="authorAvatar"
           @navigate="handleNavigation"
           @back="handleNavigationBack"
+          @publish="handleInternalPublish"
 
           @close="handleClose"
           @updateHeight="updateHeight"

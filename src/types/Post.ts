@@ -63,4 +63,5 @@ export interface Post {
       color: string;
     }
   } | null;
+  sharedFromId?: string;
 }

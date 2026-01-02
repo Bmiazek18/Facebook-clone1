@@ -16,7 +16,7 @@ const props = defineProps<{
 }>();
 
 const handleDeletePost = (postId: string) => {
-    postsStore.removeSharedPost(postId);
+    postsStore.removePost(postId);
 };
 
 // --- LOGIKA "FACEBOOK DUAL STICKY" ---
@@ -140,15 +140,13 @@ onUnmounted(() => {
                 :author-name="userName"
                 :author-avatar="userImage"
             />
-<PostFilter />
+            <PostFilter />
             <PostItem
-                v-for="post in postsStore.getSharedPosts"
+                v-for="post in postsStore.posts.filter(p => p.authorId === 1)"
                 :key="post.id"
-                :shared-post="post"
+                :post="post"
                 @delete="handleDeletePost"
             />
-
-            <BirthdayPostFeed/>
         </div>
     </div>
 </template>

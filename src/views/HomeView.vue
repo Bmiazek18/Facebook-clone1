@@ -16,7 +16,9 @@ import ReelSGalerry from '@/components/ReelSGalerry.vue'
 import { getPostById } from '@/data/posts'
 import PostModal from '@/components/PostModal.vue'
 import BaseModal from '@/components/BaseModal.vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const postsStore = usePostsStore()
 const localPosts = ref([...postsStore.posts]);
 

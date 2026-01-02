@@ -24,6 +24,7 @@ import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
 import AccountMultipleMinusIcon from 'vue-material-design-icons/AccountMultipleMinus.vue';
 import AccountStarIcon from 'vue-material-design-icons/AccountStar.vue';
 import HoverScrollbar from './HoverScrollbar.vue';
+import PostItem from './PostItem.vue';
 import PostCreatorToolbar from './PostCreator/PostCreatorToolbar.vue';
 
 // --- LEAFLET (MAPA) ---
@@ -391,7 +392,11 @@ watch(() => selectedGif.value, () => {
 });
 
 const handlePublish = () => {
-  // Tutaj możesz dodać linkPreview do obiektu Post, jeśli chcesz go zapisać
+  if (props.sharedPost) {
+    emit('publish', postContent.value);
+    return;
+  }
+
   const newPost: Post = {
     id: `${Date.now()}`,
     content: postContent.value,
@@ -399,7 +404,7 @@ const handlePublish = () => {
     videoUrl: undefined,
     authorName: props.authorName,
     authorAvatar: props.authorAvatar,
-    authorId: 1,
+    authorId: postsStore.currentUser.id,
     date: new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long' }),
     likesCount: 0,
     commentsCount: 0,
@@ -412,7 +417,6 @@ const handlePublish = () => {
     feeling: selectedFeeling.value,
     activity: selectedActivity.value,
     timestamp: Date.now(),
-    // linkPreview: linkPreview.value // Opcjonalnie rozszerz interfejs Post
   };
   postsStore.addPost(newPost);
   emit('close');
@@ -594,21 +598,8 @@ const handlePublish = () => {
 
       <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleImageSelect" />
 
-      <div v-if="props.sharedPost" class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
-        <img v-if="props.sharedPost.images && props.sharedPost.images[0]?.src" :src="props.sharedPost.images[0].src" class="w-full h-48 object-cover" />
-        <div class="p-3 bg-gray-50">
-          <div class="flex items-center gap-2 mb-2">
-            <img :src="props.sharedPost.authorAvatar" class="w-8 h-8 rounded-full object-cover" />
-            <div>
-              <p class="font-semibold text-gray-900 text-sm">{{ props.sharedPost.authorName }}</p>
-              <div class="flex items-center gap-1 text-xs text-gray-500">
-                <earth-icon :size="10" />
-                <span>{{ t('post.public') }}</span>
-              </div>
-            </div>
-          </div>
-          <p class="text-gray-800 text-sm line-clamp-3">{{ props.sharedPost.content }}</p>
-        </div>
+      <div v-if="props.sharedPost" class="mb-4 rounded-lg overflow-hidden">
+        <PostItem :post="(props.sharedPost as Post)" :is-shared="true" />
       </div>
     </HoverScrollbar>
 
