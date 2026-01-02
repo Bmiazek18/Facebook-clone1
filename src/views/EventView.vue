@@ -36,7 +36,7 @@
           </a>
         </nav>
 
-        <button class="mt-4 w-full bg-[#ebf5ff] hover:bg-[#dbeafe] text-[#1877f2] font-semibold py-2 rounded-lg flex items-center justify-center gap-2 transition text-[15px]">
+        <button @click="handleOpenModal" class="mt-4 w-full bg-[#ebf5ff] hover:bg-[#dbeafe] text-[#1877f2] font-semibold py-2 rounded-lg flex items-center justify-center gap-2 transition text-[15px]">
           <plus-icon :size="20" /> Utwórz nowe wydarzenie
         </button>
 
@@ -159,6 +159,9 @@
       </div>
     </main>
   </div>
+  <BaseModal v-if="isOpen" @close="isOpen = false" :title="'Utwórz wydarzenie'">
+  <CreateEventModal  @close="isOpen = false" />
+  </BaseModal>
 </template>
 
 <script setup>
@@ -185,6 +188,8 @@ import HomeOutlineIcon from 'vue-material-design-icons/HomeOutline.vue';
 import DumbbellIcon from 'vue-material-design-icons/Dumbbell.vue';
 import GamepadVariantIcon from 'vue-material-design-icons/GamepadVariant.vue';
 import TheaterIcon from 'vue-material-design-icons/Theater.vue';
+import CreateEventModal from '@/components/createEventModal.vue';
+import BaseModal from '@/components/BaseModal.vue';
 
 // Logika filtrów
 const isDateMenuOpen = ref(false);
@@ -192,7 +197,10 @@ const currentMenuView = ref('list');
 const selectedDate = ref('Dowolna data');
 const range = ref(null);
 const dateOptions = ['Dowolna data', 'Dzisiaj', 'Jutro', 'W ten weekend', 'W tym tygodniu', 'W przyszłym tygodniu', 'W tym miesiącu'];
-
+const handleOpenModal = () => {
+  isOpen.value = true;
+};
+const isOpen = ref(false);
 const toggleMenu = () => {
   isDateMenuOpen.value = !isDateMenuOpen.value;
   if (!isDateMenuOpen.value) currentMenuView.value = 'list';
