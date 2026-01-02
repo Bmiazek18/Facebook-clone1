@@ -60,13 +60,13 @@ export const usePostsStore = defineStore('posts', () => {
           if (!parentComment.replies) {
             parentComment.replies = [];
           }
-          parentComment.replies.unshift(comment);
+          parentComment.replies.push(comment);
         }
       } else {
         if (!post.comments) {
           post.comments = [];
         }
-        post.comments.unshift(comment);
+        post.comments.push(comment);
       }
     }
   }
@@ -82,6 +82,37 @@ export const usePostsStore = defineStore('posts', () => {
     return posts.value.find(p => p.id === postId);
   }
 
+  function handleCommentReaction(postId: string, commentId: number, reaction: string | null, oldReaction: string | null) {
+    const post = posts.value.find(p => p.id === postId);
+    if (post) {
+        const comment = findComment(post.comments || [], commentId);
+        if (comment) {
+            if (!comment.reactions) {
+                comment.reactions = {};
+            }
+            const currentUserId = currentUser.id;
+
+            // Remove old reaction
+            if (oldReaction && comment.reactions[oldReaction]) {
+                const userIndex = comment.reactions[oldReaction].indexOf(currentUserId);
+                if (userIndex > -1) {
+                    comment.reactions[oldReaction].splice(userIndex, 1);
+                }
+            }
+
+            // Add new reaction
+            if (reaction) {
+                if (!comment.reactions[reaction]) {
+                    comment.reactions[reaction] = [];
+                }
+                if (!comment.reactions[reaction].includes(currentUserId)) {
+                    comment.reactions[reaction].push(currentUserId);
+                }
+            }
+        }
+    }
+  }
+
   return {
     posts,
     currentUser,
@@ -90,5 +121,6 @@ export const usePostsStore = defineStore('posts', () => {
     addComment,
     removePost,
     getPostById,
+    handleCommentReaction,
   }
 })

@@ -22,6 +22,7 @@ import { useStoryShareStore } from '@/stores/storyShare'
 import { usePostsStore } from '@/stores/posts'
 
 import { getUserById } from '@/data/users'
+import { processContent } from '@/utils/contentProcessor'
 
 useI18n()
 
@@ -101,41 +102,7 @@ const { t } = useI18n()
 
 
 const processedContent = computed(() => {
-  const content = props.post.content;
-  if (!content) return [];
-
-  // Regex łapie dwie rzeczy:
-  // 1. ([@\d+]) -> Wzmianka o użytkowniku np. [@123]
-  // 2. (#[\w\u00C0-\u017F]+) -> Hashtag (w tym polskie znaki)
-  const combinedRegex = /(\[@\d+\]|#[\w\u00C0-\u017F]+)/g;
-
-  return content.split(combinedRegex)
-    .filter(part => part) // Filtrujemy puste stringi i undefined
-    .map((part) => {
-      // Przypadek 1: User Mention [@123]
-      if (part.startsWith('[@') && part.endsWith(']')) {
-        return {
-          type: 'mention',
-          value: part,
-          userId: part.slice(2, -1) // Wyciągamy samo ID jako string lub int
-        };
-      }
-
-      // Przypadek 2: Hashtag #słowo
-      if (part.startsWith('#')) {
-        return {
-          type: 'hashtag',
-          value: part,
-          hashtag: part.substring(1),
-        };
-      }
-
-      // Przypadek 3: Zwykły tekst
-      return {
-        type: 'text',
-        value: part
-      };
-    });
+  return processContent(props.post.content);
 });
 
 const shareToStory = () => {

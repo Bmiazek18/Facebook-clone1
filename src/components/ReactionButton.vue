@@ -1,19 +1,31 @@
 <template>
   <div class="reaction-wrapper flex justify-center " @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
-   <button
-      class="flex items-center justify-center gap-2 h-9 rounded hover:bg-theme-hover transition-colors cursor-pointer text-theme-text-secondary font-semibold text-[15px] w-full"
+    <button
+      class="flex items-center justify-center gap-2 h-9 rounded hover:bg-theme-hover transition-colors cursor-pointer text-theme-text-secondary font-semibold text-[15px]"
+      :class="{ 'w-full': display === 'full' }"
       @click="toggleReaction('like')"
-   >
-      <template v-if="selectedReaction">
-        <img :src="getReactionSrc(selectedReaction)" :alt="selectedReaction" width="20" height="20">
-        <span :class="getReactionTextColor(selectedReaction)">{{ getReactionLabel(selectedReaction) }}</span>
+    >
+      <template v-if="display === 'full'">
+        <template v-if="selectedReaction">
+          <img :src="getReactionSrc(selectedReaction)" :alt="selectedReaction" width="20" height="20">
+          <span :class="getReactionTextColor(selectedReaction)">{{ getReactionLabel(selectedReaction) }}</span>
+        </template>
+        <template v-else>
+          <ThumbUpOutline :size="20" class="text-gray-500 dark:text-gray-400"/>
+          <span>{{ $t('actions.like') }}</span>
+        </template>
       </template>
-      <template v-else>
-        <ThumbUpOutline fillColor="#65676C" :size="20" class="text-gray-500 dark:text-gray-400"/>
-        <span>{{ $t('actions.like') }}</span>
-      </template>
-   </button>
+      <template v-else> <!-- compact -->
+        <template v-if="selectedReaction">
 
+          <span class="font-[13px]" :class="getReactionTextColor(selectedReaction)">{{ getReactionLabel(selectedReaction) }}</span>
+        </template>
+        <template v-else>
+
+          <span>{{ $t('actions.like') }}</span>
+        </template>
+      </template>
+    </button>
 
     <!-- Reaction box -->
     <div class="reaction-box bg-theme-bg-secondary" :class="{ visible: isVisible }">
@@ -38,6 +50,13 @@ import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTimeoutFn } from '@vueuse/core'
 import ThumbUpOutline from 'vue-material-design-icons/ThumbUpOutline.vue'
+
+const props = defineProps({
+  display: {
+    type: String,
+    default: 'full' // 'full' or 'compact'
+  }
+})
 
 const { t } = useI18n()
 
@@ -126,7 +145,7 @@ const handleMouseLeave = () => {
 
   font-family: sans-serif;
   user-select: none;
-  width: 100%;
+  width: fit-content;
 }
 
 /* Button */
@@ -216,6 +235,4 @@ const handleMouseLeave = () => {
   opacity: 1;
   transition-delay: 0.3s;
 }
-
-
 </style>

@@ -11,11 +11,13 @@ export interface PostLocation {
 
 export interface Comment {
   id: number;
+  authorId: number;
   authorName: string;
   authorAvatar: string;
   content: string;
   date: string;
   likesCount: number;
+  reactions?: { [key: string]: number[] };
   isLiked?: boolean;
   userReaction?: string;
   image?: string;

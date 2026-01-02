@@ -49,7 +49,7 @@ const handleShareToMessage = () => { // New handler
 <template>
   <div class="px-2 py-1 flex items-center justify-between relative z-10">
     <div class="flex-1">
-      <ReactionButton @react="$emit('react', $event)" />
+            <ReactionButton @react="$emit('react', $event)" />
     </div>
     <button
       @click="$emit('comment')"

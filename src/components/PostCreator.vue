@@ -14,8 +14,8 @@ import LockIcon from 'vue-material-design-icons/Lock.vue';
 import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue';
 import FormatColorTextIcon from 'vue-material-design-icons/FormatColorText.vue';
 import EmoticonHappyIcon from 'vue-material-design-icons/EmoticonHappy.vue';
-import CloseIcon from 'vue-material-design-icons/Close.vue'; // Dodano ikonę zamknięcia
-import WebIcon from 'vue-material-design-icons/Web.vue'; // Dodano ikonę web
+import CloseIcon from 'vue-material-design-icons/Close.vue';
+import WebIcon from 'vue-material-design-icons/Web.vue';
 import LazyEmojiPicker from './LazyEmojiPicker.vue';
 import StoryTextCard from './StoryTextCard.vue';
 import MediaPreview from './MediaPreview.vue';
@@ -36,14 +36,15 @@ import type { User } from '@/data/users';
 import { getAllUsers } from '@/data/users';
 import { type Post } from '@/types/Post';
 import { useI18n } from 'vue-i18n';
+import { useUserTagging } from '@/composables/useUserTagging';
 
 const { t } = useI18n();
 
-const props = defineProps<{
-  sharedPost?: PostData | null;
-  authorName: string;
-  authorAvatar: string;
-}>();
+const props = defineProps({
+  sharedPost: { type: Object as () => PostData | null, default: null },
+  authorName: { type: String, required: true },
+  authorAvatar: { type: String, required: true },
+});
 
 const emit = defineEmits<{
   (e: 'navigate', viewName: string, selectedImage: string | null): void;
@@ -68,10 +69,9 @@ const userName = computed(() => props.authorName);
 const profilePicUrl = computed(() => props.authorAvatar);
 const fileInput = ref<HTMLInputElement | null>(null);
 const contentEditableDiv = ref<HTMLDivElement | null>(null);
-
-const matchingUsers = ref<User[]>([]);
-const showUserDropdown = ref(false);
 const isLocalUpdate = ref(false);
+
+const { matchingUsers, showUserDropdown, triggerUserTagging, selectUser: selectUserFromComposable } = useUserTagging();
 
 // --- LINK PREVIEW STATE ---
 interface LinkPreviewData {
@@ -82,7 +82,7 @@ interface LinkPreviewData {
   domain: string;
 }
 const linkPreview = ref<LinkPreviewData | null>(null);
-const isPreviewDismissed = ref(false); // Flaga, czy użytkownik ręcznie zamknął podgląd
+const isPreviewDismissed = ref(false);
 let linkCheckTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const isPublishButtonDisabled = computed(() => {
@@ -117,42 +117,23 @@ const onContentInput = () => {
   });
 
   createPostStore.setPostContent(newContent);
-  renderContentEditable();
-  handleUserTagging();
+  
+  const selection = window.getSelection();
+  if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      if (range.startContainer.nodeType === Node.TEXT_NODE) {
+          const textNode = range.startContainer;
+          const textContent = textNode.textContent || '';
+          const textBeforeCaret = textContent.substring(0, range.startOffset);
+          triggerUserTagging(textBeforeCaret);
+      } else {
+          triggerUserTagging('');
+      }
+  }
 
   nextTick(() => {
     isLocalUpdate.value = false;
   });
-};
-
-const handleUserTagging = () => {
-  const selection = window.getSelection();
-  if (selection && selection.rangeCount > 0) {
-    const range = selection.getRangeAt(0);
-    if (range.startContainer.nodeType === Node.TEXT_NODE) {
-      const textNode = range.startContainer;
-      const textContent = textNode.textContent || '';
-      const textBeforeCaret = textContent.substring(0, range.startOffset);
-      const match = textBeforeCaret.match(/@([^\s]*)$/);
-
-      if (match) {
-        const searchTerm = match[1].toLowerCase();
-        const allUsers = getAllUsers();
-        if (searchTerm === '') {
-          matchingUsers.value = allUsers.slice(0, 5);
-        } else {
-          matchingUsers.value = allUsers.filter(user =>
-            user.name.toLowerCase().includes(searchTerm)
-          );
-        }
-        showUserDropdown.value = matchingUsers.value.length > 0;
-      } else {
-        showUserDropdown.value = false;
-      }
-    } else {
-      showUserDropdown.value = false;
-    }
-  }
 };
 
 // --- WATCHER DLA TREŚCI ---
@@ -172,24 +153,21 @@ watch(postContent, (newValue) => {
 
 // --- LOGIKA LINK PREVIEW ---
 const checkForLinks = async (text: string) => {
-  // Prosty regex do wykrywania pierwszego URL
   const urlRegex = /(https?:\/\/[^\s]+)/;
   const match = text.match(urlRegex);
 
   if (match) {
     const url = match[0];
 
-    // Jeśli to ten sam URL co wcześniej i użytkownik go zamknął, nie pokazuj ponownie
     if (linkPreview.value?.url === url || (isPreviewDismissed.value && lastCheckedUrl === url)) {
       return;
     }
 
     lastCheckedUrl = url;
-    isPreviewDismissed.value = false; // Reset flagi przy nowym linku
+    isPreviewDismissed.value = false;
 
     await fetchLinkMetadata(url);
   } else {
-    // Jeśli usunięto link z tekstu, usuwamy podgląd
     linkPreview.value = null;
     lastCheckedUrl = '';
   }
@@ -197,18 +175,14 @@ const checkForLinks = async (text: string) => {
 
 let lastCheckedUrl = '';
 
-// Symulacja Backendu (normalnie tu byłby fetch do Twojego API proxy)
 const fetchLinkMetadata = async (url: string) => {
-  // Tutaj normalnie: const response = await fetch(`/api/meta-tags?url=${encodeURIComponent(url)}`);
-
-  // MOCK: Symulacja odpowiedzi dla przykładu ze screena
   if (url.includes('wp.pl')) {
     linkPreview.value = {
       url: url,
       domain: 'www.wp.pl',
       title: t('post.wpTitle'),
       description: t('post.wpDescription'),
-      image: 'https://v.wpimg.pl/QUstbi80YyUlCnc_Tgx_IE8kKVx4Cz0_Bi9MLwI-PihLeA', // Przykładowy obrazek z WP
+      image: 'https://v.wpimg.pl/QUstbi80YyUlCnc_Tgx_IE8kKVx4Cz0_Bi9MLwI-PihLeA',
     };
   } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
      linkPreview.value = {
@@ -219,7 +193,6 @@ const fetchLinkMetadata = async (url: string) => {
       image: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
     };
   } else {
-    // Generyczny fallback dla innych linków
      linkPreview.value = {
       url: url,
       domain: new URL(url).hostname,
@@ -234,11 +207,9 @@ const fetchLinkMetadata = async (url: string) => {
 
 const removeLinkPreview = () => {
   linkPreview.value = null;
-  isPreviewDismissed.value = true; // Zapamiętaj, że dla tego URL user nie chce podglądu
+  isPreviewDismissed.value = true; 
   nextTick(() => emit('updateHeight'));
 };
-
-// --- ISTNIEJĄCE FUNKCJE POMOCNICZE ---
 
 const renderContentEditable = () => {
   if (!contentEditableDiv.value) return;
@@ -286,12 +257,7 @@ const moveCursorToEnd = () => {
 const onBackspace = (e: KeyboardEvent) => { /* Opcjonalne */ };
 
 const selectUser = async (user: User) => {
-  if (!contentEditableDiv.value) return;
-  const currentText = postContent.value;
-  const newContent = currentText.replace(/@([^\s]*)$/, `[@${user.id}] `);
-  createPostStore.setPostContent(newContent);
-  showUserDropdown.value = false;
-  isLocalUpdate.value = false;
+  selectUserFromComposable(postContent, user);
   nextTick(() => {
       contentEditableDiv.value?.focus();
       moveCursorToEnd();
