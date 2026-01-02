@@ -96,6 +96,11 @@ const router = createRouter({
     }, {
       path: '/event',
       name: 'event',
+      component: () => import('@/views/EventsPanelView.vue'),
+    },
+    {
+      path: '/event/:id',
+      name: 'events',
       component: () => import('@/views/EventView.vue'),
     },
  {

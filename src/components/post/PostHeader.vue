@@ -29,6 +29,14 @@ const props = defineProps<{
     emoji: string;
     label: string;
   } | null;
+  activity?: {
+    parent: string;
+    item: {
+      label: string;
+      icon: any;
+      color: string;
+    }
+  } | null;
 }>()
 
 const _emit = defineEmits<{
@@ -74,7 +82,7 @@ const privacyInfo = computed(() => {
       </button>
 
       <div class="flex-1 min-w-0 mt-0.5">
-        <div class="text-theme-text text-[15px] leading-tight">
+        <div class="text-theme-text text-[15px] flex leading-tight">
           <ProfilePopper :name="authorName" :user-id="authorId" class="font-semibold hover:underline cursor-pointer" />
           <template v-if="taggedUsers && taggedUsers.length">
             <span class="font-normal text-gray-600"> z: </span>
@@ -84,7 +92,10 @@ const privacyInfo = computed(() => {
             </template>
           </template>
           <template v-if="feeling">
-            <span class="font-normal text-gray-600"> — czuje się <span class="font-semibold">{{ feeling.label }}</span> {{ feeling.emoji }}</span>
+            <span class="font-normal text-gray-600 ml-1"> — czuje się <span class="font-semibold">{{ feeling.label }}</span> {{ feeling.emoji }}</span>
+          </template>
+          <template v-if="activity">
+            <span class="font-normal text-gray-600 ml-1"> — {{ activity.parent.slice(0, -3) }} <span class="font-semibold">{{ activity.item.label }}</span></span>
           </template>
           <template v-if="location">
             <span class="font-normal text-gray-600"> jest w: </span>

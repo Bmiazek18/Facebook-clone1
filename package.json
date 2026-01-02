@@ -26,6 +26,7 @@
     "@giphy/js-components": "^5.13.0",
     "@giphy/js-fetch-api": "^5.7.0",
     "@tailwindcss/vite": "^4.1.16",
+    "@vue-leaflet/vue-leaflet": "^0.10.1",
     "@vueuse/core": "^14.0.0",
     "emoji-mart-vue-fast": "^15.0.5",
     "floating-vue": "^5.2.2",

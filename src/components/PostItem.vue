@@ -93,24 +93,12 @@ const postData = computed<Post>(() => {
     privacy: props.post?.privacy ?? '',
     feeling: props.post?.feeling,
     activity: props.post?.activity,
+    sharedFromId: props.post?.sharedFromId
   }
 })
 
 const { t } = useI18n()
 
-const displayFeeling = computed(() => {
-  if (props.post.feeling) {
-    return ` ${t('post.feelingWith')} ${props.post.feeling.label} ${props.post.feeling.emoji}`;
-  }
-  return '';
-});
-
-const displayActivity = computed(() => {
-  if (props.post.activity) {
-    return ` — ${props.post.activity.parent} ${props.post.activity.item.label}`;
-  }
-  return '';
-});
 
 const processedContent = computed(() => {
   const content = props.post.content;
@@ -262,6 +250,7 @@ useVideoAutoplay(videoContainerRef)
       :privacy="post.privacy"
       :post-id="post.id"
       :feeling="post.feeling"
+      :activity="post.activity"
       @delete-post="handleDeletePost"
       @edit-post="handleEditPost"
       @hide-post="handleHidePost"
