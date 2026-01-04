@@ -38,6 +38,7 @@ const props = defineProps<{
     }
   } | null;
   isShared?: boolean
+  createdEvent?: boolean;
 }>()
 
 const _emit = defineEmits<{
@@ -101,6 +102,9 @@ const privacyInfo = computed(() => {
           <template v-if="location">
             <span class="font-normal text-gray-600"> jest w: </span>
             <span class="font-semibold">{{ location.title }}</span>
+          </template>
+          <template v-if="createdEvent">
+            <span class="font-normal text-gray-600 ml-1">Dodał(a) nowe wydarzenie</span>
           </template>
         </div>
         <div class="flex items-center text-[13px] text-theme-text-secondary mt-0.5">

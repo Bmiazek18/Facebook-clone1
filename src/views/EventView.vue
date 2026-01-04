@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import ImageWithGradient from '@/components/ImageWithGradient.vue';
 import EventsSidebar from '@/components/events/EventsSidebar.vue';
+import CreatePost from '@/components/CreatePost.vue';
 // --- LEAFLET IMPORTS (Czysty Leaflet) ---
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -236,6 +237,26 @@ const organizers = [
   { name: 'Technikalia', type: 'Wydarzenie', role: '92 minionych wydarzeń', logo: 'https://placehold.co/100x100/1e293b/FFF?text=T.26' },
   { name: 'Politechnika Gdańska', type: 'Szkoła wyższa', role: '361 minionych wydarzeń', logo: 'https://placehold.co/100x100/white/000?text=PG' },
 ];
+
+// Share event logic
+const showShareModal = ref(false);
+
+const shareEvent = () => {
+  showShareModal.value = true;
+};
+
+const closeShareModal = () => {
+  showShareModal.value = false;
+};
+
+const handlePublishPost = (content: string) => {
+  console.log('Published post with event:', {
+    content,
+    eventId: eventDetails.value?.id
+  });
+  // Tu można dodać logikę zapisu do store
+  closeShareModal();
+};
 </script>
 
 <template>
@@ -309,7 +330,7 @@ const organizers = [
               <button class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md font-semibold text-sm transition">
                 <EmailIcon :size="20" /> Zaproś
               </button>
-              <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-2 rounded-md transition">
+              <button @click="shareEvent" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-2 rounded-md transition">
                 <ShareVariantIcon :size="20" />
               </button>
               <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-2 rounded-md transition">
@@ -459,6 +480,25 @@ const organizers = [
         </div>
       </div>
     </div>
+
+    <!-- Modal udostępniania eventu -->
+    <Teleport to="body">
+      <div
+        v-if="showShareModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-9999 p-4"
+        @click.self="closeShareModal"
+      >
+        <div class="bg-white rounded-lg shadow-xl max-w-[500px] w-full max-h-[90vh] overflow-auto">
+          <CreatePost
+            :shared-event-id="eventDetails?.id"
+            author-name="Bartosz Miazek"
+            author-avatar="https://i.pravatar.cc/150?u=current"
+            @close="closeShareModal"
+            @publish="handlePublishPost"
+          />
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 

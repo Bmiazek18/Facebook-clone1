@@ -16,6 +16,68 @@ const userToPerson = (user: User): Person => ({
 })
 
 export const posts: Post[] = [
+  // Post po angielsku do testowania tłumaczenia
+  {
+    id: '100',
+    content: 'Hello everyone! I hope you are all having a wonderful day. The weather is absolutely beautiful today, and I decided to take a long walk in the park. It was so peaceful and relaxing. How are you spending your weekend? 🌞🌳',
+    images: [
+      { src: 'https://picsum.photos/800/600?random=100', altText: 'Beautiful park view' },
+    ],
+    authorName: 'John Smith',
+    authorAvatar: 'https://randomuser.me/api/portraits/men/75.jpg',
+    authorId: 100,
+    date: '4 stycznia',
+    likesCount: 45,
+    commentsCount: 8,
+    sharesCount: 2,
+    isLiked: false,
+    reactionCount: 45,
+    commentCount: 8,
+    comments: [],
+    timestamp: Date.now(),
+    detectedLanguage: 'en',
+  },
+  // Post po niemiecku do testowania tłumaczenia
+  {
+    id: '101',
+    content: 'Guten Morgen! Heute ist ein wunderschöner Tag. Ich freue mich sehr auf das Wochenende mit meiner Familie. Wir werden zusammen wandern gehen und die Natur genießen. Was habt ihr für Pläne? 🏔️🌲',
+    images: [
+      { src: 'https://picsum.photos/800/600?random=101', altText: 'Mountain hiking view' },
+      { src: 'https://picsum.photos/800/600?random=102', altText: 'Nature landscape' },
+    ],
+    authorName: 'Hans Müller',
+    authorAvatar: 'https://randomuser.me/api/portraits/men/85.jpg',
+    authorId: 101,
+    date: '4 stycznia',
+    likesCount: 32,
+    commentsCount: 5,
+    sharesCount: 1,
+    isLiked: false,
+    reactionCount: 32,
+    commentCount: 5,
+    comments: [],
+    timestamp: Date.now(),
+    detectedLanguage: 'de',
+  },
+  // Post po francusku do testowania tłumaczenia
+  {
+    id: '102',
+    content: 'Bonjour à tous! Quelle magnifique journée ensoleillée! Je viens de terminer un délicieux déjeuner au café près de la Seine. Paris est vraiment magique en cette saison. Profitez bien de votre journée! ☕🥐🗼',
+    images: [],
+    authorName: 'Marie Dubois',
+    authorAvatar: 'https://randomuser.me/api/portraits/women/65.jpg',
+    authorId: 102,
+    date: '4 stycznia',
+    likesCount: 67,
+    commentsCount: 12,
+    sharesCount: 3,
+    isLiked: false,
+    reactionCount: 67,
+    commentCount: 12,
+    comments: [],
+    timestamp: Date.now(),
+    detectedLanguage: 'fr',
+  },
   // Post z video
   {
     id: '0',

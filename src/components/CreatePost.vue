@@ -17,6 +17,7 @@ import type { User } from '@/data/users';
 
 defineProps<{
   sharedPost?: PostData | null;
+  sharedEventId?: string;
   authorName: string;
   authorAvatar: string;
 }>();
@@ -184,6 +185,7 @@ const handleInternalPublish = (content: string) => {
           class="view-container bg-white"
           data-view="creator"
           :shared-post="sharedPost"
+          :shared-event-id="sharedEventId"
           :author-name="authorName"
           :author-avatar="authorAvatar"
           @navigate="handleNavigation"

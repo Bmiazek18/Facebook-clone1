@@ -3,7 +3,9 @@ import { ref, computed, nextTick, watch } from 'vue';
 import type { DefineComponent } from 'vue';
 import { useCreatePostStore } from '@/stores/createPost';
 import { usePostsStore } from '@/stores/posts';
+import { useEventsStore } from '@/stores/events';
 import { storeToRefs } from 'pinia';
+import axios from 'axios';
 
 // --- FLOATING VUE ---
 import { Dropdown as VDropdown } from 'floating-vue';
@@ -23,6 +25,7 @@ import EarthIcon from 'vue-material-design-icons/Earth.vue';
 import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
 import AccountMultipleMinusIcon from 'vue-material-design-icons/AccountMultipleMinus.vue';
 import AccountStarIcon from 'vue-material-design-icons/AccountStar.vue';
+import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue';
 import HoverScrollbar from './HoverScrollbar.vue';
 import PostItem from './PostItem.vue';
 import PostCreatorToolbar from './PostCreator/PostCreatorToolbar.vue';
@@ -42,6 +45,7 @@ const { t } = useI18n();
 
 const props = defineProps({
   sharedPost: { type: Object as () => PostData | null, default: null },
+  sharedEventId: { type: String, default: null },
   authorName: { type: String, required: true },
   authorAvatar: { type: String, required: true },
 });
@@ -62,7 +66,14 @@ const emit = defineEmits<{
 
 const createPostStore = useCreatePostStore();
 const postsStore = usePostsStore();
+const eventsStore = useEventsStore();
 const { taggedUsers, selectedLocation, selectedGif, selectedPrivacy, postContent, selectedImage, selectedCardBgId, selectedFeeling, selectedActivity } = storeToRefs(createPostStore);
+
+// Computed property dla udostępnionego eventu
+const sharedEvent = computed(() => {
+  if (!props.sharedEventId) return null;
+  return eventsStore.getEventById(props.sharedEventId);
+});
 
 // --- STAN ---
 const userName = computed(() => props.authorName);
@@ -83,10 +94,12 @@ interface LinkPreviewData {
 }
 const linkPreview = ref<LinkPreviewData | null>(null);
 const isPreviewDismissed = ref(false);
+const isLoadingPreview = ref(false);
+const detectedLanguage = ref<string | null>(null);
 let linkCheckTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const isPublishButtonDisabled = computed(() => {
-  if (props.sharedPost) return false;
+  if (props.sharedPost || props.sharedEventId) return false;
   return !postContent.value.trim() && !selectedImage.value?.url && !selectedLocation.value && !selectedGif.value && !linkPreview.value;
 });
 
@@ -117,7 +130,7 @@ const onContentInput = () => {
   });
 
   createPostStore.setPostContent(newContent);
-  
+
   const selection = window.getSelection();
   if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
@@ -176,39 +189,52 @@ const checkForLinks = async (text: string) => {
 let lastCheckedUrl = '';
 
 const fetchLinkMetadata = async (url: string) => {
-  if (url.includes('wp.pl')) {
+  try {
+    isLoadingPreview.value = true;
+
+    // Wywołanie API backendu przez axios
+    const { data } = await axios.post('http://127.0.0.1:8000/scrape-og', {
+      url: url
+    });
+    console.log('Pobrane dane Open Graph:', data);
+
     linkPreview.value = {
       url: url,
-      domain: 'www.wp.pl',
-      title: t('post.wpTitle'),
-      description: t('post.wpDescription'),
-      image: 'https://v.wpimg.pl/QUstbi80YyUlCnc_Tgx_IE8kKVx4Cz0_Bi9MLwI-PihLeA',
+      domain: data.domain || new URL(url).hostname,
+      title: data.title || 'Link Preview',
+      description: data.description || '',
+      image: data.image || undefined
     };
-  } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
-     linkPreview.value = {
-      url: url,
-      domain: 'youtube.com',
-      title: 'YouTube Video',
-      description: t('post.youtubeDescription'),
-      image: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
-    };
-  } else {
-     linkPreview.value = {
-      url: url,
-      domain: new URL(url).hostname,
-      title: t('post.linkPreview'),
-      description: url,
-      image: undefined
-    };
-  }
 
-  nextTick(() => emit('updateHeight'));
+  } catch (error) {
+    console.error('Błąd podczas pobierania metadanych linku:', error);
+
+  } finally {
+    isLoadingPreview.value = false;
+    nextTick(() => emit('updateHeight'));
+  }
 };
 
 const removeLinkPreview = () => {
   linkPreview.value = null;
-  isPreviewDismissed.value = true; 
+  isPreviewDismissed.value = true;
   nextTick(() => emit('updateHeight'));
+};
+
+// Funkcja do wykrywania języka posta
+const detectLanguage = async (text: string): Promise<string | null> => {
+
+
+  try {
+    const { data } = await axios.post('http://127.0.0.1:8000/detect-language', {
+      text: text
+    });
+
+    return data.detectedLanguage || null;
+  } catch (error) {
+    console.error('Błąd podczas wykrywania języka:', error);
+    return null;
+  }
 };
 
 const renderContentEditable = () => {
@@ -357,10 +383,17 @@ watch(() => selectedGif.value, () => {
   nextTick(() => emit('updateHeight'));
 });
 
-const handlePublish = () => {
+const handlePublish = async () => {
   if (props.sharedPost) {
     emit('publish', postContent.value);
     return;
+  }
+
+  // Wykryj język posta przed dodaniem
+  const language = await detectLanguage(postContent.value);
+  if (language) {
+    detectedLanguage.value = language;
+    console.log('Wykryty język posta:', language);
   }
 
   const newPost: Post = {
@@ -383,6 +416,8 @@ const handlePublish = () => {
     feeling: selectedFeeling.value,
     activity: selectedActivity.value,
     timestamp: Date.now(),
+    sharedEventId: props.sharedEventId,
+    detectedLanguage: detectedLanguage.value || undefined,
   };
   postsStore.addPost(newPost);
   emit('close');
@@ -513,7 +548,15 @@ const handlePublish = () => {
 
       </div>
 
-      <div v-if="linkPreview && !selectedImage && !selectedGif" class="relative mb-3 group">
+      <!-- Loading state dla link preview -->
+      <div v-if="isLoadingPreview" class="mb-3 bg-gray-100 rounded-lg p-4 border border-gray-300">
+        <div class="flex items-center gap-3">
+          <div class="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600"></div>
+          <span class="text-sm text-gray-600">Pobieranie podglądu linku...</span>
+        </div>
+      </div>
+
+      <div v-if="linkPreview && !selectedImage && !selectedGif && !isLoadingPreview" class="relative mb-3 group">
         <button
           @click="removeLinkPreview"
           class="absolute top-2 right-2 z-20 bg-gray-900 bg-opacity-60 hover:bg-opacity-80 rounded-full p-1 text-white transition-all opacity-0 group-hover:opacity-100"
@@ -566,6 +609,44 @@ const handlePublish = () => {
 
       <div v-if="props.sharedPost" class="mb-4 rounded-lg overflow-hidden">
         <PostItem :post="(props.sharedPost as Post)" :is-shared="true" />
+      </div>
+
+      <!-- Shared Event Preview -->
+<div v-if="sharedEvent" class="mb-4 border border-[#ced0d4] rounded-lg overflow-hidden cursor-pointer group hover:opacity-95 transition-opacity">
+        <div class="relative w-full aspect-[1.91/1] bg-gray-100 border-b border-[#ced0d4]">
+          <img
+            v-if="sharedEvent.images && sharedEvent.images[0]"
+            :src="sharedEvent.images[0]"
+            alt="Event cover"
+            class="w-full h-full object-cover"
+          />
+          <div v-else class="w-full h-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl">
+             {{ sharedEvent.date ? sharedEvent.date.split(' ')[0] : 'EVENT' }}
+          </div>
+        </div>
+
+        <div class="p-3 bg-[#f0f2f5] flex items-center justify-between gap-3">
+
+          <div class="flex-1 min-w-0 flex flex-col justify-center">
+            <div class="text-[#F02849] text-[13px] font-semibold mb-0.5 uppercase tracking-wide leading-none">
+              {{ sharedEvent.date || 'SOB, 16 MAJ O 15:00' }}
+            </div>
+
+            <h3 class="font-bold text-[17px] text-[#050505] leading-tight mb-0.5 truncate">
+              {{ sharedEvent.title || sharedEvent.name }}
+            </h3>
+
+            <div class="text-[13px] text-[#65676B] truncate leading-tight">
+              {{ sharedEvent.locationName || sharedEvent.location || 'Camper Park Politechniki Gdańskiej' }}
+            </div>
+          </div>
+
+          <button class="shrink-0 flex items-center gap-1.5 bg-[#eaf3ff] hover:bg-[#dce9fc] text-[#1877f2] px-3 py-1.5 rounded-md font-semibold text-[15px] transition-colors border border-transparent">
+            <StarIcon :size="18" />
+            <span>Interesuję się</span>
+            <ChevronDownIcon :size="16" class="ml-0.5" />
+          </button>
+        </div>
       </div>
     </HoverScrollbar>
 
