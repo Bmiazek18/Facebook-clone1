@@ -278,6 +278,9 @@ import { DatePicker as VDatePicker } from 'v-calendar';
 import { Dropdown } from 'floating-vue';
 import 'v-calendar/dist/style.css';
 import 'floating-vue/dist/style.css';
+import { v4 as uuidv4 } from 'uuid'; // Import uuid for unique IDs
+import { useEventsStore } from '@/stores/events'; // Import the events store
+
 
 // Import nowego komponentu mapy
 import LocationModal from './LocationModal.vue';
@@ -309,6 +312,8 @@ import BaseModal from './BaseModal.vue';
 
 const props = defineProps({ show: Boolean });
 const emit = defineEmits(['close', 'create']);
+
+const eventsStore = useEventsStore(); // Initialize the events store
 
 const fileInput = ref(null);
 const previewImages = ref([]);
@@ -386,7 +391,26 @@ const toggleDatePicker = (type) => { activeDatePicker.value = activeDatePicker.v
 const formatDate = (date) => { if (!date) return ''; return date.toLocaleDateString('pl-PL', { day: 'numeric', month: 'short', year: 'numeric' }); };
 watch(() => form.value.startDate, (newStart) => { if (newStart > form.value.endDate) { form.value.endDate = newStart; } });
 const isFormValid = computed(() => { return form.value.name.length > 0; });
-const submit = () => { emit('create', { ...form.value, previewImages: previewImages.value }); };
+const submit = () => {
+  const newEvent = {
+    id: uuidv4(),
+    name: form.value.name,
+    startDate: form.value.startDate.toISOString().split('T')[0], // Format to YYYY-MM-DD
+    startTime: form.value.startTime,
+    endDate: form.value.endDate ? form.value.endDate.toISOString().split('T')[0] : undefined,
+    endTime: form.value.endTime,
+    type: form.value.type,
+    privacy: form.value.privacy,
+    location: form.value.location,
+    description: form.value.description,
+    images: previewImages.value, // These are already URLs
+    frequency: form.value.frequency,
+    showGuestList: form.value.showGuestList,
+  };
+  eventsStore.addEvent(newEvent);
+  emit('create', newEvent); // Emit the created event
+  emit('close'); // Close the modal after creation
+};
 </script>
 
 <style scoped>

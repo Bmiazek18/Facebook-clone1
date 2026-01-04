@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { useEventsStore } from '@/stores/events';
 import ImageWithGradient from '@/components/ImageWithGradient.vue';
 import EventsSidebar from '@/components/events/EventsSidebar.vue';
 // --- LEAFLET IMPORTS (Czysty Leaflet) ---
@@ -12,7 +13,7 @@ import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 
 // Reset domyślnych ikon
-// @ts-expect-error Leaflet prototype property
+// @ts-expect-error - Leaflet internal property
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl,
@@ -30,29 +31,80 @@ import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
 import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
 import EarthIcon from 'vue-material-design-icons/Earth.vue';
 import InformationIcon from 'vue-material-design-icons/Information.vue';
-import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue';
-import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
-import { useRoute } from 'vue-router';
-import { useEventsStore  } from '@/stores/events';
-import type { Event } from '@/data/events';
+
+// --- PINIA STORE ---
+const eventsStore = useEventsStore();
+
+// --- EVENT SELECTION STATE ---
+const selectedEventId = ref<string | null>(null);
+
+// Get all events from store
+const allEvents = computed(() => eventsStore.events);
+
+// Get the currently selected event details
+const currentEvent = computed(() => {
+  if (allEvents.value.length === 0) {
+    return {
+      id: '0',
+      name: 'Brak Wydarzenia',
+      startDate: new Date().toISOString().split('T')[0],
+      startTime: '00:00',
+      type: 'offline' as const,
+      privacy: 'public' as const,
+      location: { name: '', lat: 0, lng: 0 },
+      description: 'Brak dostępnych wydarzeń',
+      images: [],
+      hosts: ['Brak'],
+    };
+  }
+  
+  if (!selectedEventId.value) {
+    return allEvents.value[0]!;
+  }
+  
+  const event = eventsStore.getEventById(selectedEventId.value);
+  return event || allEvents.value[0]!;
+});
+
+// Initialize with first event
+onMounted(() => {
+  if (allEvents.value.length > 0 && !selectedEventId.value) {
+    selectedEventId.value = allEvents.value[0]?.id ?? null;
+  }
+});
+
+// Handle event selection
+const selectEvent = (eventId: string) => {
+  selectedEventId.value = eventId;
+};
 
 // --- KONFIGURACJA MAPY ---
 const mapContainerRef = ref<HTMLDivElement | null>(null);
 let mapInstance: L.Map | null = null;
-const mapCenter: L.LatLngTuple = [54.371661, 18.619082]; // Gdańsk (default)
 
-// Definicja Czerwonej Ikony
-const redIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/markers/marker-icon-2x-red.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
+// Watcher do aktualizacji mapy gdy zmienia się event
+const updateMapMarker = () => {
+  if (!mapInstance || !currentEvent.value.location) return;
+  
+  const { lat, lng, name } = currentEvent.value.location;
+  if (lat === 0 && lng === 0) return; // Skip online events
+  
+  // Clear existing layers
+  mapInstance.eachLayer((layer) => {
+    if (layer instanceof L.Marker) {
+      mapInstance!.removeLayer(layer);
+    }
+  });
+  
+  // Set new center and add marker
+  mapInstance.setView([lat, lng], 15);
+  L.marker([lat, lng], { icon: redIcon })
+    .addTo(mapInstance)
+    .bindTooltip(name, { direction: 'top', offset: [0, -40] });
+};
 
 // --- LOGIKA "FACEBOOK DUAL STICKY" ---
-const rightSectionRef = ref<HTMLDivElement | null>(null);
+const rightSectionRef = ref(null);
 const stickyTop = ref(0); // Dynamiczna wartość CSS 'top'
 
 // Konfiguracja marginesów
@@ -91,7 +143,7 @@ const updateStickyPosition = () => {
     lastScrollY = currentScrollY;
 };
 
-let resizeObserver: ResizeObserver | null = null;
+let resizeObserver = null;
 
 
 onMounted(() => {
@@ -109,10 +161,9 @@ onMounted(() => {
         resizeObserver.observe(rightSectionRef.value);
     }
   if (mapContainerRef.value) {
-    // 1. Inicjalizacja mapy - użyj współrzędnych z eventu lub domyślnych
-    const eventCoords = eventDetails.value?.coordinates || mapCenter;
+    // 1. Inicjalizacja mapy
     mapInstance = L.map(mapContainerRef.value, {
-      center: eventCoords,
+      center: mapCenter,
       zoom: 15,
       zoomControl: false,    // Ukrywa przyciski +/-
       scrollWheelZoom: false,// Blokuje zoom kółkiem myszy
@@ -129,12 +180,10 @@ onMounted(() => {
       maxZoom: 20
     }).addTo(mapInstance);
 
-    // 3. Dodanie Markera na współrzędne eventu
-    const markerCoords = eventDetails.value?.coordinates || mapCenter;
-    const markerName = eventDetails.value?.locationName || 'Lokalizacja eventu';
-    L.marker(markerCoords, { icon: redIcon })
+    // 3. Dodanie Czerwonego Markera
+    L.marker(mapCenter, { icon: redIcon })
       .addTo(mapInstance)
-      .bindTooltip(markerName, { direction: 'top', offset: [0, -40] });
+      .bindTooltip("Camper Park PG", { direction: 'top', offset: [0, -40] });
 
     // 4. Kontrolki Zoomu na dole po prawej
     L.control.zoom({ position: 'bottomright' }).addTo(mapInstance);
@@ -151,79 +200,17 @@ onUnmounted(() => {
   }
 });
 
-const route = useRoute();
-const eventsStore = useEventsStore();
-const eventDetails = computed<Event | undefined>(() => {
-  const id = route.params.id as string;
-  return eventsStore.getEventById(id);
-});
-
-// Computed properties dla formatowania dat
-const eventMonth = computed(() => {
-  if (!eventDetails.value?.startDate) return '';
-  return new Date(eventDetails.value.startDate).toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase();
-});
-
-const eventDay = computed(() => {
-  if (!eventDetails.value?.startDate) return '';
-  return new Date(eventDetails.value.startDate).getDate();
-});
-
-const eventDateDisplay = computed(() => {
-
-  if (!eventDetails.value?.startDate) return 'Brak daty';
-
-  const date = new Date(eventDetails.value.startDate);
-
-  // Formatujemy datę z dniem tygodnia
-  const dayNames = ['niedziela', 'poniedziałek', 'wtorek', 'środa', 'czwartek', 'piątek', 'sobota'];
-  const monthNames = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca',
-                      'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
-
-  const dayOfWeek = dayNames[date.getDay()];
-  const day = date.getDate();
-  const month = monthNames[date.getMonth()];
-  const year = date.getFullYear();
-
-  const timeStr = eventDetails.value?.startTime || '';
-  const dateFormatted = `${dayOfWeek}, ${day} ${month} ${year}`;
-
-  return `${dateFormatted} ${timeStr ? ' o ' + timeStr : ''}`;
-});
-
-// Stan dla "Czytaj więcej"
-const isDescriptionExpanded = ref(false);
-
-const truncatedDescription = computed(() => {
-  const description = eventDetails.value?.description || '';
-  const maxLength = 200;
-  if (description.length > maxLength && !isDescriptionExpanded.value) {
-    return description.substring(0, maxLength) + '...';
-  }
-  return description;
-});
-
-// Carousel logika
-const currentImageIndex = ref(0);
-
-const currentImage = computed(() => {
-  const images = eventDetails.value?.images || [];
-  if (images.length === 0) return '';
-  return images[currentImageIndex.value];
-});
-
-const hasMultipleImages = computed(() => {
-  return (eventDetails.value?.images?.length || 0) > 1;
-});
-
-const previousImage = () => {
-  const imagesCount = eventDetails.value?.images?.length || 0;
-  currentImageIndex.value = (currentImageIndex.value - 1 + imagesCount) % imagesCount;
-};
-
-const nextImage = () => {
-  const imagesCount = eventDetails.value?.images?.length || 0;
-  currentImageIndex.value = (currentImageIndex.value + 1) % imagesCount;
+// --- DANE (MOCK DATA) ---
+const eventDetails = {
+  date: 'Sobota, 16 maja 2026 o 15:00',
+  title: 'Technikalia.26',
+  locationName: 'Camper Park Politechniki Gdańskiej',
+  address: 'ul. Towarowa 40, 80-218 Gdańsk',
+  responses: 203,
+  hosts: ['Technikalia', 'Politechnika Gdańska', 'SSPG - Samorząd Studentów PG'],
+  description: 'Technikalia.26 💙 - Robimy to dla Was kolejny rok! 🔥 Widzimy się 16 maja 2026 na Camperparku! ⛺ To już 16. edycja Festiwalu Studentów Politechniki Gdańskiej...',
+  guestsGoing: 84,
+  guestsInterested: 119
 };
 
 const friends = [
@@ -242,59 +229,28 @@ const organizers = [
   <div class="flex min-h-screen bg-[#F0F2F5] font-sans text-gray-900 pb-10">
     <EventsSidebar  />
     <div class="flex-1">
-      <div class="h-[350px] relative flex justify-center items-center overflow-visible shadow-sm group">
-        <!-- Carousel dla wielu zdjęć z ImageWithGradient -->
-        <ImageWithGradient
-          :image-url="currentImage || ''"
-          :initial-width="700"
-          :initial-height="350"
-          class="w-full h-full object-cover"
-        />
-
-        <!-- Przycisk poprzednie zdjęcie -->
-        <button
-          v-if="hasMultipleImages"
-          @click="previousImage"
-          class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition z-10"
-        >
-          <ChevronLeftIcon :size="24" />
-        </button>
-
-        <!-- Przycisk następne zdjęcie -->
-        <button
-          v-if="hasMultipleImages"
-          @click="nextImage"
-          class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition z-10"
-        >
-          <ChevronRightIcon :size="24" />
-        </button>
-
-        <!-- Date Box - nachodzi na gradient -->
-        <div class="absolute bottom-12 left-15 transform translate-y-1/2 bg-white border border-gray-200 rounded-lg shadow-lg w-20 h-20 flex flex-col items-center justify-center shrink-0 overflow-hidden text-center z-20">
-          <div class="h-5 w-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center uppercase tracking-wide">
-            {{ eventMonth }}
-          </div>
-          <div class="text-2xl font-bold text-gray-800 leading-none pt-1">
-            {{ eventDay }}
-          </div>
-        </div>
-
+      <div class="h-[350px] relative flex justify-center items-center overflow-hidden shadow-sm">
+        <ImageWithGradient image-url="https://scontent-waw2-2.xx.fbcdn.net/v/t39.30808-6/605641384_1198742319135884_3466586650420032965_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=75d36f&_nc_ohc=R3C_HNibSrQQ7kNvwEX05px&_nc_oc=AdlyauSPccO6HMnjYEJpYdB15CvSS90fA4ha03m6GcJipc2fSg43Cpvtd3nUP-eRgc-dP0Sq4BeUbYeyKb-qXKgh&_nc_zt=23&_nc_ht=scontent-waw2-2.xx&_nc_gid=RgfkCre1pHX6OyeIgMXppQ&oh=00_Afqg6cMgSjoaWH4QHNrGCLBvYjJ93PYIclsChWeZDCWHuw&oe=695D7012" class="w-full h-full object-cover " />
       </div>
 
-      <div class="w-full mx-auto px-4 sm:px-0 relative">
+      <div class="max-w-[1250px] mx-auto px-4 sm:px-0 relative">
 
-        <div class="bg-white  pb-4 pt-0 shadow-sm border-b border-gray-300  -mt-4 relative z-10 px-15">
+        <div class="bg-white px-6 pb-4 pt-0 shadow-sm border-b border-gray-300 sm:rounded-b-lg -mt-4 relative z-10 mx-0 sm:mx-4">
           <div class="flex flex-col md:flex-row gap-4 pt-6">
-            <div class="grow">
-              <div class="text-red-600 text-sm font-semibold uppercase">{{ eventDateDisplay }}</div>
-              <h1 class="text-3xl font-bold text-gray-900 mt-1">{{ eventDetails?.title || eventDetails?.name }}</h1>
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm w-16 h-16 flex flex-col items-center justify-center flex-shrink-0 overflow-hidden text-center -mt-10 md:mt-0 relative z-20">
+              <div class="h-5 w-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center uppercase tracking-wide">Maj</div>
+              <div class="text-2xl font-bold text-gray-800 leading-none pt-1">16</div>
+            </div>
+            <div class="flex-grow">
+              <div class="text-red-600 text-sm font-semibold uppercase">{{ eventDetails.date }}</div>
+              <h1 class="text-3xl font-bold text-gray-900 mt-1">{{ eventDetails.title }}</h1>
               <div class="text-gray-500 text-sm mt-1 font-medium">
-                {{ eventDetails?.locationName || eventDetails?.location }}<span v-if="eventDetails?.address">, {{ eventDetails.address }}</span>
+                {{ eventDetails.locationName }}, {{ eventDetails.address }}
               </div>
             </div>
           </div>
 
-          <div class="flex  flex-col md:flex-row justify-between items-center mt-6 border-t border-gray-200 pt-4 gap-4">
+          <div class="flex flex-col md:flex-row justify-between items-center mt-6 border-t border-gray-200 pt-4 gap-4">
             <div class="flex gap-6 text-sm font-semibold text-gray-600">
               <button class="text-blue-600 border-b-2 border-blue-600 pb-4 -mb-4 px-1">Informacje</button>
               <button class="hover:bg-gray-100 rounded px-2 py-1 transition">Dyskusja</button>
@@ -319,7 +275,7 @@ const organizers = [
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-[1200px] mx-auto lg:grid-cols-5 gap-4 mt-4">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4 mx-0 sm:mx-4">
 
           <div class="lg:col-span-3 space-y-4">
             <div class="bg-white rounded-lg shadow-sm p-4">
@@ -327,35 +283,28 @@ const organizers = [
               <ul class="space-y-4 text-gray-700">
                 <li class="flex items-start gap-3">
                   <AccountGroupIcon class="text-gray-500 mt-1" />
-                  <span>{{ eventDetails?.responses || 0 }} użytkowników odpowiedziało</span>
+                  <span>{{ eventDetails.responses }} użytkowników odpowiedziało</span>
                 </li>
                 <li class="flex items-start gap-3">
                   <AccountGroupIcon class="text-gray-500 mt-1" />
                   <div>
-                    Wydarzenie <span class="font-semibold">{{ eventDetails?.hosts?.[0] || 'Organizator' }}</span><span v-if="eventDetails?.hosts?.[1]">, <span class="font-semibold">{{ eventDetails.hosts[1] }}</span></span><span v-if="eventDetails?.hosts?.[2]"> i <span class="font-semibold">{{ eventDetails.hosts[2] }}</span></span>
+                    Wydarzenie <span class="font-semibold">{{ eventDetails.hosts[0] }}</span>, <span class="font-semibold">{{ eventDetails.hosts[1] }}</span> i <span class="font-semibold">{{ eventDetails.hosts[2] }}</span>
                   </div>
                 </li>
                 <li class="flex items-start gap-3">
                   <MapMarkerIcon class="text-gray-500 mt-1" />
                   <div>
-                    {{ eventDetails?.locationName || eventDetails?.location || 'Brak informacji' }}
-                    <div class="text-sm text-gray-500">{{ eventDetails?.address || '' }}</div>
+                    {{ eventDetails.locationName }}
+                    <div class="text-sm text-gray-500">{{ eventDetails.address }}</div>
                   </div>
                 </li>
                 <li class="flex items-start gap-3">
                   <EarthIcon class="text-gray-500 mt-1" />
-                  <div>{{ eventDetails?.privacy === 'public' ? 'Publiczne · Każdy na Facebooku i poza nim' : 'Prywatne' }}</div>
+                  <div>Publiczne · Każdy na Facebooku i poza nim</div>
                 </li>
               </ul>
-              <div class="mt-6 text-sm text-gray-800 leading-relaxed">
-                {{ truncatedDescription }}
-                <span
-                  v-if="(eventDetails?.description || '').length > 200"
-                  @click="isDescriptionExpanded = !isDescriptionExpanded"
-                  class="font-semibold text-blue-600 cursor-pointer hover:underline ml-1"
-                >
-                  {{ isDescriptionExpanded ? '... Ukryj' : '... Czytaj więcej' }}
-                </span>
+              <div class="mt-6 text-sm text-gray-800 leading-relaxed whitespace-pre-line">
+                {{ eventDetails.description }} <span class="font-semibold cursor-pointer hover:underline">... Wyświetl więcej</span>
               </div>
               <div class="mt-4">
                 <span class="inline-block bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2 cursor-pointer">Gdańsk</span>
@@ -389,16 +338,16 @@ const organizers = [
       :style="{ top: `${stickyTop}px` }"
   >
 
-            <div class="bg-white rounded-lg shadow-sm ">
+            <div class="bg-white rounded-lg shadow-sm p-4">
+               <div class="text-lg font-bold mb-2">Lokalizacja</div>
 
-
-               <div class="w-full h-[300px] rounded-lg overflow-hidden border border-gray-200 relative isolate z-0">
+               <div class="w-full h-48 rounded-lg overflow-hidden border border-gray-200 relative isolate z-0">
                   <div ref="mapContainerRef" class="w-full h-full bg-gray-100"></div>
                </div>
 
-               <div class="mt-3 p-4">
-                 <div class="font-semibold text-gray-900">{{ eventDetails?.locationName || eventDetails?.location || 'Brak lokalizacji' }}</div>
-                 <div class="text-sm text-gray-500">{{ eventDetails?.address || 'Brak adresu' }}</div>
+               <div class="mt-3">
+                 <div class="font-semibold text-gray-900">{{ eventDetails.locationName }}</div>
+                 <div class="text-sm text-gray-500">{{ eventDetails.address }}</div>
                </div>
             </div>
 
@@ -406,11 +355,11 @@ const organizers = [
               <h3 class="text-lg font-bold mb-4">Goście</h3>
               <div class="flex justify-around text-center mb-4">
                 <div>
-                  <div class="text-xl font-bold text-gray-900">{{ eventDetails?.guestsGoing || 0 }}</div>
+                  <div class="text-xl font-bold text-gray-900">{{ eventDetails.guestsGoing }}</div>
                   <div class="text-xs text-gray-500">Wezmę udział</div>
                 </div>
                 <div>
-                  <div class="text-xl font-bold text-gray-900">{{ eventDetails?.guestsInterested || 0 }}</div>
+                  <div class="text-xl font-bold text-gray-900">{{ eventDetails.guestsInterested }}</div>
                   <div class="text-xs text-gray-500">Zainteresowani</div>
                 </div>
               </div>
@@ -432,7 +381,7 @@ const organizers = [
              <div class="bg-white rounded-lg shadow-sm p-4">
                <h3 class="text-lg font-bold mb-4">Popularne wśród znajomych</h3>
                <div class="flex gap-3">
-                  <div class="w-16 h-16 bg-gray-200 rounded-lg shrink-0 overflow-hidden">
+                  <div class="w-16 h-16 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden">
                       <img src="https://placehold.co/100x100/orange/white?text=K" class="w-full h-full object-cover" />
                   </div>
                   <div>
@@ -467,9 +416,6 @@ const organizers = [
 .leaflet-container {
     z-index: 0;
     font-family: inherit;
-}
-.leaflet-control-zoom{
-  display: none;
 }
 /* Opcjonalne zmniejszenie stopki licencji dla estetyki */
 .leaflet-control-attribution {

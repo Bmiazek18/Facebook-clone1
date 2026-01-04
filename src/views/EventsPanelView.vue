@@ -73,24 +73,24 @@
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          <div v-for="event in events" :key="event.id" class="bg-white rounded-[18px] border border-gray-200 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition duration-200">
+          <div
+            v-for="eventItem in events"
+            :key="eventItem.id"
+            class="bg-white rounded-[18px] border border-gray-200 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition duration-200 cursor-pointer"
+            @click="navigateToEvent(eventItem.id)"
+          >
             <div class="relative aspect-video w-full bg-gray-100">
-              <img :src="event.image" class="w-full h-full object-cover" />
+              <img :src="eventItem.images[0]" class="w-full h-full object-cover" v-if="eventItem.images && eventItem.images.length > 0"/>
+              <div v-else class="w-full h-full object-cover flex items-center justify-center text-gray-400">Brak zdjęcia</div>
               <button class="absolute top-2 right-2 bg-[#1c1e21]/70 hover:bg-[#1c1e21] text-white p-1.5 rounded-full">
                 <dots-horizontal-icon :size="18" />
               </button>
             </div>
 
             <div class="p-4 pt-3 flex flex-col flex-1">
-              <p :class="[event.isLive ? 'text-[#d22d2d]' : 'text-[#1c1e21]', 'text-[14px] font-semibold mb-1']">{{ event.dateLabel }}</p>
-              <h3 class="text-[17px] font-bold leading-tight mb-1 text-[#1c1e21] line-clamp-2 hover:underline cursor-pointer">{{ event.title }}</h3>
-              <p class="text-[#65676b] text-[15px] font-medium mb-1">{{ event.location }}</p>
-
-              <div v-if="event.friend" class="flex items-center gap-2 mt-2 mb-4">
-                <img :src="event.friend.avatar" class="w-7 h-7 rounded-full object-cover border border-gray-200" />
-                <span class="text-[#65676b] text-[14px] font-normal truncate">{{ event.friend.name }} jest zainteresowany(a)</span>
-              </div>
-              <p v-else class="text-[#65676b] text-[14px] mb-4">{{ event.stats }}</p>
+              <p :class="['text-[#1c1e21]', 'text-[14px] font-semibold mb-1']">{{ eventItem.startDate }} {{ eventItem.startTime }}</p>
+              <h3 class="text-[17px] font-bold leading-tight mb-1 text-[#1c1e21] line-clamp-2 hover:underline cursor-pointer">{{ eventItem.name }}</h3>
+              <p class="text-[#65676b] text-[15px] font-medium mb-1">{{ eventItem.location }}</p>
 
               <div class="flex gap-2 mt-auto">
                 <button class="flex-[4] bg-[#e4e6eb] hover:bg-[#d8dadf] text-[#1c1e21] font-semibold py-2 rounded-xl flex items-center justify-center gap-2 transition text-[15px]">
@@ -113,9 +113,11 @@
 
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue'; // Added computed for events from store
 import { DatePicker as VDatePicker } from 'v-calendar';
 import 'v-calendar/dist/style.css';
+import { useEventsStore } from '@/stores/events'; // Import the events store
+import { useRouter } from 'vue-router'; // Import useRouter
 
 /* Importy ikon */
 import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue';
@@ -128,6 +130,9 @@ import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
 import StarOutlineIcon from 'vue-material-design-icons/StarOutline.vue';
 import ReplyIcon from 'vue-material-design-icons/Reply.vue';
 import EventsSidebar from '@/components/events/EventsSidebar.vue';
+
+const eventsStore = useEventsStore(); // Initialize the events store
+const router = useRouter(); // Initialize router
 
 // Logika filtrów
 const isDateMenuOpen = ref(false);
@@ -167,16 +172,13 @@ const disabledDates = ref([
     end: new Date()          // null oznacza brak końca blokady (wszystkie przyszłe daty)
   }
 ]);
-const events = [
-  { id: 1, dateLabel: 'W trakcie', isLive: true, title: 'Bal Swobodnych Dusz', location: 'Pałac Zamoyskich', stats: '580 osób zainteresowanych', image: 'https://picsum.photos/seed/ev1/600/350' },
-  { id: 2, dateLabel: 'Nie, 28 gru – 2 sty', title: 'Sylwester z Rodziną Addamsów MCHTR x MT 2025', location: 'Piwniczna-Zdrój', friend: { name: 'Bartosz', avatar: 'https://i.pravatar.cc/100?u=1' }, image: 'https://picsum.photos/seed/ev2/600/350' },
-  { id: 3, dateLabel: 'Sob, 27 gru o 21:00', title: '27.12 | WHITE 2115 | SIEDLCE', location: 'Siedlce', friend: { name: 'Maja', avatar: 'https://i.pravatar.cc/100?u=2' }, image: 'https://picsum.photos/seed/ev3/600/350' },
-  { id: 4, dateLabel: 'Czw, 1 sty o 17:00', title: 'Likwidacja Lecha Poznań - Spotkanie', location: 'Poznań', stats: 'Dawid i 2 znajomych bierze udział', image: 'https://picsum.photos/seed/ev4/600/350' },
-  { id: 5, dateLabel: 'Sob, 24 sty o 19:00', title: 'Wielki Studencki Bal Karnawałowy KARNAVAULI', location: 'Gmach Główny PW', friend: { name: 'Tomek', avatar: 'https://i.pravatar.cc/100?u=3' }, image: 'https://picsum.photos/seed/ev5/600/350' },
-  { id: 6, dateLabel: 'Śr, 31 gru o 20:00', title: 'Sylwester na Placu Zamkowym', location: 'Warszawa', stats: '12,5 tys. osób zainteresowanych', image: 'https://picsum.photos/seed/ev6/600/350' },
-  { id: 7, dateLabel: 'Pt, 2 sty o 10:00', title: 'Warsztaty: Fotografia Analogowa', location: 'Łódź, Off Piotrkowska', stats: 'Zostały 3 miejsca', image: 'https://picsum.photos/seed/ev7/600/350' },
-  { id: 8, dateLabel: 'Nie, 4 sty o 16:00', title: 'Koncert Muzyki Filmowej - Hans Zimmer', location: 'Atlas Arena, Łódź', stats: '6 znajomych jest zainteresowanych', image: 'https://picsum.photos/seed/ev8/600/350' },
-];
+
+const events = computed(() => eventsStore.events); // Use events from the store
+
+const navigateToEvent = (eventId) => {
+  router.push({ name: 'events', params: { id: eventId } });
+};
+
 </script>
 
 <style>

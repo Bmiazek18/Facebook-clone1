@@ -23,13 +23,13 @@
 
         <button
            @click.stop="locateUser"
-           class="absolute top-4 right-4 z-[400] bg-white w-10 h-10 rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.15)] flex items-center justify-center cursor-pointer hover:bg-gray-50 transition text-gray-700 active:bg-gray-100"
+           class="absolute top-4 right-4 z-400 bg-white w-10 h-10 rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.15)] flex items-center justify-center cursor-pointer hover:bg-gray-50 transition text-gray-700 active:bg-gray-100"
            title="Pokaż moją lokalizację"
         >
            <crosshairs-gps-icon :size="22" />
         </button>
 
-        <div v-if="isLoadingMap" class="absolute inset-0 bg-white/60 z-[500] flex items-center justify-center backdrop-blur-[2px]">
+        <div v-if="isLoadingMap" class="absolute inset-0 bg-white/60 z-500 flex items-center justify-center backdrop-blur-[2px]">
            <div class="animate-spin rounded-full h-10 w-10 border-[3px] border-gray-200 border-t-[#1877f2]"></div>
         </div>
       </div>
@@ -70,37 +70,25 @@
 
 </template>
 
-<script setup>
-import { ref, watch, nextTick, onBeforeUnmount } from 'vue';
+<script setup lang="ts">
+import { ref, watch, nextTick, onBeforeUnmount, onMounted } from 'vue';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Import ikon dla Leaflet (Fix dla Vite/Webpack)
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
 // Ikony UI
-import CloseIcon from 'vue-material-design-icons/Close.vue';
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
 import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue';
 import CrosshairsGpsIcon from 'vue-material-design-icons/CrosshairsGps.vue';
 
-// --- KONFIGURACJA LEAFLET ---
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-});
-
-const redIcon = L.icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
+// Czerwona ikona markera - używamy SVG zamiast zdalnego URL'a
+const redIcon = L.divIcon({
+  html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ef4444" width="32" height="32">
+    <path d="M12 2C6.48 2 2 6.48 2 12c0 5.17 3.61 9.48 8.35 9.93.5.08 1.03.13 1.65.13 6.63 0 12-5.37 12-12S18.63 2 12 2zm0 18c-.62 0-1.15-.05-1.65-.13C7.56 19.28 4.5 16.08 4.5 12c0-4.14 3.36-7.5 7.5-7.5s7.5 3.36 7.5 7.5-3.36 7.5-7.5 7.5z"/>
+  </svg>`,
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32],
+  className: 'leaflet-div-icon-red'
 });
 
 const userLocationIcon = L.divIcon({
@@ -118,14 +106,14 @@ const props = defineProps({
 const emit = defineEmits(['close', 'confirm']);
 
 // --- STATE ---
-const mapContainer = ref(null);
+const mapContainer = ref<HTMLDivElement | null>(null);
 const searchQuery = ref('');
 const tempLocation = ref('');
 const isLoadingMap = ref(false);
 
-let mapInstance = null;
-let markerInstance = null;
-let userMarkerInstance = null;
+let mapInstance: L.Map | null = null;
+let markerInstance: L.Marker | null = null;
+let userMarkerInstance: L.Marker | null = null;
 
 // --- WATCHERS ---
 watch(() => props.show, async (val) => {
@@ -133,19 +121,26 @@ watch(() => props.show, async (val) => {
     tempLocation.value = props.initialLocation || '';
     searchQuery.value = '';
     await nextTick();
-    initMap();
+    // Dodajemy timeout aby się upewnić że DOM jest gotowy
+    setTimeout(() => {
+      initMap();
+    }, 50);
   } else {
     destroyMap();
   }
 });
+onMounted(() => {
 
+    initMap();
+
+});
 // --- MAP FUNCTIONS ---
 const initMap = () => {
   if (mapInstance) return;
   if (!mapContainer.value) return;
 
   // Domyślnie Warszawa (lub ostatnia znana pozycja)
-  const defaultCoords = [52.2297, 21.0122];
+  const defaultCoords: L.LatLngTuple = [52.2297, 21.0122];
 
   mapInstance = L.map(mapContainer.value, {
     zoomControl: false,
@@ -198,6 +193,13 @@ const locateUser = () => {
       const lat = position.coords.latitude;
       const lng = position.coords.longitude;
 
+      // Sprawdzenie czy mapa jest zainicjalizowana
+      if (!mapInstance) {
+        console.error('Map instance is not initialized');
+        isLoadingMap.value = false;
+        return;
+      }
+
       mapInstance.setView([lat, lng], 16);
 
       if (userMarkerInstance) {
@@ -218,7 +220,12 @@ const locateUser = () => {
   );
 };
 
-const updateMarker = (lat, lng) => {
+const updateMarker = (lat: number, lng: number) => {
+  if (!mapInstance) {
+    console.error('Map instance is not initialized');
+    return;
+  }
+
   if (markerInstance) {
     markerInstance.setLatLng([lat, lng]);
   } else {
@@ -228,7 +235,7 @@ const updateMarker = (lat, lng) => {
 };
 
 // --- API CALLS ---
-const fetchAddress = async (lat, lng) => {
+const fetchAddress = async (lat: number, lng: number) => {
   try {
     isLoadingMap.value = true;
     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
@@ -270,6 +277,13 @@ const searchLocation = async () => {
       const { lat, lon, display_name } = data[0];
       const latitude = parseFloat(lat);
       const longitude = parseFloat(lon);
+
+      // Sprawdzenie czy mapa jest zainicjalizowana
+      if (!mapInstance) {
+        console.error('Map instance is not initialized');
+        isLoadingMap.value = false;
+        return;
+      }
 
       updateMarker(latitude, longitude);
       mapInstance.setView([latitude, longitude], 15);

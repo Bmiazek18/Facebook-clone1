@@ -10,11 +10,15 @@ interface ColorData {
 
 // Props
 interface Props {
-    imageUrl?: string
+    imageUrl?: string,
+    initialWidth?: number,
+    initialHeight?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    imageUrl: "https://picsum.photos/id/45/2000/800"
+    imageUrl: "https://picsum.photos/id/45/2000/800",
+    initialWidth: 1250,
+    initialHeight: 450
 })
 
 // URL obrazu wczytanego przez użytkownika
@@ -42,8 +46,8 @@ const WHITE_OVERLAY_GRADIENT: string =
     `linear-gradient(to bottom, transparent 0%, transparent 50%, rgba(255, 255, 255, 0.4) 75%, rgba(255, 255, 255, 0.7) 90%, rgb(255, 255, 255) 100%)`;
 
 // Stałe wymiary widocznego kontenera obrazu (odczytane z szablonu)
-const DISPLAY_WIDTH: number = 1250;
-const DISPLAY_HEIGHT: number = 450;
+const DISPLAY_WIDTH: number = props.initialWidth;
+const DISPLAY_HEIGHT: number = props.initialHeight;
 
 
 /**
@@ -217,6 +221,13 @@ watch(imageLoaded, (isLoaded: boolean) => {
     }
 });
 
+// Monitorowanie zmiany URL obrazu - regeneruj gradient
+watch(IMAGE_URL, () => {
+    imageLoaded.value = false;
+    leftGradientStyle.value = '';
+    rightGradientStyle.value = '';
+});
+
 // Obsługa błędu ładowania obrazu
 const handleImageError = (event: Event): void => {
     console.error("Błąd ładowania obrazu:", event);
@@ -226,8 +237,8 @@ const handleImageError = (event: Event): void => {
 
 <template>
     <div
-        class="flex w-full mt-14  overflow-hidden"
-        style="height: 450px;"
+        class="flex w-full overflow-hidden mb-8"
+        :style="{ height: `${initialHeight}px` }"
     >
 
         <div class="grow flex items-center justify-center relative ">
@@ -238,7 +249,7 @@ const handleImageError = (event: Event): void => {
             <p v-else class="text-gray-500 font-semibold">{{ status }}</p>
         </div>
 
-        <div class="w-[1250px] relative  flex items-center justify-center">
+        <div class="relative flex items-center justify-center" :style="{ width: `${initialWidth}px` }">
 
             <img
                 ref="imgRef"
