@@ -86,7 +86,7 @@ const handleCancelLeave = () => {
   <div class="w-full bg-theme-bg text-theme-text min-h-screen relative">
 
     <div
-      class="grid grid-cols-[2fr_5fr_2fr] w-full 3xl:max-w-[1500px] max-w-full mt-14 mx-auto px-4"
+      class="flex flex-col md:grid md:grid-cols-[2fr_5fr_2fr] w-full 3xl:max-w-[1500px] max-w-full mt-14 mx-auto px-0 lg:px-4"
     >
       <div id="LeftSection" class="hidden lg:block">
         <LeftSidebar
@@ -98,7 +98,7 @@ const handleCancelLeave = () => {
       <div id="MiddleSection" class="flex justify-center w-full">
         <div
           id="PostsSection"
-          class="max-w-[700px] w-full lg:mx-0 mx-auto"
+          class="w-full md:max-w-[700px] lg:mx-0 mx-0"
           v-bind="containerProps"
         >
           <CreatePostBox

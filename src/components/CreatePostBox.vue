@@ -110,7 +110,7 @@ const closeCreatePost = () => {
       />
       <button
         @click="openCreatePostWithFeeling"
-        class="flex items-center justify-center hover:bg-theme-hover w-full rounded-lg cursor-pointer"
+        class="hidden md:flex items-center justify-center hover:bg-theme-hover w-full rounded-lg cursor-pointer"
       >
         <EmoticonOutline :size="35" fillColor="#F8B927" />
         <div class="text-[#6F7275] text-theme-text-secondary font-medium">{{ $t('post.addFeeling') }}</div>

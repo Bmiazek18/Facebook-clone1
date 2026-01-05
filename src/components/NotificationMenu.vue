@@ -1,6 +1,6 @@
 <template>
-  <div class="w-[360px] mx-auto bg-theme-bg-secondary  h-full ">
-    <header class="pt-2 pb-0 px-3 flex justify-between items-center">
+  <div class="w-full md:w-[360px] mx-auto bg-theme-bg-secondary max-h-[calc(100vh-4rem)] flex flex-col overflow-hidden shadow-2xl rounded-b-2xl">
+    <header class="pt-2 pb-0 px-3 flex justify-between items-center shrink-0">
       <h1 class="text-2xl font-bold text-theme-text">{{ $t('notifications_page.title') }}</h1>
       <DotsHorizontalIcon class="h-6 w-6 text-theme-text-secondary cursor-pointer" />
     </header>

@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-[360px] mx-auto bg-theme-bg-secondary flex flex-col overflow-hidden min-h-0 rounded-b-2xl h-full">
+  <div class="w-full md:w-[360px] mx-auto bg-theme-bg-secondary flex flex-col overflow-hidden min-h-0 rounded-b-2xl max-h-[calc(100vh-4rem)] shadow-2xl">
     <header class="p-4 flex justify-between items-center bg-theme-bg-secondary z-10 shrink-0">
       <div class="flex items-center space-x-2">
         <h1 class="text-2xl font-bold text-theme-text">{{ $t('header.title') }}</h1>

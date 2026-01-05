@@ -1,57 +1,57 @@
 <template>
-  <div class="h-[calc(100vh-64px)] bg-theme-bg p-4 rounded-b-2xl shadow-2xl font-sans text-[#1c1e21]">
-    <div class="max-w-[940px] mx-auto flex gap-4">
-<HoverScrollbar max-height="calc(100vh - 100px)">
-      <div class="flex-1 bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.1)] p-4">
-        <h1 class="text-2xl font-bold mb-4 px-2">Menu</h1>
+  <div class="max-h-[calc(100vh-4rem)] bg-theme-bg p-4 rounded-b-2xl shadow-2xl font-sans text-[#1c1e21] overflow-hidden flex flex-col">
+    <HoverScrollbar max-height="calc(100vh - 100px)">
+      <div class="max-w-[940px] mx-auto flex flex-col lg:flex-row gap-4">
+        <div class="flex-1 bg-white dark:bg-[#242526] rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.1)] p-4">
+          <h1 class="text-2xl font-bold mb-4 px-2 text-theme-text">Menu</h1>
 
-        <div class="relative mb-6 px-2">
-          <span class="absolute inset-y-0 left-5 flex items-center">
-            <MagnifyIcon :size="20" class="text-gray-500" />
-          </span>
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Wyszukaj w menu"
-            class="w-full bg-[#f0f2f5] rounded-full py-2 pl-10 pr-4 focus:outline-none border-none placeholder:text-gray-500"
-          >
-        </div>
+          <div class="relative mb-6 px-2">
+            <span class="absolute inset-y-0 left-5 flex items-center">
+              <MagnifyIcon :size="20" class="text-gray-500" />
+            </span>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Wyszukaj w menu"
+              class="w-full bg-[#f0f2f5] dark:bg-gray-700 rounded-full py-2 pl-10 pr-4 focus:outline-none border-none placeholder:text-gray-500 text-theme-text"
+            >
+          </div>
 
-        <div v-for="section in filteredMenu" :key="section.title" class="mb-4 border-b border-gray-200 pb-4 last:border-0">
-          <h2 class="text-[17px] font-semibold mb-2 px-2">{{ section.title }}</h2>
+          <div v-for="section in filteredMenu" :key="section.title" class="mb-4 border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0">
+            <h2 class="text-[17px] font-semibold mb-2 px-2 text-theme-text">{{ section.title }}</h2>
 
-          <div v-for="item in section.items" :key="item.name"
-            class="flex items-start gap-3 p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition group">
-            <div class="flex-shrink-0">
-               <component :is="item.icon" :size="32" :class="item.iconColor" />
+            <div v-for="item in section.items" :key="item.name"
+              class="flex items-start gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg cursor-pointer transition group">
+              <div class="flex-shrink-0">
+                <component :is="item.icon" :size="32" :class="item.iconColor" />
+              </div>
+              <div>
+                <p class="font-medium text-[15px] leading-tight text-theme-text">{{ item.name }}</p>
+                <p class="text-[13px] text-[#65676b] dark:text-gray-400 leading-snug mt-0.5">{{ item.description }}</p>
+              </div>
             </div>
-            <div>
-              <p class="font-medium text-[15px] leading-tight">{{ item.name }}</p>
-              <p class="text-[13px] text-[#65676b] leading-snug mt-0.5">{{ item.description }}</p>
-            </div>
+          </div>
+
+          <div v-if="filteredMenu.length === 0" class="text-center py-10 text-gray-500">
+            Nie znaleziono wyników dla "{{ searchQuery }}"
           </div>
         </div>
 
-        <div v-if="filteredMenu.length === 0" class="text-center py-10 text-gray-500">
-          Nie znaleziono wyników dla "{{ searchQuery }}"
-        </div>
-      </div>
-</HoverScrollbar >
-      <div class="w-[360px] bg-white rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.1)] p-4 sticky top-4 h-fit">
-        <h2 class="text-xl font-bold mb-4 px-2">Utwórz</h2>
+        <div class="w-full lg:w-[360px] bg-white dark:bg-[#242526] rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.1)] p-4 lg:sticky lg:top-0 h-fit">
+          <h2 class="text-xl font-bold mb-4 px-2 text-theme-text">Utwórz</h2>
 
-        <div v-for="(group, idx) in createMenu" :key="idx" :class="{'border-t border-gray-200 mt-4 pt-2': idx > 0}">
-          <div v-for="item in group" :key="item.name"
-            class="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition">
-            <div class="bg-[#e4e6eb] p-2 rounded-full flex items-center justify-center">
-              <component :is="item.icon" :size="20" class="text-black" />
+          <div v-for="(group, idx) in createMenu" :key="idx" :class="{'border-t border-gray-200 dark:border-gray-700 mt-4 pt-2': idx > 0}">
+            <div v-for="item in group" :key="item.name"
+              class="flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg cursor-pointer transition">
+              <div class="bg-[#e4e6eb] dark:bg-gray-700 p-2 rounded-full flex items-center justify-center">
+                <component :is="item.icon" :size="20" class="text-black dark:text-white" />
+              </div>
+              <span class="font-medium text-[15px] text-theme-text">{{ item.name }}</span>
             </div>
-            <span class="font-medium text-[15px]">{{ item.name }}</span>
           </div>
         </div>
       </div>
-
-    </div>
+    </HoverScrollbar>
   </div>
 </template>
 

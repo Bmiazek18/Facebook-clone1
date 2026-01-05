@@ -79,16 +79,20 @@ onClickOutside(menuTarget, () => {
 
         <div class="flex relative w-full">
           <div
-            class="flex items-center justify-center p-1 rounded-full h-10 w-full transition-all bg-[#EFF2F5] dark:bg-gray-800"
+            class="flex items-center justify-center p-1 rounded-full h-10 transition-all"
+            :class="isSearchFocused ? 'w-full bg-[#EFF2F5] dark:bg-gray-800' : 'lg:w-full lg:bg-[#EFF2F5] lg:dark:bg-gray-800 w-10 border-2 border-gray-300 dark:border-gray-600'"
+            @click="!isSearchFocused && (isSearchFocused = true)"
           >
             <Magnify
-              class="p-1 ml-1"
+              class="p-1 cursor-pointer"
+              :class="isSearchFocused ? 'ml-1' : ''"
               :size="22"
               fillColor="#64676B"
               v-if="!isSearchFocused"
             />
             <input
-              class="lg:block hidden border-none p-0 bg-transparent text-theme-text placeholder-[#64676B] ring-0 focus:ring-0 w-full px-3"
+              :class="isSearchFocused ? 'block' : 'lg:block hidden'"
+              class="border-none p-0 bg-transparent text-theme-text placeholder-[#64676B] ring-0 focus:ring-0 w-full px-3"
               placeholder="Szukaj na Facebooku"
               type="text"
               @focus="isSearchFocused = true"
@@ -99,7 +103,7 @@ onClickOutside(menuTarget, () => {
       </div>
     </div>
 
-    <div id="NavCenter" class="hidden lg:flex items-center justify-center w-8/12 max-w-[700px]">
+    <div id="NavCenter" class="hidden md:flex items-center justify-center w-8/12 max-w-[700px]">
       <RouterLink to="/" class="flex items-center justify-center h-12 w-full mx-1" :class="route.path === '/' ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'">
         <Home :size="27" :fillColor="route.path === '/' ? '#1A73E3' : '#64676B'" />
       </RouterLink>

@@ -16,12 +16,12 @@ const props = defineProps<{
 </script>
 
 <template>
-    <div class="flex flex-col w-[700px] h-[90vh] bg-white dark:bg-[#242526] overflow-hidden">
+    <div class="flex flex-col w-full lg:w-[700px] h-[90vh] lg:h-[90vh] bg-white dark:bg-[#242526] overflow-hidden">
  <HoverScrollbar  class="flex-1 min-h-0 w-full">
 
 
 <PostItem :post="props.post" />
-                <div class="p-3 sm:p-4">
+                <div class="p-2 sm:p-3 md:p-4">
                   <CommentFilter />
                     <CommentItem
                         v-for="comment in props.post.comments"
@@ -36,7 +36,7 @@ const props = defineProps<{
 
         </HoverScrollbar>
 
-        <div class="p-3 sm:p-4 border-t border-theme-border shrink-0 bg-white dark:bg-[#242526] z-10">
+        <div class="p-2 sm:p-3 md:p-4 border-t border-theme-border shrink-0 bg-white dark:bg-[#242526] z-10">
            <CommentReplyInput
                 :post-avatar-src="props.post.authorAvatar"
                 placeholder="Napisz komentarz..."

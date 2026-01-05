@@ -1,5 +1,5 @@
 <template>
-  <div class="py-4 pl-4 bg-theme-bg-secondary rounded-lg shadow-md max-w-4xl mx-auto">
+  <div class="py-4 pl-4 bg-theme-bg-secondary rounded-none lg:rounded-lg shadow-md max-w-4xl mx-0 lg:mx-auto">
 
     <div class="flex justify-between items-center mb-4">
       <div class="flex items-center text-theme-text">

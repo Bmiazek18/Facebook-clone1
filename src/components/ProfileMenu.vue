@@ -1,6 +1,6 @@
 <template>
-  <div class="w-[360px] bg-theme-bg-secondary p-2 rounded-lg relative overflow-hidden">
-    <div class="profile-menu-wrapper" ref="wrapperRef">
+  <div class="w-full md:w-[360px] bg-theme-bg-secondary p-2 rounded-lg relative overflow-hidden max-h-[calc(100vh-4rem)] flex flex-col shadow-2xl">
+    <div class="profile-menu-wrapper overflow-y-auto flex-1 min-h-0" ref="wrapperRef">
       <Transition :name="transitionName" mode="out-in" @before-enter="updateHeight()">
         <component
           :is="currentViewComponent"
