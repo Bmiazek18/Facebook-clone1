@@ -4,7 +4,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 overflow-y-auto"
     >
         <div
-            class="bg-theme-bg-secondary shadow-2xl w-full relative flex h-full"
+            class="bg-theme-bg-secondary shadow-2xl w-full relative flex flex-col lg:flex-row h-full"
             :class="{
                 'rounded-lg': !isFullScreen,
                 'max-h-full': isFullScreen
@@ -30,13 +30,13 @@
 
             <div
                 v-if="!isFullScreen && (currentPost || currentComment)"
-                class="w-full max-w-[490px] flex flex-col min-w-[370px] bg-theme-bg-secondary border-l border-gray-200"
+                class="w-full lg:max-w-[490px] flex flex-col lg:min-w-[370px] bg-theme-bg-secondary border-t lg:border-t-0 lg:border-l border-gray-200"
             >
             <div class="w-full flex justify-end-safe py-2 px-5 border-b border-gray-200 ">
 <NavbarRight/>
             </div>
 <div class="flex-1 flex flex-row-reverse overflow-hidden ">
-  <div class="w-[90px] border-l border-gray-200"></div>
+  <div class="hidden md:block w-[90px] border-l border-gray-200"></div>
 <div class="w-full">
                 <HoverScrollbar class=" grow overflow-y-auto">
                     <div  class=" px-4 pt-4 pb-2">

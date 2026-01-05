@@ -198,20 +198,24 @@ const prevStory = () => {
     </aside>
 
     <main class="flex-1 relative flex flex-col bg-black">
-      <div class="absolute top-0 right-0 p-4 flex gap-3 z-30">
+      <RouterLink to="/" class="absolute top-4 left-4 z-30 w-10 h-10 bg-gray-700/50 hover:bg-gray-600 rounded-full flex items-center justify-center text-white transition md:hidden">
+        <Close :size="24" />
+      </RouterLink>
+
+      <div class="absolute top-0 right-0 p-4 gap-3 z-30 hidden md:flex">
           <div class="nav-icon-btn"><Apps :size="20" /></div>
           <div class="nav-icon-btn"><FacebookMessenger :size="20" /></div>
           <div class="nav-icon-btn"><Bell :size="20" /></div>
           <div class="nav-icon-btn"><AccountCircle :size="28" class="-m-1" /></div>
       </div>
 
-      <div class="flex-1 flex flex-col items-center justify-center w-full h-full relative p-4">
+      <div class="flex-1 flex flex-col items-center justify-center w-full h-full relative p-0 md:p-4">
 
         <button @click="prevStory" v-if="currentStoryIndex > 0" class="absolute left-4 lg:left-24 z-20 w-12 h-12 bg-gray-700/50 hover:bg-gray-600 rounded-full flex items-center justify-center text-white transition"><ChevronLeft :size="32" /></button>
 
-        <div class="flex flex-col h-[90vh] aspect-[9/16] max-h-[900px]">
+        <div class="flex flex-col h-[90vh] w-full md:aspect-9/16 md:w-auto max-h-[900px]">
 
-            <div class="relative flex-1 bg-gray-900 rounded-xl overflow-hidden shadow-2xl flex flex-col group border border-gray-800">
+            <div class="relative flex-1 bg-gray-900 rounded-none md:rounded-xl overflow-hidden shadow-2xl flex flex-col group border-0 md:border md:border-gray-800">
                 <video
                     ref="videoRef"
                     :src="currentItem.src"
@@ -269,7 +273,7 @@ const prevStory = () => {
 
 
         </div>
-<div class="shrink-0 w-[650px] flex items-end justify-between gap-3 pt-4 pb-2 z-30">
+<div class="shrink-0 w-full md:w-[650px] flex items-end justify-between gap-3 pt-4 pb-2 z-30">
                 <div class="relative flex-1 h-[44px]">
                    <input v-model="messageInput" type="text" :placeholder="t('story.sendMessage')" class="w-full h-full bg-black border-[2px] border-white rounded-full px-6 text-white placeholder-gray-300 focus:outline-none focus:border-gray-200 transition text-[16px] font-normal tracking-wide"/>
                 </div>

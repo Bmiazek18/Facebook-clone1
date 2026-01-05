@@ -2,18 +2,16 @@
   <MainNavLayout v-if="showMainLayout"/>
 
   <router-view :class="showMainLayout ? 'mt-[60px]' : ''"/>
-  <div class="fixed flex flex-row bottom-0 right-[60px]">
 
+  <div v-if="!isInChatView" class="fixed flex flex-row bottom-0 right-[60px]">
       <MessageBox
-
         v-for="boxId in chatStore.getBoxIds"
         :key="boxId"
         :boxId="boxId"
      />
   </div>
 
-<ProfileIcon/>
-
+  <ProfileIcon v-if="!isInChatView"/>
 
 </template>
 
@@ -38,6 +36,10 @@ const route = useRoute()
 const showMainLayout = computed(() => {
    const metaVal = (route && route.meta && (route.meta as Record<string, unknown>).showMainLayout);
    return metaVal === false ? false : true;
+})
+
+const isInChatView = computed(() => {
+   return route.path.startsWith('/chat');
 })
 
 </script>

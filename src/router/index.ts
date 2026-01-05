@@ -69,7 +69,7 @@ const router = createRouter({
       name: 'chatMessages',
       component: () => import('@/views/ChatView.vue'),
       props: true,
-
+      meta: { hideMessageIcon: true },
     },
      {
       path: '/stories/create',

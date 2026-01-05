@@ -1,7 +1,15 @@
 <template>
-    <div v-if="showInfoPanel" class="w-80 min-w-[450px] overflow-auto flex flex-col bg-white h-full rounded-xl shadow-sm ">
+    <div v-if="showInfoPanel" class="w-full md:w-80 min-w-[450px] overflow-auto flex flex-col bg-white h-full rounded-xl shadow-sm ">
 
-        <div ref="wrapperRef" class="transition-wrapper bg-white h-full">
+        <!-- Header z przyciskiem wstecz na mobile -->
+        <div class="lg:hidden flex items-center p-3 border-b border-gray-200 bg-white">
+            <button @click="emit('back')" class="hover:bg-gray-100 rounded-full p-2 mr-2">
+                <ArrowLeftIcon :size="24" class="text-gray-600" />
+            </button>
+            <h1 class="text-lg font-semibold text-gray-900">Informacje o czacie</h1>
+        </div>
+
+        <div ref="wrapperRef" class="transition-wrapper bg-white h-full overflow-auto" style="overflow: auto;">
         <transition :name="transitionName" mode="out-in" @after-enter="updateHeight">
             <div :key="panelView">
             <div v-if="panelView === 'home'" data-view class="h-full flex flex-col overflow-y-auto custom-scrollbar">
@@ -219,6 +227,7 @@ import { useSlideTransition } from '@/composables/useSlideTransition';
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
 import BellIcon from 'vue-material-design-icons/Bell.vue';
 import ChevronUpIcon from 'vue-material-design-icons/ChevronUp.vue';
+import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue';
 import PinIcon from 'vue-material-design-icons/Pin.vue';
 import PencilIcon from 'vue-material-design-icons/Pencil.vue';
 import PawIcon from 'vue-material-design-icons/Paw.vue';
@@ -241,7 +250,10 @@ import EditNicknamesModal from '@/components/EditNicknamesModal.vue'; // Import 
 import { getUserById } from '@/data/users'; // Import getUserById
 
 const props = defineProps<{ chatId: string | number }>();
-const emit = defineEmits<{ (e: 'goToMessage', payload: { id: number; chatId?: string | number }): void }>();
+const emit = defineEmits<{
+  (e: 'goToMessage', payload: { id: number; chatId?: string | number }): void
+  (e: 'back'): void
+}>();
 
 const convStore = useConversationsStore();
 

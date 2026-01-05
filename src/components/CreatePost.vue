@@ -176,7 +176,7 @@ const handleInternalPublish = (content: string) => {
 </script>
 
 <template>
-  <div :class="{'w-[1200px]': currentView === 'imageEditor' || currentView === 'videoEditor',}"  class='p-4 w-[500px] mx-auto rounded-xl relative overflow-hidden' >
+  <div :class="{'w-full lg:w-[1200px]': currentView === 'imageEditor' || currentView === 'videoEditor',}"  class='p-2 sm:p-4 w-full sm:w-[500px] mx-auto rounded-xl relative overflow-hidden' >
     <div class="transition-wrapper" ref="wrapperRef">
       <Transition :name="transitionName" mode="out-in" @before-enter="updateHeight()">
         <PostCreator

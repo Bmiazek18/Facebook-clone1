@@ -247,7 +247,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109];
             </div>
         </div>
     </div>
-    <BaseModal v-if="true" @close="()=>!isPickerOpen" :title="'Wybierz zdjecie profileowe'"> <EditProfileImgModal /></BaseModal>
+    <BaseModal v-if="isPickerOpen" @close="()=>!isPickerOpen" :title="'Wybierz zdjecie profileowe'"> <EditProfileImgModal /></BaseModal>
 </template>
 
 <style scoped>

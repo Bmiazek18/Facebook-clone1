@@ -16,7 +16,7 @@ import { useFlipAnimation } from '@/composables/useFlipAnimation';
 import type { Theme } from '@/stores/messengerTheme';
 import type { Message, ImageMessage, VideoMessage } from '@/types/Message';
 
-const emit = defineEmits(['open-modal']);
+const emit = defineEmits(['open-modal', 'back-to-list', 'show-info']);
 const props = withDefaults(defineProps<{
   boxId?: string | number;
   mode?: 'card' | 'full';
@@ -276,6 +276,8 @@ defineExpose({ scrollToMessage });
         :title="headerTitle"
         :users="[headerTitle]"
         :boxId="props.boxId ?? 1"
+        @back="emit('back-to-list')"
+        @show-info="emit('show-info')"
       />
 
       <div v-if="isDragging" class="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-none">

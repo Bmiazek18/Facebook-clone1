@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { onClickOutside } from '@vueuse/core'
+import { useRoute } from 'vue-router'
 
 // Ikony
 import DotsGrid from 'vue-material-design-icons/DotsGrid.vue'
@@ -18,6 +19,10 @@ import MainMenu from './MainMenu.vue'
 type ActiveMenuType = 'profile' | 'notifications' | 'message' | 'main' | null;
 
 const { isDark } = useTheme()
+const route = useRoute()
+
+// Sprawdź czy ukryć ikonę wiadomości
+const hideMessageIcon = computed(() => route.meta?.hideMessageIcon === true)
 
 // Referencje
 const activeMenu = ref<ActiveMenuType>(null)
@@ -45,6 +50,7 @@ onClickOutside(menuTarget, () => {
       </button>
 
       <button
+        v-if="!hideMessageIcon"
         @click="toggleMenu('message')"
         v-tooltip.bottom.no-arrow="'Wiadomości'"
         :class="activeMenu === 'message' ? 'bg-blue-100 dark:bg-blue-900' : 'bg-[#E3E6EA] dark:bg-[#3b3d3f]'"

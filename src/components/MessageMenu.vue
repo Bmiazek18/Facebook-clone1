@@ -120,16 +120,18 @@ import ArrowExpandIcon from 'vue-material-design-icons/ArrowExpand.vue';
 import PencilOutlineIcon from 'vue-material-design-icons/PencilOutline.vue';
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
 import ContexMenu from './contexMenu.vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 
 import { useConversationsStore } from '@/stores/conversations';
+import { useChatStore } from '@/stores/chat';
 import type { Chat } from '@/data/rawChats';
 
 // 3. ZARZĄDZANIE STANEM
 const activeTab: Ref<'all' | 'unread'> = ref('all');
 
 const convStore = useConversationsStore();
+const chatStore = useChatStore();
 const chats = computed(() => convStore.chats as Chat[]);
 
 // track which dropdown is open per chat id so the trigger stays visible when popper is active
@@ -149,8 +151,19 @@ const filteredChats = computed(() => {
 
 // 5. OBSŁUGA KLIKNIĘĆ
 const router = useRouter();
+const route = useRoute();
+
+// Sprawdź czy jesteśmy w ChatView (duża wersja) czy w dropdown
+const isInChatView = computed(() => route.path.startsWith('/chat'));
+
 const handleClick = (chatId: number): void => {
-  router.push({ name: 'chatMessages', params: { chatId } }).catch(() => {});
+  if (isInChatView.value) {
+    // W ChatView - użyj routera
+    router.push({ name: 'chatMessages', params: { chatId } }).catch(() => {});
+  } else {
+    // W dropdown - otwórz floating MessageBox
+    chatStore.addMessageBox(chatId);
+  }
 };
 
 </script>

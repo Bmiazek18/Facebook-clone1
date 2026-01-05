@@ -1,15 +1,43 @@
 <template>
   <div class="flex h-[calc(100vh-64px)] w-full bg-white overflow-hidden font-sans text-gray-900">
 
-    <MessageMenu />
+    <!-- MessageMenu - na mobile widoczne tylko gdy showMobileChat = false -->
+    <div :class="chatId && showMobileChat ? 'hidden md:block' : 'block'" class="w-full md:w-auto">
+      <MessageMenu />
+    </div>
 
-    <div class="flex-1 flex overflow-hidden bg-gray-200 relative p-3 gap-3">
+    <!-- MessageBox i ChatInfoPanel - na mobile widoczne tylko gdy showMobileChat = true -->
+    <div
+      v-if="chatId"
+      :class="showMobileChat ? 'flex' : 'hidden md:flex'"
+      class="flex-1 overflow-hidden bg-gray-200 relative p-3 gap-3"
+    >
 
-      <div class="flex-1 flex flex-col min-w-0 relative bg-white rounded-xl shadow-sm ">
-        <MessageBox ref="messageBoxRef" :boxId="chatId" mode="full" @open-modal="openModal" />
+      <!-- MessageBox - ukryty na mobile gdy showMobileInfo = true -->
+      <div
+        v-if="!showMobileInfo"
+        class="flex-1 flex flex-col min-w-0 relative bg-white rounded-xl shadow-sm"
+      >
+        <MessageBox
+          ref="messageBoxRef"
+          :boxId="chatId"
+          mode="full"
+          @open-modal="openModal"
+          @back-to-list="showMobileChat = false"
+          @show-info="showMobileInfo = true"
+        />
       </div>
 
-      <ChatInfoPanel ref="chatInfoPanelRef" :chat-id="chatId" @go-to-message="onSearchGoTo" />
+      <!-- ChatInfoPanel - zawsze na desktop, na mobile tylko gdy showMobileInfo = true -->
+      <ChatInfoPanel
+        v-if="showMobileInfo"
+        ref="chatInfoPanelRef"
+        :chat-id="chatId"
+        @go-to-message="onSearchGoTo"
+        @back="showMobileInfo = false"
+      />
+
+
 
     </div>
   </div>
@@ -33,10 +61,18 @@ const route = useRoute();
 const chatId = computed(() => Number(route.params.chatId ?? routeProps.chatId ?? ''));
 const convStore = useConversationsStore();
 
+// Stan dla mobile - pokazuj MessageBox gdy użytkownik kliknie w czat
+const showMobileChat = ref(false);
+// Stan dla mobile - pokazuj ChatInfoPanel na pełnym ekranie
+const showMobileInfo = ref(false);
 
-
-// apply chat-specific theme and emoji when chat changes
+// Gdy chatId się zmieni na mobile, pokazuj MessageBox
 watch(chatId, (newId) => {
+  if (newId) {
+    showMobileChat.value = true;
+    showMobileInfo.value = false; // Reset info panel przy zmianie czatu
+  }
+
   const s = convStore.settings.find(x => x.chatId === Number(newId));
   if (s?.themeId !== undefined) {
     // chatSettings.themeId stores a numeric index; map it to the real theme id string

@@ -67,6 +67,6 @@ const router = useRouter();
 
 // Funkcja, która zostanie wywołana po kliknięciu przycisku
 const createStory = () => {
-  router.push('/createReel');
+  router.push('/stories/create');
 };
 </script>

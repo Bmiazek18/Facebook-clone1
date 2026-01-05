@@ -33,7 +33,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <aside class="w-[360px] bg-white h-full flex flex-col relative z-20 shadow-xl shrink-0">
+  <aside class="w-full lg:w-[360px] bg-white h-full flex flex-col relative z-20 shadow-xl shrink-0">
     <div class="flex-1 flex flex-col gap-1 p-2 pt-4 overflow-y-auto">
       <template v-for="tool in tools" :key="tool.id">
         <button
@@ -57,7 +57,7 @@ const emit = defineEmits<{
                                             @update:altText="(value) => emit('update:altText', value)"
                                             @close="emit('tool-action', 'toggleAltText')"
                                           />                        </template>
-                      </div>        
+                      </div>
               <div class="p-4 flex items-center gap-3 border-t border-gray-200 bg-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]">      <template v-if="!isCroppingMode">
         <button @click="emit('done')" class="flex-1 py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md text-[15px] transition-colors">
           Gotowe

@@ -69,6 +69,8 @@ const newTag = ref<{ x: number, y: number, name: string, isCreating: boolean, us
 const newTagInputRef = ref<HTMLInputElement | null>(null);
 const searchQuery = ref('');
 
+const showMobileTools = ref(false);
+
 const cropperRef = ref<InstanceType<typeof VueCropper> | null>(null);
 const isCroppingMode = ref(false);
 
@@ -440,9 +442,11 @@ const updateElementContent = (id: string, value: string) => {
 </script>
 
 <template>
-  <div class="fixed inset-0 flex z-50 h-full w-screen bg-black overflow-hidden font-sans">
+  <div class="fixed inset-0 flex flex-col lg:flex-row z-50 h-full w-screen bg-black overflow-hidden font-sans">
 
+    <!-- Sidebar - ukryty na mobile, po lewej na desktop -->
     <EditorSidebar
+      class="hidden lg:flex"
       :tools="tools"
       :tags="tags"
       :is-cropping-mode="isCroppingMode"
@@ -463,7 +467,7 @@ const updateElementContent = (id: string, value: string) => {
            :style="{ backgroundImage: imageUrl ? `url(${imageUrl})` : 'none' }">
       </div>
 
-      <div class="flex-1 flex items-center justify-center overflow-hidden relative z-10" @mousedown.self="onBackgroundClick">
+      <div class="flex-1 flex items-center justify-center overflow-hidden relative z-10 p-2 lg:p-4 pb-[200px] lg:pb-4" @mousedown.self="onBackgroundClick">
 
         <VueCropper
           v-if="isCroppingMode"
@@ -486,7 +490,7 @@ const updateElementContent = (id: string, value: string) => {
               :src="imageUrl"
               ref="imageWrapperRef"
               alt="Edytowane zdjęcie"
-              class="max-h-full object-contain h-[500px] shadow-2xl rounded-sm transition-transform duration-300 ease-out"
+              class="max-h-[50vh] lg:max-h-[70vh] max-w-[85vw] lg:max-w-[800px] object-contain w-auto h-auto shadow-2xl rounded-sm transition-transform duration-300 ease-out"
               :style="{ transform: `rotate(${imageRotation}deg)` }"
               @load="updateImageDimensions"
             />
@@ -582,6 +586,61 @@ const updateElementContent = (id: string, value: string) => {
             @update-content="updateElementContent"
           />
         </template>
+      </div>
+
+      <!-- Mobile Toolbar - widoczny tylko na mobile -->
+      <div class="lg:hidden absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 z-20">
+        <!-- Przyciski akcji w trybie crop -->
+        <div v-if="isCroppingMode" class="flex gap-2 p-3">
+          <button
+            @click="handleCropConfirm"
+            class="flex-1 py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg text-sm transition-colors"
+          >
+            Przytnij
+          </button>
+          <button
+            @click="handleCropCancel"
+            class="flex-1 py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold rounded-lg text-sm transition-colors"
+          >
+            Anuluj
+          </button>
+        </div>
+
+        <!-- Narzędzia i akcje w normalnym trybie -->
+        <div v-else>
+          <!-- Narzędzia -->
+          <div class="flex items-center justify-around p-2 border-b border-gray-200">
+            <button
+              v-for="tool in tools.slice(0, 5)"
+              :key="tool.id"
+              @click="handleToolAction(tool.action)"
+              class="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 active:scale-95 transition-all"
+            >
+              <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                <component :is="tool.icon" :size="20" />
+              </div>
+              <span class="text-xs text-gray-700 text-center leading-tight max-w-[60px]">
+                {{ tool.label }}
+              </span>
+            </button>
+          </div>
+
+          <!-- Przyciski akcji -->
+          <div class="flex gap-2 p-3">
+            <button
+              @click="handleDone"
+              class="flex-1 py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg text-sm transition-colors"
+            >
+              Gotowe
+            </button>
+            <button
+              @click="handleCancel"
+              class="flex-1 py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold rounded-lg text-sm transition-colors"
+            >
+              Anuluj
+            </button>
+          </div>
+        </div>
       </div>
     </main>
   </div>
