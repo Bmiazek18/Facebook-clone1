@@ -66,6 +66,7 @@ export interface Post {
     }
   } | null;
   sharedFromId?: string;
+  sharedReelId?: string;
   sharedEventId?: string;
   createdEvent?: boolean;
   detectedLanguage?: string;

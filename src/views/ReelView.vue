@@ -1,5 +1,14 @@
 <template>
-  <div class="flex h-[calc(100vh-50px)] bg-black overflow-hidden font-sans mt-[50px]">
+
+  <div class="flex h-[calc(100vh)] bg-black overflow-hidden font-sans">
+
+    <!-- Header with Close button and NavbarRight -->
+    <div class="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3">
+      <button @click="goBack" class="p-2 hover:bg-white/10 rounded-full transition-colors">
+        <CloseIcon :size="28" fillColor="#FFFFFF" />
+      </button>
+      <NavbarRight />
+    </div>
 
     <div class="flex-1 flex justify-center relative transition-all duration-300">
 
@@ -14,9 +23,13 @@
           :ref="el => setReelRef(el, index)"
           class="h-full w-full flex items-center justify-center snap-start snap-always py-4"
         >
-          <div class="flex items-end gap-2 md:gap-4 h-full max-h-[90vh] lg:max-h-[850px]">
+          <div class="flex items-end gap-2 md:gap-4 h-full md:max-h-[90vh] max-h-[850px]">
 
-            <div class="relative h-full aspect-[9/16] bg-[#222] rounded-lg shadow-2xl overflow-hidden flex-shrink">
+            <div
+              class="relative h-full aspect-9/16 bg-[#222] rounded-lg shadow-2xl overflow-hidden shrink"
+              @mouseenter="isVideoHovered = true"
+              @mouseleave="isVideoHovered = false"
+            >
 
               <video
                 :ref="el => setVideoRef(el, index)"
@@ -28,15 +41,71 @@
                 autoplay
                 playsinline
                 @click="togglePlay(index)"
+                @timeupdate="() => updateProgress(index)"
               >
                 <source :src="reel.videoSrc" type="video/mp4" />
               </video>
 
-              <div class="absolute inset-0 pointer-events-none bg-linear-to-b from-transparent via-transparent to-black/60"></div>
+              <!-- Play/Pause and Volume controls -->
+              <Transition name="fade">
+                <div v-if="currentIndex === index && isVideoHovered" class="absolute top-4 left-4 flex gap-2 z-20">
+                <button
+                  @click.stop="togglePlay(index)"
+                  class="p-2 bg-black/50 hover:bg-black/70 rounded-full transition-colors backdrop-blur-sm"
+                >
+                  <PlayIcon v-if="!isPlaying" :size="24" fillColor="#FFFFFF" />
+                  <PauseIcon v-else :size="24" fillColor="#FFFFFF" />
+                </button>
 
-              <div v-if="currentIndex !== index || !isPlaying" class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <PlayIcon :size="48" class="text-white/50" />
-              </div>
+                <!-- Volume control with slider -->
+                <div
+                  class="relative flex items-center gap-2"
+                  @mouseenter="showVolumeSlider = true"
+                  @mouseleave="showVolumeSlider = false"
+                >
+                  <button
+                    @click.stop="toggleMute"
+                    class="p-2 bg-black/50 hover:bg-black/70 rounded-full transition-colors backdrop-blur-sm shrink-0"
+                  >
+                    <VolumeHighIcon v-if="!isMuted" :size="24" fillColor="#FFFFFF" />
+                    <VolumeMuteIcon v-else :size="24" fillColor="#FFFFFF" />
+                  </button>
+
+                  <!-- Volume slider -->
+                  <Transition name="fade-slide">
+                    <div
+                      v-if="showVolumeSlider"
+                      class="flex items-center gap-2 bg-black/70 backdrop-blur-sm rounded-full px-3 py-2"
+                      @click.stop
+                    >
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        :value="volume"
+                        @input="changeVolume"
+                        @click.stop
+                        class="w-20 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer volume-slider"
+                      />
+                      <span class="text-white text-xs font-medium min-w-8">{{ Math.round(volume * 100) }}%</span>
+                    </div>
+                  </Transition>
+                </div>
+                </div>
+              </Transition>
+
+              <!-- Progress bar -->
+              <Transition name="fade">
+                <div v-if="currentIndex === index && isVideoHovered" class="absolute bottom-0 left-0 right-0 h-1 bg-white/30 z-20">
+                  <div
+                    class="h-full bg-white transition-all duration-100"
+                    :style="{ width: `${videoProgress[index] || 0}%` }"
+                  ></div>
+                </div>
+              </Transition>
+
+              <div class="absolute inset-0 pointer-events-none bg-linear-to-b from-transparent via-transparent to-black/60"></div>
 
               <div class="absolute bottom-4 left-4 right-4 text-white z-10">
                 <div class="flex items-center gap-2 mb-2">
@@ -94,7 +163,10 @@
 
     <div
       class="fixed top-1/2 -translate-y-1/2 hidden sm:flex flex-col gap-4 z-30 transition-all duration-300"
-      :class="isCommentsOpen ? 'right-[416px]' : 'right-4'"
+      :class="{
+        'right-[366px] sm:right-[366px] md:right-[416px] lg:right-[506px]': isCommentsOpen,
+        'right-4': !isCommentsOpen
+      }"
     >
       <button
         @click="goToReel('up')"
@@ -112,19 +184,28 @@
       </button>
     </div>
 
-    <div
+    <!-- Right info panel -->
+    <ReelInfoPanel
       v-if="isCommentsOpen && currentReel"
-      class="fixed right-0 top-[50px] bottom-0 w-full sm:w-[350px] md:w-[400px] bg-white border-l border-[#dadde1] flex flex-col transition-all duration-300 animate-slide-in z-40"
-    >
-      </div>
+      :reel="currentReel"
+      class="fixed right-0 top-0 bottom-0 w-full sm:w-[350px] md:w-[400px] lg:w-[490px] transition-all duration-300 animate-slide-in z-40"
+    />
+
+    <!-- Share Modal -->
+    <BaseModal v-if="showShareModal" @close="closeShareModal" title="Udostępnij">
+      <StoryShareModal
+        :reel="selectedReelToShare"
+        @close="closeShareModal"
+      />
+    </BaseModal>
 
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, type ComponentPublicInstance } from 'vue';
-import { useRouter } from 'vue-router';
-import { useStoryShareStore } from '@/stores/storyShare';
+import { ref, computed, onMounted, onUnmounted, type ComponentPublicInstance, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { useReelsStore } from '@/stores/reels';
 
 // --- Imports ---
 import ChevronUpIcon from 'vue-material-design-icons/ChevronUp.vue';
@@ -135,16 +216,77 @@ import ShareIcon from 'vue-material-design-icons/Share.vue';
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
 import MusicNoteIcon from 'vue-material-design-icons/MusicNote.vue';
 import PlayIcon from 'vue-material-design-icons/Play.vue';
+import PauseIcon from 'vue-material-design-icons/Pause.vue';
+import VolumeHighIcon from 'vue-material-design-icons/VolumeHigh.vue';
+import VolumeMuteIcon from 'vue-material-design-icons/VolumeMute.vue';
+import CloseIcon from 'vue-material-design-icons/Close.vue';
+import NavbarRight from '@/components/NavbarRight.vue';
+import BaseModal from '@/components/BaseModal.vue';
+import StoryShareModal from '@/components/StoryShareModal.vue';
+import ReelInfoPanel from '@/components/reel/ReelInfoPanel.vue';
 
 const router = useRouter();
-const storyShareStore = useStoryShareStore();
+const route = useRoute();
+const reelsStore = useReelsStore();
+
+const props = defineProps<{
+  id?: string;
+}>();
 
 const isCommentsOpen = ref(false);
 const isPlaying = ref(true);
+const isMuted = ref(true);
+const volume = ref(1);
+const showVolumeSlider = ref(false);
+const isVideoHovered = ref(false);
+const showShareModal = ref(false);
+const selectedReelToShare = ref<typeof reels.value[0] | null>(null);
+const videoProgress = ref<number[]>([]);
 const scrollContainerRef = ref<HTMLDivElement | null>(null);
 const currentIndex = ref(0);
 const videoRefs = ref<(HTMLVideoElement | null)[]>([]);
 const reelRefs = ref<(HTMLElement | null)[]>([]);
+
+// Pobierz wszystkie reels ze store
+const reels = computed(() => reelsStore.reels);
+
+// Ustaw początkowy index na podstawie ID z route
+onMounted(() => {
+  if (props.id) {
+    const index = reelsStore.getReelIndex(props.id);
+    if (index !== -1) {
+      currentIndex.value = index;
+      // Poczekaj na następny tick aby DOM się wyrenderował
+      setTimeout(() => {
+        scrollToReel(index);
+      }, 100);
+    }
+  }
+
+  // Preload następnego video dla płynnej animacji
+  preloadNextVideo();
+});
+
+// Preload następnego video
+const preloadNextVideo = () => {
+  if (currentIndex.value < reels.value.length - 1) {
+    const nextReel = reels.value[currentIndex.value + 1];
+    if (nextReel) {
+      const video = document.createElement('video');
+      video.src = nextReel.videoSrc;
+      video.preload = 'auto';
+    }
+  }
+};
+
+// Watch zmiany currentIndex i aktualizuj URL + preload
+watch(currentIndex, (newIndex) => {
+  const newReel = reels.value[newIndex];
+  if (newReel && route.params.id !== newReel.id) {
+    router.replace({ name: 'reel', params: { id: newReel.id } });
+  }
+  preloadNextVideo();
+});
 
 const setVideoRef = (el: Element | ComponentPublicInstance | null, index: number) => {
   videoRefs.value[index] = el as HTMLVideoElement | null;
@@ -153,81 +295,6 @@ const setVideoRef = (el: Element | ComponentPublicInstance | null, index: number
 const setReelRef = (el: Element | ComponentPublicInstance | null, index: number) => {
   reelRefs.value[index] = el as HTMLElement | null;
 };
-
-const reels = ref([
-  {
-    id: 'reel-1',
-    videoSrc: 'https://www.w3schools.com/html/mov_bbb.mp4',
-    poster: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    likes: '224',
-    comments: '1',
-    shares: '0',
-    caption: 'Cieszę się, że jestem jedną z nich',
-    hashtags: '#dc #siłownia #treningnasiłowni #trenerpersonalny #fyp #ćwiczenia',
-    music: 'RAYE - WHERE IS MY HUSBAND!',
-    user: {
-      id: 'user-2',
-      name: 'Paulina Banaszek',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
-      isFollowing: false
-    },
-    isLiked: false
-  },
-  {
-    id: 'reel-2',
-    videoSrc: 'https://www.w3schools.com/html/movie.mp4',
-    poster: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    likes: '1.2k',
-    comments: '45',
-    shares: '12',
-    caption: 'Nowy trening na dziś! 💪',
-    hashtags: '#fitness #workout #gym #motivation',
-    music: 'Eye of the Tiger - Survivor',
-    user: {
-      id: 'user-3',
-      name: 'Fitness Master',
-      avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
-      isFollowing: true
-    },
-    isLiked: true
-  },
-  {
-    id: 'reel-3',
-    videoSrc: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4',
-    poster: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    likes: '856',
-    comments: '23',
-    shares: '8',
-    caption: 'Wieczorny spacer z widokiem 🌅',
-    hashtags: '#nature #sunset #relax #weekend',
-    music: 'Sunset Lover - Petit Biscuit',
-    user: {
-      id: 'user-4',
-      name: 'Travel Diary',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
-      isFollowing: false
-    },
-    isLiked: false
-  },
-  {
-    id: 'reel-4',
-    videoSrc: 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4',
-    poster: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    likes: '3.4k',
-    comments: '128',
-    shares: '67',
-    caption: 'Przepis na idealne śniadanie 🍳',
-    hashtags: '#food #cooking #breakfast #recipe',
-    music: 'Good Morning - Kanye West',
-    user: {
-      id: 'user-5',
-      name: 'Chef Anna',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
-      isFollowing: true
-    },
-    isLiked: false
-  }
-]);
 
 const currentReel = computed(() => reels.value[currentIndex.value]!);
 
@@ -252,16 +319,51 @@ const togglePlay = (index?: number) => {
   }
 };
 
+const toggleMute = () => {
+  const video = videoRefs.value[currentIndex.value];
+  if (video) {
+    video.muted = !video.muted;
+    isMuted.value = video.muted;
+    if (!video.muted && volume.value === 0) {
+      volume.value = 0.5;
+      video.volume = 0.5;
+    }
+  }
+};
+
+const changeVolume = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const newVolume = parseFloat(target.value);
+  volume.value = newVolume;
+
+  const video = videoRefs.value[currentIndex.value];
+  if (video) {
+    video.volume = newVolume;
+    video.muted = newVolume === 0;
+    isMuted.value = newVolume === 0;
+  }
+};
+
+const updateProgress = (index: number) => {
+  const video = videoRefs.value[index];
+  if (video) {
+    const progress = (video.currentTime / video.duration) * 100;
+    videoProgress.value[index] = progress;
+  }
+};
+
+const goBack = () => {
+  router.back();
+};
+
 const shareToStory = (reel: typeof reels.value[0]) => {
-  storyShareStore.setReelToShare({
-    id: reel.id,
-    authorName: reel.user.name,
-    authorAvatar: reel.user.avatar,
-    videoSrc: reel.videoSrc,
-    poster: reel.poster,
-    caption: reel.caption,
-  });
-  router.push('createReel');
+  selectedReelToShare.value = reel;
+  showShareModal.value = true;
+};
+
+const closeShareModal = () => {
+  showShareModal.value = false;
+  selectedReelToShare.value = null;
 };
 
 const scrollToReel = (index: number) => {
@@ -319,10 +421,14 @@ const handleKeydown = (event: KeyboardEvent) => {
 };
 
 onMounted(() => {
-  // Play first video
+  // Initialize progress array
+  videoProgress.value = new Array(reels.value.length).fill(0);
+
+  // Play first video and set initial volume
   setTimeout(() => {
     const firstVideo = videoRefs.value[0];
     if (firstVideo) {
+      firstVideo.volume = volume.value;
       firstVideo.play().catch(() => isPlaying.value = false);
     }
   }, 100);
@@ -359,5 +465,59 @@ video::-webkit-media-controls {
 
 .text-shadow-sm {
   text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Volume slider styling */
+.volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  box-shadow: 0 0 2px rgba(0,0,0,0.5);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 2px rgba(0,0,0,0.5);
+}
+
+.volume-slider::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, white 0%, white var(--value), rgba(255,255,255,0.3) var(--value), rgba(255,255,255,0.3) 100%);
+  height: 4px;
+  border-radius: 2px;
+}
+
+/* Fade slide animation */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.2s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+/* Fade animation for controls */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

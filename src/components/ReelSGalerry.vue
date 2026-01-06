@@ -20,7 +20,7 @@
       <button
         v-if="!isStart"
         @click="scrollLeft"
-        class="absolute top-1/2 left-4 transform -translate-y-1/2 p-3 bg-white rounded-full shadow-lg border hover:bg-gray-50 transition duration-150 z-20 hidden md:flex"
+        class="absolute top-1/2 left-4 transform -translate-y-1/2 p-3 bg-white rounded-full shadow-lg border hover:bg-gray-50 transition duration-150 z-20 flex"
       >
         <ChevronLeftIcon :size="24" fillColor="#4B5563" />
       </button>
@@ -33,11 +33,12 @@
         <div
           v-for="reel in reels"
           :key="reel.id"
-          class="shrink-0 mr-3 relative w-40 md:w-[200px] aspect-9/16 rounded-xl overflow-hidden cursor-pointer group snap-start shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] bg-black"
+          class="shrink-0 mr-3 relative w-[180px] aspect-9/16 rounded-xl overflow-hidden cursor-pointer group snap-start shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] bg-black"
+          @click="openReel(reel.id)"
         >
           <video
             class="w-full h-full object-cover"
-            :src="reel.videoUrl"
+            :src="reel.videoSrc"
             muted
             loop
             playsinline
@@ -48,7 +49,9 @@
         </div>
 
         <div
-          class="flex flex-col items-center justify-center cursor-pointer w-40 md:w-[200px] aspect-[9/16] border border-gray-200 rounded-xl shadow-sm hover:bg-gray-100 transition duration-200 bg-gray-50 shrink-0 snap-start"
+          v-if="reels.length > 0"
+          class="flex flex-col items-center justify-center cursor-pointer w-[180px] aspect-9/16 border border-gray-200 rounded-xl shadow-sm hover:bg-gray-100 transition duration-200 bg-gray-50 shrink-0 snap-start"
+          @click="openReel(reels[0]!.id)"
         >
           <div class="bg-white p-3 rounded-full shadow-sm mb-3">
              <ArrowRightIcon :size="24" fillColor="#4B5563" />
@@ -62,7 +65,7 @@
       <button
         v-if="!isEnd"
         @click="scrollRight"
-        class="absolute top-1/2 right-4 transform -translate-y-1/2 p-3 bg-white rounded-full shadow-lg border hover:bg-gray-50 transition duration-150 z-20 hidden md:flex"
+        class="absolute top-1/2 right-4 transform -translate-y-1/2 p-3 bg-white rounded-full shadow-lg border hover:bg-gray-50 transition duration-150 z-20 flex"
       >
         <ChevronRightIcon :size="24" fillColor="#4B5563" />
       </button>
@@ -72,8 +75,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useCarousel } from '../composables/useCarousel';
+import { useRouter } from 'vue-router';
+import { useReelsStore } from '@/stores/reels';
 
 // --- IMPORT IKON ---
 import DotsVerticalIcon from 'vue-material-design-icons/DotsVertical.vue';
@@ -81,10 +85,8 @@ import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
 import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue';
 import ArrowRightIcon from 'vue-material-design-icons/ArrowRight.vue';
 
-interface Reel {
-  id: number;
-  videoUrl: string;
-}
+const router = useRouter();
+const reelsStore = useReelsStore();
 
 const {
   carouselRef,
@@ -94,16 +96,8 @@ const {
   scrollRight,
 } = useCarousel(3);
 
-// --- NOWE LINKI (Google Storage - bardzo stabilne) ---
-const reels = ref<Reel[]>([
-  { id: 1, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4' },
-  { id: 2, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4' },
-  { id: 3, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4' },
-  { id: 4, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4' },
-  { id: 5, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4' },
-  { id: 6, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4' },
-]);
-
+// Pobierz reels ze store
+const reels = reelsStore.reels;
 
 const handleMouseEnter = async (event: Event) => {
   const videoElement = event.target as HTMLVideoElement;
@@ -122,6 +116,10 @@ const handleMouseLeave = (event: Event) => {
   const videoElement = event.target as HTMLVideoElement;
   videoElement.pause();
   videoElement.currentTime = 0;
+};
+
+const openReel = (reelId: string) => {
+  router.push({ name: 'reel', params: { id: reelId } });
 };
 </script>
 

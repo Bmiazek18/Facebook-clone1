@@ -84,14 +84,19 @@ export const useSlideTransition = () => {
 
   // Calculate transition name based on view change direction
   const transitionName = computed(() => {
-    const isGoingForward = currentView.value === 'privacy' && previousView.value === 'creator'
-    const isGoingBackward = currentView.value === 'creator' && previousView.value === 'privacy'
+    // Going to privacy view from any view (forward)
+    const isGoingForward = currentView.value === 'privacy' &&
+                          (previousView.value === 'creator' || previousView.value === 'main')
+
+    // Going back to creator/main from privacy (backward)
+    const isGoingBackward = (currentView.value === 'creator' || currentView.value === 'main') &&
+                           previousView.value === 'privacy'
 
     if (isGoingForward) {
-      return 'slide-left' // creator -> privacy
+      return 'slide-left' // main/creator -> privacy
     }
     if (isGoingBackward) {
-      return 'slide-right' // privacy -> creator
+      return 'slide-right' // privacy -> main/creator
     }
     return 'slide-left' // Default
   })

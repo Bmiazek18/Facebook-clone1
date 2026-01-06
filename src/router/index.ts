@@ -54,9 +54,11 @@ const router = createRouter({
       component: () => import('@/views/FriendsView.vue'),
     },
     {
-      path: '/reel',
+      path: '/reel/:id',
       name: 'reel',
+      meta: { showMainLayout: false },
       component: () => import('@/views/ReelView.vue'),
+      props: true
     },
      {
       path: '/chat',

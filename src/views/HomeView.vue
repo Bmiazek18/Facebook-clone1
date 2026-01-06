@@ -116,11 +116,11 @@ const handleCancelLeave = () => {
             </template>
 
             <template v-else>
-              <template v-for="post in virtualPosts" :key="post.data.id" >
+              <template v-for="(post, i) in virtualPosts" :key="post.data.id" >
                 <PostItem :post="post.data" />
 
-                <PeopleYouMayKnow v-if="post.data.id + 1 === peopleYouMayKnowIndex" />
-                 <ReelSGalerry v-if="post.data.id + 2 === peopleYouMayKnowIndex" />
+                <PeopleYouMayKnow v-if="i + 1 === peopleYouMayKnowIndex" />
+                 <ReelSGalerry v-if="i + 2 === peopleYouMayKnowIndex" />
               </template>
             </template>
           </div>

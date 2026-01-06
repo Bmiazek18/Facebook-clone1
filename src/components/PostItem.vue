@@ -12,6 +12,11 @@ import Heart from 'vue-material-design-icons/Heart.vue'
 import StarOutline from 'vue-material-design-icons/StarOutline.vue'
 import Earth from 'vue-material-design-icons/Earth.vue'
 import ThumbUp from 'vue-material-design-icons/ThumbUp.vue'
+import PlayCircleOutline from 'vue-material-design-icons/PlayCircleOutline.vue'
+import VolumeHigh from 'vue-material-design-icons/VolumeHigh.vue'
+import VolumeMute from 'vue-material-design-icons/VolumeMute.vue'
+import Play from 'vue-material-design-icons/Play.vue'
+import Pause from 'vue-material-design-icons/Pause.vue'
 
 import PostImageGallery from './PostImageGallery.vue'
 import PlayerVideo from './PlayerVideo.vue'
@@ -25,6 +30,7 @@ import PostActions from './post/PostActions.vue'
 import { useStoryShareStore } from '@/stores/storyShare'
 import { usePostsStore } from '@/stores/posts'
 import { useEventsStore } from '@/stores/events'
+import { useReelsStore } from '@/stores/reels'
 
 import { getUserById } from '@/data/users'
 import { processContent } from '@/utils/contentProcessor'
@@ -48,9 +54,15 @@ const router = useRouter()
 const storyShareStore = useStoryShareStore()
 const postsStore = usePostsStore()
 const eventsStore = useEventsStore()
+const reelsStore = useReelsStore()
 
 const isModalOpen = ref(false)
 const isShareAsPostModalOpen = ref(false)
+
+// Reel controls
+const isReelMuted = ref(true)
+const isReelPaused = ref(false)
+const reelVideoRef = ref<HTMLVideoElement | null>(null)
 
 const toggleModal = () => {
     isModalOpen.value = !isModalOpen.value
@@ -248,6 +260,33 @@ const sharedEvent = computed(() => {
   }
   return undefined;
 });
+
+const sharedReel = computed(() => {
+  if (props.post.sharedReelId) {
+    return reelsStore.getReelById(props.post.sharedReelId);
+  }
+  return undefined;
+});
+
+// Reel control functions
+const toggleReelMute = () => {
+  isReelMuted.value = !isReelMuted.value;
+  if (reelVideoRef.value) {
+    reelVideoRef.value.muted = isReelMuted.value;
+  }
+};
+
+const toggleReelPause = () => {
+  if (!reelVideoRef.value) return;
+
+  if (isReelPaused.value) {
+    reelVideoRef.value.play();
+    isReelPaused.value = false;
+  } else {
+    reelVideoRef.value.pause();
+    isReelPaused.value = true;
+  }
+};
 
 const postToShare = computed(() => {
   return originalPost.value || props.post;
@@ -546,6 +585,75 @@ useVideoAutoplay(videoContainerRef)
     <div v-if="post.sharedFromId && originalPost" class="mx-3 mb-3 mt-2 rounded-lg overflow-hidden">
         <PostItem :post="originalPost" :is-shared="true" />
     </div>
+<div v-if="post.sharedReelId && sharedReel"
+         class=" mb-3 mt-2 relative w-auto h-[800px]  bg-gradient-to-b from-[#5c6b55] to-[#2e3b2b] rounded-xl overflow-hidden shadow-lg border border-gray-700/30 group cursor-pointer"
+         @click="router.push(`/reel/${sharedReel.id}`)">
+
+        <div class="absolute inset-0 w-full h-full">
+             <video
+              ref="reelVideoRef"
+              class="w-[70%] mx-auto h-full object-cover block"
+              :src="sharedReel.videoSrc"
+              :poster="sharedReel.poster"
+              autoplay
+              loop
+              playsinline
+              :muted="isReelMuted"
+            ></video>
+            <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none"></div>
+        </div>
+
+        <div class="absolute top-4 left-4 flex items-center gap-3 z-20 pointer-events-none">
+          <div class="w-10 h-10 rounded-full border-2 border-white/20 overflow-hidden bg-gray-300">
+             <img :src="sharedReel.user.avatar" alt="Avatar" class="w-full h-full object-cover" />
+          </div>
+
+          <div class="flex flex-col text-white drop-shadow-md">
+            <span class="font-bold text-sm leading-tight flex items-center gap-1">
+              {{ sharedReel.user.name }} <span class="text-gray-300 font-normal text-xs opacity-90">• Obserwuj</span>
+            </span>
+            <div class="flex items-center gap-1 text-xs text-gray-200 opacity-80 mt-0.5">
+
+              <earth :size="12" class="text-gray-200"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Control buttons -->
+        <div class="absolute top-4 right-4 z-20 flex gap-2">
+          <button
+            @click.stop="toggleReelMute"
+            class="p-2 bg-black/20 backdrop-blur-sm rounded-full text-white hover:bg-black/40 transition-colors"
+          >
+            <VolumeHigh v-if="!isReelMuted" :size="20" />
+            <VolumeMute v-else :size="20" />
+          </button>
+
+
+        </div>
+
+
+<div class="absolute bottom-6 left-4 right-16 z-20">
+          <div class="flex items-center bg-black/30 backdrop-blur-md self-start px-3 py-2 rounded-full max-w-[220px] text-white border border-white/10">
+
+            <div class="shrink-0 mr-2 flex items-center justify-center">
+               <music-note :size="16" class="animate-pulse-slow" />
+            </div>
+
+            <div class="overflow-hidden w-full relative h-[16px] flex items-center">
+               <div class="w-full overflow-hidden mask-[linear-gradient(90deg,transparent_0%,white_10%,white_90%,transparent_100%)]">
+
+                  <div class="animate-marquee whitespace-nowrap text-xs font-medium tracking-wide">
+                     {{ sharedReel.user.name }} • Oryginalny dźwięk &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ sharedReel.user.name }} • Oryginalny dźwięk &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  </div>
+
+               </div>
+            </div>
+
+          </div>
+        </div>
+
+    </div>
 <div v-if="post.sharedEventId && sharedEvent"
          class=" mb-4 mt-2  overflow-hidden cursor-pointer  bg-[#f0f2f5] border-b border-[#dadde1] transition-colors group"
          @click="router.push(`/event/${sharedEvent.id}`)">
@@ -677,3 +785,20 @@ useVideoAutoplay(videoContainerRef)
     <ShareAsPostModal :is-open="isShareAsPostModalOpen" :post="postToShare" @close="isShareAsPostModalOpen = false" @share="handleShareAsPost"/>
   </div>
 </template>
+<style scoped>
+  .animate-marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: scroll-left 12s linear infinite;
+  padding-left: 100%; /* Start z prawej strony */
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+</style>
