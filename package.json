@@ -31,6 +31,7 @@
     "emoji-mart-vue-fast": "^15.0.5",
     "floating-vue": "^5.2.2",
     "leaflet": "^1.9.4",
+    "mediabunny": "^1.27.4",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.7.1",
     "tailwindcss": "^4.1.16",

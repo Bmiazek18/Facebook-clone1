@@ -54,6 +54,11 @@ const router = createRouter({
       component: () => import('@/views/FriendsView.vue'),
     },
     {
+      path: '/reels',
+      name: 'reels',
+      component: () => import('@/components/ReelVideoEditor.vue'),
+    },
+    {
       path: '/reel/:id',
       name: 'reel',
       meta: { showMainLayout: false },

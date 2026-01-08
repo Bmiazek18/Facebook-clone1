@@ -173,7 +173,7 @@ const footerLinks = [
   { key: 'login.votingInformationCentre' },
   { key: 'login.privacyPolicy' },
   { key: 'login.privacyCentre' },
-  { key. 'login.groups' },
+  { key: 'login.groups' },
   { key: 'login.about' },
   { key: 'login.createAd' },
   { key: 'login.createPage' },

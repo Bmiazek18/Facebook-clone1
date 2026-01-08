@@ -9,11 +9,11 @@ export const useEventsStore = defineStore('events', () => {
 
   const addEvent = (event: Event) => {
     events.value.push(event);
-    
+
     // Automatycznie twórz post z wydarzeniem
     const postsStore = usePostsStore();
     const currentUser = postsStore.currentUser;
-    
+
     const newPost: Post = {
       id: `${Date.now()}-event`,
       content: '', // Pusty content, bo całe info jest w evencie
@@ -40,7 +40,7 @@ export const useEventsStore = defineStore('events', () => {
       sharedEventId: event.id,
       createdEvent: true, // Flaga oznaczająca że to post o utworzeniu eventu
     };
-    
+
     postsStore.addPost(newPost);
   };
 
