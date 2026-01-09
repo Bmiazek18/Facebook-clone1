@@ -2,29 +2,7 @@
   <div v-if="video" class="bg-gray-800 rounded-lg p-4 space-y-3">
     <h4 class="text-white font-semibold">Edycja Video PiP</h4>
 
-    <div>
-      <label class="text-gray-400 text-sm block mb-1">Szerokość: {{ video.width }}px</label>
-      <input
-        :model-value="video.width"
-        @input="emit('update', { ...video, width: Number(($event.target as HTMLInputElement).value) })"
-        type="range"
-        min="50"
-        max="500"
-        class="w-full"
-      />
-    </div>
 
-    <div>
-      <label class="text-gray-400 text-sm block mb-1">Wysokość: {{ video.height }}px</label>
-      <input
-        :model-value="video.height"
-        @input="emit('update', { ...video, height: Number(($event.target as HTMLInputElement).value) })"
-        type="range"
-        min="50"
-        max="500"
-        class="w-full"
-      />
-    </div>
 
     <div>
       <label class="text-gray-400 text-sm block mb-1">Rotacja: {{ video.rotation }}°</label>

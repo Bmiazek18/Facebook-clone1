@@ -61,25 +61,39 @@ export function useMediaUpload(
     const file = input.files[0];
     const url = URL.createObjectURL(file);
 
-    const newImage: ImageOverlay = {
-      id: `image_${Date.now()}`,
-      url,
-      startTime: currentTime.value,
-      endTime: Math.min(currentTime.value + 3, totalDuration.value),
-      position: { x: 50, y: 50 },
-      width: 200,
-      height: 200,
-      rotation: 0,
-      opacity: 1,
-      entryAnimation: 'fade-in',
-      entryDuration: 0.5,
-      exitAnimation: 'fade-out',
-      exitDuration: 0.5,
-    };
+    // Load image to get actual dimensions
+    const img = new Image();
+    img.src = url;
 
-    imageOverlays.value.push(newImage);
-    selectedImage.value = newImage;
-    selectedText.value = null;
+    await new Promise((resolve) => {
+      img.onload = () => {
+        const aspectRatio = img.width / img.height;
+        const width = 200;
+        const height = width / aspectRatio;
+
+        const newImage: ImageOverlay = {
+          id: `image_${Date.now()}`,
+          url,
+          startTime: currentTime.value,
+          endTime: Math.min(currentTime.value + 3, totalDuration.value),
+          position: { x: 50, y: 50 },
+          width,
+          height,
+          rotation: 0,
+          opacity: 1,
+          entryAnimation: 'none',
+
+          exitAnimation: 'none',
+
+        };
+
+        imageOverlays.value.push(newImage);
+        selectedImage.value = newImage;
+        selectedText.value = null;
+        resolve(true);
+      };
+    });
+
     input.value = '';
   };
 
@@ -95,21 +109,25 @@ export function useMediaUpload(
 
     await new Promise((resolve) => {
       video.onloadedmetadata = () => {
+        const aspectRatio = video.videoWidth / video.videoHeight;
+        const width = 200;
+        const height = width / aspectRatio;
+
         const newPipVideo: PipVideoOverlay = {
           id: `pipvideo_${Date.now()}`,
           url,
           startTime: currentTime.value,
           endTime: Math.min(currentTime.value + Math.min(video.duration, 5), totalDuration.value),
           position: { x: 75, y: 75 },
-          width: 200,
-          height: 200,
+          width,
+          height,
           rotation: 0,
           opacity: 1,
           volume: 0,
-          entryAnimation: 'fade-in',
-          entryDuration: 0.5,
-          exitAnimation: 'fade-out',
-          exitDuration: 0.5,
+          entryAnimation: 'none',
+
+          exitAnimation: 'none',
+
         };
 
         pipVideoOverlays.value.push(newPipVideo);

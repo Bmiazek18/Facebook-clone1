@@ -51,17 +51,27 @@
           <div
             v-for="image in visibleImages"
             :key="image.id"
-            class="absolute pointer-events-none"
+            class="absolute cursor-move group"
+
             :style="getImageStyle(image)"
+            @mousedown="startDragOverlay(image, 'image', $event)"
           >
-            <img :src="image.url" class="w-full h-full object-contain" crossorigin="anonymous" />
+            <img :src="image.url" class="w-full h-full object-contain" crossorigin="anonymous" draggable="false"     :class="{ 'ring-2 ring-blue-500': selectedImage?.id === image.id }" />
+            <!-- Resize handles -->
+            <div
+              v-if="selectedImage?.id === image.id"
+              class="absolute -right-2 -bottom-2 w-4 h-4 bg-blue-500 rounded-full cursor-se-resize opacity-0 group-hover:opacity-100"
+              @mousedown.stop="startResizeOverlay(image, 'image', $event)"
+            ></div>
           </div>
 
           <div
             v-for="pipVideo in visiblePipVideos"
             :key="pipVideo.id"
-            class="absolute pointer-events-none overflow-hidden"
+            class="absolute cursor-move overflow-hidden group"
+            :class="{ 'ring-2 ring-orange-500': selectedPipVideo?.id === pipVideo.id }"
             :style="getPipVideoStyle(pipVideo)"
+            @mousedown="startDragOverlay(pipVideo, 'pipVideo', $event)"
           >
             <video
               :ref="el => setPipVideoRef(el as HTMLVideoElement, pipVideo.id)"
@@ -72,13 +82,21 @@
               playsinline
               crossorigin="anonymous"
             ></video>
+            <!-- Resize handles -->
+            <div
+              v-if="selectedPipVideo?.id === pipVideo.id"
+              class="absolute -right-2 -bottom-2 w-4 h-4 bg-orange-500 rounded-full cursor-se-resize opacity-0 group-hover:opacity-100"
+              @mousedown.stop="startResizeOverlay(pipVideo, 'pipVideo', $event)"
+            ></div>
           </div>
 
           <div
             v-for="text in visibleTexts"
             :key="text.id"
-            class="absolute pointer-events-none"
+            class="absolute cursor-move"
+            :class="{ 'ring-2 ring-purple-500': selectedText?.id === text.id }"
             :style="getTextStyle(text)"
+            @mousedown="startDragOverlay(text, 'text', $event)"
           >
             {{ getTextContent(text) }}
           </div>
@@ -184,8 +202,8 @@
           </div>
         </div>
 
-        <div ref="timelineRef" class="relative bg-gray-800 rounded-lg p-3 overflow-x-auto">
-          <div @click="handleTimelineClick" class="flex items-center gap-2 mb-2 text-gray-400 text-xs">
+        <div ref="timelineRef" class="relative bg-gray-800 rounded-lg p-3 overflow-x-auto"  @click="handleTimelineClick">
+          <div class="flex items-center gap-2 mb-2 text-gray-400 text-xs pointer-events-none">
             <div v-for="i in Math.floor(totalDuration)" :key="i" class="flex-1 text-right">
               {{ i }}s
             </div>
@@ -344,10 +362,12 @@ const visibleTexts = computed(() => {
 });
 const handleTimelineClick = (event: MouseEvent) => {
   if (!timelineRef.value) return;
-  const rect = timelineRef.value.getBoundingClientRect();
-  const clickX = event.clientX - rect.left + timelineRef.value.scrollLeft;
-  const timelineWidth = timelineRef.value.scrollWidth;
-  const clickTime = (clickX / timelineWidth) * totalDuration.value;
+
+  const target = event.currentTarget as HTMLElement;
+  const rect = target.getBoundingClientRect();
+  const clickX = event.clientX - rect.left;
+  const trackWidth = rect.width;
+  const clickTime = (clickX / trackWidth) * totalDuration.value;
   currentTime.value = Math.min(Math.max(0, clickTime), totalDuration.value);
 
   // Sync video to new time
@@ -581,6 +601,87 @@ const selectImage = (image: ImageOverlay) => {
 
 const selectPipVideo = (video: PipVideoOverlay) => {
   selectOverlay(video, selectedPipVideo);
+};
+
+// --- Drag & Drop Overlays in Preview ---
+const startDragOverlay = (
+  item: TextOverlay | ImageOverlay | PipVideoOverlay,
+  type: 'text' | 'image' | 'pipVideo',
+  event: MouseEvent
+) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  // Select the item
+  if (type === 'text') selectText(item as TextOverlay);
+  else if (type === 'image') selectImage(item as ImageOverlay);
+  else selectPipVideo(item as PipVideoOverlay);
+
+  const previewEl = previewVideoRef.value?.parentElement;
+  if (!previewEl) return;
+
+  const rect = previewEl.getBoundingClientRect();
+  const startX = event.clientX;
+  const startY = event.clientY;
+  const startPosX = item.position.x;
+  const startPosY = item.position.y;
+
+  const handleDrag = (e: MouseEvent) => {
+    const deltaX = e.clientX - startX;
+    const deltaY = e.clientY - startY;
+
+    // Convert pixel movement to percentage
+    const deltaPercentX = (deltaX / rect.width) * 100;
+    const deltaPercentY = (deltaY / rect.height) * 100;
+
+    item.position.x = Math.max(0, Math.min(100, startPosX + deltaPercentX));
+    item.position.y = Math.max(0, Math.min(100, startPosY + deltaPercentY));
+  };
+
+  const stopDrag = () => {
+    document.removeEventListener('mousemove', handleDrag);
+    document.removeEventListener('mouseup', stopDrag);
+  };
+
+  document.addEventListener('mousemove', handleDrag);
+  document.addEventListener('mouseup', stopDrag);
+};
+
+// --- Resize Overlays (image & pipVideo only) ---
+const startResizeOverlay = (
+  item: ImageOverlay | PipVideoOverlay,
+  type: 'image' | 'pipVideo',
+  event: MouseEvent
+) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const startX = event.clientX;
+  const startY = event.clientY;
+  const startWidth = item.width;
+  const startHeight = item.height;
+  const aspectRatio = startWidth / startHeight;
+
+  const handleResize = (e: MouseEvent) => {
+    const deltaX = e.clientX - startX;
+    const deltaY = e.clientY - startY;
+
+    // Use the larger delta to maintain aspect ratio
+    const delta = Math.max(deltaX, deltaY);
+    const PREVIEW_SCALE = 360 / 1080;
+    const newWidth = Math.max(50, startWidth + delta / PREVIEW_SCALE);
+
+    item.width = newWidth;
+    item.height = newWidth / aspectRatio;
+  };
+
+  const stopResize = () => {
+    document.removeEventListener('mousemove', handleResize);
+    document.removeEventListener('mouseup', stopResize);
+  };
+
+  document.addEventListener('mousemove', handleResize);
+  document.addEventListener('mouseup', stopResize);
 };
 
 // --- Playhead Drag ---
