@@ -22,6 +22,7 @@ import { useI18n } from 'vue-i18n';
 import MainMenu from './ProfileMenu/MainMenu.vue';
 import SubMenuDisplay from './ProfileMenu/SubMenu.vue';
 import LanguageSelector from './ProfileMenu/LanguageSelector.vue';
+import SettingsMenu from './ProfileMenu/SettingsMenu.vue';
 
 // --- Import Animacji ---
 import '@/assets/animations/slideTransition.css';
@@ -38,6 +39,7 @@ const viewComponents: Record<string, Component> = {
   main: MainMenu,
   display: SubMenuDisplay,
   language: LanguageSelector,
+  settings: SettingsMenu,
 };
 
 const currentViewComponent = computed(() => {
@@ -57,8 +59,15 @@ const handleNavigation = (viewName: string) => {
 };
 
 const handleNavigationBack = () => {
+    const navigationHistory: Record<string, string> = {
+      'language': previousView.value === 'settings' ? 'settings' : 'main',
+      'settings': 'main',
+      'display': 'main',
+    };
+    
+    const targetView = navigationHistory[currentView.value] || 'main';
     previousView.value = currentView.value;
-    currentView.value = 'main';
+    currentView.value = targetView;
 };
 </script>
 

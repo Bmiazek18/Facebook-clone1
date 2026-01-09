@@ -220,6 +220,11 @@
     "logout": "Wyloguj się",
     "viewAllProfiles": "Zobacz wszystkie profile"
   },
+  "language_settings": {
+    "title": "Ustawienia języka i regionu",
+    "facebook_language": "Język Facebooka",
+    "language_description": "Język przycisków, tytułów i innego tekstu z Facebooka dla tego konta"
+  },
   "reaction": {
     "like": "Lubię to!",
     "love": "Super",

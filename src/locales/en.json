@@ -220,6 +220,11 @@
     "logout": "Sign out",
     "viewAllProfiles": "View all profiles"
   },
+  "language_settings": {
+    "title": "Language and Region Settings",
+    "facebook_language": "Facebook Language",
+    "language_description": "Language for buttons, titles and other text from Facebook for this account"
+  },
   "reaction": {
     "like": "Like",
     "love": "Love",

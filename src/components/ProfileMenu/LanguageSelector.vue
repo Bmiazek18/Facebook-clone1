@@ -1,135 +1,141 @@
 <template>
-  <div class="language-selector max-w-xl mx-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-lg rounded-xl">
-    <!-- Header with Back Button -->
-    <div class="w-full flex leading-7 pb-2">
+  <div class="language-settings max-w-xl mx-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl font-sans">
+
+    <div class="w-full flex items-center pb-4 border-b border-gray-200 dark:border-gray-700 mb-4 px-4 pt-4">
       <button
         @click="handleBackClick"
-        class="rounded-lg transition duration-150 mb-3 -mx-2 px-2"
+        class="rounded-full p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-150 mr-2"
         aria-label="Powrót"
       >
-        <span
-          class="h-9 w-9 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center mr-3 shrink-0"
-        >
-          <ArrowLeftIcon class="text-xl text-gray-700 dark:text-gray-300" />
-        </span>
+        <ArrowLeftIcon class="text-2xl text-gray-700 dark:text-gray-300" />
       </button>
-      <span class="text-gray-900 w-full dark:text-white font-bold text-[24px]">
-        {{ $t('profile_menu.language') }}
-      </span>
+      <h1 class="text-xl font-bold">{{ $t('language_settings.title') }}</h1>
     </div>
 
-    <!-- Language Options -->
-    <section class="setting-group mb-4">
-      <div class="options-list space-y-2">
-        <!-- Polish -->
-        <label
-          class="option-item flex items-center justify-between py-3 px-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition duration-100"
-        >
-          <div class="flex items-center">
-            <span class="h-10 w-10 border border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center mr-3 shrink-0 text-lg">
-              🇵🇱
-            </span>
-            <div>
-              <span class="text-base font-medium block">Polski (PL)</span>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Polish</p>
+    <div class="px-4 pb-6 space-y-6">
+
+      <section>
+        <h2 class="text-lg font-bold mb-2">{{ $t('language_settings.facebook_language') }}</h2>
+        <div class="py-2">
+          <p class="text-[15px] text-gray-600 dark:text-gray-300 leading-snug mb-4">
+            {{ $t('language_settings.language_description') }}
+          </p>
+
+          <div class="flex items-center justify-between">
+            <span class="text-[15px] font-bold text-gray-900 dark:text-white">{{ currentLanguageName }}</span>
+
+            <!-- Switch Toggle -->
+            <div class="flex items-center gap-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1">
+              <button
+                @click="changeLanguage('pl')"
+                :class="[
+                  'px-4 py-2 rounded-full transition-all duration-200 text-lg font-semibold',
+                  currentLocale === 'pl'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                ]"
+              >
+                🇵🇱
+              </button>
+              <button
+                @click="changeLanguage('en')"
+                :class="[
+                  'px-4 py-2 rounded-full transition-all duration-200 text-lg font-semibold',
+                  currentLocale === 'en'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                ]"
+              >
+                🇬🇧
+              </button>
             </div>
           </div>
-          <input type="radio" v-model="selectedLanguage" @click="selectLanguage('pl')" value="pl" class="hidden" />
-          <div
-            :class="['w-5 h-5 rounded-full border-2 shrink-0', selectedLanguage === 'pl' ? 'border-blue-600 bg-blue-600' : 'border-gray-400 dark:border-gray-600']"
-          >
-            <div v-if="selectedLanguage === 'pl'" class="w-3 h-3 bg-white rounded-full mx-auto my-auto mt-0.5"></div>
-          </div>
-        </label>
+        </div>
+      </section>
 
-        <!-- English -->
-        <label
-          class="option-item flex items-center justify-between py-3 px-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition duration-100"
-        >
-          <div class="flex items-center">
-            <span class="h-10 w-10 border border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center mr-3 shrink-0 text-lg">
-              🇬🇧
-            </span>
-            <div>
-              <span class="text-base font-medium block">English (EN)</span>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Angielski</p>
+      <hr class="border-gray-200 dark:border-gray-700" />
+
+
+
+      <section>
+        <h2 class="text-lg font-bold mb-2">Posty od znajomych i stron</h2>
+        <div class="py-2">
+          <p class="text-[15px] text-gray-600 dark:text-gray-300 leading-snug mb-4">
+            Język, na który mają być tłumaczone posty
+          </p>
+
+          <div class="flex items-center justify-between">
+            <span class="text-[15px] font-bold text-gray-900 dark:text-white">{{ currentLanguageName }}</span>
+
+            <!-- Switch Toggle -->
+            <div class="flex items-center gap-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1">
+              <button
+                @click="changeLanguage('pl')"
+                :class="[
+                  'px-4 py-2 rounded-full transition-all duration-200 text-lg font-semibold',
+                  currentLocale === 'pl'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                ]"
+              >
+                🇵🇱
+              </button>
+              <button
+                @click="changeLanguage('en')"
+                :class="[
+                  'px-4 py-2 rounded-full transition-all duration-200 text-lg font-semibold',
+                  currentLocale === 'en'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                ]"
+              >
+                🇬🇧
+              </button>
             </div>
           </div>
-          <input type="radio" v-model="selectedLanguage" @click="selectLanguage('en')" value="en" class="hidden" />
-          <div
-            :class="['w-5 h-5 rounded-full border-2 shrink-0', selectedLanguage === 'en' ? 'border-blue-600 bg-blue-600' : 'border-gray-400 dark:border-gray-600']"
-          >
-            <div v-if="selectedLanguage === 'en'" class="w-3 h-3 bg-white rounded-full mx-auto my-auto mt-0.5"></div>
-          </div>
-        </label>
-      </div>
-    </section>
+        </div>
+      </section>
 
-    <!-- Info Message -->
-    <div class="px-3 py-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-      <p class="text-sm text-blue-700 dark:text-blue-300">
-        {{ languageChangeMessage }}
-      </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue';
 
 const { locale } = useI18n();
-
-// Get current language
-const selectedLanguage = ref<string>(locale.value);
-
-// Computed message based on selected language
-const languageChangeMessage = computed(() => {
-  if (selectedLanguage.value === 'pl') {
-    return 'Zmiana języka na polski. Strona zostanie odświeżona.';
-  } else {
-    return 'Language changed to English. The page will be refreshed.';
-  }
-});
-
 const emit = defineEmits(['back']);
 
-// Handle back button
-const handleBackClick = (): void => {
-  emit('back');
+interface Language {
+  code: string;
+  name: string;
+  nativeName: string;
+}
+
+const availableLanguages: Language[] = [
+  { code: 'pl', name: 'Polski', nativeName: 'Polski' },
+  { code: 'en', name: 'English', nativeName: 'English (US)' }
+];
+
+const currentLocale = computed(() => locale.value);
+
+const currentLanguageName = computed(() => {
+  const lang = availableLanguages.find(l => l.code === locale.value);
+  return lang ? lang.name : 'Polski';
+});
+
+const changeLanguage = (langCode: string) => {
+  locale.value = langCode;
+  localStorage.setItem('locale', langCode);
 };
 
-// Handle language selection
-const selectLanguage = (lang: string): void => {
-  locale.value = lang;
-  selectedLanguage.value = lang;
-  // Optional: Add a small delay before going back to see the message
-  setTimeout(() => {
-    handleBackClick();
-  }, 300);
+const handleBackClick = () => {
+  emit('back');
 };
 </script>
 
 <style scoped>
-.language-selector {
-  animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.option-item {
-  transition: all 0.2s ease;
-}
-
-.option-item:active {
-  transform: scale(0.98);
-}
+/* Opcjonalne: drobne korekty dla idealnego dopasowania */
 </style>

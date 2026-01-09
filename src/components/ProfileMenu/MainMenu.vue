@@ -68,6 +68,7 @@ import CommentProcessingOutlineIcon from 'vue-material-design-icons/CommentProce
 import LogoutIcon from 'vue-material-design-icons/Logout.vue';
 import AccountSearchIcon from 'vue-material-design-icons/AccountSearch.vue';
 import TranslateIcon from 'vue-material-design-icons/Translate.vue';
+import CogIcon from 'vue-material-design-icons/Cog.vue';
 
 useI18n();
 
@@ -89,7 +90,12 @@ interface MenuItem {
 }
 
 const menuItems: Ref<MenuItem[]> = ref([
-
+  {
+    name: 'settings',
+    labelKey: 'profile_menu.settings',
+    iconComponent: CogIcon,
+    hasSubMenu: true,
+  },
   {
     name: 'help',
     labelKey: 'profile_menu.help',
