@@ -54,6 +54,25 @@ const router = createRouter({
       component: () => import('@/views/FriendsView.vue'),
     },
     {
+      path: '/search',
+      name: 'search',
+      component: () => import('@/views/SearchView.vue'),
+      props: true,
+    },
+   {
+      path: '/marketplace',
+      name: 'marketplace',
+      component: () => import('@/views/MarketPlaceView.vue'),
+      props: true,
+    },
+    {
+      path: '/marketplace/item/:id',
+      name: 'marketplaceItem',
+      component: () => import('@/views/MarketplaceItemView.vue'),
+       meta: { showMainLayout: false },
+      props: true,
+    },
+    {
       path: '/reels',
       name: 'reels',
       component: () => import('@/components/ReelVideoEditor.vue'),
@@ -95,6 +114,13 @@ const router = createRouter({
       name: 'story',
        meta: { showMainLayout: false },
       component: () => import('@/views/StoryView.vue'),
+    },
+    {
+      path: '/stories/:userId',
+      name: 'userStories',
+      meta: { showMainLayout: false },
+      component: () => import('@/views/StoryView.vue'),
+      props: true
     },
      {
       path: '/video',

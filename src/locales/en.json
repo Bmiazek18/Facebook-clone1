@@ -432,5 +432,20 @@
     "sharePhotoOrWriteSomething": "Share a photo or write something.",
     "allStories": "All stories",
     "sendMessage": "Send message..."
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search Facebook",
+    "filters": "Filters",
+    "all": "All",
+    "people": "People",
+    "posts": "Posts",
+    "recent": "Recent searches",
+    "noRecent": "No recent searches",
+    "emptyTitle": "Start searching",
+    "emptyDescription": "Use the search bar to find people, posts and more.",
+    "noResults": "No results found",
+    "noResultsDescription": "Try using different keywords.",
+    "addFriend": "Add friend"
   }
 }

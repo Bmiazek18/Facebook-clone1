@@ -432,5 +432,20 @@
     "sharePhotoOrWriteSomething": "Udostępnij zdjęcie lub coś napisz.",
     "allStories": "Wszystkie relacje",
     "sendMessage": "Wyślij wiadomość..."
+  },
+  "search": {
+    "title": "Wyszukiwanie",
+    "placeholder": "Wyszukaj na Facebooku",
+    "filters": "Filtry",
+    "all": "Wszystko",
+    "people": "Osoby",
+    "posts": "Posty",
+    "recent": "Ostatnie wyszukiwania",
+    "noRecent": "Brak ostatnich wyszukiwań",
+    "emptyTitle": "Zacznij wyszukiwać",
+    "emptyDescription": "Użyj paska wyszukiwania, aby znaleźć osoby, posty i wiele więcej.",
+    "noResults": "Brak wyników",
+    "noResultsDescription": "Spróbuj użyć innych słów kluczowych.",
+    "addFriend": "Dodaj do znajomych"
   }
 }

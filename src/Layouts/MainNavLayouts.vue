@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { onClickOutside } from '@vueuse/core'
 
 // Ikony
@@ -10,21 +10,20 @@ import TelevisionPlay from 'vue-material-design-icons/TelevisionPlay.vue'
 import StorefrontOutline from 'vue-material-design-icons/StorefrontOutline.vue'
 import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
 import ControllerClassicOutline from 'vue-material-design-icons/ControllerClassicOutline.vue'
-
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue'
 
-
 import ContactList from '@/components/ContactList.vue'
-
 import NavbarRight from '@/components/NavbarRight.vue'
 
 type ActiveMenuType = 'profile' | 'notifications' | 'message' | null;
 
 const route = useRoute()
+const router = useRouter()
 
 // Referencje
 const activeMenu = ref<ActiveMenuType>(null)
 const isSearchFocused = ref(false)
+const searchInput = ref('')
 const navLeft = ref(null)
 const menuTarget = ref(null)
 
@@ -37,6 +36,15 @@ onClickOutside(navLeft, () => {
 onClickOutside(menuTarget, () => {
   activeMenu.value = null
 })
+
+// Handle search submission
+const handleSearchSubmit = () => {
+  if (searchInput.value.trim()) {
+    router.push({ path: '/search', query: { q: searchInput.value.trim() } })
+    isSearchFocused.value = false
+
+  }
+}
 </script>
 
 <template>
@@ -97,6 +105,8 @@ onClickOutside(menuTarget, () => {
               type="text"
               @focus="isSearchFocused = true"
               @keyup.esc="isSearchFocused = false"
+              @keyup.enter="handleSearchSubmit"
+              v-model="searchInput"
             />
           </div>
         </div>
