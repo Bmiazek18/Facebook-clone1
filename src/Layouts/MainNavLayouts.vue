@@ -122,8 +122,8 @@ const handleSearchSubmit = () => {
         <TelevisionPlay :size="27" :fillColor="route.path === '/reel' ? '#1A73E3' : '#64676B'" />
       </RouterLink>
 
-      <RouterLink to="/marketplace" class="flex items-center justify-center h-12 w-full mx-1" :class="route.path === '/marketplace' ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'">
-        <StorefrontOutline :size="27" :fillColor="route.path === '/marketplace' ? '#1A73E3' : '#64676B'" />
+      <RouterLink to="/marketplace" class="flex items-center justify-center h-12 w-full mx-1" :class="route.path.includes('marketplace') ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'">
+        <StorefrontOutline :size="27" :fillColor="route.path.includes('marketplace') ? '#1A73E3' : '#64676B'" />
       </RouterLink>
 
       <RouterLink to="/friends" class="flex items-center justify-center h-12 w-full mx-1" :class="route.path === '/friends' ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'">
