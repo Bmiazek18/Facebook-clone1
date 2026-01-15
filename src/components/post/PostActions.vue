@@ -4,7 +4,7 @@ import MessageOutline from 'vue-material-design-icons/MessageOutline.vue'
 import ShareIcon from 'vue-material-design-icons/ShareVariant.vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import BookOpenPageVariant from 'vue-material-design-icons/BookOpenPageVariant.vue'
-import ChatProcessingOutline from 'vue-material-design-icons/ChatProcessingOutline.vue' // New import
+import ChatProcessingOutline from 'vue-material-design-icons/ChatProcessingOutline.vue'
 import ReactionButton from '../ReactionButton.vue'
 import { useI18n } from 'vue-i18n'
 import { useTheme } from '@/composables/useTheme'
@@ -27,7 +27,7 @@ const emit = defineEmits<{
   (e: 'comment'): void
   (e: 'shareAsPost'): void
   (e: 'shareToStory'): void
-  (e: 'shareToMessage'): void // New emit event
+  (e: 'shareToMessage'): void
 }>()
 
 const handleShareAsPost = () => {
@@ -40,7 +40,7 @@ const handleShareToStory = () => {
   emit('shareToStory')
 }
 
-const handleShareToMessage = () => { // New handler
+const handleShareToMessage = () => {
   closeShareMenu()
   emit('shareToMessage')
 }
@@ -49,7 +49,7 @@ const handleShareToMessage = () => { // New handler
 <template>
   <div class="px-2 py-1 flex items-center justify-between relative z-10">
     <div class="flex-1">
-            <ReactionButton @react="$emit('react', $event)" />
+            <ReactionButton @react="$emit('react', $event)" full />
     </div>
     <button
       @click="$emit('comment')"
@@ -67,7 +67,6 @@ const handleShareToMessage = () => { // New handler
         <span>{{ t('actions.share') }}</span>
       </button>
 
-      <!-- Share Menu -->
       <Transition
         enter-active-class="transition ease-out duration-100"
         enter-from-class="transform opacity-0 scale-95"
@@ -120,7 +119,6 @@ const handleShareToMessage = () => { // New handler
       </Transition>
     </div>
 
-    <!-- Backdrop to close menu -->
     <div v-if="isShareMenuOpen" class="fixed inset-0 z-[-1]" @click="closeShareMenu"></div>
   </div>
 </template>

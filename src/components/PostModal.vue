@@ -5,7 +5,7 @@ import HoverScrollbar from './HoverScrollbar.vue'
 import CommentItem from './CommentItem.vue'
 
 
-import PostItem from './PostItem.vue'
+import PostItem from './post/PostItem.vue'
 import type { Post } from '@/types/Post';
 import CommentReplyInput from './CommentReplyInput.vue'
 import CommentFilter from './CommentFilter.vue';

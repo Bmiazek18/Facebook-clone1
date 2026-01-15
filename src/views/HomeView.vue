@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import CreatePostBox from '../components/CreatePostBox.vue'
-import PostItem from '../components/PostItem.vue'
+import PostItem from '../components/post/PostItem.vue'
 import PeopleYouMayKnow from '../components/PeopleYouMayKnow.vue'
 import StoriesList from '../components/StoriesList.vue'
 import LeftSidebar from '../components/home/LeftSidebar.vue'
@@ -26,18 +26,18 @@ watch(() => postsStore.posts, (newPosts) => {
   localPosts.value = [...newPosts];
 }, { deep: true });
 
-const authorName = "Bartosz Miazek"; // Define authorName here
+const authorName = "Bartosz Miazek";
 
 const isLoading = ref(true)
 setTimeout(() => { isLoading.value = false }, 2000)
 
 const peopleYouMayKnowIndex = Math.floor(Math.random() * 10) + 2
-const router = useRouter() // Instancja routera do manualnej nawigacji
+const router = useRouter()
 const route = router.currentRoute
 
 const post = getPostById(String(route.value.params.id))
 
-// Virtual list setup
+
 const rowHeight = 10
 const { list: virtualPosts, containerProps } = useVirtualList(
   localPosts,
@@ -48,35 +48,35 @@ const userAvatar = 'https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057
 
 const createPostStore = useCreatePostStore()
 
-// --- LOGIKA MODALA ---
+
 const showConfirmModal = ref(false)
 const pendingRoute = ref<RouteLocation | null>(null)
 
 onBeforeRouteLeave((to, from, next) => {
   if (createPostStore.hasUnsavedChanges) {
-    // 1. Zatrzymaj nawigację
+
     pendingRoute.value = to
     showConfirmModal.value = true
     next(false)
   } else {
-    // 2. Jeśli brak zmian, po prostu idź dalej
+
     next()
   }
 })
 
 const handleConfirmLeave = () => {
-  // Użytkownik chce wyjść mimo zmian
+
   createPostStore.reset()
   showConfirmModal.value = false
 
   if (pendingRoute.value) {
-    // Wymuś nawigację do zapamiętanej trasy
+
     router.push(pendingRoute.value)
   }
 }
 
 const handleCancelLeave = () => {
-  // Użytkownik zostaje na stronie
+
   showConfirmModal.value = false
   pendingRoute.value = null
 }
@@ -118,16 +118,15 @@ const handleCancelLeave = () => {
             <template v-else>
               <template v-for="(post, i) in virtualPosts" :key="post.data.id" >
                 <PostItem :post="post.data" />
-
                 <PeopleYouMayKnow v-if="i + 1 === peopleYouMayKnowIndex" />
-                 <ReelSGalerry v-if="i + 2 === peopleYouMayKnowIndex" />
+                <ReelSGalerry v-if="i + 2 === peopleYouMayKnowIndex" />
               </template>
             </template>
           </div>
         </div>
       </div>
 
-      <div id="RightSection" class="hidden md:block pl-4">
+      <div  class="hidden md:block pl-4">
         <RightSidebar birthday-user="Bartosz Miazek" />
       </div>
     </div>

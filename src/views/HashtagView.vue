@@ -39,7 +39,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { usePostsStore } from '@/stores/posts'
-import PostItem from '@/components/PostItem.vue'
+import PostItem from '@/components/post/PostItem.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()

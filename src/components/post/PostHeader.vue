@@ -5,8 +5,7 @@ import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
 import Close from 'vue-material-design-icons/Close.vue'
 import ProfilePopper from '../ProfilePopper.vue'
 import { useTheme } from '@/composables/useTheme'
-import type { User } from '@/data/users'
-import type { PostLocation } from '@/types/Post'
+import type { Post } from '@/types/Post'
 import LockIcon from 'vue-material-design-icons/Lock.vue'
 import EarthIcon from 'vue-material-design-icons/Earth.vue'
 import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue'
@@ -17,28 +16,8 @@ import 'floating-vue/dist/style.css';
 import PostSettingPopper from './PostSettingPopper.vue';
 
 const props = defineProps<{
-  authorName: string
-  authorAvatar: string
-  authorId?: number
-  date?: string
-  taggedUsers?: User[]
-  location?: PostLocation
-  privacy?: string
-  postId?: string; // Add postId prop
-  feeling?: {
-    emoji: string;
-    label: string;
-  } | null;
-  activity?: {
-    parent: string;
-    item: {
-      label: string;
-      icon: any;
-      color: string;
-    }
-  } | null;
+  post: Post
   isShared?: boolean
-  createdEvent?: boolean;
 }>()
 
 const _emit = defineEmits<{
@@ -53,8 +32,8 @@ const { isDark } = useTheme()
 const router = useRouter()
 
 const handleAvatarClick = () => {
-  if (props.authorId) {
-    router.push({ name: 'userProfile', params: { userId: props.authorId } })
+  if (props.post.authorId) {
+    router.push({ name: 'userProfile', params: { userId: props.post.authorId } })
   }
 }
 
@@ -67,8 +46,8 @@ const privacyInfo = computed(() => {
     friends_except: { label: 'Znajomi z wyjątkiem...', icon: AccountMultipleMinusIcon },
     specific_friends: { label: 'Konkretni znajomi', icon: AccountStarIcon },
   };
-  if (!props.privacy) return { label: 'Publiczne', icon: EarthIcon };
-  return map[props.privacy] || { label: props.privacy, icon: null };
+  if (!props.post.privacy) return { label: 'Publiczne', icon: EarthIcon };
+  return map[props.post.privacy] || { label: props.post.privacy, icon: null };
 });
 </script>
 
@@ -78,37 +57,37 @@ const privacyInfo = computed(() => {
       <button @click="handleAvatarClick" class="mr-2.5 rounded-full hover:opacity-80 transition-opacity">
         <img
           class="rounded-full w-10 h-10 object-cover cursor-pointer"
-          :src="authorAvatar"
-          :alt="authorName"
+          :src="post.authorAvatar"
+          :alt="post.authorName"
         >
       </button>
 
       <div class="flex-1 min-w-0 mt-0.5">
         <div class="text-theme-text text-[15px] flex leading-tight">
-          <ProfilePopper :name="authorName" :user-id="authorId" class="font-semibold hover:underline cursor-pointer" />
-          <template v-if="taggedUsers && taggedUsers.length">
+          <ProfilePopper :name="post.authorName" :user-id="post.authorId" class="font-semibold hover:underline cursor-pointer" />
+          <template v-if="post.taggedUsers && post.taggedUsers.length">
             <span class="font-normal text-gray-600"> z: </span>
-            <template v-for="(user, idx) in taggedUsers" :key="user.id">
+            <template v-for="(user, idx) in post.taggedUsers" :key="user.id">
               <span v-if="idx > 0">, </span>
               <ProfilePopper :name="user.name" :user-id="user.id" class="font-semibold hover:underline cursor-pointer" />
             </template>
           </template>
-          <template v-if="feeling">
-            <span class="font-normal text-gray-600 ml-1"> — czuje się <span class="font-semibold">{{ feeling.label }}</span> {{ feeling.emoji }}</span>
+          <template v-if="post.feeling">
+            <span class="font-normal text-gray-600 ml-1"> — czuje się <span class="font-semibold">{{ post.feeling.label }}</span> {{ post.feeling.emoji }}</span>
           </template>
-          <template v-if="activity">
-            <span class="font-normal text-gray-600 ml-1"> — {{ activity.parent.slice(0, -3) }} <span class="font-semibold">{{ activity.item.label }}</span></span>
+          <template v-if="post.activity">
+            <span class="font-normal text-gray-600 ml-1"> — {{ post.activity.parent.slice(0, -3) }} <span class="font-semibold">{{ post.activity.item.label }}</span></span>
           </template>
-          <template v-if="location">
+          <template v-if="post.location">
             <span class="font-normal text-gray-600"> jest w: </span>
-            <span class="font-semibold">{{ location.title }}</span>
+            <span class="font-semibold">{{ post.location.title }}</span>
           </template>
-          <template v-if="createdEvent">
+          <template v-if="post.createdEvent">
             <span class="font-normal text-gray-600 ml-1">Dodał(a) nowe wydarzenie</span>
           </template>
         </div>
         <div class="flex items-center text-[13px] text-theme-text-secondary mt-0.5">
-          <span class="hover:underline cursor-pointer">{{ date || '17 grudnia' }}</span>
+          <span class="hover:underline cursor-pointer">{{ post.date || '17 grudnia' }}</span>
           <span class="mx-1">·</span>
           <component :is="privacyInfo.icon" :size="12" :fillColor="isDark ? '#E4E6EB' : '#65676B'" v-tooltip="privacyInfo.label" />
         </div>
@@ -121,9 +100,9 @@ const privacyInfo = computed(() => {
           </button>
           <template #popper>
             <PostSettingPopper
-              v-if="postId"
-              :post-id="postId"
-              :author-id="authorId ?? 0"
+              v-if="post.id"
+              :post-id="post.id"
+              :author-id="post.authorId ?? 0"
 
             />
           </template>

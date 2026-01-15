@@ -2,28 +2,28 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { Dropdown as VDropdown } from 'floating-vue'
+
 import 'floating-vue/dist/style.css'
 
 import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
-import Heart from 'vue-material-design-icons/Heart.vue'
+
 import StarOutline from 'vue-material-design-icons/StarOutline.vue'
 import Earth from 'vue-material-design-icons/Earth.vue'
-import ThumbUp from 'vue-material-design-icons/ThumbUp.vue'
+
 import VolumeHigh from 'vue-material-design-icons/VolumeHigh.vue'
 import VolumeMute from 'vue-material-design-icons/VolumeMute.vue'
-import PostImageGallery from './PostImageGallery.vue'
-import PlayerVideo from './PlayerVideo.vue'
+import PostImageGallery from '../PostImageGallery.vue'
+import PlayerVideo from '../PlayerVideo.vue'
 import Star from 'vue-material-design-icons/Star.vue'
 
-import BaseModal from './BaseModal.vue'
-import PostModal from './PostModal.vue'
-import ShareAsPostModal from './ShareAsPostModal.vue'
-import PostHeader from './post/PostHeader.vue'
-import PostActions from './post/PostActions.vue'
-import PostTranslation from './post/PostContent.vue'
-import PostReactions from './post/PostReactions.vue'
-import PostMarketplaceCard from './post/PostMarketplaceCard.vue'
+import BaseModal from '../BaseModal.vue'
+import PostModal from '../PostModal.vue'
+import ShareAsPostModal from '../ShareAsPostModal.vue'
+import PostHeader from './PostHeader.vue'
+import PostActions from './PostActions.vue'
+import PostTranslation from './PostContent.vue'
+import PostReactions from './PostReactions.vue'
+import PostMarketplaceCard from './PostMarketplaceCard.vue'
 import { useStoryShareStore } from '@/stores/storyShare'
 import { usePostsStore } from '@/stores/posts'
 import { useEventsStore } from '@/stores/events'
@@ -34,7 +34,7 @@ import { useVideoAutoplay } from '@/composables/useVideoAutoplay'
 import { getUserById } from '@/data/users'
 import { processContent } from '@/utils/contentProcessor'
 import type { Post } from '@/types/Post';
-import ShareAsMessageModal from './ShareAsMessageModal.vue'
+import ShareAsMessageModal from '../ShareAsMessageModal.vue'
 
 
 const props = defineProps<{
@@ -42,7 +42,7 @@ const props = defineProps<{
   isShared?: boolean
 }>()
 
-const emit = defineEmits<{
+ defineEmits<{
   (e: 'delete', postId: string): void
 }>()
 
@@ -57,7 +57,7 @@ const isShareAsPostModalOpen = ref(false)
 
 // Reel controls
 const isReelMuted = ref(true)
-const isReelPaused = ref(false)
+
 const reelVideoRef = ref<HTMLVideoElement | null>(null)
 
 const toggleModal = () => {
@@ -140,26 +140,21 @@ const handleShareAsPost = (comment: string) => {
   router.push('/profile')
 }
 
-const handleDelete = () => {
-  emit('delete', props.post.id)
-}
+
 const isShareAsMessageModalOpen = ref(false);
 const shareToMessage = () => {
   isShareAsMessageModalOpen.value = true;
 };
 
-const handleDeletePost = (postId: string) => {
-    postsStore.removePost(postId);
-}
 
 const handleEditPost = (postId: number) => {
   console.log('Edit Post:', postId);
-  // Implement actual edit logic here (e.g., open an edit modal)
+
 };
 
 const handleHidePost = (postId: number) => {
   console.log('Hide Post:', postId);
-  // Implement actual hide logic here
+
 };
 
 const goToMarketplaceItem = (itemId: string) => {
@@ -234,7 +229,7 @@ useVideoAutoplay(videoContainerRef)
       <div v-if="post.videoUrl" ref="videoContainerRef" class="w-full">
         <PlayerVideo :settings="true" :lightbox="true" ref="videoRef" :url="post.videoUrl" />
       </div>
-      <PostImageGallery v-else-if="post.images && post.images.length > 0" :images="post.images" :post-id="post.id ?? ''"  @click="goToMarketplaceItem((post as any).marketplaceData.itemId)"/>
+      <PostImageGallery v-else-if="post.images && post.images.length > 0" :images="post.images" :post-id="Number(post.id) ?? 0"  @click="goToMarketplaceItem((post as any).marketplaceData.itemId)"/>
     </div>
     </template>
     <template v-else>
@@ -245,7 +240,7 @@ useVideoAutoplay(videoContainerRef)
             </div>
 
             <!-- Images -->
-            <PostImageGallery v-else-if="post.images && post.images.length > 0" :images="post.images" :post-id="post.id ?? ''" />
+            <PostImageGallery v-else-if="post.images && post.images.length > 0" :images="post.images" :post-id="Number(post.id) ?? 0" />
         </div>
     <PostHeader
       :post="post"

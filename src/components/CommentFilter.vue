@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-// Nie musisz importować VDropdown, jeśli użyłeś app.use(FloatingVue)
-// Jeśli nie używasz globalnie: import { VDropdown } from 'floating-vue';
 
-// --- Typy i Dane ---
 interface FilterOption {
   id: string;
   title: string;
@@ -35,23 +32,23 @@ const currentLabel = computed(() => {
   return options.find(o => o.id === selectedId.value)?.title || 'Sortowanie';
 });
 
-// Funkcja wyboru (przyjmuje funkcję hide z slotu)
+
 const selectOption = (id: string, hide: () => void) => {
   selectedId.value = id;
-  hide(); // Zamykamy dymek po wyborze
+  hide();
 };
 </script>
 
 <template>
   <VDropdown
-    placement="top-end"
+    placement="top-start"
     :distance="12"
     arrow
     :skidding="0"
-    class="font-sans"
+    class="font-sans w-fit"
   >
     <button
-      class="flex items-center space-x-1 text-gray-600 font-semibold text-sm hover:underline focus:outline-none"
+      class="flex  items-center space-x-1 text-gray-600 font-semibold text-sm hover:underline focus:outline-none"
     >
       <span>{{ currentLabel }}</span>
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 fill-current" viewBox="0 0 20 20">
@@ -87,16 +84,16 @@ const selectOption = (id: string, hide: () => void) => {
 </template>
 
 <style>
-/* Dostosowanie kontenera dymka */
+
 .v-popper--theme-dropdown .v-popper__inner {
   background: white;
   border-radius: 0.75rem; /* rounded-xl w Tailwind */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Cień FB */
   border: 1px solid #f3f4f6; /* border-gray-100 */
-  padding: 0; /* Resetujemy padding biblioteki, bo mamy padding wewnątrz div */
+  padding: 0;
 }
 
-/* Dostosowanie strzałki */
+/
 .v-popper--theme-dropdown .v-popper__arrow-inner {
   border-color: white; /* Kolor strzałki */
 }

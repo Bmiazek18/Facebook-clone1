@@ -21,6 +21,7 @@ interface MenuItem {
   description?: string;
   icon: Component;
   hasSeparator?: boolean;
+  action?: () => void;
 }
 
 const menuItems: MenuItem[] = [
@@ -80,7 +81,7 @@ const menuItems: MenuItem[] = [
   {
     id: 10,
     label: 'Przestań obserwować użytkownika ŁKS Łazy',
-    description: 'Przestań wyświetlać posty z tej strony.',
+    description: 'Przestań wyświetlać posty z tej strony. Strona nie otrzyma powiadomienia o Twojej rezygnacji z obserwowania.',
     icon: TextBoxRemoveIcon,
   },
   {
@@ -92,7 +93,7 @@ const menuItems: MenuItem[] = [
   {
     id: 12,
     label: 'Zablokuj profil ŁKS Łazy',
-    description: 'Nie będziecie mogli się widzieć ani skontaktować.',
+    description: 'Nie będziecie mogli się widzieć ani skontaktować się ze sobą.',
     icon: AccountCancelIcon,
   },
 ];
@@ -103,28 +104,28 @@ const handleClick = (item: MenuItem) => {
 </script>
 
 <template>
-  <div class="bg-white w-full max-w-[340px] rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.15)] py-1 text-[#050505]">
+  <div class="bg-white w-full max-w-md rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] py-2 text-[#050505]">
 
     <div v-for="item in menuItems" :key="item.id">
       <button
         @click="handleClick(item)"
-        class="group flex items-start w-full px-3 py-1.5 hover:bg-gray-100 transition-colors duration-200 text-left"
+        class="group flex items-start w-full px-4 py-2 hover:bg-gray-100 transition-colors duration-200 text-left"
       >
-        <div class="mr-2 mt-0.5 text-[#1c1e21] shrink-0">
-          <component :is="item.icon" :size="20" />
+        <div class="mr-3 mt-0.5 text-[#1c1e21] shrink-0">
+          <component :is="item.icon" :size="24" />
         </div>
 
         <div class="flex flex-col">
-          <span class="text-sm font-medium leading-tight text-[#050505]">
+          <span class="text-[15px] font-medium leading-5 text-[#050505]">
             {{ item.label }}
           </span>
-          <span v-if="item.description" class="text-xs text-[#65676b] leading-tight mt-0.5">
+          <span v-if="item.description" class="text-[13px] text-[#65676b] leading-4 mt-0.5">
             {{ item.description }}
           </span>
         </div>
       </button>
 
-      <div v-if="item.hasSeparator" class="h-px bg-gray-200 my-1 mx-3"></div>
+      <div v-if="item.hasSeparator" class="h-px bg-gray-200 my-2 mx-4"></div>
     </div>
 
   </div>
