@@ -57,6 +57,7 @@ const handleUpdateContent = (id: string, value: string) => {
     >
       <!-- Remove Button -->
       <button
+        data-story-control
         v-if="!state.editing && !state.cropping"
         @click.stop="handleRemove"
         class="absolute -top-3 -right-3 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-600 z-50 transition-opacity shadow-md"

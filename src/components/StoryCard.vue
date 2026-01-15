@@ -1,6 +1,5 @@
 <template>
-  <RouterLink
-    to="/story"
+  <div
     class="
       w-[113px]
       h-[200px]
@@ -16,30 +15,67 @@
       cursor-pointer
       shrink-0
     "
-    :style="{ backgroundImage: `url(${story.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }"
+    :style="storyBackground"
   >
-
+    <!-- Gradient overlay -->
     <div class="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-black via-black/50 to-transparent z-10"></div>
 
+    <!-- Avatar with ring (blue for unviewed, gray for viewed) -->
     <div class="absolute inset-x-0 top-0 h-[70%] z-20 p-2">
       <div
-        class="w-9 h-9 rounded-full border-2 border-blue-500 overflow-hidden bg-white flex items-center justify-center shadow-md"
+        :class="[
+          'w-9 h-9 rounded-full border-[3px] overflow-hidden bg-white flex items-center justify-center shadow-md',
+          userStory.hasUnviewedStories ? 'border-blue-500' : 'border-gray-400'
+        ]"
       >
-        <img v-if="story.profileImageUrl" :src="story.profileImageUrl" :alt="story.title" class="w-full h-full object-cover" />
+        <img
+          v-if="userStory.userAvatar"
+          :src="userStory.userAvatar"
+          :alt="userStory.userName"
+          class="w-full h-full object-cover"
+        />
       </div>
     </div>
 
+    <!-- User name -->
     <div class="absolute bottom-3 left-3 right-3 text-white z-30">
-      <p class="text-xs font-semibold leading-tight line-clamp-2">
-        {{ story.id }}
+      <p class="text-xs font-semibold leading-tight line-clamp-2 drop-shadow-lg">
+        {{ userStory.userName }}
       </p>
     </div>
-  </RouterLink>
+  </div>
 </template>
 
 <script setup lang="ts">
-import type { Story } from '../types/Story';
-defineProps<{
-  story: Story;
+import { computed } from 'vue';
+import type { UserStories } from '../types/Story';
+
+const props = defineProps<{
+  userStory: UserStories;
 }>();
+
+// Get the first story for preview
+const firstStory = computed(() => props.userStory.stories[0]);
+
+const storyBackground = computed(() => {
+  if (firstStory.value?.imageUrl) {
+    return {
+      backgroundImage: `url(${firstStory.value.imageUrl})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
+    };
+  } else if (firstStory.value?.backgroundGradient) {
+    return {
+      background: firstStory.value.backgroundGradient
+    };
+  } else if (firstStory.value?.backgroundColor) {
+    return {
+      backgroundColor: firstStory.value.backgroundColor
+    };
+  } else {
+    return {
+      background: 'linear-gradient(to bottom, #3b82f6, #86efac)'
+    };
+  }
+});
 </script>

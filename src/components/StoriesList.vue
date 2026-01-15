@@ -1,9 +1,6 @@
 <template>
   <div class="bg-gray-100 dark:bg-gray-800">
-
-
     <div class="relative">
-
       <button
         v-if="!isStart"
         @click="scrollLeft"
@@ -15,38 +12,46 @@
 
       <div
         ref="carouselRef"
-        class="flex overflow-x-auto bg-theme-bg scrollbar-hide "
-
+        class="flex overflow-x-auto bg-theme-bg scrollbar-hide"
       >
         <AddStoryCard class="mr-4"/>
-        <StoryCard v-for="story in stories" :key="story.id" :story="story" class="mr-4 last-of-type:mr-0" />
 
-
+        <!-- User Stories from Store -->
+        <StoryCard
+          v-for="userStory in allUserStories"
+          :key="userStory.userId"
+          :user-story="userStory"
+          @click="handleStoryClick(userStory)"
+          class="mr-4 last-of-type:mr-0"
+        />
       </div>
 
       <button
         v-if="!isEnd"
         @click="scrollRight"
-        class="absolute top-1/2 z-30 right-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg border dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-150 z-10"
+        class="absolute top-1/2 z-30 right-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg border dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-150"
         style="margin-right: 64.5px;"
       >
         <ChevronRightIcon :size="24" fillColor="#4B5563" />
       </button>
-
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import StoryCard from './StoryCard.vue';
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import AddStoryCard from './AddStoryCard.vue';
-import type {Story}  from '../types/Story';
-import {useCarousel} from '../composables/useCarousel';
+import StoryCard from './StoryCard.vue';
+import { useCarousel } from '../composables/useCarousel';
+import { useStoriesStore } from '@/stores/stories';
+import type { UserStories } from '@/types/Story';
 
 import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
 import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue';
 
+const router = useRouter();
+const storiesStore = useStoriesStore();
 
 const {
   carouselRef,
@@ -56,99 +61,15 @@ const {
   scrollRight,
 } = useCarousel(4);
 
-// --- DANE ---
-const stories = ref<Story[]>([
-  {
-    id: 1,
-    backgroundImageUrl: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    profileImageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Logo_Politechniki_Gda%C5%84skiej.svg/1200px-Logo_Politechniki_Gda%C5%84skiej.svg.png',
-    title: 'Politechnika Gdańska',
-  },
-  {
-    id: 2,
-    backgroundImageUrl: 'https://images.unsplash.com/photo-1548687788-b21a8d011c77?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    profileImageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/LZPN_logo.png/640px-LZPN_logo.png',
-    title: 'Lubelski Związek Pił...',
-  },
-  {
-    id: 3,
-    backgroundImageUrl: 'https://images.unsplash.com/photo-1549472304-4c8e96df231f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    profileImageUrl: 'https://i.imgur.com/K1x56gJ.png',
-    title: 'Nowa Aktualizacja!',
-  },
-  {
-    id: 4,
-    backgroundImageUrl: 'https://images.unsplash.com/photo-1504198458643-ad41740d6945?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    profileImageUrl: 'https://i.imgur.com/b9iYF5u.png',
-    title: 'Eventy w Mieście',
-  },
-  {
-    id: 6,
-    backgroundImageUrl: 'https://images.unsplash.com/photo-1504198458643-ad41740d6945?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    profileImageUrl: 'https://i.imgur.com/b9iYF5u.png',
-    title: 'Eventy w Mieście 1',
-  },
-  {
-    id: 7,
-    backgroundImageUrl: 'https://images.unsplash.com/photo-1504198458643-ad41740d6945?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    profileImageUrl: 'https://i.imgur.com/b9iYF5u.png',
-    title: 'Eventy w Mieście',
-  },
-  {
-    id: 8,
-    backgroundImageUrl: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    profileImageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Logo_Politechniki_Gda%C5%84skiej.svg/1200px-Logo_Politechniki_Gda%C5%84skiej.svg.png',
-    title: 'Politechnika Gdańska',
-  },
-  {
-    id: 9,
-    backgroundImageUrl: 'https://images.unsplash.com/photo-1548687788-b21a8d011c77?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    profileImageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/LZPN_logo.png/640px-LZPN_logo.png',
-    title: 'Lubelski Związek Pił...',
-  },
-  {
-    id: 10,
-    backgroundImageUrl: 'https://images.unsplash.com/photo-1549472304-4c8e96df231f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    profileImageUrl: 'https://i.imgur.com/K1x56gJ.png',
-    title: 'Nowa Aktualizacja!',
-  },
-  {
-    id: 11,
-    backgroundImageUrl: 'https://images.unsplash.com/photo-1504198458643-ad41740d6945?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    profileImageUrl: 'https://i.imgur.com/b9iYF5u.png',
-    title: 'Eventy w Mieście',
-  },
-  {
-    id: 12,
-    backgroundImageUrl: 'https://images.unsplash.com/photo-1504198458643-ad41740d6945?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    profileImageUrl: 'https://i.imgur.com/b9iYF5u.png',
-    title: 'Eventy w Mieście',
-  },
-  {
-    id:13,
-    backgroundImageUrl: 'https://images.unsplash.com/photo-1504198458643-ad41740d6945?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    profileImageUrl: 'https://i.imgur.com/b9iYF5u.png',
-    title: 'Eventy w Mieście',
-  },
-    {
-    id: 14,
-    backgroundImageUrl: 'https://images.unsplash.com/photo-1504198458643-ad41740d6945?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    profileImageUrl: 'https://i.imgur.com/b9iYF5u.png',
-    title: 'Eventy w Mieście',
-  }, {
-    id: 15,
-    backgroundImageUrl: 'https://images.unsplash.com/photo-1504198458643-ad41740d6945?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    profileImageUrl: 'https://i.imgur.com/b9iYF5u.png',
-    title: 'Eventy w Mieście',
-  }
-  , {
-    id: 16,
-    backgroundImageUrl: 'https://images.unsplash.com/photo-1504198458643-ad41740d6945?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    profileImageUrl: 'https://i.imgur.com/b9iYF5u.png',
-    title: 'Eventy w Mieście',
-  },
-]);
+const allUserStories = computed(() => storiesStore.allUserStories);
+
+const handleStoryClick = (userStory: UserStories) => {
+  // Navigate to story viewer
+  router.push(`/stories/${userStory.userId}`);
+};
 </script>
+
+
 
 <style scoped>
 .scrollbar-hide {

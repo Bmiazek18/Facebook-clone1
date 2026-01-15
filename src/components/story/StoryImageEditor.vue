@@ -1,7 +1,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, onUnmounted, computed, onMounted, provide } from 'vue';
+import { useRouter } from 'vue-router';
 import { useStoryElementInteraction } from '@/composables/useStoryElementInteraction';
+import { useStoryExport } from '@/composables/useStoryExport';
+import { useStoriesStore } from '@/stores/stories';
+import { useAuthStore } from '@/stores/auth';
 
 // --- IMPORT KOMPONENTÓW ---
 import MusicModal, { type MusicTrack } from '@/components/MusicModal.vue';
@@ -106,6 +110,7 @@ const storyElements = ref<StoryElementType[]>([
 ]);
 
 const backgroundRef = ref<HTMLElement | null>(null);
+const storyContainerRef = ref<HTMLElement | null>(null);
 const bgDimensions = reactive({ width: CANVAS_WIDTH, height: CANVAS_HEIGHT });
 
 const {
@@ -132,6 +137,76 @@ const selectedElement = computed(() => {
 
 provide('selectedElement', selectedElement);
 
+
+// --- STORY EXPORT ---
+const { isRendering, renderProgress, renderStoryToImage } = useStoryExport();
+const storiesStore = useStoriesStore();
+const authStore = useAuthStore();
+const router = useRouter();
+
+const handleExportStory = async () => {
+  if (!storyContainerRef.value) return;
+
+  try {
+    // Deselect any selected elements to remove their borders/controls
+    selectedElementId.value = null;
+
+    // Wait a frame for UI to update
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Temporarily hide interactive elements before rendering
+    const guideLines = storyContainerRef.value.querySelectorAll('[data-guide-line]');
+    const shadows = storyContainerRef.value.querySelectorAll('[data-story-shadow]');
+    const controls = storyContainerRef.value.querySelectorAll('[data-story-control]');
+
+    guideLines.forEach((el) => (el as HTMLElement).style.display = 'none');
+    shadows.forEach((el) => (el as HTMLElement).style.display = 'none');
+    controls.forEach((el) => (el as HTMLElement).style.display = 'none');
+
+    // Render story to image (bez automatycznego pobierania)
+    const imageUrl = await renderStoryToImage(storyContainerRef.value, storyElements.value, false);
+
+    // Restore interactive elements
+    guideLines.forEach((el) => (el as HTMLElement).style.display = '');
+    shadows.forEach((el) => (el as HTMLElement).style.display = '');
+    controls.forEach((el) => (el as HTMLElement).style.display = '');
+
+    // Get current user info
+    const currentUser = authStore.currentUser;
+    if (!currentUser) {
+      alert('Musisz być zalogowany aby dodać story');
+      return;
+    }
+
+    // Add story to store
+    const newStory = storiesStore.addStory(
+      currentUser.id.toString(),
+      currentUser.name,
+      currentUser.avatar || 'https://i.pravatar.cc/150?img=1',
+      {
+        type: props.initialImage ? 'image' : 'text',
+        imageUrl: imageUrl, // Używamy wyrenderowanego obrazu
+        backgroundColor: background.type === 'image' ? undefined : background.value,
+        backgroundGradient: background.type === 'gradient' ? background.value : undefined,
+        elements: storyElements.value
+      }
+    );
+
+    console.log('Story dodane:', newStory);
+
+    // Clean up blob URL after story is saved
+    // Note: Don't revoke immediately as the story needs to display it
+    // It will be cleaned up when the page is refreshed or navigated away
+
+    // Redirect back to home/stories view
+    alert('Story zostało dodane! ✅');
+    router.push('/');
+
+  } catch (error) {
+    console.error('Failed to export story:', error);
+    alert('Błąd podczas eksportowania story');
+  }
+};
 
 // --- AUDIO PLAYER ---
 const audioPlayer = new Audio();
@@ -374,6 +449,23 @@ const goBack = () => {
 
 <template>
   <div class="flex h-screen w-full bg-[#F0F2F5] font-sans overflow-hidden select-none relative">
+    <!-- Rendering Modal -->
+    <div v-if="isRendering" class="absolute inset-0 bg-black/90 flex items-center justify-center z-50">
+      <div class="bg-gray-900 rounded-lg p-8 max-w-md w-full mx-4 text-center">
+        <h3 class="text-white text-xl font-bold mb-4">Renderowanie...</h3>
+        <div class="mb-4">
+          <div class="bg-gray-700 rounded-full h-4 overflow-hidden">
+            <div
+              class="bg-blue-600 h-full transition-all duration-300"
+              :style="{ width: renderProgress + '%' }"
+            ></div>
+          </div>
+          <div class="text-white text-center mt-2 font-bold">{{ renderProgress }}%</div>
+        </div>
+        <p class="text-gray-400 text-sm">Tworzenie obrazu story...</p>
+      </div>
+    </div>
+
     <StorySidebar
       :is-music-modal-open="isMusicModalOpen"
       :is-image-selected="selectedElement?.type === 'image'"
@@ -381,6 +473,7 @@ const goBack = () => {
       @toggle-music="toggleMusicModal"
       @add-link="toggleLinkModal"
       @share-post="togglePostShareModal"
+      @export-story="handleExportStory"
       @back="goBack"
     />
 
@@ -397,13 +490,13 @@ const goBack = () => {
         </div>
 
         <div class="flex-1 bg-[#18191A] rounded-lg flex items-center justify-center overflow-hidden relative shadow-inner border border-gray-800" @mousedown.self="onBackgroundClick">
-          <div class="relative aspect-9/16 h-[calc(100%-68px)] bg-black shadow-2xl rounded-md border border-gray-700" style="overflow: visible;">
+          <div ref="storyContainerRef" class="relative aspect-9/16 h-[calc(100%-68px)] bg-black shadow-2xl rounded-md border border-gray-700" style="overflow: visible;">
             <div class="absolute inset-0 w-full h-full pointer-events-none rounded-md overflow-hidden" :style="{ background: background.value }" ref="backgroundRef"></div>
 
             <!-- GUIDE LINES -->
             <template v-for="(guide, idx) in activeGuides" :key="`guide-${idx}`">
-              <div v-if="guide.type === 'vertical'" class="absolute top-0 bottom-0 pointer-events-none z-40 bg-blue-500 opacity-60" :style="{ left: guide.pos + 'px', width: '1px', transform: 'translateX(-50%)' }"></div>
-              <div v-else class="absolute left-0 right-0 pointer-events-none z-40 bg-blue-500 opacity-60" :style="{ top: guide.pos + 'px', height: '1px', transform: 'translateY(-50%)' }"></div>
+              <div data-guide-line v-if="guide.type === 'vertical'" class="absolute top-0 bottom-0 pointer-events-none z-40 bg-blue-500 opacity-60" :style="{ left: guide.pos + 'px', width: '1px', transform: 'translateX(-50%)' }"></div>
+              <div data-guide-line v-else class="absolute left-0 right-0 pointer-events-none z-40 bg-blue-500 opacity-60" :style="{ top: guide.pos + 'px', height: '1px', transform: 'translateY(-50%)' }"></div>
             </template>
 
             <StoryElement
@@ -424,7 +517,7 @@ const goBack = () => {
               :on-remove="removeElement"
               @update-content="updateElementContent"
             />
-            <div class="pointer-events-none absolute inset-0 z-100 rounded-md shadow-[0_0_0_9999px_rgba(24,25,26,0.75)]"></div>
+            <div data-story-shadow class="pointer-events-none absolute inset-0 z-100 rounded-md shadow-[0_0_0_9999px_rgba(24,25,26,0.75)]"></div>
           </div>
 
           <ImageToolbar

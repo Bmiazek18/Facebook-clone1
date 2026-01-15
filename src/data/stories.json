@@ -1,0 +1,182 @@
+[
+  {
+    "userId": "1",
+    "userName": "Bartosz Mązek",
+    "userAvatar": "https://i.pravatar.cc/150?img=12",
+    "stories": [
+      {
+        "id": "story_1_1736400000000",
+        "userId": "1",
+        "type": "video",
+        "imageUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        "createdAt": 1736400000000,
+        "expiresAt": 1736486400000,
+        "viewCount": 5,
+        "viewers": ["2", "3", "4"]
+      },
+      {
+        "id": "story_1_1736405000000",
+        "userId": "1",
+        "type": "image",
+        "imageUrl": "https://picsum.photos/558/1000?random=10",
+        "createdAt": 1736405000000,
+        "expiresAt": 1736491400000,
+        "viewCount": 8,
+        "viewers": ["2", "3"]
+      },
+      {
+        "id": "story_1_1736410000000",
+        "userId": "1",
+        "type": "image",
+        "imageUrl": "https://picsum.photos/558/1000?random=11",
+        "createdAt": 1736410000000,
+        "expiresAt": 1736496400000,
+        "viewCount": 6,
+        "viewers": ["2", "4"]
+      }
+    ],
+    "hasUnviewedStories": false
+  },
+  {
+    "userId": "2",
+    "userName": "Anna Kowalska",
+    "userAvatar": "https://i.pravatar.cc/150?img=5",
+    "stories": [
+      {
+        "id": "story_2_1736410000000",
+        "userId": "2",
+        "type": "image",
+        "imageUrl": "https://picsum.photos/558/1000?random=1",
+        "createdAt": 1736410000000,
+        "expiresAt": 1736496400000,
+        "viewCount": 12,
+        "viewers": ["1", "3", "4", "5"]
+      },
+      {
+        "id": "story_2_1736420000000",
+        "userId": "2",
+        "type": "image",
+        "imageUrl": "https://picsum.photos/558/1000?random=2",
+        "createdAt": 1736420000000,
+        "expiresAt": 1736506400000,
+        "viewCount": 8,
+        "viewers": ["1", "3", "5"]
+      },
+      {
+        "id": "story_2_1736425000000",
+        "userId": "2",
+        "type": "video",
+        "imageUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+        "createdAt": 1736425000000,
+        "expiresAt": 1736511400000,
+        "viewCount": 3,
+        "viewers": ["1"]
+      }
+    ],
+    "hasUnviewedStories": true
+  },
+  {
+    "userId": "3",
+    "userName": "Jan Nowak",
+    "userAvatar": "https://i.pravatar.cc/150?img=8",
+    "stories": [
+      {
+        "id": "story_3_1736415000000",
+        "userId": "3",
+        "type": "image",
+        "imageUrl": "https://picsum.photos/558/1000?random=3",
+        "createdAt": 1736415000000,
+        "expiresAt": 1736501400000,
+        "viewCount": 15,
+        "viewers": ["1", "2", "4", "5", "6"]
+      },
+      {
+        "id": "story_3_1736425000000",
+        "userId": "3",
+        "type": "image",
+        "imageUrl": "https://picsum.photos/558/1000?random=12",
+        "createdAt": 1736425000000,
+        "expiresAt": 1736511400000,
+        "viewCount": 10,
+        "viewers": ["1", "2", "5"]
+      },
+      {
+        "id": "story_3_1736430000000",
+        "userId": "3",
+        "type": "video",
+        "imageUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        "createdAt": 1736430000000,
+        "expiresAt": 1736516400000,
+        "viewCount": 7,
+        "viewers": ["1", "2", "5"]
+      }
+    ],
+    "hasUnviewedStories": true
+  },
+  {
+    "userId": "4",
+    "userName": "Maria Wiśniewska",
+    "userAvatar": "https://i.pravatar.cc/150?img=10",
+    "stories": [
+      {
+        "id": "story_4_1736418000000",
+        "userId": "4",
+        "type": "image",
+        "imageUrl": "https://picsum.photos/558/1000?random=4",
+        "createdAt": 1736418000000,
+        "expiresAt": 1736504400000,
+        "viewCount": 20,
+        "viewers": ["1", "2", "3", "5", "6", "7"]
+      },
+      {
+        "id": "story_4_1736423000000",
+        "userId": "4",
+        "type": "image",
+        "imageUrl": "https://picsum.photos/558/1000?random=13",
+        "createdAt": 1736423000000,
+        "expiresAt": 1736509400000,
+        "viewCount": 15,
+        "viewers": ["1", "2", "3"]
+      },
+      {
+        "id": "story_4_1736428000000",
+        "userId": "4",
+        "type": "video",
+        "imageUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        "createdAt": 1736428000000,
+        "expiresAt": 1736514400000,
+        "viewCount": 12,
+        "viewers": ["1", "2"]
+      }
+    ],
+    "hasUnviewedStories": true
+  },
+  {
+    "userId": "5",
+    "userName": "Piotr Zieliński",
+    "userAvatar": "https://i.pravatar.cc/150?img=13",
+    "stories": [
+      {
+        "id": "story_5_1736425000000",
+        "userId": "5",
+        "type": "image",
+        "imageUrl": "https://picsum.photos/558/1000?random=5",
+        "createdAt": 1736425000000,
+        "expiresAt": 1736511400000,
+        "viewCount": 9,
+        "viewers": ["1", "2", "3", "4"]
+      },
+      {
+        "id": "story_5_1736430000000",
+        "userId": "5",
+        "type": "image",
+        "imageUrl": "https://picsum.photos/558/1000?random=14",
+        "createdAt": 1736430000000,
+        "expiresAt": 1736516400000,
+        "viewCount": 7,
+        "viewers": ["1", "2"]
+      }
+    ],
+    "hasUnviewedStories": true
+  }
+]

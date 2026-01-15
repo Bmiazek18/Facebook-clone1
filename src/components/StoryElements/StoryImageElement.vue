@@ -47,6 +47,7 @@ defineProps<{
     <!-- Resize Handle -->
     <template v-if="!isCropping">
       <div
+        data-story-control
         @mousedown.stop="(e: MouseEvent) => onStartResize(e, element)"
         class="absolute bottom-1 right-1 bg-white text-black p-1 rounded-full opacity-0 group-hover:opacity-100 cursor-nwse-resize shadow-md hover:scale-110 transition z-40"
       >

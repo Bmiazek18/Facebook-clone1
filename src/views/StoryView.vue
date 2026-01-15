@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useStoriesStore } from '@/stores/stories';
+import type { UserStories, StoryItem } from '@/types/Story';
 
 // --- IMPORT IKON ---
 import ChevronLeft from 'vue-material-design-icons/ChevronLeft.vue';
@@ -19,24 +22,20 @@ import ThumbUp from 'vue-material-design-icons/ThumbUp.vue';
 import Heart from 'vue-material-design-icons/Heart.vue';
 import NavbarRight from '@/components/NavbarRight.vue';
 import { useI18n } from 'vue-i18n';
+import ActiveStoriesList from '@/components/ActiveStoriesList.vue';
+
 
 const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
+const storiesStore = useStoriesStore();
+
+// Props
+const props = defineProps<{
+  userId?: string;
+}>();
 
 // --- TYPY DANYCH ---
-interface StoryUser {
-  id: number;
-  name: string;
-  time: string;
-  isUnseen: boolean;
-  isActive?: boolean;
-}
-
-interface StoryItem {
-    id: number;
-    type: 'video';
-    src: string;
-}
-
 interface Reaction {
     type: 'icon' | 'emoji';
     component?: any;
@@ -44,28 +43,7 @@ interface Reaction {
     class?: string;
 }
 
-// --- DANE: Pasek Boczny ---
-const stories = ref<StoryUser[]>([
-  { id: 1, name: 'Dariusz Blacha', time: '11 min', isUnseen: false, isActive: true },
-  { id: 2, name: 'Wiktoria Celińska-Mysław', time: 'Urodziny • dziś', isUnseen: true },
-  { id: 3, name: 'Patryk Stosio', time: '2 nowe • 13 godz.', isUnseen: true },
-  { id: 4, name: 'Patrycja Rosłoń', time: '1 nowa • 21 godz.', isUnseen: true },
-  { id: 5, name: 'Mateusz Chrobok', time: '1 nowa • 23 godz.', isUnseen: true },
-]);
 
-// --- DANE: Wideo (Linki Google CDN - ZAWSZE DZIAŁAJĄ) ---
-const storyItems = ref<StoryItem[]>([
-    {
-        id: 1,
-        type: 'video',
-        src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
-    },
-    {
-        id: 2,
-        type: 'video',
-        src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4'
-    }
-]);
 
 // --- DANE: Reakcje ---
 const reactions: Reaction[] = [
@@ -79,34 +57,288 @@ const reactions: Reaction[] = [
 ];
 
 // --- STAN APLIKACJI ---
+const currentUserIndex = ref(0);
 const currentStoryIndex = ref(0);
 const videoRef = ref<HTMLVideoElement | null>(null);
+const imageRef = ref<HTMLImageElement | null>(null);
 const isPaused = ref(false);
 const isMuted = ref(true);
 const progress = ref(0);
 const messageInput = ref('');
 
-const currentItem = computed(() => storyItems.value[currentStoryIndex.value]);
+// Timer for images (10 seconds)
+const IMAGE_DURATION = 10000; // 10 seconds in milliseconds
+let imageTimer: number | null = null;
+let imageProgressInterval: number | null = null;
+
+// Preloaded images cache
+const preloadedImages = new Map<string, HTMLImageElement>();
+
+// Preload images function
+const preloadImages = () => {
+  // Preload current user's remaining stories
+  if (currentUserStories.value) {
+    for (let i = currentStoryIndex.value; i < currentUserStories.value.stories.length; i++) {
+      const story = currentUserStories.value.stories[i];
+      if (story && story.type === 'image' && story.imageUrl && !preloadedImages.has(story.imageUrl)) {
+        const img = new Image();
+        img.src = story.imageUrl;
+        preloadedImages.set(story.imageUrl, img);
+      }
+    }
+  }
+
+  // Preload next user's first few stories
+  if (currentUserIndex.value < allUserStories.value.length - 1) {
+    const nextUser = allUserStories.value[currentUserIndex.value + 1];
+    if (nextUser) {
+      for (let i = 0; i < Math.min(3, nextUser.stories.length); i++) {
+        const story = nextUser.stories[i];
+        if (story && story.type === 'image' && story.imageUrl && !preloadedImages.has(story.imageUrl)) {
+          const img = new Image();
+          img.src = story.imageUrl;
+          preloadedImages.set(story.imageUrl, img);
+        }
+      }
+    }
+  }
+};
+
+// Load stories from store
+const allUserStories = computed(() => storiesStore.allUserStories);
+
+// Current user stories
+const currentUserStories = computed(() => {
+  if (allUserStories.value.length === 0) return null;
+  return allUserStories.value[currentUserIndex.value];
+});
+
+// Current story item
+const currentStoryItem = computed(() => {
+  if (!currentUserStories.value) return null;
+  return currentUserStories.value.stories[currentStoryIndex.value];
+});
+
+// Story items array (for progress bars)
+const storyItems = computed(() => {
+  if (!currentUserStories.value) return [];
+  return currentUserStories.value.stories;
+});
+
+// Current item (for compatibility with template)
+const currentItem = computed(() => {
+  if (!currentStoryItem.value || !currentUserStories.value) {
+    return {
+      src: '',
+      type: 'image' as const,
+      user: {
+        name: '',
+        avatar: '',
+        time: ''
+      }
+    };
+  }
+
+  return {
+    id: currentStoryItem.value.id,
+    src: currentStoryItem.value.imageUrl || '',
+    type: currentStoryItem.value.type,
+    user: {
+      name: currentUserStories.value.userName || '',
+      avatar: currentUserStories.value.userAvatar || '',
+      time: formatTimeAgo(currentStoryItem.value.createdAt)
+    }
+  };
+});
+
+// Format time ago
+const formatTimeAgo = (timestamp: number) => {
+  const now = Date.now();
+  const diff = now - timestamp;
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+
+  if (hours < 1) return 'Just now';
+  if (hours === 1) return '1h ago';
+  return `${hours}h ago`;
+};
+
+// Initialize - find user by ID if provided
+onMounted(() => {
+  if (props.userId) {
+    const userIndex = allUserStories.value.findIndex(us => us.userId === props.userId);
+    if (userIndex !== -1) {
+      currentUserIndex.value = userIndex;
+    }
+  }
+
+  // Mark first story as viewed
+  if (currentStoryItem.value) {
+    storiesStore.markStoryAsViewed(currentStoryItem.value.id, storiesStore.currentUserId);
+  }
+
+  // Start preloading images
+  preloadImages();
+});
+
+// Cleanup on unmount
+onBeforeUnmount(() => {
+  clearImageTimers();
+
+});
+ onMounted(() => {
+    if (isVideo.value && videoRef.value) {
+        // Video story
+        videoRef.value.load();
+        try {  videoRef.value.play(); } catch (e) { console.error("Autoplay blocked:", e); }
+    } else {
+        // Image story - start 10 second timer
+        startImageTimer();
+    }
+});
+
+
+
+// Watch for userId changes (when navigating between users)
+watch(() => props.userId, (newUserId) => {
+  if (newUserId) {
+    const userIndex = allUserStories.value.findIndex(us => us.userId === newUserId);
+    if (userIndex !== -1) {
+      currentUserIndex.value = userIndex;
+      currentStoryIndex.value = 0;
+    }
+  }
+});
+
+// Watch for story changes to mark as viewed
+watch([currentUserIndex, currentStoryIndex], () => {
+  if (currentStoryItem.value) {
+    storiesStore.markStoryAsViewed(currentStoryItem.value.id, storiesStore.currentUserId);
+  }
+});
+
+// Watch for user index changes to update URL
+watch(currentUserIndex, (newUserIndex) => {
+  clearImageTimers();
+  progress.value = 0;
+  const newUserId = allUserStories.value[newUserIndex]?.userId;
+  if (newUserId && route.params.userId !== newUserId) {
+    router.replace({ name: 'userStories', params: { userId: newUserId } });
+  }
+
+  // Preload images for new user
+  preloadImages();
+  startImageTimer();
+});
 
 // --- LOGIKA ODTWARZACZA ---
+
+// Clear timers
+const clearImageTimers = () => {
+  if (imageTimer !== null) {
+    clearTimeout(imageTimer);
+    imageTimer = null;
+  }
+  if (imageProgressInterval !== null) {
+    clearInterval(imageProgressInterval);
+    imageProgressInterval = null;
+  }
+};
+
+// Start image timer (10 seconds)
+const startImageTimer = () => {
+  clearImageTimers();
+  progress.value = 0;
+
+  const startTime = Date.now();
+
+  // Update progress every 100ms
+  imageProgressInterval = window.setInterval(() => {
+    if (!isPaused.value) {
+      const elapsed = Date.now() - startTime;
+      const percent = Math.min((elapsed / IMAGE_DURATION) * 100, 100);
+      progress.value = percent;
+    }
+  }, 100);
+
+  // Move to next story after 10 seconds
+  imageTimer = window.setTimeout(() => {
+    if (!isPaused.value) {
+      nextStory();
+    }
+  }, IMAGE_DURATION);
+};
+
+// Detect if current item is video or image
+const isVideo = computed(() => {
+  const item = currentStoryItem.value;
+  if (!item) return false;
+
+  // Check type field
+  if (item.type === 'video') return true;
+
+  // Check URL extension
+  const url = item.imageUrl || '';
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
+  return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
+});
+
 watch(currentStoryIndex, async () => {
+    clearImageTimers();
     progress.value = 0;
     isPaused.value = false;
     await nextTick();
-    if (videoRef.value) {
+
+    // Preload upcoming images
+    preloadImages();
+
+    if (isVideo.value && videoRef.value) {
+        // Video story
         videoRef.value.load();
         try { await videoRef.value.play(); } catch (e) { console.error("Autoplay blocked:", e); }
+    } else {
+        // Image story - start 10 second timer
+        startImageTimer();
     }
 });
 
 const togglePlay = () => {
-    if (!videoRef.value) return;
-    if (videoRef.value.paused) {
-        videoRef.value.play();
-        isPaused.value = false;
+    if (isVideo.value && videoRef.value) {
+        // Video control
+        if (videoRef.value.paused) {
+            videoRef.value.play();
+            isPaused.value = false;
+        } else {
+            videoRef.value.pause();
+            isPaused.value = true;
+        }
     } else {
-        videoRef.value.pause();
-        isPaused.value = true;
+        // Image control - pause/resume timer
+        isPaused.value = !isPaused.value;
+
+        if (isPaused.value) {
+            clearImageTimers();
+        } else {
+            // Resume with remaining time
+            const remainingPercent = 100 - progress.value;
+            const remainingTime = (remainingPercent / 100) * IMAGE_DURATION;
+
+            const startTime = Date.now();
+            const startProgress = progress.value;
+
+            imageProgressInterval = window.setInterval(() => {
+                if (!isPaused.value) {
+                    const elapsed = Date.now() - startTime;
+                    const newProgress = startProgress + (elapsed / IMAGE_DURATION) * 100;
+                    progress.value = Math.min(newProgress, 100);
+                }
+            }, 100);
+
+            imageTimer = window.setTimeout(() => {
+                if (!isPaused.value) {
+                    nextStory();
+                }
+            }, remainingTime);
+        }
     }
 };
 
@@ -125,18 +357,36 @@ const updateProgress = () => {
 
 const nextStory = () => {
     if (currentStoryIndex.value < storyItems.value.length - 1) {
+        // Move to next story of current user
         currentStoryIndex.value++;
     } else {
-        console.log(t('story.endOfStory'));
-        isPaused.value = true;
+        // Current user's stories finished - check if there are more users
+        if (currentUserIndex.value < allUserStories.value.length - 1) {
+            // Move to next user's first story
+            currentUserIndex.value++;
+            currentStoryIndex.value = 0;
+        } else {
+            // No more users - end of all stories
+            console.log(t('story.endOfStory'));
+            isPaused.value = true;
+        }
     }
 };
 
 const prevStory = () => {
     if (currentStoryIndex.value > 0) {
+        // Move to previous story of current user
         currentStoryIndex.value--;
+    } else if (currentUserIndex.value > 0) {
+        // Move to previous user's last story
+        currentUserIndex.value--;
+        const prevUserStories = allUserStories.value[currentUserIndex.value];
+        if (prevUserStories) {
+            currentStoryIndex.value = prevUserStories.stories.length - 1;
+        }
     }
 };
+console.log(currentItem.value.src)
 </script>
 
 <template>
@@ -181,19 +431,7 @@ const prevStory = () => {
       </div>
       <div class="px-4 py-2 text-[17px] font-semibold text-black mt-2">{{ t('story.allStories') }}</div>
       <div class="flex-1 overflow-y-auto custom-scrollbar px-2 pb-4">
-        <div v-for="story in stories" :key="story.id" class="flex items-center gap-3 p-2 rounded-lg cursor-pointer transition mb-1" :class="story.isActive ? 'bg-gray-100' : 'hover:bg-gray-50'">
-          <div class="relative p-[2px] rounded-full shrink-0" :class="story.isUnseen && !story.isActive ? 'bg-blue-600' : 'bg-transparent'">
-            <div class="bg-white p-[2px] rounded-full">
-               <div class="w-[52px] h-[52px] rounded-full bg-gray-300 overflow-hidden relative border border-gray-200 flex items-center justify-center">
-                   <AccountCircle :size="68" class="text-gray-500 mt-2"/>
-               </div>
-            </div>
-          </div>
-          <div class="flex flex-col min-w-0">
-            <span class="font-semibold text-[15px] text-gray-900 leading-tight truncate">{{ story.name }}</span>
-            <span class="text-[13px] text-gray-500 font-normal mt-0.5 truncate" :class="story.isUnseen ? 'text-blue-600 font-medium' : ''">{{ story.time }}</span>
-          </div>
-        </div>
+    <ActiveStoriesList />
       </div>
     </aside>
 
@@ -211,12 +449,14 @@ const prevStory = () => {
 
       <div class="flex-1 flex flex-col items-center justify-center w-full h-full relative p-0 md:p-4">
 
-        <button @click="prevStory" v-if="currentStoryIndex > 0" class="absolute left-4 lg:left-24 z-20 w-12 h-12 bg-gray-700/50 hover:bg-gray-600 rounded-full flex items-center justify-center text-white transition"><ChevronLeft :size="32" /></button>
+        <button @click="prevStory" v-if="currentStoryIndex > 0 || currentUserIndex > 0" class="absolute left-4 lg:left-24 z-20 w-12 h-12 bg-gray-700/50 hover:bg-gray-600 rounded-full flex items-center justify-center text-white transition"><ChevronLeft :size="32" /></button>
 
-        <div class="flex flex-col h-[90vh] w-full md:aspect-9/16 md:w-auto max-h-[900px]">
+        <div class="flex flex-col h-[90vh] w-full md:aspect-9/16  md:w-auto ">
 
             <div class="relative flex-1 bg-gray-900 rounded-none md:rounded-xl overflow-hidden shadow-2xl flex flex-col group border-0 md:border md:border-gray-800">
+                <!-- Video Story -->
                 <video
+                    v-if="isVideo"
                     ref="videoRef"
                     :src="currentItem.src"
                     class="absolute inset-0 w-full h-full object-cover z-0"
@@ -227,6 +467,16 @@ const prevStory = () => {
                     @ended="nextStory"
                     @click="togglePlay"
                 ></video>
+
+                <!-- Image Story -->
+                <img
+                    v-else
+                    ref="imageRef"
+                    :src="currentItem.src"
+                    class="absolute inset-0 w-full h-full object-cover z-0"
+                    @click="togglePlay"
+                    alt="Story"
+                />
 
                 <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/20 pointer-events-none z-10"></div>
 
@@ -239,12 +489,13 @@ const prevStory = () => {
                 <div class="absolute top-5 left-4 right-4 flex justify-between items-start z-20">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full border border-gray-400 overflow-hidden bg-gray-500 flex items-center justify-center">
-                             <AccountCircle :size="42" class="text-gray-300"/>
+                             <img v-if="currentItem.user.avatar" :src="currentItem.user.avatar" alt="User avatar" class="w-full h-full object-cover" />
+                             <AccountCircle v-else :size="42" class="text-gray-300"/>
                         </div>
                         <div class="flex flex-col text-white drop-shadow-md leading-tight">
                             <div class="flex items-center gap-2">
-                                 <span class="font-semibold text-[15px] hover:underline cursor-pointer">Dariusz Blacha</span>
-                                 <span class="text-white/80 text-[13px] font-light">11 min</span>
+                                 <span class="font-semibold text-[15px] hover:underline cursor-pointer">{{ currentItem.user.name }}</span>
+                                 <span class="text-white/80 text-[13px] font-light">{{ currentItem.user.time }}</span>
                             </div>
                         </div>
                     </div>
@@ -253,7 +504,7 @@ const prevStory = () => {
                              <Play v-if="isPaused" :size="24"/>
                              <Pause v-else :size="24"/>
                         </div>
-                        <div class="cursor-pointer hover:opacity-80 transition" @click="toggleMute">
+                        <div v-if="isVideo" class="cursor-pointer hover:opacity-80 transition" @click="toggleMute">
                             <VolumeMute v-if="isMuted" :size="24" />
                             <VolumeHigh v-else :size="24" />
                         </div>
@@ -286,7 +537,7 @@ const prevStory = () => {
                     </div>
                 </div>
             </div>
-        <button @click="nextStory" v-if="currentStoryIndex < storyItems.length - 1" class="absolute right-4 lg:right-24 z-20 w-12 h-12 bg-gray-700/50 hover:bg-gray-600 rounded-full flex items-center justify-center text-white transition"><ChevronRight :size="32" /></button>
+        <button @click="nextStory" v-if="currentStoryIndex < storyItems.length - 1 || currentUserIndex < allUserStories.length - 1" class="absolute right-4 lg:right-24 z-20 w-12 h-12 bg-gray-700/50 hover:bg-gray-600 rounded-full flex items-center justify-center text-white transition"><ChevronRight :size="32" /></button>
       </div>
     </main>
   </div>
