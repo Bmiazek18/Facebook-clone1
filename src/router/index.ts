@@ -43,6 +43,12 @@ const router = createRouter({
       name: 'createLive',
       component: () => import('@/views/CreateLiveView.vue'),
     },
+    {
+      path: '/groups',
+      name: 'groups',
+      component: () => import('@/views/GroupsView.vue'),
+      meta: { showMainLayout: false },
+    },
      {
       path: '/live/produce/create-event',
       name: 'createEvent',
@@ -54,22 +60,53 @@ const router = createRouter({
       component: () => import('@/views/FriendsView.vue'),
     },
     {
+      path: '/marketplace/you/dashboard',
+      name: 'marketplaceLayout',
+      component: () => import('@/views/MarketPlace/MarketplaceLayout.vue'),
+      children: [
+        {
+          path: '',
+          name: 'marketplaceDashboard',
+          component: () => import('@/views/MarketPlace/DashboardView.vue'),
+        },
+      ]
+    },
+    {
       path: '/search',
       name: 'search',
       component: () => import('@/views/SearchView.vue'),
       props: true,
     },
-   {
+    {
       path: '/marketplace',
-      name: 'marketplace',
-      component: () => import('@/views/MarketPlaceView.vue'),
-      props: true,
+      name: 'mainMarketplaceLayout',
+      component: () => import('@/views/MarketPlace/MainMarketplaceLayout.vue'),
+      children: [
+        {
+          path: '',
+          name: 'marketplace',
+          component: () => import('@/views/MarketPlace/MarketPlaceView.vue'),
+          props: true,
+        },
+        {
+          path: 'notifications',
+          name: 'marketplaceNotificationsFlat',
+          component: () => import('@/views/MarketPlace/MarketplaceNotificationsView.vue'),
+        }
+      ]
     },
     {
       path: '/marketplace/item/:id',
       name: 'marketplaceItem',
-      component: () => import('@/views/MarketplaceItemView.vue'),
+      component: () => import('@/views/MarketPlace/MarketplaceItemView.vue'),
        meta: { showMainLayout: false },
+      props: true,
+    },
+    {
+      path: '/marketplace/create/item',
+      name: 'createMarketplaceItem',
+      component: () => import('@/views/MarketPlace/NewMarketplaceView.vue'),
+          meta: { showMainLayout: false },
       props: true,
     },
     {
@@ -133,8 +170,9 @@ const router = createRouter({
     },
     {
       path: '/event/:id',
-      name: 'events',
+      name: 'event',
       component: () => import('@/views/EventView.vue'),
+      props: true
     },
  {
       path: '/login/2',

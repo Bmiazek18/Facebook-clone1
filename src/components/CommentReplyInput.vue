@@ -10,9 +10,8 @@ import { useAuthStore } from '@/stores/auth';
 import { usePostsStore } from '@/stores/posts';
 import LazyEmojiPicker from './LazyEmojiPicker.vue';
 import { useCommentsStore } from '@/stores/comments';
-import { type User } from '@/data/users'; // No longer need getAllUsers, getUserById
 import { Dropdown as VDropdown } from 'floating-vue';
-import { useContentEditable } from '@/composables/useContentEditable';
+import MentionInput from './MentionInput.vue';
 
 const props = defineProps<{
     postAvatarSrc: string
@@ -25,24 +24,8 @@ const authStore = useAuthStore();
 const postsStore = usePostsStore();
 const commentsStore = useCommentsStore();
 
-const contentEditableDiv = ref<HTMLDivElement | null>(null);
-const postContent = ref(''); // Pass this ref to composable
-
-const {
-    onContentInput,
-    matchingUsers,
-    showUserDropdown,
-    selectUser,
-    addEmoji,
-    renderContentEditable, // Exposed from composable
-    moveCursorToEnd, // Exposed from composable
-} = useContentEditable(contentEditableDiv, postContent);
-
-// Call renderContentEditable on mount for initial content
-onMounted(() => {
-    renderContentEditable();
-});
-
+const postContent = ref(''); 
+const mentionInputRef = ref<InstanceType<typeof MentionInput> | null>(null);
 
 const taggedUser = computed(() => {
     if (commentsStore.activeReplyInput === props.parentId) {
@@ -55,7 +38,7 @@ watch(taggedUser, (newUser) => {
     if (newUser && !postContent.value.includes(`[@${newUser.id}]`)) {
         postContent.value = `[@${newUser.id}] ` + postContent.value;
         nextTick(() => {
-             moveCursorToEnd(); // Move cursor to end after programmatic content change
+             mentionInputRef.value?.moveCursorToEnd();
         });
     }
 });
@@ -66,6 +49,10 @@ const fileInput = ref<HTMLInputElement | null>(null);
 const selectGif = (gif: string) => {
     selectedImage.value = gif;
 };
+
+const addEmoji = (emoji: any) => {
+    mentionInputRef.value?.addEmoji(emoji);
+}
 
 const onFileChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
@@ -128,41 +115,13 @@ const submitComment = () => {
 
         <div class="grow bg-[#f0f2f5] rounded-[18px] px-3 py-2 relative group-focus-within:bg-gray-100 transition-colors">
             
-            <div class="relative">
-                <VDropdown
-                  :shown="showUserDropdown"
-                  placement="bottom-start"
-                  :triggers="[]"
-                  :auto-hide="true"
-                >
-                    <div
-                        ref="contentEditableDiv"
-                        contenteditable="true"
-                        @input="onContentInput"
-                        class="w-full bg-transparent border-none outline-none focus:ring-0 p-0 text-[15px] text-[#050505] resize-none overflow-hidden min-h-[22px] leading-relaxed whitespace-pre-wrap"
-                    ></div>
-                    <template #popper>
-                      <div class="user-dropdown-content w-64 max-h-60 overflow-y-auto pointer-events-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg">
-                        <ul>
-                          <li
-                            v-for="user in matchingUsers"
-                            :key="user.id"
-                            class="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-                            @mousedown.prevent="selectUser(user)"
-                          >
-                            <img :src="user.avatar" class="w-8 h-8 rounded-full">
-                            <span class="font-medium text-sm text-gray-900 dark:text-gray-100">{{ user.name }}</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </template>
-                </VDropdown>
-                <div v-if="!postContent" class="absolute top-0 left-0 text-gray-500 pointer-events-none text-[15px]">
-                    {{ props.placeholder || 'Napisz komentarz...' }}
-                </div>
-            </div>
+            <MentionInput
+                ref="mentionInputRef"
+                v-model="postContent"
+                :placeholder="props.placeholder || 'Napisz komentarz...'"
+            />
 
-            <div v-if="selectedImage" class="relative mb-2">
+            <div v-if="selectedImage" class="relative mb-2 mt-2">
                 <img :src="selectedImage" class="rounded-lg max-h-40" />
                 <button @click="removeImage" class="absolute top-2 right-2 bg-gray-800 text-white rounded-full p-1 text-xs">X</button>
             </div>

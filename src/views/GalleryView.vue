@@ -146,7 +146,7 @@ import CommentItem from '@/components/CommentItem.vue'
 import GalleryImageViewer from '@/components/gallery/GalleryImageViewer.vue'
 import { usePostsStore } from '@/stores/posts';
 import CommentReplyInput from '@/components/CommentReplyInput.vue'
-import NavbarRight from '@/components/NavbarRight.vue'
+import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue'
 import type {  Comment } from '@/types/Post';
 import type { ImageTagType } from '@/types//ImageTag';
 import CommentFilter from '@/components/CommentFilter.vue'

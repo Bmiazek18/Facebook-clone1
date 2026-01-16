@@ -76,7 +76,7 @@ import BookOpenVariantIcon from 'vue-material-design-icons/BookOpenVariant.vue';
 import PlusBoxIcon from 'vue-material-design-icons/PlusBox.vue';
 import ShoppingIcon from 'vue-material-design-icons/Shopping.vue';
 import HeartIcon from 'vue-material-design-icons/Heart.vue';
-import HoverScrollbar from './HoverScrollbar.vue';
+import HoverScrollbar from '../HoverScrollbar.vue';
 
 const searchQuery = ref('');
 

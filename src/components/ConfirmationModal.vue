@@ -3,16 +3,6 @@ import BaseModal from './BaseModal.vue';
 
 const emit = defineEmits(['confirm', 'cancel']);
 
-
- defineProps<{
-  title?: string;
-  message?: string;
-  confirmLabel?: string;
-  cancelLabel?: string;
-
-}>();
-
-
 const handleConfirm = () => {
   emit('confirm');
   close();
@@ -30,7 +20,7 @@ defineExpose({
 </script>
 
 <template>
-  <BaseModal :title="title" @close="handleCancel">
+  <BaseModal title="nie zapisanie Zmiany" @close="handleCancel">
     <div class="p-6">
       <p class="mb-8 text-lg text-gray-900 leading-normal">
         Twój post nie jest jeszcze ukończony. Czy chcesz wyjść, nie kończąc?
