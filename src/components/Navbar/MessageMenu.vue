@@ -7,7 +7,8 @@
       </div>
       <div class="flex space-x-3 text-theme-text-secondary">
         <DotsHorizontalIcon class="h-6 w-6 cursor-pointer" />
-        <ArrowExpandIcon class="h-6 w-6 cursor-pointer" />
+        <RouterLink to="/chat/1"><ArrowExpandIcon class="h-6 w-6 cursor-pointer" /></RouterLink>
+
         <PencilOutlineIcon class="h-6 w-6 cursor-pointer" />
       </div>
     </header>
@@ -40,19 +41,6 @@
       </button>
       <DotsHorizontalIcon class="h-5 w-5 text-gray-500 self-center ml-auto cursor-pointer" />
     </div>
-
-    <!-- <div class="px-4 pb-2 shrink-0">
-      <a href="#" class="flex items-center py-2 hover:bg-theme-hover rounded-lg transition duration-100">
-        <div class="shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-theme-bg mr-3">
-          <ChatOutlineIcon class="h-6 w-6 text-theme-text" />
-        </div>
-        <div class="grow">
-          <p class="font-normal text-theme-text">{{ $t('chat.newMessage') }}</p>
-          <p class="text-sm text-theme-text-secondary">{{ $t('chat.from') }} Alan Va</p>
-        </div>
-        <ChevronRightIcon class="h-6 w-6 text-theme-text-secondary ml-auto" />
-      </a>
-    </div> -->
 
   <div class="flex-1 overflow-y-auto min-h-0 overscroll-y-contain">
         <ul class="px-4 space-y-1">
@@ -119,14 +107,14 @@ import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
 import ArrowExpandIcon from 'vue-material-design-icons/ArrowExpand.vue';
 import PencilOutlineIcon from 'vue-material-design-icons/PencilOutline.vue';
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
-import ContexMenu from './contexMenu.vue';
+import ContexMenu from '@/components/contexMenu.vue';
 import { useRouter, useRoute } from 'vue-router';
 
 
 import { useConversationsStore } from '@/stores/conversations';
 import { useChatStore } from '@/stores/chat';
 import type { Chat } from '@/data/rawChats';
-
+ 
 // 3. ZARZĄDZANIE STANEM
 const activeTab: Ref<'all' | 'unread'> = ref('all');
 
@@ -168,6 +156,4 @@ const handleClick = (chatId: number): void => {
 
 </script>
 
-<style scoped>
-/* Możesz dodać style niestandardowe, jeśli zajdzie taka potrzeba */
-</style>
+

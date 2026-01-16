@@ -13,31 +13,30 @@ import ControllerClassicOutline from 'vue-material-design-icons/ControllerClassi
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue'
 
 import ContactList from '@/components/ContactList.vue'
-import NavbarRight from '@/components/NavbarRight.vue'
+import NavbarRight from '@/components/Navbar/NavbarRight.vue'
 
 type ActiveMenuType = 'profile' | 'notifications' | 'message' | null;
 
 const route = useRoute()
 const router = useRouter()
 
-// Referencje
+
 const activeMenu = ref<ActiveMenuType>(null)
 const isSearchFocused = ref(false)
 const searchInput = ref('')
 const navLeft = ref(null)
 const menuTarget = ref(null)
 
-// Zamykanie wyszukiwarki po kliknięciu poza nią
+
 onClickOutside(navLeft, () => {
   isSearchFocused.value = false
 })
 
-// Zamykanie menu profilu/powiadomień
+
 onClickOutside(menuTarget, () => {
   activeMenu.value = null
 })
 
-// Handle search submission
 const handleSearchSubmit = () => {
   if (searchInput.value.trim()) {
     router.push({ path: '/search', query: { q: searchInput.value.trim() } })

@@ -9,22 +9,23 @@ import FacebookMessenger from 'vue-material-design-icons/FacebookMessenger.vue'
 import Bell from 'vue-material-design-icons/Bell.vue'
 import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
 
-import ProfileMenu from '@/components/ProfileMenu.vue'
-import NotificationMenu from '@/components/NotificationMenu.vue'
-import MessageMenu from '@/components/MessageMenu.vue'
+import MainMenu from './MainMenu.vue'
+import ProfileMenu from './ProfileMenu.vue'
+import NotificationMenu from './NotificationMenu.vue'
+import MessageMenu from './MessageMenu.vue'
 
 import { useTheme } from '@/composables/useTheme'
-import MainMenu from './MainMenu.vue'
+
 
 type ActiveMenuType = 'profile' | 'notifications' | 'message' | 'main' | null;
 
 const { isDark } = useTheme()
 const route = useRoute()
 
-// Sprawdź czy ukryć ikonę wiadomości
+
 const hideMessageIcon = computed(() => route.meta?.hideMessageIcon === true)
 
-// Referencje
+
 const activeMenu = ref<ActiveMenuType>(null)
 const menuTarget = ref(null)
 
@@ -32,7 +33,6 @@ const toggleMenu = (menuName: ActiveMenuType) => {
   activeMenu.value = activeMenu.value === menuName ? null : menuName
 }
 
-// Zamykanie menu profilu/powiadomień
 onClickOutside(menuTarget, () => {
   activeMenu.value = null
 })
