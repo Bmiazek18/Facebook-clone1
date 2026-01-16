@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
 import { usePostsStore } from '@/stores/posts';
 
 // Import components
-import PostItem from '@/components/PostItem.vue';
-
+import PostItem from '@/components/post/PostItem.vue';
+import type { Post } from '@/types/Post';
 // Import icons
 import AccountGroup from 'vue-material-design-icons/AccountGroup.vue';
 import NewspaperVariant from 'vue-material-design-icons/NewspaperVariant.vue';
@@ -15,7 +14,6 @@ import Flag from 'vue-material-design-icons/Flag.vue';
 import CalendarMonth from 'vue-material-design-icons/CalendarMonth.vue';
 import ChevronDown from 'vue-material-design-icons/ChevronDown.vue';
 
-const router = useRouter();
 const postsStore = usePostsStore();
 
 // Search state
@@ -28,46 +26,45 @@ const filters = ref({
   seenPosts: false
 });
 
-// Mock Data
 const mockPeople = [
   {
     id: 1,
-    name: 'Alicja Hajner',
-    avatar: 'https://i.pravatar.cc/150?u=a1',
-    description: 'Zespół Szkół nr 3 im. Władysława Stanisława Reymonta w Łukowie · Mieszka w: Łuków',
+    name: 'Anna Kowalska',
+    avatar: 'https://i.pravatar.cc/150?u=fake1',
+    description: 'Uniwersytet Wyobraźni w Mieście Snów · Mieszka w: Miastowo',
     mutual: {
       count: 41,
-      friendName: 'Kuba Trzaskowski',
-      friendAvatar: 'https://i.pravatar.cc/150?u=m1'
+      friendName: 'Piotr Zmyślony',
+      friendAvatar: 'https://i.pravatar.cc/150?u=fake_m1'
     }
   },
   {
     id: 3,
-    name: 'Alicja Wiśniewska',
-    avatar: 'https://i.pravatar.cc/150?u=a3',
-    description: 'Pracuje w: Miejska Biblioteka Publiczna w Łukowie im. Henryka Sienkiewicza · UMCS Politologia',
-    mutual: { count: 7, friendName: '', friendAvatar: '' }
+    name: 'Marek Nowak',
+    avatar: 'https://i.pravatar.cc/150?u=fake3',
+    description: 'Pracuje w: Firma Przykładowa S.A. · Absolwent Wyższej Szkoły Testowej',
+    mutual: { count: 12, friendName: '', friendAvatar: '' }
   },
   {
     id: 2,
-    name: 'Alicja Alicja',
-    avatar: 'https://i.pravatar.cc/150?u=a2',
-    description: 'Mieszka w: Suleje · 1 obserwujący',
-    mutual: { count: 7, friendName: '', friendAvatar: '' }
+    name: 'Zofia Iksińska',
+    avatar: 'https://i.pravatar.cc/150?u=fake2',
+    description: 'Mieszka w: Osiedle Testowe · 15 obserwujących',
+    mutual: { count: 8, friendName: '', friendAvatar: '' }
   },
   {
     id: 5,
-    name: 'Alicja Wielgosz',
-    avatar: 'https://i.pravatar.cc/150?u=a5',
-    description: 'Medyczne Studium Zawodowe im. Janusza Korczaka w Łukowie',
+    name: 'Tomasz Igrekowski',
+    avatar: 'https://i.pravatar.cc/150?u=fake5',
+    description: 'Technikum Informatyczne nr 1 w Wirtualnej Polsce',
     mutual: { count: 5, friendName: '', friendAvatar: '' }
   },
   {
     id: 4,
-    name: 'Alicja Pawluczuk',
-    avatar: 'https://i.pravatar.cc/150?u=a4',
+    name: 'Julia Przykładowa',
+    avatar: 'https://i.pravatar.cc/150?u=fake4',
     description: '',
-    mutual: { count: 4, friendName: '', friendAvatar: '' }
+    mutual: { count: 2, friendName: '', friendAvatar: '' }
   },
 ];
 
@@ -85,8 +82,8 @@ const filteredPosts = computed(() => {
   const allPosts = postsStore?.posts || [];
   if (!searchQuery.value.trim()) return allPosts;
   const query = searchQuery.value.toLowerCase();
-  return allPosts.filter((post: any) =>
-    post.user.name.toLowerCase().includes(query) ||
+  return allPosts.filter((post: Post) =>
+    post.authorName.toLowerCase().includes(query) ||
     post.content.toLowerCase().includes(query)
   );
 });
