@@ -5,11 +5,11 @@
        :class="{
          [((currentBackground as CardBackground).class ?? '')]: (post?.selectedCardBgId ?? 0) !== 0,
          [((currentBackground as CardBackground).textClass ?? 'text-theme-text')]: (post?.selectedCardBgId ?? 0) !== 0,
-         'p-4 h-[383px] flex items-center justify-center text-center': (post?.selectedCardBgId ?? 0) !== 0,
+         'p-4 h-95.75 flex items-center justify-center text-center': (post?.selectedCardBgId ?? 0) !== 0,
          'text-xl': (post?.selectedCardBgId ?? 0) !== 0 && post?.content.length <= 80,
          'text-base': (post?.selectedCardBgId ?? 0) !== 0 && post?.content.length > 80,
          'text-theme-text': (post?.selectedCardBgId ?? 0) === 0,
-         'pb-3': !isTranslated
+         'pb-3': !isTranslated && !needsTranslation
        }"
   >
     <template v-for="(part, index) in processedOriginalContent" :key="index">
@@ -64,68 +64,13 @@
       <!-- Translation options when translated -->
       <div v-if="isTranslated" class="flex items-center text-[13px] font-semibold leading-4">
 
-        <VDropdown :distance="10" placement="bottom-start" theme="dropdown">
-          <button class="mr-1.5 flex items-center justify-center text-[#1877F2] hover:bg-blue-50 rounded-full p-1 -ml-1 transition-colors">
-            <Cog :size="16" />
-          </button>
-
-          <template #popper>
-            <div class="w-[320px] py-2 text-[#050505] dark:text-[#E4E6EB] text-[15px]">
-
-              <!-- Rating section -->
-              <div class="flex flex-col items-center justify-center p-2 pb-3 border-b border-gray-200 dark:border-gray-700">
-                <span class="mb-2 font-medium">Oceń to tłumaczenie</span>
-
-                <div class="flex gap-1 mb-2" @mouseleave="hoverRating = 0">
-                  <button
-                    v-for="i in 5"
-                    :key="i"
-                    @click="setRating(i)"
-                    @mouseenter="hoverRating = i"
-                    class="transition-transform hover:scale-110 focus:outline-none"
-                  >
-                    <component
-                      :is="isStarFilled(i) ? Star : StarOutline"
-                      :size="32"
-                      class="text-[#1877F2] transition-colors duration-200"
-                    />
-                  </button>
-                </div>
-
-                <span class="text-[13px] text-gray-500">
-                  {{ rating > 0 ? 'Dziękujemy za ocenę!' : 'Kliknij gwiazdkę, aby ocenić' }}
-                </span>
-              </div>
-
-              <!-- Options menu -->
-              <div class="mt-2">
-                <button class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-start gap-3 transition-colors">
-                  <Close :size="24" class="text-[#050505] dark:text-[#E4E6EB] mt-0.5" />
-                  <div class="flex flex-col">
-                    <span class="font-medium leading-tight">Nigdy nie tłumacz z języka: {{ post.detectedLanguage }}</span>
-                    <span class="text-[13px] text-gray-500 mt-0.5">Tłumaczenie z języka: {{ post.detectedLanguage }} na polski</span>
-                  </div>
-                </button>
-
-                <button class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-start gap-3 transition-colors">
-                  <MinusCircle :size="24" class="text-[#050505] dark:text-[#E4E6EB] mt-0.5" />
-                  <div class="flex flex-col">
-                    <span class="font-medium leading-tight">Post nie był w języku: {{ post.detectedLanguage }}</span>
-                    <span class="text-[13px] text-gray-500 mt-0.5">Zgłoś błąd</span>
-                  </div>
-                </button>
-
-                <button class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-start gap-3 transition-colors">
-                  <Cog :size="24" class="text-[#050505] dark:text-[#E4E6EB] mt-0.5" />
-                  <div class="flex flex-col justify-center h-full">
-                    <span class="font-medium mt-1">Ustawienia języka</span>
-                  </div>
-                </button>
-              </div>
-
-            </div>
-          </template>
-        </VDropdown>
+        <TranslationRatingDropdown
+          :detected-language="post.detectedLanguage"
+          :rating="rating"
+          :hover-rating="hoverRating"
+          @update:rating="rating = $event"
+          @update:hover-rating="hoverRating = $event"
+        />
 
         <button @click="showOriginal" class="text-[#1877F2] hover:underline cursor-pointer bg-transparent border-none p-0">
           {{ isOriginalVisible ? 'Ukryj oryginalny tekst' : 'Zobacz oryginalny tekst' }}
@@ -166,20 +111,16 @@ import { ref, computed } from 'vue'
 import axios from 'axios'
 import { Dropdown as VDropdown } from 'floating-vue'
 
-import Cog from 'vue-material-design-icons/Cog.vue'
-import Star from 'vue-material-design-icons/Star.vue'
-import StarOutline from 'vue-material-design-icons/StarOutline.vue'
-import Close from 'vue-material-design-icons/Close.vue'
-import MinusCircle from 'vue-material-design-icons/MinusCircle.vue'
+import TranslationRatingDropdown from './TranslationRatingDropdown.vue'
 
 import { getUserById } from '@/data/users'
 import { processContent } from '@/utils/contentProcessor'
 import type { Post } from '@/types/Post'
 
-interface CardBackground { 
-  id: number; 
-  class: string; 
-  textClass?: string 
+interface CardBackground {
+  id: number;
+  class: string;
+  textClass?: string
 }
 
 const props = defineProps<{
@@ -197,14 +138,19 @@ const isOriginalVisible = ref(false)
 const rating = ref(0)
 const hoverRating = ref(0)
 
-// Card backgrounds configuration
+// Card backgrounds configuration - merged from both files
 const cardBackgrounds: CardBackground[] = [
   { id: 0, class: 'bg-white', textClass: 'text-black' },
   { id: 1, class: 'bg-gradient-to-b from-blue-500 to-blue-700', textClass: 'text-white' },
   { id: 2, class: 'bg-gradient-to-tr from-pink-500 via-red-500 to-yellow-500', textClass: 'text-white' },
   { id: 3, class: 'bg-gradient-to-br from-purple-900 via-indigo-800 to-blue-900', textClass: 'text-white' },
-  { id: 4, class: 'bg-red-500', textClass: 'text-white' },
-  { id: 5, class: 'bg-gradient-to-r from-green-400 to-teal-500', textClass: 'text-white' },
+  { id: 4, class: 'bg-gradient-to-r from-green-400 to-blue-500', textClass: 'text-white' },
+  { id: 5, class: 'bg-gradient-to-br from-orange-400 to-pink-600', textClass: 'text-white' },
+  { id: 6, class: 'bg-gradient-to-r from-purple-400 via-pink-500 to-red-500', textClass: 'text-white' },
+  { id: 7, class: 'bg-gradient-to-br from-teal-400 to-blue-500', textClass: 'text-white' },
+  { id: 8, class: 'bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500', textClass: 'text-white' },
+  { id: 9, class: 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500', textClass: 'text-white' },
+  { id: 10, class: 'bg-gradient-to-r from-gray-700 via-gray-900 to-black', textClass: 'text-white' }
 ]
 
 // Computed properties
@@ -223,16 +169,6 @@ const processedOriginalContent = computed(() => {
 const processedTranslatedContent = computed(() => {
   return processContent(translatedContent.value);
 })
-
-// Rating functions
-const isStarFilled = (index: number) => {
-  const activeRating = hoverRating.value > 0 ? hoverRating.value : rating.value
-  return index <= activeRating
-}
-
-const setRating = (value: number) => {
-  rating.value = value
-}
 
 // Translation functions
 const translatePost = async () => {

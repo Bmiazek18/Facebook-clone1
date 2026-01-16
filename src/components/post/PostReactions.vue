@@ -45,7 +45,7 @@
           </template>
 
           <template v-else>
-            <span>{{ t('post.likedBy', { name: 'Anna Kowalska' }) }}</span>
+            <span>{{ t('post.likedBy', { name: 'Anna Kowalska ' }) }}</span>
             <span v-if="likesCount > 1"> {{ t('post.andOthers', { count: likesCount - 1 }) }}</span>
           </template>
         </span>
