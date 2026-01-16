@@ -101,8 +101,8 @@
             </div>
           </div>
 
-          <!-- Comment filter -->
-          <div v-if="!hideComments" class="flex justify-between items-center px-4 pt-3 mb-2">
+
+          <div v-if="!hideComments" class=" w-fit m-0 justify-between items-center">
             <CommentFilter />
           </div>
 
@@ -164,11 +164,11 @@ import CommentTextMultiple from 'vue-material-design-icons/CommentTextMultiple.v
 import ShareVariant from 'vue-material-design-icons/ShareVariant.vue';
 import MusicNote from 'vue-material-design-icons/MusicNote.vue';
 import HoverScrollbar from '@/components/HoverScrollbar.vue';
-import NavbarRight from '@/components/NavbarRight.vue';
+import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
 import CommentFilter from '@/components/CommentFilter.vue';
 import CommentItem from '@/components/CommentItem.vue';
 import CommentReplyInput from '@/components/CommentReplyInput.vue';
-import ReactionButton from '@/components/ReactionButton.vue';
+
 
 interface Props {
   item: any; // Can be Reel or Post

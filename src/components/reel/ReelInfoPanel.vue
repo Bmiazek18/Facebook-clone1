@@ -96,7 +96,7 @@ import CommentTextMultiple from 'vue-material-design-icons/CommentTextMultiple.v
 import ShareVariant from 'vue-material-design-icons/ShareVariant.vue';
 import MusicNote from 'vue-material-design-icons/MusicNote.vue';
 import HoverScrollbar from '@/components/HoverScrollbar.vue';
-import NavbarRight from '@/components/NavbarRight.vue';
+import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
 import CommentFilter from '@/components/CommentFilter.vue';
 
 defineProps<{

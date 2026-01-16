@@ -1,8 +1,8 @@
 <template>
-  <div class="reaction-wrapper flex justify-center " @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
+  <div class="reaction-wrapper flex justify-center " @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" :class="display === 'full' ? 'w-full' : 'w-fit'">
     <button
-      class="flex items-center justify-center gap-2 h-9 rounded hover:bg-theme-hover transition-colors cursor-pointer text-theme-text-secondary font-semibold text-[15px]"
-      :class="{ 'w-full': display === 'full' }"
+
+      class="flex items-center justify-center gap-2 h-9 rounded hover:bg-theme-hover transition-colors cursor-pointer text-theme-text-secondary font-semibold text-[15px] w-full"
       @click="toggleReaction('like')"
     >
       <template v-if="display === 'full'">
@@ -145,7 +145,7 @@ const handleMouseLeave = () => {
 
   font-family: sans-serif;
   user-select: none;
-  width: fit-content;
+
 }
 
 /* Button */

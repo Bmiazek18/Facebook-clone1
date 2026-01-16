@@ -189,7 +189,7 @@ import Speedometer from 'vue-material-design-icons/Speedometer.vue';
 import Tune from 'vue-material-design-icons/Tune.vue';
 
 interface Props {
-  url: string;
+  url?: string;
   lightbox?: boolean;
   settings?: boolean;
 }

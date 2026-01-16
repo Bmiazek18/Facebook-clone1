@@ -164,8 +164,17 @@ import LinkVariantIcon from 'vue-material-design-icons/LinkVariant.vue';
 import AccountCircleOutlineIcon from 'vue-material-design-icons/AccountCircleOutline.vue';
 import PrivacySelector from './PrivacySelector.vue';
 
+
 const props = defineProps<{
   reel?: Reel | null;
+  marketplaceItem?: {
+    id: string;
+    title: string;
+    price: string;
+    location: string;
+    images: string[];
+    description: string;
+  } | null;
 }>();
 
 const emit = defineEmits<{
@@ -253,26 +262,60 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
 };
 
 const handleShareNow = () => {
-  if (!props.reel) return;
+  // Obsługa udostępniania Reel
+  if (props.reel) {
+    const newPost = {
+      id: `post_${Date.now()}`,
+      authorName: user.value.name,
+      authorAvatar: user.value.avatar,
+      authorId: 1,
+      content: textareaContent.value,
+      date: new Date().toLocaleDateString('pl-PL'),
+      timestamp: Date.now(),
+      images: [],
+      likesCount: 0,
+      commentsCount: 0,
+      sharesCount: 0,
+      sharedReelId: props.reel.id,
+    };
+    postsStore.addPost(newPost);
+    emit('close');
+    router.push('/');
+    return;
+  }
 
-  const newPost = {
-    id: `post_${Date.now()}`,
-    authorName: user.value.name,
-    authorAvatar: user.value.avatar,
-    authorId: 1, // Current user ID
-    content: textareaContent.value,
-    date: new Date().toLocaleDateString('pl-PL'),
-    timestamp: Date.now(),
-    images: [],
-    likesCount: 0,
-    commentsCount: 0,
-    sharesCount: 0,
-    sharedReelId: props.reel.id,
-  };
-
-  postsStore.addPost(newPost);
-  emit('close');
-  router.push('/');
+  // Obsługa udostępniania produktu z Marketplace
+  if (props.marketplaceItem) {
+    const newPost = {
+      id: `marketplace_${Date.now()}`,
+      authorName: user.value.name,
+      authorAvatar: user.value.avatar,
+      authorId: 1,
+      content: textareaContent.value ,
+      date: new Date().toLocaleDateString('pl-PL'),
+      timestamp: Date.now(),
+      images: props.marketplaceItem.images.length > 0 ? props.marketplaceItem.images.map((img: string) => ({ src: img, altText: props.marketplaceItem.title })) : [],
+      likesCount: 0,
+      commentsCount: 0,
+      sharesCount: 0,
+      isLiked: false,
+      reactionCount: 0,
+      commentCount: 0,
+      comments: [],
+      // Dodatkowe dane marketplace
+      marketplaceData: {
+        title: props.marketplaceItem.title,
+        price: props.marketplaceItem.price,
+        location: props.marketplaceItem.location,
+        itemId: props.marketplaceItem.id,
+        description: props.marketplaceItem.description,
+      }
+    };
+    postsStore.addPost(newPost);
+    emit('close');
+    router.push('/');
+    return;
+  }
 };
 </script>
 
