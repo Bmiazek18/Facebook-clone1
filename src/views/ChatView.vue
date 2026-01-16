@@ -47,7 +47,7 @@
 import '@/assets/animations/slideTransition.css';
 import { ref, watch, computed, nextTick } from 'vue';
 
-import MessageMenu from '@/components/MessageMenu.vue';
+import MessageMenu from '@/Layouts/Navbar/MessageMenu.vue';
 import MessageBox from '@/components/MessageBox.vue';
 import ChatInfoPanel from '@/components/ChatView/ChatInfoPanel.vue';
 import { useConversationsStore } from '@/stores/conversations';

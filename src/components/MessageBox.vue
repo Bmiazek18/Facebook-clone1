@@ -30,32 +30,57 @@ const { themes, selectedTheme } = storeToRefs(convStore);
 
 const localMessages = ref<Message[]>([]);
 
-const messagesList = computed((): Message[] => {
+// Get all available messages
+const allMessagesList = computed((): Message[] => {
   if (props.boxId) {
     return convStore.getMessagesByChatId(Number(props.boxId)) as Message[];
   }
   return props.messages?.length ? props.messages : localMessages.value;
 });
 
-// ==========================================
-// 1. REF KONTENERA (Przeniesiony na górę)
-// ==========================================
-// Musi być zdefiniowany przed useFlipAnimation, żeby go przekazać
+// Get limited messages for display
+const messagesList = computed((): Message[] => {
+  const allMessages = allMessagesList.value;
+  const totalMessages = allMessages.length;
+
+  if (totalMessages <= visibleMessagesCount.value) {
+    return allMessages;
+  }
+
+  // Return only the last N messages where N is visibleMessagesCount
+  return allMessages.slice(totalMessages - visibleMessagesCount.value);
+});
+
+// Check if there are more messages to load
+const hasMoreToLoad = computed(() => {
+  return allMessagesList.value.length > visibleMessagesCount.value;
+});
+
+
 const chatContainer = ref<HTMLElement | null>(null);
 
-// ==========================================
-// 2. STAN ODCZYTANIA (Cursor-based)
-// ==========================================
+// Infinity scroll state
+const isLoadingOlder = ref(false);
+const messagesPerPage = 20;
+const visibleMessagesCount = ref(messagesPerPage);
+let scrollHandler: ((event: Event) => void) | null = null;
+
+// Debounce function for scroll handler
+const debounce = (func: (...args: any[]) => void, wait: number) => {
+  let timeout: number;
+  return (...args: any[]) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+};
+
 const lastRead = ref<Record<string, number>>({
   'user_1': 0,
   'user_2': 0,
   'ghost_tester': 0
 });
 
-// ==========================================
-// 3. ANIMACJA FLIP (IZOLOWANA)
-// ==========================================
-// Przekazujemy chatContainer, aby szukać awatarów tylko w tym oknie
+
 const { capturePositions, onAvatarEnter, onAvatarLeave } = useFlipAnimation(chatContainer);
 
 // Udostępniamy funkcje animacji dzieciom (MessageItem) przez Provide/Inject
@@ -88,9 +113,27 @@ let simulationInterval: any = null;
 const TEST_USER_ID = 'ghost_tester';
 
 onMounted(() => {
+  // Immediate scroll to bottom
   scrollToBottom();
 
-  // Opóźniony start symulacji
+  // Delayed scroll to ensure DOM is fully rendered
+  setTimeout(() => {
+    scrollToBottom();
+  }, 100);
+
+  // Add scroll listener for infinity scroll
+  const container = chatContainer.value;
+  if (container) {
+    const handleScroll = () => {
+      // Check if scrolled to top (with small threshold)
+      if (container.scrollTop <= 50 && hasMoreToLoad.value && !isLoadingOlder.value) {
+        loadOlderMessages();
+      }
+    };
+
+    scrollHandler = debounce(handleScroll, 150);
+    container.addEventListener('scroll', scrollHandler);
+  }  // Opóźniony start symulacji
   setTimeout(() => {
     console.log(`🚀 [Box ${props.boxId}] Start symulacji Cursor-based...`);
     let currentIndex = 0;
@@ -101,9 +144,7 @@ onMounted(() => {
 
       const targetMessageId = msgs[currentIndex].id;
 
-      // ZMIANA STANU:
-      // Ważne: przy manualnej symulacji warto wymusić capturePositions tutaj,
-      // jeśli watch nie zdąży (opcjonalne, ale bezpieczne)
+
       capturePositions();
 
       lastRead.value[TEST_USER_ID] = targetMessageId;
@@ -121,6 +162,13 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (simulationInterval) clearInterval(simulationInterval);
+
+  // Remove scroll listener
+  const container = chatContainer.value;
+  if (container && scrollHandler) {
+    container.removeEventListener('scroll', scrollHandler);
+  }
+
   messagesList.value.forEach((msg: Message) => {
     if ('audioUrl' in msg && msg.audioUrl?.startsWith('blob:')) URL.revokeObjectURL(msg.audioUrl);
   });
@@ -129,8 +177,21 @@ onUnmounted(() => {
 // --- Reszta standardowej logiki ---
 
 watch(() => props.messages, (newVal) => {
-  if (newVal) localMessages.value = [...newVal];
+  if (newVal) {
+    localMessages.value = [...newVal];
+    // Only scroll to bottom if not loading older messages
+    if (!isLoadingOlder.value) {
+      scrollToBottom();
+    }
+  }
 }, { immediate: true });
+
+// Watch for changes in messagesList and scroll to bottom (but not when loading older)
+watch(messagesList, () => {
+  if (!isLoadingOlder.value) {
+    scrollToBottom();
+  }
+}, { flush: 'post' });
 
 const boxTheme = computed(() => {
   if (!props.boxId) return selectedTheme.value;
@@ -153,7 +214,48 @@ function scrollToBottom() {
   });
 }
 
-function scrollToMessage(messageId: number) {
+// Load older messages for infinity scroll
+const loadOlderMessages = async () => {
+  if (isLoadingOlder.value || !hasMoreToLoad.value) return;
+
+  isLoadingOlder.value = true;
+
+  try {
+    // Save current scroll position to restore it after loading
+    const container = chatContainer.value;
+    const oldScrollHeight = container?.scrollHeight || 0;
+    const oldScrollTop = container?.scrollTop || 0;
+
+    // Simulate loading delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Increase the number of visible messages
+    visibleMessagesCount.value += messagesPerPage;
+
+    // Restore scroll position with multiple attempts to ensure it works
+    nextTick(() => {
+      if (container) {
+        const newScrollHeight = container.scrollHeight;
+        const heightDifference = newScrollHeight - oldScrollHeight;
+
+        // Adjust scroll position to account for new content at the top
+        container.scrollTop = oldScrollTop + heightDifference;
+
+        // Additional attempt after a short delay to ensure DOM is fully updated
+        setTimeout(() => {
+          const finalScrollHeight = container.scrollHeight;
+          const finalHeightDifference = finalScrollHeight - oldScrollHeight;
+          container.scrollTop = oldScrollTop + finalHeightDifference;
+        }, 10);
+      }
+    });
+
+  } catch (error) {
+    console.error('Error loading older messages:', error);
+  } finally {
+    isLoadingOlder.value = false;
+  }
+};function scrollToMessage(messageId: number) {
   nextTick(() => {
     const domId = `msg-${props.boxId ?? '0'}-${messageId}`;
     const el = document.getElementById(domId);
@@ -194,7 +296,11 @@ const handleDrop = (event: DragEvent) => {
        pushMsg({ ...baseMsg, type: 'file', content: `Plik: ${file.name}`, fileUrl: url, fileName: file.name, fileSize: file.size } as Message);
     }
   });
-  scrollToBottom();
+
+  // Only scroll to bottom if not loading older messages
+  if (!isLoadingOlder.value) {
+    scrollToBottom();
+  }
 };
 
 const replyTarget = ref<Message | null>(null);
@@ -212,7 +318,13 @@ const handleAddMessage = (msg: Message) => {
   } else {
     localMessages.value.push(msg);
   }
-  scrollToBottom();
+
+  // Ensure scroll to bottom after message is added (but not when loading older)
+  if (!isLoadingOlder.value) {
+    nextTick(() => {
+      scrollToBottom();
+    });
+  }
 };
 
 const handleAddReaction = (messageId: number, emoji: string) => {
@@ -259,7 +371,7 @@ defineExpose({ scrollToMessage });
 <template>
   <div
     :class="[
-      isFull ? 'relative flex-1 flex flex-col h-full w-full' : 'flex items-center relative justify-center py-4 px-2',
+      isFull ? 'relative flex-1 flex flex-col h-full w-full' : 'flex items-center relative justify-center py-4 px-2 ',
     ]"
     @dragover.prevent="isDragging = true"
     @dragleave.prevent="isDragging = false"
@@ -268,7 +380,7 @@ defineExpose({ scrollToMessage });
     <div
       :class="[
         isFull ? 'w-full h-full rounded-none shadow-none' : 'w-full max-w-[328px] h-[455px] rounded-xl shadow-2xl',
-        'bg-white flex flex-col overflow-hidden relative transition-all duration-300'
+        'bg-white flex flex-col relative transition-all duration-300'
       ]"
     >
 
@@ -288,31 +400,40 @@ defineExpose({ scrollToMessage });
 
       <main
         ref="chatContainer"
-        class="relative flex flex-col justify-end grow px-4 pt-4 space-y-4 overflow-y-auto custom-scrollbar bg-gray-50 transition-all duration-300"
+        class="relative flex flex-col-reverse grow overflow-y-auto custom-scrollbar bg-gray-50 transition-all duration-300 min-h-0"
         :style="boxTheme?.backgroundImage ? { backgroundImage: `url(${boxTheme.backgroundImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}"
       >
         <div v-if="boxTheme?.gradientClass" :class="['absolute inset-0 pointer-events-none opacity-30', boxTheme.gradientClass]"></div>
 
-        <div v-for="(message, index) in messagesList" :key="message.id" :id="`msg-${props.boxId ?? '0'}-${message.id}`" class="relative z-10 mb-1">
-          <div v-if="getDisplayTime(index)" class="text-[11px] font-medium text-gray-400 text-center my-3 select-none uppercase tracking-wide opacity-80">
-            {{ getDisplayTime(index) }}
+        <!-- Messages container -->
+        <div class="px-4 pb-4 space-y-4">
+          <div v-for="(message, index) in messagesList" :key="message.id" :id="`msg-${props.boxId ?? '0'}-${message.id}`" class="relative z-10 mb-1">
+            <div v-if="getDisplayTime(index)" class="text-[11px] font-medium text-gray-400 text-center my-3 select-none uppercase tracking-wide opacity-80">
+              {{ getDisplayTime(index) }}
+            </div>
+
+            <MessageItem
+              :message="message"
+              :index="index"
+              :audioStates="audioStates"
+              :positionInGroup="getMessagePositionInGroup(index)"
+              :boxId="props.boxId"
+              :last-read-map="lastRead"
+              @open-lightbox="openLightbox"
+              @reply="replyTarget = $event"
+              @toggle-audio-playback="toggleAudioPlayback"
+              @add-reaction="({ messageId, emoji }) => handleAddReaction(messageId, emoji)"
+              @open-modal="emit('open-modal', $event)"
+            />
           </div>
+        </div>
 
-          <MessageItem
-            :message="message"
-            :index="index"
-            :audioStates="audioStates"
-            :positionInGroup="getMessagePositionInGroup(index)"
-            :boxId="props.boxId"
-
-            :last-read-map="lastRead"
-
-            @open-lightbox="openLightbox"
-            @reply="replyTarget = $event"
-            @toggle-audio-playback="toggleAudioPlayback"
-            @add-reaction="({ messageId, emoji }) => handleAddReaction(messageId, emoji)"
-            @open-modal="emit('open-modal', $event)"
-          />
+        <!-- Loading indicator for older messages -->
+        <div v-if="isLoadingOlder" class="px-4 py-3 text-center">
+          <div class="flex items-center justify-center space-x-2 text-gray-500">
+            <div class="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+            <span class="text-sm">Ładowanie starszych wiadomości...</span>
+          </div>
         </div>
       </main>
 
@@ -334,8 +455,38 @@ defineExpose({ scrollToMessage });
 </template>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar { width: 5px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
-.custom-scrollbar:hover::-webkit-scrollbar-thumb { background-color: #94a3b8; }
+.custom-scrollbar {
+  overflow-y: scroll !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: #94a3b8;
+}
+
+/* Firefox scrollbar styling */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 rgba(0, 0, 0, 0.05);
+}
+
+/* Force scroll container height */
+main.custom-scrollbar {
+  max-height: 100%;
+  height: 100%;
+}
 </style>

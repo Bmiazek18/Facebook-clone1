@@ -433,7 +433,7 @@ const toggleAudio = (msg: Message) => emit('toggle-audio-playback', msg);
             v-if="message.reactions?.length && !isAnyCallType(message)"
             @click.stop="openReactionsPanel"
             class="absolute -bottom-2 cursor-pointer bg-white rounded-full px-1.5 py-0.5 min-w-[24px] h-6 flex items-center justify-center shadow-md border border-gray-100 z-10 transition-transform hover:scale-110"
-            :class="isMe ? 'right-0 translate-y-0' : 'left-0 translate-y-0'"
+            :class="isMe ? 'left-0 translate-y-0' : 'right-0 translate-y-0'"
             >
             <span class="text-xs leading-none">{{ message.reactions[message.reactions.length - 1] }}</span>
             <span v-if="message.reactions.length > 1" class="text-[9px] font-bold text-gray-500 ml-0.5">{{ message.reactions.length }}</span>

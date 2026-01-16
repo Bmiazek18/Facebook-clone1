@@ -6,7 +6,7 @@ import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
 import DownloadIcon from 'vue-material-design-icons/Download.vue';
 import ShareVariantOutlineIcon from 'vue-material-design-icons/ShareVariantOutline.vue';
 import PlayerVideo from '../PlayerVideo.vue';
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   media: Array<{
     id: number;
     type: 'image' | 'video' | 'gif';
@@ -14,8 +14,11 @@ const props = defineProps<{
     videoUrl?: string;
   }>,
   modelValue: boolean,
-  startIndex: number
-}>();
+  startIndex: number,
+  fullscreen?: boolean
+}>(), {
+  fullscreen: true
+});
 
 const emit = defineEmits(['update:modelValue']);
 
@@ -56,7 +59,10 @@ const share = () => {
 
 // --- LOGIKA BLOKOWANIA SCROLLA ---
 const toggleBodyScroll = (shouldLock: boolean) => {
-  document.body.style.overflow = shouldLock ? 'hidden' : '';
+  // Tylko blokuj scroll gdy fullscreen jest włączony
+  if (props.fullscreen) {
+    document.body.style.overflow = shouldLock ? 'hidden' : '';
+  }
 };
 
 watch(() => props.modelValue, (isOpened) => {
@@ -89,14 +95,25 @@ watch(() => props.startIndex, (newIndex) => {
 </script>
 
 <template>
-  <Teleport to="body">
-    <div class="fixed inset-0 z-99999 flex flex-col items-center justify-between bg-black">
+  <component :is="fullscreen ? 'Teleport' : 'div'" :to="fullscreen ? 'body' : undefined">
+    <div
+      class="flex flex-col bg-black"
+      :class="[
+        fullscreen ? 'fixed inset-0 z-99999 items-center justify-between' : 'relative w-full h-full items-center justify-center'
+      ]"
+    >
 
-      <div class="absolute inset-0 z-0 blur-background"
-           :style="{ backgroundImage: currentMedia && !isVideo(currentMedia) && currentMedia.imageUrl ? `url(${currentMedia.imageUrl})` : 'none' }">
+      <div
+        v-if="!isVideo(currentMedia)"
+        class="absolute inset-0 z-0 blur-background"
+        :style="{ backgroundImage: currentMedia && currentMedia.imageUrl ? `url(${currentMedia.imageUrl})` : 'none' }"
+      >
       </div>
 
-      <header class="w-full flex justify-between items-center p-3 text-white relative z-10">
+      <header
+        v-if="fullscreen"
+        class="w-full flex justify-between items-center p-3 text-white relative z-10"
+      >
         <button @click="close" class="flex items-center space-x-1 text-lg hover:text-gray-300 transition">
           <CloseIcon :size="24" />
           <span>Zamknij</span>
@@ -108,8 +125,12 @@ watch(() => props.startIndex, (newIndex) => {
       </header>
 
       <div class="flex flex-col items-center justify-center grow w-full relative z-10">
-        <div class="flex items-center justify-center w-full grow relative">
-          <button @click="prev" class="absolute left-4 p-2 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70 z-20">
+        <div class="flex items-center justify-center w-full grow relative group">
+          <button
+            @click="prev"
+            class="absolute left-4 p-2 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70 z-20 transition-opacity"
+            :class="fullscreen ? '' : 'opacity-0 group-hover:opacity-100'"
+          >
             <ChevronLeftIcon :size="30" />
           </button>
 
@@ -117,25 +138,48 @@ watch(() => props.startIndex, (newIndex) => {
           <template v-if="currentMedia">
             <img v-if="!isVideo(currentMedia)"
                  :src="currentMedia.imageUrl"
-                 class="max-w-[80%] max-h-[80vh] object-contain"
+                 :class="fullscreen ? 'max-w-[80%] max-h-[80vh]' : 'max-w-full max-h-[70vh]'"
+                 class="object-contain"
                  alt="Powiększony obraz" />
             <PlayerVideo v-else
-            :lightbox="true"
-                   :url="currentMedia.videoUrl ?? ''"
-                   class="max-w-[80%] max-h-[80vh] object-contain"
-                   />
+                 :lightbox="true"
+                 :url="currentMedia.videoUrl ?? ''"
+                 :class="fullscreen ? 'max-w-[80%] max-h-[80vh]' : 'max-w-full max-h-[70vh]'"
+                 class="object-contain"
+                 />
           </template>
 
-          <button @click="next" class="absolute right-4 p-2 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70 z-20">
+          <button
+            @click="next"
+            class="absolute right-4 p-2 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70 z-20 transition-opacity"
+            :class="fullscreen ? '' : 'opacity-0 group-hover:opacity-100'"
+          >
             <ChevronRightIcon :size="30" />
           </button>
+
+          <!-- Image Counter -->
+          <div
+            v-if="!fullscreen && media.length > 1"
+            class="absolute bottom-4 right-4 bg-gray-800/60 backdrop-blur-sm rounded-full px-4 py-2 text-white text-sm font-medium z-20"
+          >
+            {{ currentIndex + 1 }} / {{ media.length }}
+          </div>
         </div>
 
-        <div v-if="media.length > 0" class="flex overflow-x-auto space-x-2 p-4 w-full justify-center max-w-[80%]">
+        <div
+          v-if="media.length > 1"
+          class="flex overflow-x-auto overflow-y-hidden space-x-2 w-full justify-center"
+          :class="[
+            fullscreen ? 'p-4 max-w-[80%]' : 'mt-4 px-4 max-w-full'
+          ]"
+        >
           <div v-for="(m, idx) in media" :key="m.id"
                @click="goTo(idx)"
-               class="shrink-0 w-16 h-16 cursor-pointer border-2 transition-all duration-200"
-               :class="{ 'border-white opacity-100 scale-105': idx === currentIndex, 'border-transparent opacity-60 hover:opacity-100': idx !== currentIndex }">
+               class="shrink-0 w-16 h-16 cursor-pointer border-2 transition-all duration-200 rounded-lg overflow-hidden"
+               :class="{
+                 'border-white opacity-100 scale-105': idx === currentIndex,
+                 'border-transparent opacity-60 hover:opacity-100': idx !== currentIndex
+               }">
 
             <img v-if="m.type === 'image'" :src="m.imageUrl" class="w-full h-full object-cover" :alt="`Thumbnail ${idx + 1}`" />
             <div v-else class="relative w-full h-full">
@@ -151,7 +195,7 @@ watch(() => props.startIndex, (newIndex) => {
         </div>
       </div>
     </div>
-  </Teleport>
+  </component>
 </template>
 
 <style scoped>
