@@ -18,37 +18,40 @@ import FormatColorTextIcon from 'vue-material-design-icons/FormatColorText.vue';
 import EmoticonHappyIcon from 'vue-material-design-icons/EmoticonHappy.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 import WebIcon from 'vue-material-design-icons/Web.vue';
-import LazyEmojiPicker from './LazyEmojiPicker.vue';
-import StoryTextCard from './StoryTextCard.vue';
-import MediaPreview from './MediaPreview.vue';
+import StarIcon from 'vue-material-design-icons/Star.vue';
+import LazyEmojiPicker from '../../LazyEmojiPicker.vue';
+import StoryTextCard from './item/StoryTextCard.vue';
+import MediaPreview from './item/MediaPreview.vue';
 import EarthIcon from 'vue-material-design-icons/Earth.vue';
 import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
 import AccountMultipleMinusIcon from 'vue-material-design-icons/AccountMultipleMinus.vue';
 import AccountStarIcon from 'vue-material-design-icons/AccountStar.vue';
-import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue';
-import HoverScrollbar from './HoverScrollbar.vue';
-import PostItem from './PostItem.vue';
-import PostCreatorToolbar from './PostCreator/PostCreatorToolbar.vue';
+import HoverScrollbar from '../../HoverScrollbar.vue';
+import PostItem from '../../post/PostItem.vue';
+import PostCreatorToolbar from '../../PostCreator/PostCreatorToolbar.vue';
 
 // --- LEAFLET (MAPA) ---
-import MapPreview from './MapPreview.vue';
+import MapPreview from '../../MapPreview.vue';
 
 // --- TYPY ---
 import type { PostData } from '@/types/StoryElement';
 import type { User } from '@/data/users';
-import { getAllUsers } from '@/data/users';
 import { type Post } from '@/types/Post';
 import { useI18n } from 'vue-i18n';
-import { useUserTagging } from '@/composables/useUserTagging';
+import { useContentEditable } from '@/composables/useContentEditable';
 
 const { t } = useI18n();
 
 const props = defineProps({
   sharedPost: { type: Object as () => PostData | null, default: null },
   sharedEventId: { type: String, default: null },
-  authorName: { type: String, required: true },
-  authorAvatar: { type: String, required: true },
 });
+
+// Read current user from auth store instead of receiving author props
+import { useAuthStore } from '@/stores/auth';
+const authStore = useAuthStore();
+const currentUser = computed(() => authStore.currentUser);
+const profilePicUrl = computed(() => currentUser.value?.avatar || '/default-avatar.png');
 
 const emit = defineEmits<{
   (e: 'navigate', viewName: string, selectedImage: string | null): void;
@@ -76,13 +79,19 @@ const sharedEvent = computed(() => {
 });
 
 // --- STAN ---
-const userName = computed(() => props.authorName);
-const profilePicUrl = computed(() => props.authorAvatar);
+// Use current user from auth store
+const userName = computed(() => currentUser.value?.name || '');
 const fileInput = ref<HTMLInputElement | null>(null);
 const contentEditableDiv = ref<HTMLDivElement | null>(null);
-const isLocalUpdate = ref(false);
 
-const { matchingUsers, showUserDropdown, triggerUserTagging, selectUser: selectUserFromComposable } = useUserTagging();
+// Use useContentEditable composable
+const {
+    onContentInput: baseOnContentInput,
+    matchingUsers,
+    showUserDropdown,
+    selectUser: selectUserFromComposable,
+    addEmoji: addEmojiFromComposable,
+} = useContentEditable(contentEditableDiv, postContent);
 
 // --- LINK PREVIEW STATE ---
 interface LinkPreviewData {
@@ -103,99 +112,28 @@ const isPublishButtonDisabled = computed(() => {
   return !postContent.value.trim() && !selectedImage.value?.url && !selectedLocation.value && !selectedGif.value && !linkPreview.value;
 });
 
-// --- GLÓWNA LOGIKA EDYCJI ---
+// Wrapper for content input to handle link detection
+const onContentInput = (e: Event) => {
+    baseOnContentInput(); // Handle content update and tagging
+    
+    // Link detection logic
+    if (linkCheckTimeout) clearTimeout(linkCheckTimeout);
+    linkCheckTimeout = setTimeout(() => {
+         const text = contentEditableDiv.value?.innerText || '';
+         const urlMatch = text.match(/(https?:\/\/[^\s]+)/g);
+         if (urlMatch && urlMatch.length > 0 && !linkPreview.value && !isPreviewDismissed.value) {
+            fetchLinkMetadata(urlMatch[0]);
+         }
+    }, 500);
 
-const onContentInput = () => {
-  if (!contentEditableDiv.value) return;
-  isLocalUpdate.value = true;
-
-  let newContent = '';
-  const nodes = contentEditableDiv.value.childNodes;
-
-  nodes.forEach(node => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      newContent += node.textContent;
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      const el = node as HTMLElement;
-      if (el.dataset.userId) {
-        newContent += `[@${el.dataset.userId}]`;
-      } else if (el.tagName === 'BR') {
-        newContent += '\n';
-      } else if (el.tagName === 'A') {
-        newContent += el.innerText;
-      } else {
-        newContent += el.innerText;
-      }
-    }
-  });
-
-  createPostStore.setPostContent(newContent);
-
-  const selection = window.getSelection();
-  if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      if (range.startContainer.nodeType === Node.TEXT_NODE) {
-          const textNode = range.startContainer;
-          const textContent = textNode.textContent || '';
-          const textBeforeCaret = textContent.substring(0, range.startOffset);
-          triggerUserTagging(textBeforeCaret);
-      } else {
-          triggerUserTagging('');
-      }
-  }
-
-  nextTick(() => {
-    isLocalUpdate.value = false;
-  });
+    nextTick(() => emit('updateHeight'));
 };
-
-// --- WATCHER DLA TREŚCI ---
-watch(postContent, (newValue) => {
-  // 1. Rendering (istniejąca logika)
-  if (!isLocalUpdate.value) {
-    renderContentEditable();
-  }
-
-  // 2. Wykrywanie linków (debounce 500ms)
-  if (linkCheckTimeout) clearTimeout(linkCheckTimeout);
-
-  linkCheckTimeout = setTimeout(() => {
-    checkForLinks(newValue);
-  }, 500);
-});
-
-// --- LOGIKA LINK PREVIEW ---
-const checkForLinks = async (text: string) => {
-  const urlRegex = /(https?:\/\/[^\s]+)/;
-  const match = text.match(urlRegex);
-
-  if (match) {
-    const url = match[0];
-
-    if (linkPreview.value?.url === url || (isPreviewDismissed.value && lastCheckedUrl === url)) {
-      return;
-    }
-
-    lastCheckedUrl = url;
-    isPreviewDismissed.value = false;
-
-    await fetchLinkMetadata(url);
-  } else {
-    linkPreview.value = null;
-    lastCheckedUrl = '';
-  }
-};
-
-let lastCheckedUrl = '';
 
 const fetchLinkMetadata = async (url: string) => {
+  if (isLoadingPreview.value) return;
+  isLoadingPreview.value = true;
   try {
-    isLoadingPreview.value = true;
-
-    // Wywołanie API backendu przez axios
-    const { data } = await axios.post('http://127.0.0.1:8000/scrape-og', {
-      url: url
-    });
+    const { data } = await axios.post('http://localhost:3000/api/link-preview', { url });
     console.log('Pobrane dane Open Graph:', data);
 
     linkPreview.value = {
@@ -205,10 +143,15 @@ const fetchLinkMetadata = async (url: string) => {
       description: data.description || '',
       image: data.image || undefined
     };
-
   } catch (error) {
     console.error('Błąd podczas pobierania metadanych linku:', error);
-
+    // Fallback if API fails
+     linkPreview.value = {
+      url: url,
+      domain: new URL(url).hostname,
+      title: url,
+      description: '',
+    };
   } finally {
     isLoadingPreview.value = false;
     nextTick(() => emit('updateHeight'));
@@ -216,20 +159,17 @@ const fetchLinkMetadata = async (url: string) => {
 };
 
 const removeLinkPreview = () => {
-  linkPreview.value = null;
-  isPreviewDismissed.value = true;
-  nextTick(() => emit('updateHeight'));
+    linkPreview.value = null;
+    isPreviewDismissed.value = true;
+    nextTick(() => emit('updateHeight'));
 };
 
 // Funkcja do wykrywania języka posta
 const detectLanguage = async (text: string): Promise<string | null> => {
-
-
   try {
     const { data } = await axios.post('http://127.0.0.1:8000/detect-language', {
       text: text
     });
-
     return data.detectedLanguage || null;
   } catch (error) {
     console.error('Błąd podczas wykrywania języka:', error);
@@ -237,57 +177,10 @@ const detectLanguage = async (text: string): Promise<string | null> => {
   }
 };
 
-const renderContentEditable = () => {
-  if (!contentEditableDiv.value) return;
-
-  let htmlContent = postContent.value || '';
-  htmlContent = htmlContent
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\n/g, '<br>');
-
-  const allUsers = getAllUsers();
-
-  htmlContent = htmlContent.replace(/\[@(\d+)\]/g, (match, userId) => {
-    const user = allUsers.find(u => u.id === parseInt(userId));
-    if (user) {
-      return `<span contenteditable="false" class="bg-blue-100 text-blue-600 font-bold px-1 rounded mx-0.5 cursor-pointer align-middle text-sm" data-user-id="${user.id}">@${user.name}</span>`;
-    }
-    return match;
-  });
-
-  htmlContent = htmlContent.replace(/(https?:\/\/[^\s<]+)(?=[\s\u00A0]|<br>)/g, (match) => {
-    return `<a href="${match}" target="_blank" rel="noopener noreferrer" contenteditable="false" class="text-blue-600 hover:underline cursor-pointer font-medium">${match}</a>`;
-  });
-
-  if (contentEditableDiv.value.innerHTML !== htmlContent) {
-    contentEditableDiv.value.innerHTML = htmlContent;
-    moveCursorToEnd();
-  }
-};
-
-const moveCursorToEnd = () => {
-  nextTick(() => {
-    if (contentEditableDiv.value) {
-      const selection = window.getSelection();
-      const range = document.createRange();
-      range.selectNodeContents(contentEditableDiv.value);
-      range.collapse(false);
-      selection?.removeAllRanges();
-      selection?.addRange(range);
-    }
-  });
-};
-
 const onBackspace = (e: KeyboardEvent) => { /* Opcjonalne */ };
 
 const selectUser = async (user: User) => {
-  selectUserFromComposable(postContent, user);
-  nextTick(() => {
-      contentEditableDiv.value?.focus();
-      moveCursorToEnd();
-  });
+  selectUserFromComposable(user);
 };
 
 const privacyInfo = computed(() => {
@@ -376,7 +269,7 @@ const removeLocation = () => {
 };
 
 const addEmoji = (e: { native: string }) => {
-  createPostStore.setPostContent(postContent.value + e.native);
+  addEmojiFromComposable(e);
 };
 
 watch(() => selectedGif.value, () => {
@@ -399,18 +292,18 @@ const handlePublish = async () => {
   const newPost: Post = {
     id: `${Date.now()}`,
     content: postContent.value,
-    images: selectedImage.value ? [{ src: selectedImage.value.url, tags: selectedImage.value.tags }] : [],
+    images: selectedImage.value ? [{ src: selectedImage.value.url, altText: selectedImage.value.altText, tags: selectedImage.value.tags }] : [],
     videoUrl: undefined,
-    authorName: props.authorName,
-    authorAvatar: props.authorAvatar,
-    authorId: postsStore.currentUser.id,
+    authorName: userName.value,
+    authorAvatar: profilePicUrl.value,
+    authorId: currentUser.value?.id ?? postsStore.currentUser?.id ?? 0,
     date: new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long' }),
     likesCount: 0,
     commentsCount: 0,
     sharesCount: 0,
     taggedUsers: taggedUsers.value,
-    location: selectedLocation.value,
-    gif: selectedGif.value,
+    location: selectedLocation.value || undefined,
+    gif: selectedGif.value || undefined,
     selectedCardBgId: selectedCardBgId.value,
     privacy: selectedPrivacy.value,
     feeling: selectedFeeling.value,
@@ -449,9 +342,9 @@ const handlePublish = async () => {
           <template v-if="selectedActivity">
             <button @click="emit('openFeelingSelector')" class="font-normal text-gray-600   rounded-md px-1"> {{ t('post.feelingWith') }} {{ selectedActivity.parent.slice(0,-3) }} <span class="font-semibold hover:underline">{{ selectedActivity.item.label }}</span>  {{ selectedActivity.item.emoji }} </button>
           </template>
-          <template v-if="location">
+          <template v-if="selectedLocation">
             <span class="font-normal text-gray-600"> {{ t('post.isAt') }} </span>
-            <span class="font-semibold">{{ location.title }}</span>
+            <span class="font-semibold">{{ selectedLocation.title }}</span>
           </template>
         </div>
 
@@ -538,7 +431,9 @@ const handlePublish = async () => {
                     class="px-4 py-2 cursor-pointer hover:bg-gray-100 flex items-center gap-2"
                     @mousedown.prevent="selectUser(user)"
                   >
-                    <div class="w-8 h-8 bg-gray-300 rounded-full flex-shrink-0"></div>
+                    <div class="w-8 h-8 bg-gray-300 rounded-full flex-shrink-0">
+                      <img v-if="user.avatar" :src="user.avatar" class="w-full h-full object-cover rounded-full" />
+                    </div>
                     <span class="font-medium text-sm">{{ user.name }}</span>
                   </li>
                 </ul>

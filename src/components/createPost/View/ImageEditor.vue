@@ -8,15 +8,16 @@ import RotateRightIcon from 'vue-material-design-icons/RotateRight.vue';
 import TagIcon from 'vue-material-design-icons/Tag.vue';
 import FormatLetterCaseIcon from 'vue-material-design-icons/FormatLetterCase.vue';
 import FileImageIcon from 'vue-material-design-icons/FileImage.vue';
+import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
 
 import { ref, reactive, onMounted, onUnmounted, computed, watchEffect, nextTick, watch } from 'vue';
 import VueCropper from 'vue-cropperjs';
 import 'cropperjs/dist/cropper.css';
 
 import { useStoryElementInteraction } from '@/composables/useStoryElementInteraction';
-import StoryElement from './StoryElement.vue';
-import ImageTag from './ImageTag.vue';
-import EditorSidebar from './EditorSidebar.vue';
+import StoryElement from './item/StoryElement.vue';
+import ImageTag from '../../ImageTag.vue';
+import EditorSidebar from './item/EditorSidebar.vue';
 import type { StoryElement as StoryElementType } from '@/types/StoryElement';
 import type { ImageTagType } from '@/types/ImageTag';
 
@@ -69,7 +70,7 @@ const newTag = ref<{ x: number, y: number, name: string, isCreating: boolean, us
 const newTagInputRef = ref<HTMLInputElement | null>(null);
 const searchQuery = ref('');
 
-const showMobileTools = ref(false);
+
 
 const cropperRef = ref<InstanceType<typeof VueCropper> | null>(null);
 const isCroppingMode = ref(false);
@@ -267,6 +268,7 @@ const handleDone = () => {
 const handleCancel = () => console.log('Anuluj');
 
 // --- LOGIKA OBROTU ---
+// --- LOGIKA OBROTU ---
 const rotateImage = () => {
   if (isCroppingMode.value && cropperRef.value) {
     cropperRef.value.rotate(90);
@@ -279,68 +281,85 @@ const rotateImage = () => {
 
       if (!ctx) return;
 
-      const rotationAngle = 90; // Always rotate by 90 degrees
+      const rotationAngle = 90;
 
       const width = img.width;
       const height = img.height;
-      let rotatedWidth = width;
-      let rotatedHeight = height;
 
-      // Swap width and height for 90/270 degree rotations
-      // This is a common mistake: the new width becomes the old height and vice-versa
-      if (rotationAngle === 90 || rotationAngle === 270) {
-        rotatedWidth = height;
-        rotatedHeight = width;
-      }
+      // Przy obrocie o 90/270 stopni zamieniamy szerokość z wysokością
+      let rotatedWidth = height;
+      let rotatedHeight = width;
 
       canvas.width = rotatedWidth;
       canvas.height = rotatedHeight;
 
       ctx.save();
-      // Translate to the center of the new canvas
       ctx.translate(rotatedWidth / 2, rotatedHeight / 2);
-      // Rotate by the desired angle
       ctx.rotate(rotationAngle * Math.PI / 180);
-      // Draw the image, centered, taking into account its original dimensions
       ctx.drawImage(img, -width / 2, -height / 2, width, height);
       ctx.restore();
 
-      imageUrl.value = canvas.toDataURL('image/png'); // Update source image
-      imageRotation.value = 0; // Reset CSS rotation after physical rotation
+      const rotatedTags = tags.value.map(tag => ({
+        ...tag,
+        x: 100 - tag.y,
+        y: tag.x
+      }));
+
+      tags.value = rotatedTags;
+      // --------------------------------------
+
+      imageUrl.value = canvas.toDataURL('image/png');
+      imageRotation.value = 0;
     };
   }
 };
 
-// --- LOGIKA TAGOWANIA ---
 const handleImageClickForTagging = async (event: MouseEvent) => {
   if (!taggingMode.value) return;
-  const container = event.currentTarget as HTMLElement;
-  const rect = container.getBoundingClientRect();
 
-  if (rect.width === 0 || rect.height === 0) return;
+  const img = event.target as HTMLImageElement;
+  // Pobieramy wymiary wizualne (bounding box po obrocie)
+  const rect = img.getBoundingClientRect();
 
-  const clickX = event.clientX - rect.left;
-  const clickY = event.clientY - rect.top;
+  // 1. Znajdujemy środek obrazka na ekranie
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
 
-  const cx = rect.width / 2;
-  const cy = rect.height / 2;
+  // 2. Obliczamy kliknięcie względem środka
+  const clickX = event.clientX - cx;
+  const clickY = event.clientY - cy;
 
+  // 3. Konwertujemy kąt na radiany i odwracamy go (minus), żeby "cofnąć" obrót
   const angleRad = -imageRotation.value * (Math.PI / 180);
 
-  const rotatedX = (clickX - cx) * Math.cos(angleRad) - (clickY - cy) * Math.sin(angleRad) + cx;
-  const rotatedY = (clickX - cx) * Math.sin(angleRad) + (clickY - cy) * Math.cos(angleRad) + cy;
+  // 4. Matematyczny obrót punktu 2D
+  // To nam daje pozycję X/Y względem środka, tak jakby zdjęcie nie było obrócone
+  const unrotatedX = clickX * Math.cos(angleRad) - clickY * Math.sin(angleRad);
+  const unrotatedY = clickX * Math.sin(angleRad) + clickY * Math.cos(angleRad);
 
-  const finalXPerc = (rotatedX / rect.width) * 100;
-  const finalYPerc = (rotatedY / rect.height) * 100;
+  // 5. Pobieramy ORYGINALNE wymiary elementu w DOM (przed obrotem CSS)
+  // To jest kluczowe - nie używamy rect.width, tylko img.offsetWidth
+  const originalWidth = img.offsetWidth;
+  const originalHeight = img.offsetHeight;
 
+  if (originalWidth === 0 || originalHeight === 0) return;
+
+  // 6. Przesuwamy punkt odniesienia ze środka (0,0) na lewy górny róg
+  const localX = unrotatedX + originalWidth / 2;
+  const localY = unrotatedY + originalHeight / 2;
+
+  // 7. Zamieniamy na procenty
+  const finalXPerc = (localX / originalWidth) * 100;
+  const finalYPerc = (localY / originalHeight) * 100;
+
+  // Walidacja czy nie kliknięto poza obszar (np. na zaokrągleniach)
   if (finalXPerc < 0 || finalXPerc > 100 || finalYPerc < 0 || finalYPerc > 100) return;
 
   newTag.value = { x: finalXPerc, y: finalYPerc, name: '', isCreating: true };
-  searchQuery.value = ''; // Reset wyszukiwania
+  searchQuery.value = '';
   taggingMode.value = false;
 
   await nextTick();
-  // Focusowanie po pojawieniu się modala
   if (newTagInputRef.value) newTagInputRef.value.focus();
 };
 
@@ -481,17 +500,19 @@ const updateElementContent = (id: string, value: string) => {
 
         <template v-else>
           <div
-            class="relative max-w-full max-h-full"
+            class="relative flex  justify-center h-full w-full"
             :class="{ 'cursor-crosshair': taggingMode }"
-            @click="handleImageClickForTagging"
+
           >
-            <img
+          <div class="relative">
+  <img
               v-if="imageUrl"
               :src="imageUrl"
               ref="imageWrapperRef"
               alt="Edytowane zdjęcie"
-              class="max-h-[50vh] lg:max-h-[70vh] max-w-[85vw] lg:max-w-[800px] object-contain w-auto h-auto shadow-2xl rounded-sm transition-transform duration-300 ease-out"
+              class="max-h-[50vh] lg:max-h-[70vh] max-w-[85vw] lg:max-w-[800px] object-contain w-auto h-full shadow-2xl rounded-sm transition-transform duration-300 ease-out"
               :style="{ transform: `rotate(${imageRotation}deg)` }"
+                 @click="handleImageClickForTagging"
               @load="updateImageDimensions"
             />
 
@@ -565,6 +586,8 @@ const updateElementContent = (id: string, value: string) => {
                 />
               </div>
             </template>
+          </div>
+
           </div>
 
           <StoryElement

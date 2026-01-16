@@ -29,7 +29,7 @@ export const useCreatePostStore = defineStore('createPost', () => {
   const selectedLocation = ref<LocationResult | null>(null);
   const selectedGif = ref<string | null>(null);
   const selectedPrivacy = ref<string>('friends');
-  const imageToEdit = ref<string | null>(null);
+  const imageToEdit = ref<SelectedImage | null>(null);
   const videoToEdit = ref<string | null>(null);
   const postContent = ref<string>('');
   const selectedImage = ref<SelectedImage | null>(null);
@@ -59,7 +59,7 @@ export const useCreatePostStore = defineStore('createPost', () => {
     selectedPrivacy.value = privacy;
   }
 
-  function setImageToEdit(url: string | null) {
+  function setImageToEdit(url: SelectedImage | null) {
     imageToEdit.value = url;
   }
 

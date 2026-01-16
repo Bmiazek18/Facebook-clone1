@@ -67,6 +67,10 @@ export function useContentEditable(contentEditableDiv: Ref<HTMLDivElement | null
             }
             return match;
         });
+
+        htmlContent = htmlContent.replace(/(https?:\/\/[^\s<]+)(?=[\s\u00A0]|<br>)/g, (match) => {
+            return `<a href="${match}" target="_blank" rel="noopener noreferrer" contenteditable="false" class="text-blue-600 hover:underline cursor-pointer font-medium">${match}</a>`;
+        });
         
         // Only update innerHTML if it's different to prevent unnecessary re-renders and cursor issues
         if (contentEditableDiv.value.innerHTML !== htmlContent) {

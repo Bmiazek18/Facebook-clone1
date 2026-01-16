@@ -7,7 +7,7 @@ import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
 
 import { getAllUsers } from '@/data/users';
 import type { User } from '@/data/users';
-import HoverScrollbar from './HoverScrollbar.vue';
+import HoverScrollbar from '../../HoverScrollbar.vue';
 
 const emit = defineEmits<{
   (e: 'confirm', users: User[]): void;
@@ -23,7 +23,6 @@ const searchQuery = ref('');
 
 const isSelected = (user: User) => selectedUsers.value.some(u => u.id === user.id);
 
-// Filtrowanie użytkowników po nazwie
 const filteredUsers = computed(() => {
   if (!searchQuery.value) return allUsers.value;
   return allUsers.value.filter(u =>
@@ -36,8 +35,6 @@ const toggleUser = (user: User) => {
     selectedUsers.value = selectedUsers.value.filter(u => u.id !== user.id);
   } else {
     selectedUsers.value.push(user);
-    // Opcjonalnie: wyczyść szukanie po wybraniu
-    // searchQuery.value = '';
   }
 };
 
@@ -122,16 +119,3 @@ const confirmSelection = () => {
   </div>
 </template>
 
-<style scoped>
-/* Ukrycie standardowego scrollbara dla estetyki, opcjonalnie */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #e5e7eb;
-  border-radius: 20px;
-}
-</style>

@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import CreatePostBox from '../components/CreatePostBox.vue'
+import CreateBox from '../components/createPost/CreateBox.vue'
 import PostItem from '../components/post/PostItem.vue'
 import PeopleYouMayKnow from '../components/PeopleYouMayKnow.vue'
 import StoriesList from '../components/StoriesList.vue'
 import LeftSidebar from '../components/home/LeftSidebar.vue'
 import RightSidebar from '../components/home/RightSidebar.vue'
-import { ref,  watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useVirtualList } from '@vueuse/core'
 import PostItemSceleton from '@/components/PostItemSceleton.vue'
 import { usePostsStore } from '@/stores/posts'
-import { onBeforeRouteLeave, useRouter, type RouteLocation } from 'vue-router' // Dodano useRouter
+import { onBeforeRouteLeave, useRouter, type RouteLocation } from 'vue-router'
 import { useCreatePostStore } from '@/stores/createPost'
 import ConfirmationModal from '@/components/ConfirmationModal.vue'
 import ReelSGalerry from '@/components/ReelSGalerry.vue'
@@ -86,28 +86,16 @@ const handleCancelLeave = () => {
   <div class="w-full bg-theme-bg text-theme-text min-h-screen relative">
 
     <div
-      class="flex flex-col md:grid md:grid-cols-[2fr_5fr_2fr] w-full 3xl:max-w-[1500px] max-w-full mt-14 mx-auto px-0 lg:px-4"
-    >
+      class="flex flex-col md:grid md:grid-cols-[2fr_5fr_2fr] w-full 3xl:max-w-[1500px] max-w-full mt-14 mx-auto px-0 lg:px-4">
       <div id="LeftSection" class="hidden lg:block">
-        <LeftSidebar
-          user-name="Bartosz Miazek"
-          :user-avatar="userAvatar"
-        />
+        <LeftSidebar user-name="Bartosz Miazek" :user-avatar="userAvatar" />
       </div>
 
       <div id="MiddleSection" class="flex justify-center w-full">
-        <div
-          id="PostsSection"
-          class="w-full md:max-w-[700px] lg:mx-0 mx-0"
-          v-bind="containerProps"
-        >
-          <CreatePostBox
-            :image="userAvatar"
-            :placeholder="$t('home.whatsOnYourMind')"
-            :author-name="authorName"
-            :author-avatar="userAvatar"
-          />
-          <StoriesList/>
+        <div id="PostsSection" class="w-full md:max-w-[700px] lg:mx-0 mx-0" v-bind="containerProps">
+          <CreateBox :image="userAvatar" :placeholder="$t('home.whatsOnYourMind')" :author-name="authorName"
+            :author-avatar="userAvatar" />
+          <StoriesList />
 
           <div>
             <template v-if="isLoading">
@@ -116,7 +104,7 @@ const handleCancelLeave = () => {
             </template>
 
             <template v-else>
-              <template v-for="(post, i) in virtualPosts" :key="post.data.id" >
+              <template v-for="(post, i) in virtualPosts" :key="post.data.id">
                 <PostItem :post="post.data" />
                 <PeopleYouMayKnow v-if="i + 1 === peopleYouMayKnowIndex" />
                 <ReelSGalerry v-if="i + 2 === peopleYouMayKnowIndex" />
@@ -126,22 +114,14 @@ const handleCancelLeave = () => {
         </div>
       </div>
 
-      <div  class="hidden md:block pl-4">
+      <div class="hidden md:block pl-4">
         <RightSidebar birthday-user="Bartosz Miazek" />
       </div>
     </div>
-<ConfirmationModal
-      v-if="showConfirmModal"
-      :title="t('confirmation.unsavedChanges')"
-      :message="t('confirmation.unsavedChangesMessage')"
-      :confirm-label="t('confirmation.leavePage')"
-      :cancel-label="t('confirmation.stay')"
-      @confirm="handleConfirmLeave"
-      @cancel="handleCancelLeave"
-    />
-<BaseModal v-if="post" :title="post.authorName" @close="post = undefined; router.push('/')">
-<PostModal :post="post" />
-</BaseModal>
+    <ConfirmationModal v-if="showConfirmModal" @confirm="handleConfirmLeave" @cancel="handleCancelLeave" />
+    <BaseModal v-if="post" :title="post.authorName" @close="post = undefined; router.push('/')">
+      <PostModal :post="post" />
+    </BaseModal>
 
 
   </div>

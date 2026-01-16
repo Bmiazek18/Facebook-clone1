@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import PencilIcon from 'vue-material-design-icons/Pencil.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
-import PlayerVideo from './PlayerVideo.vue';
+import PlayerVideo from '../../../PlayerVideo.vue';
 
 const props = defineProps<{
   selectedImage?: { url: string; altText: string } | null;
@@ -31,7 +31,7 @@ const isImage = computed(() => {
 <template>
   <div>
     <div v-if="isImage" class="relative mb-4 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-      <img :src="props.selectedImage.url" class="w-full object-cover" @load="onImageLoad" />
+      <img :src="props.selectedImage?.url" class="w-full object-cover" @load="onImageLoad" />
       <div @click="emit('edit-image')" class="absolute top-2 left-2 bg-white flex items-center gap-1 px-2 py-1 rounded shadow text-blue-600 text-sm font-medium cursor-pointer hover:bg-gray-50">
         <PencilIcon :size="16" class="mr-1" />
         Edytuj
@@ -42,7 +42,7 @@ const isImage = computed(() => {
     </div>
 
     <div v-else-if="isVideo" class="relative mb-4 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-      <PlayerVideo :url="props.selectedImage.url" />
+      <PlayerVideo :url="props.selectedImage?.url" />
       <div @click="emit('edit-video')" class="absolute top-2 left-2 bg-white flex items-center gap-1 px-2 py-1 rounded shadow text-blue-600 text-sm font-medium cursor-pointer hover:bg-gray-50">
         <PencilIcon :size="16" class="mr-1" />
         Edytuj video

@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import {  onMounted } from 'vue';
+import {  onMounted, type Component } from 'vue';
 import { storeToRefs } from 'pinia';
-import PostCreator from './PostCreator.vue';
-import PrivacySelector from './PrivacySelector.vue';
-import TagUsers from './TagUsers.vue';
-import LocationSelector from './LocationSelector.vue';
-import GifSelector from './GifSelector.vue';
-import ImageEditor from './ImageEditor.vue';
-import VideoEditor from './videoEditor.vue';
-import FeelingModal from './FeelingModal.vue';
+import PostCreator from './View/PostCreator.vue';
+import PrivacySelector from '../PrivacySelector.vue';
+import TagUsers from './View/TagUsers.vue';
+import LocationSelector from './View/LocationSelector.vue';
+import GifSelector from '@/components/GifSelector.vue';
+import ImageEditor from './View/ImageEditor.vue';
+import VideoEditor from './View/videoEditor.vue';
+import FeelingModal from './View/FeelingModal.vue';
 import '@/assets/animations/slideTransition.css';
 import { useSlideTransition } from '@/composables/useSlideTransition';
 import { useCreatePostStore } from '@/stores/createPost';
@@ -18,9 +18,8 @@ import type { User } from '@/data/users';
 defineProps<{
   sharedPost?: PostData | null;
   sharedEventId?: string;
-  authorName: string;
-  authorAvatar: string;
 }>();
+
 
 const emit = defineEmits<{
   (e: 'close'): void;
@@ -47,7 +46,7 @@ const openFeelingView = () => {
 
 
 
-const viewComponents: Record<string, any> = {
+const viewComponents: Record<string, Component> = {
   creator: PostCreator,
   privacy: PrivacySelector,
   imageEditor: ImageEditor,
@@ -70,10 +69,6 @@ const handleNavigation = (viewName: string, data: string | null = null) => {
     console.log(`Akcja poza nawigacją widoku: ${viewName}`);
   }
 };
-
-
-
-
 
 const handleClose = () => {
   emit('close');
@@ -138,16 +133,14 @@ const handleRemoveGif = () => {
   createPostStore.setGif(null);
 };
 
-// --- Privacy selection ---
-// load saved default privacy (if any)
+
 try {
   const saved = localStorage.getItem('fc_default_privacy');
   if (saved) createPostStore.setPrivacy(saved);
 } catch { /* ignore on SSR or if localStorage not available */ }
 
 const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
-  console.log('handlePrivacyConfirm received payload:', payload);
-  console.log('Store privacy before setting:', createPostStore.selectedPrivacy);
+
   createPostStore.setPrivacy(payload.id);
   console.log('Store privacy after setting:', createPostStore.selectedPrivacy);
   if (payload.setDefault) {
@@ -176,7 +169,7 @@ const handleInternalPublish = (content: string) => {
 </script>
 
 <template>
-  <div :class="{'w-full lg:w-[1200px]': currentView === 'imageEditor' || currentView === 'videoEditor',}"  class='p-2 sm:p-4 w-full sm:w-[500px] mx-auto rounded-xl relative overflow-hidden' >
+  <div :class="{'w-full lg:w-300': currentView === 'imageEditor' || currentView === 'videoEditor',}"  class='p-2 sm:p-4 w-full sm:w-125 mx-auto rounded-xl relative overflow-hidden' >
     <div class="transition-wrapper" ref="wrapperRef">
       <Transition :name="transitionName" mode="out-in" @before-enter="updateHeight()">
         <PostCreator
@@ -186,8 +179,7 @@ const handleInternalPublish = (content: string) => {
           data-view="creator"
           :shared-post="sharedPost"
           :shared-event-id="sharedEventId"
-          :author-name="authorName"
-          :author-avatar="authorAvatar"
+
           @navigate="handleNavigation"
           @back="handleNavigationBack"
           @publish="handleInternalPublish"
@@ -243,7 +235,7 @@ const handleInternalPublish = (content: string) => {
           @updateHeight="updateHeight"
         />
         <VideoEditor
-          v-else-if="currentView === 'videoEditor'"
+          v-else-if="currentView === 'videoEditor' && videoToEdit"
           key="videoEditor"
           class="view-container bg-white"
           data-view="videoEditor"

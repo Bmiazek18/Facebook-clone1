@@ -2,7 +2,7 @@
 import { ref, reactive, computed } from 'vue';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
-import type { LogEvent } from '@ffmpeg/ffmpeg/dist/esm/types';
+import type { LogEvent } from '@ffmpeg/ffmpeg/types/events';
 
 interface VideoEditorProps {
   video: string;

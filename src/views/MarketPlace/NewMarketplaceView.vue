@@ -1,6 +1,6 @@
 <script setup>
 import { shallowRef, ref } from 'vue';
-import NewCreating from '@/components/NewCreating.vue';
+import NewListingForm from '@/components/MarketPlace/NewListingForm.vue';
 
 
 // --- IMPORT IKON ---
@@ -69,7 +69,7 @@ const listingTypes = shallowRef([
   }
 ]);
 
-// Stan do kontrolowania widoczności komponentu NewCreating
+// Stan do kontrolowania widoczności komponentu NewListingForm
 const showNewCreating = ref(false);
 const selectedListingType = ref(null);
 
@@ -79,7 +79,7 @@ const handleListingTypeClick = (listingType) => {
   showNewCreating.value = true;
 };
 
-// Funkcja do zamknięcia komponentu NewCreating
+// Funkcja do zamknięcia komponentu NewListingForm
 const closeNewCreating = () => {
   showNewCreating.value = false;
   selectedListingType.value = null;
@@ -92,7 +92,7 @@ const closeNewCreating = () => {
       <div class="flex absolute z-20 right-0 w-full justify-end py-2 px-4">
 <NavbarRight />
 </div>
-  <NewCreating
+  <NewListingForm
      v-if="showNewCreating"
       @close="closeNewCreating"
       :listing-type="selectedListingType"

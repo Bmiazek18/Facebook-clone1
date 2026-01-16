@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue';
 import { useCreatePostStore } from '@/stores/createPost';
 
-// --- IKONY (Material Design Icons) ---
 import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue';
 import MapMarkerOutlineIcon from 'vue-material-design-icons/MapMarkerOutline.vue';
 import OfficeBuildingIcon from 'vue-material-design-icons/OfficeBuilding.vue';
@@ -34,7 +33,6 @@ const loading = ref(false);
 const sessionToken = ref<string | null>(null);
 let debounceTimeout: ReturnType<typeof setTimeout>;
 
-// --- SESJA I WYSZUKIWANIE ---
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_KEY as string;
 const ensureSessionToken = () => {
   if (!sessionToken.value) {
@@ -89,7 +87,7 @@ const searchLocations = async () => {
   }
 };
 
-// Pobieranie współrzędnych dla wybranego elementu z listy sugestii
+
 const retrieveLocationCoordinates = async (item: PostLocation) => {
   if (!item.searchbox_id) return item;
 
@@ -108,7 +106,7 @@ const retrieveLocationCoordinates = async (item: PostLocation) => {
       item.lat = String(latitude);
       item.lon = String(longitude);
 
-      // Reset sesji po udanym pobraniu punktu docelowego
+  
       sessionToken.value = null;
     }
     return item;
@@ -118,16 +116,16 @@ const retrieveLocationCoordinates = async (item: PostLocation) => {
   }
 };
 
-// Główna funkcja obsługująca kliknięcie w lokalizację
+
 const handleSelect = async (loc: PostLocation) => {
   loading.value = true;
 
-  // Jeśli lokalizacja nie ma jeszcze koordynatów (pochodzi z suggest), pobierz je
+
   if (!loc.lat || !loc.lon) {
     const updatedLoc = await retrieveLocationCoordinates(loc);
     selectedLocation.value = updatedLoc;
   } else {
-    // Jeśli już ma (np. z GPS), po prostu ją zaznacz
+
     selectedLocation.value = loc;
   }
 
@@ -155,7 +153,7 @@ const handleConfirm = () => {
 const initLocation = () => {
   if (!navigator.geolocation) return;
 
-  // Opcje geolokalizacji dla lepszej stabilności
+
   const geoOptions = {
     enableHighAccuracy: false, // Szybszy odczyt (Wi-Fi/BTS) zamiast czekania na GPS
     timeout: 8000,             // Max 8 sekund oczekiwania
@@ -167,13 +165,13 @@ const initLocation = () => {
       try {
         const { latitude, longitude } = pos.coords;
 
-        // Ustawiamy środek dla lepszych wyników wyszukiwania (proximity)
+  
         dynamicCenter.value = {
           lat: latitude.toString(),
           lon: longitude.toString()
         };
 
-        // Używamy /reverse z Search Box API (spójność z /suggest i /retrieve)
+    
         const url = `https://api.mapbox.com/search/searchbox/v1/reverse` +
           `?longitude=${longitude}` +
           `&latitude=${latitude}` +

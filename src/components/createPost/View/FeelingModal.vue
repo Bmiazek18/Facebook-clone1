@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 
-// Definicja zdarzeń
+
 const emit = defineEmits(['feeling-selected', 'back']);
 
 // --- STAN ---
@@ -9,7 +9,7 @@ const activeTab = ref('activities');
 const searchQuery = ref('');
 const selectedActivity = ref<any>(null);
 
-// --- DANE: UCZUCIA (Już były emotkami) ---
+
 const feelings = [
   { emoji: '🙂', label: 'szczęśliwy' },
   { emoji: '🥰', label: 'kochany' },
@@ -25,9 +25,9 @@ const feelings = [
   { emoji: '😴', label: 'zrelaksowany' },
 ];
 
-// --- DANE: KATEGORIE GŁÓWNE (Teraz z Emotkami) ---
+
 const activities = [
-  { id: 'celebrating', label: 'Świętuje...', emoji: '🎉', colorBg: 'bg-yellow-100' }, // Zmieniłem tła na jaśniejsze, żeby emotki były czytelne
+  { id: 'celebrating', label: 'Świętuje...', emoji: '🎉', colorBg: 'bg-yellow-100' },
   { id: 'watching', label: 'Ogląda...', emoji: '📺', colorBg: 'bg-red-100' },
   { id: 'eating', label: 'Je...', emoji: '🍴', colorBg: 'bg-green-100' },
   { id: 'drinking', label: 'Pije...', emoji: '🥤', colorBg: 'bg-orange-100' },
@@ -35,8 +35,7 @@ const activities = [
   { id: 'traveling', label: 'Podróżuje do...', emoji: '✈️', colorBg: 'bg-purple-100' },
 ];
 
-// --- DANE: PODKATEGORIE (Emotki zamiast ikon) ---
-// Klucze odpowiadają `id` z tablicy activities
+
 const subCategories: Record<string, Array<{label: string, emoji: string}>> = {
   celebrating: [
     { label: 'urodziny', emoji: '🎂' },

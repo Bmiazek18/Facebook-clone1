@@ -1,37 +1,26 @@
 <script setup lang="ts">
-import { toRefs, ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import VideoImage from 'vue-material-design-icons/VideoImage.vue'
 import Image from 'vue-material-design-icons/Image.vue'
 import EmoticonOutline from 'vue-material-design-icons/EmoticonOutline.vue'
-import BaseModal from './BaseModal.vue'
-import CreatePost from './CreatePost.vue'
+import BaseModal from '../BaseModal.vue'
+import CreateModal from './CreateModal.vue'
 import { useCreatePostStore } from '@/stores/createPost'
+import { useAuthStore } from '@/stores/auth'
 
 useI18n()
 
 const createPostStore = useCreatePostStore()
-const props = defineProps({
-  image: String,
-  placeholder: String,
-  authorName: {
-    type: String,
-    required: true,
-  },
-  authorAvatar: {
-    type: String,
-    required: true,
-  },
-})
-
-
+const authStore = useAuthStore()
+const currentUser = computed(() => authStore.currentUser)
 
 const isOpen = ref(false)
-const { image, placeholder } = toRefs(props)
+const image = computed(() => currentUser.value?.avatar || '')
+const placeholder = ref('Co nowego?')
 const fileInput = ref<HTMLInputElement | null>(null)
 
-// Open modal to create post
 const openCreatePost = () => {
   isOpen.value = true
 }
@@ -58,14 +47,12 @@ const handleFileSelect = (event: Event) => {
     reader.readAsDataURL(file);
   }
 
-  // Reset the input value
   if(target) {
     target.value = ''
   }
 }
 
 
-// Close modal
 const closeCreatePost = () => {
   isOpen.value = false
 }
@@ -77,7 +64,7 @@ const closeCreatePost = () => {
   <div id="CreatePostBox" class="w-full bg-theme-bg-secondary rounded-lg px-3 mt-4 shadow-md dark:shadow-lg">
     <div class="flex items-center py-3 border-b border-b-gray-300 dark:border-b-gray-700">
       <a class="mr-2">
-        <img class="rounded-full ml-1 min-w-9 max-h-9" :src="image || ''" />
+  <img class="rounded-full ml-1 min-w-9 max-h-9" :src="image" />
       </a>
       <div
         @click="openCreatePost"
@@ -119,9 +106,7 @@ const closeCreatePost = () => {
   </div>
 
   <BaseModal v-if="isOpen" title="Utwórz post" @close="closeCreatePost">
-    <CreatePost
-      :author-name="authorName"
-      :author-avatar="authorAvatar"
+    <CreateModal
 
       @close="closeCreatePost"
     />
