@@ -44,7 +44,7 @@ export const useEventsStore = defineStore('events', () => {
     postsStore.addPost(newPost);
   };
 
-  const getEventById = (id: string) => {
+  const getEventById = (id: string): Event | undefined => {
     return events.value.find((event) => event.id === id);
   };
 

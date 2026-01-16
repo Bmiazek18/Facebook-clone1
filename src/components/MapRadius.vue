@@ -60,7 +60,7 @@ onUnmounted(() => {
 
 const drawCircle = () => {
   if (!map) return;
-  
+
   const radiusMeters = radiusKm.value * 1000;
 
   if (circle) {
