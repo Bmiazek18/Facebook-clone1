@@ -16,7 +16,7 @@ defineProps<{
   birthdayUser?: string;
 }>();
 
-// Funkcja pomocnicza do mapowania danych
+
 const mapChatData = (chat: any) => ({
   id: chat.id,
   name: chat.name,

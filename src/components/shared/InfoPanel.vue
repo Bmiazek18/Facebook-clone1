@@ -159,7 +159,6 @@ import { ref, computed } from 'vue';
 import Earth from 'vue-material-design-icons/Earth.vue';
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
 import ThumbUp from 'vue-material-design-icons/ThumbUp.vue';
-import ThumbUpOutline from 'vue-material-design-icons/ThumbUpOutline.vue';
 import CommentTextMultiple from 'vue-material-design-icons/CommentTextMultiple.vue';
 import ShareVariant from 'vue-material-design-icons/ShareVariant.vue';
 import MusicNote from 'vue-material-design-icons/MusicNote.vue';
@@ -204,6 +203,4 @@ const submitComment = () => {
 };
 </script>
 
-<style scoped>
-/* Custom scrollbar styles if needed */
-</style>
+

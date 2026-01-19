@@ -118,7 +118,7 @@ import { DatePicker as VDatePicker } from 'v-calendar';
 import 'v-calendar/dist/style.css';
 import { useEventsStore } from '@/stores/events'; // Import the events store
 import { useRouter } from 'vue-router'; // Import useRouter
-
+import EventsSidebar from '@/components/events/EventsSidebar.vue';
 /* Importy ikon */
 import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue';
 import CalendarMonthIcon from 'vue-material-design-icons/CalendarMonth.vue';
@@ -129,7 +129,7 @@ import CloseIcon from 'vue-material-design-icons/Close.vue';
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
 import StarOutlineIcon from 'vue-material-design-icons/StarOutline.vue';
 import ReplyIcon from 'vue-material-design-icons/Reply.vue';
-import EventsSidebar from '@/components/events/EventsSidebar.vue';
+
 
 const eventsStore = useEventsStore(); // Initialize the events store
 const router = useRouter(); // Initialize router
@@ -176,7 +176,7 @@ const disabledDates = ref([
 const events = computed(() => eventsStore.events); // Use events from the store
 
 const navigateToEvent = (eventId) => {
-  router.push({ name: 'events', params: { id: eventId } });
+  router.push({ name: 'event', params: { id: eventId } });
 };
 
 </script>

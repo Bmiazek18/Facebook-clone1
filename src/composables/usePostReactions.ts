@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 export interface ReactionIcon {
   src: string
   bg: string
+  emoji?:  string
 }
 
 const reactionIcons: Record<string, ReactionIcon> = {

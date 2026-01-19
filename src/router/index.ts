@@ -110,9 +110,9 @@ const router = createRouter({
       props: true,
     },
     {
-      path: '/reels',
+      path: '/create/reel',
       name: 'reels',
-      component: () => import('@/components/ReelVideoEditor.vue'),
+      component: () => import('@/views/CreateReelView.vue'),
     },
     {
       path: '/reel/:id',
@@ -165,7 +165,7 @@ const router = createRouter({
       component: () => import('@/views/VideoCallView.vue'),
     }, {
       path: '/event',
-      name: 'event',
+      name: 'events',
       component: () => import('@/views/EventsPanelView.vue'),
     },
     {
