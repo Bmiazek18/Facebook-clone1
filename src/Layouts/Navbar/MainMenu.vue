@@ -20,7 +20,7 @@
           <div v-for="section in filteredMenu" :key="section.title" class="mb-4 border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0">
             <h2 class="text-[17px] font-semibold mb-2 px-2 text-theme-text">{{ section.title }}</h2>
 
-            <div v-for="item in section.items" :key="item.name"
+            <RouterLink :to="item.to ? item.to : '/'" v-for="item in section.items" :key="item.name"
               class="flex items-start gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg cursor-pointer transition group">
               <div class="flex-shrink-0">
                 <component :is="item.icon" :size="32" :class="item.iconColor" />
@@ -29,7 +29,7 @@
                 <p class="font-medium text-[15px] leading-tight text-theme-text">{{ item.name }}</p>
                 <p class="text-[13px] text-[#65676b] dark:text-gray-400 leading-snug mt-0.5">{{ item.description }}</p>
               </div>
-            </div>
+            </RouterLink>
           </div>
 
           <div v-if="filteredMenu.length === 0" class="text-center py-10 text-gray-500">
@@ -41,13 +41,13 @@
           <h2 class="text-xl font-bold mb-4 px-2 text-theme-text">Utwórz</h2>
 
           <div v-for="(group, idx) in createMenu" :key="idx" :class="{'border-t border-gray-200 dark:border-gray-700 mt-4 pt-2': idx > 0}">
-            <div v-for="item in group" :key="item.name"
+            <RouterLink :to="item.to" v-for="item in group" :key="item.name"
               class="flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg cursor-pointer transition">
               <div class="bg-[#e4e6eb] dark:bg-gray-700 p-2 rounded-full flex items-center justify-center">
                 <component :is="item.icon" :size="20" class="text-black dark:text-white" />
               </div>
               <span class="font-medium text-[15px] text-theme-text">{{ item.name }}</span>
-            </div>
+            </RouterLink>
           </div>
         </div>
       </div>
@@ -76,7 +76,7 @@ import BookOpenVariantIcon from 'vue-material-design-icons/BookOpenVariant.vue';
 import PlusBoxIcon from 'vue-material-design-icons/PlusBox.vue';
 import ShoppingIcon from 'vue-material-design-icons/Shopping.vue';
 import HeartIcon from 'vue-material-design-icons/Heart.vue';
-import HoverScrollbar from '@/components/HoverScrollbar.vue';
+import HoverScrollbar from '../../components/HoverScrollbar.vue'
 
 const searchQuery = ref('');
 
@@ -84,7 +84,7 @@ const fullMenuData = [
   {
     title: 'Społecznościowe',
     items: [
-      { name: 'Wydarzenia', description: 'Organizuj oraz wyszukuj wydarzenia i inne aktywności online i w pobliżu.', icon: markRaw(CalendarStarIcon), iconColor: 'text-red-500' },
+      { name: 'Wydarzenia', description: 'Organizuj oraz wyszukuj wydarzenia i inne aktywności online i w pobliżu.', icon: markRaw(CalendarStarIcon), iconColor: 'text-red-500',to:'/live/produce/create-event' },
       { name: 'Znajomi', description: 'Wyszukuj znajomych lub osoby, które możesz znać.', icon: markRaw(AccountGroupIcon), iconColor: 'text-blue-500' },
       { name: 'Grupy', description: 'Nawiąż kontakt z osobami, które podzielają Twoje zainteresowania.', icon: markRaw(AccountGroupIcon), iconColor: 'text-blue-600' },
       { name: 'Aktualności', description: 'Zobacz więcej niedawnych postów od znajomych, z grup, stron i nie tylko.', icon: markRaw(NewspaperVariantIcon), iconColor: 'text-blue-400' },
@@ -117,18 +117,18 @@ const fullMenuData = [
 
 const createMenu = [
   [
-    { name: 'Opublikuj', icon: markRaw(PencilIcon) },
-    { name: 'Relacja', icon: markRaw(BookOpenVariantIcon) },
-    { name: 'Rolka', icon: markRaw(PlayCircleIcon) },
-    { name: 'Aktualizacja z życia', icon: markRaw(PlusBoxIcon) },
+    { name: 'Opublikuj', icon: markRaw(PencilIcon), to:"/" },
+    { name: 'Relacja', icon: markRaw(BookOpenVariantIcon), to:"/" },
+    { name: 'Rolka', icon: markRaw(PlayCircleIcon), to:"/create/reel" },
+    { name: 'Aktualizacja z życia', icon: markRaw(PlusBoxIcon), to:"/" },
   ],
   [
-    { name: 'Strona', icon: markRaw(FlagIcon) },
-    { name: 'Reklama', icon: markRaw(BullhornIcon) },
-    { name: 'Grupa', icon: markRaw(AccountGroupIcon) },
-    { name: 'Zdarzenie', icon: markRaw(PlusBoxIcon) },
-    { name: 'Ogłoszenie w Marketplace', icon: markRaw(ShoppingIcon) },
-    { name: 'Zbiórka pieniędzy', icon: markRaw(HeartIcon) },
+    { name: 'Strona', icon: markRaw(FlagIcon), to:"/" },
+    { name: 'Reklama', icon: markRaw(BullhornIcon), to:"/" },
+    { name: 'Grupa', icon: markRaw(AccountGroupIcon), to:"/" },
+    { name: 'Zdarzenie', icon: markRaw(PlusBoxIcon), to:"/" },
+    { name: 'Ogłoszenie w Marketplace', icon: markRaw(ShoppingIcon), to:"/" },
+    { name: 'Zbiórka pieniędzy', icon: markRaw(HeartIcon), to:"/" },
   ]
 ];
 
