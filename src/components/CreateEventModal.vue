@@ -307,7 +307,7 @@ import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
 import RefreshIcon from 'vue-material-design-icons/Refresh.vue';
 import FormatListBulletedIcon from 'vue-material-design-icons/FormatListBulleted.vue';
 import AlertCircleIcon from 'vue-material-design-icons/AlertCircle.vue';
-import BaseModal from './BaseModal.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
 
 
 const props = defineProps({ show: Boolean });

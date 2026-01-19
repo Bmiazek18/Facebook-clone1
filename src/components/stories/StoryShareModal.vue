@@ -141,7 +141,7 @@ import { ref } from 'vue';
 import { useCarousel } from '@/composables/useCarousel';
 import { useSlideTransition } from '@/composables/useSlideTransition';
 import { getAllUsers } from '@/data/users';
-import LazyEmojiPicker from '@/components/LazyEmojiPicker.vue';
+import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue';
 import { usePostsStore } from '@/stores/posts';
 import { useRouter } from 'vue-router';
 import type { Reel } from '@/stores/reels';
@@ -162,7 +162,7 @@ import WhatsappIcon from 'vue-material-design-icons/Whatsapp.vue';
 import BookOpenVariantIcon from 'vue-material-design-icons/BookOpenVariant.vue';
 import LinkVariantIcon from 'vue-material-design-icons/LinkVariant.vue';
 import AccountCircleOutlineIcon from 'vue-material-design-icons/AccountCircleOutline.vue';
-import PrivacySelector from './PrivacySelector.vue';
+import PrivacySelector from '@/components/common/PrivacySelector.vue';
 
 
 const props = defineProps<{

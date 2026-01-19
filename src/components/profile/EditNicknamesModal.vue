@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import BaseModal from './BaseModal.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
 import type { GroupMember } from '@/data/rawChats';
 
 const props = defineProps<{

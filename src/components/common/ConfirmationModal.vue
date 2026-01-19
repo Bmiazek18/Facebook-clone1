@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseModal from './BaseModal.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
 
 const emit = defineEmits(['confirm', 'cancel']);
 

@@ -6,9 +6,9 @@ import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
 import Heart from 'vue-material-design-icons/Heart.vue'
 
 
-import CommentReplyInput from './CommentReplyInput.vue'
-import ReactionButton from './ReactionButton.vue'
-import ProfilePopper from './ProfilePopper.vue'
+import CommentReplyInput from '@/components/feed/CommentReplyInput.vue'
+import ReactionButton from '@/components/feed/ReactionButton.vue'
+import ProfilePopper from '@/components/profile/ProfilePopper.vue'
 import { usePostReactions } from '@/composables/usePostReactions'
 import type { Comment } from '@/types/Post'
 import { useCommentsStore } from '@/stores/comments'

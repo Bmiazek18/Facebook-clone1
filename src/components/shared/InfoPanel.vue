@@ -162,11 +162,11 @@ import ThumbUp from 'vue-material-design-icons/ThumbUp.vue';
 import CommentTextMultiple from 'vue-material-design-icons/CommentTextMultiple.vue';
 import ShareVariant from 'vue-material-design-icons/ShareVariant.vue';
 import MusicNote from 'vue-material-design-icons/MusicNote.vue';
-import HoverScrollbar from '@/components/HoverScrollbar.vue';
+import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
 import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
-import CommentFilter from '@/components/CommentFilter.vue';
-import CommentItem from '@/components/CommentItem.vue';
-import CommentReplyInput from '@/components/CommentReplyInput.vue';
+import CommentFilter from '@/components/feed/CommentFilter.vue';
+import CommentItem from '@/components/feed/CommentItem.vue';
+import CommentReplyInput from '@/components/feed/CommentReplyInput.vue';
 
 
 interface Props {

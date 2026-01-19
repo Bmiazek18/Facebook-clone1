@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ImageTag from './ImageTag.vue'
+import ImageTag from '@/components/media/ImageTag.vue'
 import type { ImageTagType } from '@/types/ImageTag'
 
 defineProps<{

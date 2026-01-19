@@ -5,7 +5,7 @@ import ShareIcon from 'vue-material-design-icons/ShareVariant.vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import BookOpenPageVariant from 'vue-material-design-icons/BookOpenPageVariant.vue'
 import ChatProcessingOutline from 'vue-material-design-icons/ChatProcessingOutline.vue'
-import ReactionButton from '../ReactionButton.vue'
+import ReactionButton from '@/components/feed/ReactionButton.vue'
 import { useI18n } from 'vue-i18n'
 import { useTheme } from '@/composables/useTheme'
 

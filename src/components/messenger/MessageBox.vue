@@ -2,9 +2,9 @@
 import { ref, onUnmounted, computed, nextTick, onMounted, watch, provide } from 'vue';
 import { storeToRefs } from 'pinia';
 import MultiMediaLightbox from './MessageBox/MediaLightbox.vue';
-import MessageBoxHeader from './MessageBoxHeader.vue';
-import MessageBoxFooter from './MessageBoxFooter.vue';
-import MessageItem from './MessageItem.vue';
+import MessageBoxHeader from '@/components/messenger/MessageBoxHeader.vue';
+import MessageBoxFooter from '@/components/messenger/MessageBoxFooter.vue';
+import MessageItem from '@/components/messenger/MessageItem.vue';
 import { useConversationsStore } from '@/stores/conversations';
 import { useAudioPlayer } from '@/composables/useAudioPlayer';
 import { useMessageGrouper } from '@/composables/useMessageGrouper';

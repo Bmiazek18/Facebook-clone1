@@ -3,7 +3,7 @@ import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
 import Magnify from 'vue-material-design-icons/Magnify.vue';
 import CheckCircle from 'vue-material-design-icons/CheckCircle.vue';
 import Plus from 'vue-material-design-icons/Plus.vue'; // Nowy import
-import HoverScrollbar from '@/components/HoverScrollbar.vue';
+import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
 import { useTheme } from '@/composables/useTheme';
 import rawChats from '@/data/rawChats';
 import { useChatStore } from '@/stores/chat';

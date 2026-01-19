@@ -221,8 +221,8 @@ import VolumeHighIcon from 'vue-material-design-icons/VolumeHigh.vue';
 import VolumeMuteIcon from 'vue-material-design-icons/VolumeMute.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
-import BaseModal from '@/components/BaseModal.vue';
-import StoryShareModal from '@/components/StoryShareModal.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
+import StoryShareModal from '@/components/stories/StoryShareModal.vue';
 import ReelInfoPanel from '@/components/reel/ReelInfoPanel.vue';
 
 const router = useRouter();

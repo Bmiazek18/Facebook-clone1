@@ -59,7 +59,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 
-import HoverScrollbar from './HoverScrollbar.vue';
+import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
 
 // --- Typy ---
 interface Reaction {

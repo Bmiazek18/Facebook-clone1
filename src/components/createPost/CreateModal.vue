@@ -2,10 +2,10 @@
 import {  onMounted, type Component } from 'vue';
 import { storeToRefs } from 'pinia';
 import PostCreator from './View/PostCreator.vue';
-import PrivacySelector from '../PrivacySelector.vue';
+import PrivacySelector from '@/components/common/PrivacySelector.vue';
 import TagUsers from './View/TagUsers.vue';
 import LocationSelector from './View/LocationSelector.vue';
-import GifSelector from '@/components/GifSelector.vue';
+import GifSelector from '@/components/common/GifSelector.vue';
 import ImageEditor from './View/ImageEditor.vue';
 import VideoEditor from './View/videoEditor.vue';
 import FeelingModal from './View/FeelingModal.vue';

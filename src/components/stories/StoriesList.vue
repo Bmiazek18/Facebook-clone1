@@ -41,8 +41,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import AddStoryCard from './AddStoryCard.vue';
-import StoryCard from './StoryCard.vue';
+import AddStoryCard from '@/components/stories/AddStoryCard.vue';
+import StoryCard from '@/components/stories/StoryCard.vue';
 import { useCarousel } from '../composables/useCarousel';
 import { useStoriesStore } from '@/stores/stories';
 import type { UserStories } from '@/types/Story';

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import LazyEmojiPicker from '../../../LazyEmojiPicker.vue';
+import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue';
 import EmoticonHappyIcon from 'vue-material-design-icons/EmoticonHappy.vue';
 
 // --- FLOATING VUE ---

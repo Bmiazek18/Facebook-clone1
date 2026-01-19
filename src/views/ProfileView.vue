@@ -3,10 +3,10 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 
 // --- IMPORTY KOMPONENTÓW ---
-import ProfilePostsTab from '@/components/ProfilePostsTab.vue';
-import ProfileInfoTab from '@/components/ProfileInfoTab.vue';
-import FriendsSection from '@/components/FriendsSection.vue';
-import ImageWithGradient from '@/components/ImageWithGradient.vue';
+import ProfilePostsTab from '@/components/profile/ProfilePostsTab.vue';
+import ProfileInfoTab from '@/components/profile/ProfileInfoTab.vue';
+import FriendsSection from '@/components/friends/FriendsSection.vue';
+import ImageWithGradient from '@/components/media/ImageWithGradient.vue';
 
 // --- IMPORTY IKON (Vue Material Design Icons) ---
 import Camera from 'vue-material-design-icons/Camera.vue';
@@ -19,8 +19,8 @@ import Message from 'vue-material-design-icons/Message.vue';
 // --- DANE (MOCK) ---
 import { getUserById } from '@/data/users';
 import type { User } from '@/data/users';
-import BaseModal from '@/components/BaseModal.vue';
-import EditProfileImgModal from '@/components/editProfileImgModal.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
+import EditProfileImgModal from '@/components/profile/EditProfileImgModal.vue';
 
 const route = useRoute();
 

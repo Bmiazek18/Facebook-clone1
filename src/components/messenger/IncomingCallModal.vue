@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseModal from './BaseModal.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
 import LockIcon from 'vue-material-design-icons/Lock.vue';
 import PhoneOffIcon from 'vue-material-design-icons/PhoneOff.vue';
 import PhoneIcon from 'vue-material-design-icons/Phone.vue';

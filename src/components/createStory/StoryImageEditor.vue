@@ -12,7 +12,7 @@ import MusicModal, { type MusicTrack } from '@/components/MusicModal.vue';
 import LinkStickerModal from '@/components/LinkStickerModal.vue';
 import PostShareModal from '@/components/PostShareModal.vue';
 import StorySidebar from './StorySidebar/StorySidebar.vue';
-import ImageToolbar from '@/components/ImageToolbar.vue';
+import ImageToolbar from '@/components/media/ImageToolbar.vue';
 import MusicToolbar from '@/components/story/MusicToolbar.vue';
 import StoryElement from './StoryElement.vue';
 // --- IKONY ---

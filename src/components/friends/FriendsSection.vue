@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Magnify from 'vue-material-design-icons/Magnify.vue';
-import FriendListItem from './FriendListItem.vue';
+import FriendListItem from '@/components/friends/FriendListItem.vue';
 // Zmieniona Definicja propsów: Został tylko friendsList i isFullView
 defineProps<{
     friendsList: {

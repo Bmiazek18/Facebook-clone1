@@ -140,16 +140,16 @@ import Earth from 'vue-material-design-icons/Earth.vue'
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
 import CommentTextMultiple from 'vue-material-design-icons/CommentTextMultiple.vue'
 import Share from 'vue-material-design-icons/Share.vue'
-import HoverScrollbar from '@/components/HoverScrollbar.vue'
-import ReactionButton from '@/components/ReactionButton.vue'
-import CommentItem from '@/components/CommentItem.vue'
+import HoverScrollbar from '@/components/common/HoverScrollbar.vue'
+import ReactionButton from '@/components/feed/ReactionButton.vue'
+import CommentItem from '@/components/feed/CommentItem.vue'
 import GalleryImageViewer from '@/components/gallery/GalleryImageViewer.vue'
 import { usePostsStore } from '@/stores/posts';
-import CommentReplyInput from '@/components/CommentReplyInput.vue'
+import CommentReplyInput from '@/components/feed/CommentReplyInput.vue'
 import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue'
 import type {  Comment } from '@/types/Post';
 import type { ImageTagType } from '@/types//ImageTag';
-import CommentFilter from '@/components/CommentFilter.vue'
+import CommentFilter from '@/components/feed/CommentFilter.vue'
 const route = useRoute()
 const router = useRouter()
 const postsStore = usePostsStore()

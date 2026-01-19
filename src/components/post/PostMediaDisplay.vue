@@ -22,8 +22,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import PlayerVideo from '../PlayerVideo.vue'
-import PostImageGallery from '../PostImageGallery.vue'
+import PlayerVideo from '@/components/media/PlayerVideo.vue'
+import PostImageGallery from '@/components/feed/PostImageGallery.vue'
 import { useVideoAutoplay } from '@/composables/useVideoAutoplay'
 import type { Post } from '@/types/Post'
 

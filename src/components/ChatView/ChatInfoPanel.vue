@@ -242,11 +242,11 @@ import AlertOctagonIcon from 'vue-material-design-icons/AlertOctagon.vue';
 import LogoutIcon from 'vue-material-design-icons/Logout.vue';
 
 // Nowa ikona powrotu
-import ChatMediaPanel from '@/components/ChatMediaPanel.vue';
-import MessageSearch from '@/components/MessageSearch.vue';
+import ChatMediaPanel from '@/components/messenger/ChatMediaPanel.vue';
+import MessageSearch from '@/components/messenger/MessageSearch.vue';
 import { useConversationsStore } from '@/stores/conversations';
 import { ChatType, type GroupMember } from '@/data/rawChats'; // Import ChatType and GroupMember
-import EditNicknamesModal from '@/components/EditNicknamesModal.vue'; // Import EditNicknamesModal
+import EditNicknamesModal from '@/components/profile/EditNicknamesModal.vue'; // Import EditNicknamesModal
 import { getUserById } from '@/data/users'; // Import getUserById
 
 const props = defineProps<{ chatId: string | number }>();
@@ -289,9 +289,9 @@ watch(() => props.chatId, (newId) => {
   if (s?.emoji) convStore.setSelectedEmoji(s.emoji);
 });
 
-import BaseModal from '@/components/BaseModal.vue';
-import MessangerTheme from '@/components/MessangerTheme.vue';
-import LazyEmojiPicker from '@/components/LazyEmojiPicker.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
+import MessangerTheme from '@/components/messenger/MessangerTheme.vue';
+import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue';
 
 const showInfoPanel = ref(true);
 

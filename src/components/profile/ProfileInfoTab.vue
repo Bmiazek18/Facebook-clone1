@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref, computed } from 'vue'
   import { useRoute } from 'vue-router'
-  import FriendsSection from './FriendsSection.vue'
+  import FriendsSection from '@/components/friends/FriendsSection.vue'
   import OverviewSection from './ProfileInfoTab/OverviewSection.vue'
   import WorkEducationSection from './ProfileInfoTab/WorkEducationSection.vue'
   import PlacesSection from './ProfileInfoTab/PlacesSection.vue'

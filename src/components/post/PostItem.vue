@@ -5,9 +5,9 @@ import { useRouter } from 'vue-router'
 
 import 'floating-vue/dist/style.css'
 
-import BaseModal from '../BaseModal.vue'
-import PostModal from '../PostModal.vue'
-import ShareAsPostModal from '../ShareAsPostModal.vue'
+import BaseModal from '@/components/common/BaseModal.vue'
+import PostModal from '@/components/feed/PostModal.vue'
+import ShareAsPostModal from '@/components/feed/ShareAsPostModal.vue'
 import PostHeader from './PostHeader.vue'
 import PostActions from './PostActions.vue'
 import PostContent from './PostContent.vue'
@@ -19,7 +19,7 @@ import { useStoryShareStore } from '@/stores/storyShare'
 import { usePostsStore } from '@/stores/posts'
 
 import type { Post } from '@/types/Post';
-import ShareAsMessageModal from '../ShareAsMessageModal.vue'
+import ShareAsMessageModal from '@/components/feed/ShareAsMessageModal.vue'
 
 
 const props = defineProps<{

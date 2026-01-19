@@ -5,7 +5,7 @@ import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue';
 import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
 import DownloadIcon from 'vue-material-design-icons/Download.vue';
 import ShareVariantOutlineIcon from 'vue-material-design-icons/ShareVariantOutline.vue';
-import PlayerVideo from '../PlayerVideo.vue';
+import PlayerVideo from '@/components/media/PlayerVideo.vue';
 const props = withDefaults(defineProps<{
   media: Array<{
     id: number;

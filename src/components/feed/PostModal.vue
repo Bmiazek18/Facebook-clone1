@@ -1,14 +1,14 @@
 <script setup lang="ts">
 
-import HoverScrollbar from './HoverScrollbar.vue'
+import HoverScrollbar from '@/components/common/HoverScrollbar.vue'
 
-import CommentItem from './CommentItem.vue'
+import CommentItem from '@/components/feed/CommentItem.vue'
 
 
 import PostItem from './post/PostItem.vue'
 import type { Post } from '@/types/Post';
-import CommentReplyInput from './CommentReplyInput.vue'
-import CommentFilter from './CommentFilter.vue';
+import CommentReplyInput from '@/components/feed/CommentReplyInput.vue'
+import CommentFilter from '@/components/feed/CommentFilter.vue';
 
 const props = defineProps<{
     post: Post

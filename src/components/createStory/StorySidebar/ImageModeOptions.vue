@@ -44,7 +44,7 @@ import MusicNote from 'vue-material-design-icons/MusicNote.vue';
 import Link from 'vue-material-design-icons/Link.vue';
 
 import AlphaABox from 'vue-material-design-icons/AlphaABox.vue';
-import AltTextEditor from './AltTextEditor.vue';
+import AltTextEditor from '@/components/media/AltTextEditor.vue';
 
 const props = defineProps<{
     isMusicModalOpen: boolean;

@@ -95,9 +95,9 @@ import ThumbUpOutline from 'vue-material-design-icons/ThumbUpOutline.vue';
 import CommentTextMultiple from 'vue-material-design-icons/CommentTextMultiple.vue';
 import ShareVariant from 'vue-material-design-icons/ShareVariant.vue';
 import MusicNote from 'vue-material-design-icons/MusicNote.vue';
-import HoverScrollbar from '@/components/HoverScrollbar.vue';
+import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
 import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
-import CommentFilter from '@/components/CommentFilter.vue';
+import CommentFilter from '@/components/feed/CommentFilter.vue';
 
 defineProps<{
   reel: Reel;

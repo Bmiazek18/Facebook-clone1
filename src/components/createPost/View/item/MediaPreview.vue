@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import PencilIcon from 'vue-material-design-icons/Pencil.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
-import PlayerVideo from '../../../PlayerVideo.vue';
+import PlayerVideo from '@/components/media/PlayerVideo.vue';
 
 const props = defineProps<{
   selectedImage?: { url: string; altText: string } | null;

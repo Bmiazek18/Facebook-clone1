@@ -6,7 +6,7 @@ import ArrowExpand from 'vue-material-design-icons/ArrowExpand.vue';
 import ArrowCollapse from 'vue-material-design-icons/ArrowCollapse.vue';
 import ChevronLeft from 'vue-material-design-icons/ChevronLeft.vue';
 import ChevronRight from 'vue-material-design-icons/ChevronRight.vue';
-import ImageTag from '../ImageTag.vue';
+import ImageTag from '@/components/media/ImageTag.vue';
 import type { ImageTagType } from '@/types/ImageTag';
 
 

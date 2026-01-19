@@ -12,7 +12,7 @@ import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
 import ControllerClassicOutline from 'vue-material-design-icons/ControllerClassicOutline.vue'
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue'
 
-import ContactList from '@/components/ContactList.vue'
+import ContactList from '@/components/friends/ContactList.vue'
 import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue'
 
 type ActiveMenuType = 'profile' | 'notifications' | 'message' | null;

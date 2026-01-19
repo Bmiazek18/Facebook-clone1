@@ -100,9 +100,9 @@ import HeartOutlineIcon from 'vue-material-design-icons/HeartOutline.vue';
 import HeartIcon from 'vue-material-design-icons/Heart.vue';
 import CommentOutlineIcon from 'vue-material-design-icons/CommentOutline.vue';
 import ShareOutlineIcon from 'vue-material-design-icons/ShareOutline.vue'; // Uwaga: ShareVariant często wygląda inaczej, ShareOutline jest bliższe
-import CommentItem from './CommentItem.vue';
+import CommentItem from '@/components/feed/CommentItem.vue';
 import type { Post } from '@/types/Post';
-import CommentReplyInput from './CommentReplyInput.vue';
+import CommentReplyInput from '@/components/feed/CommentReplyInput.vue';
 const currentUserAvatar = "https://i.pravatar.cc/150?u=me";
 
 defineProps<{

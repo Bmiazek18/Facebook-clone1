@@ -19,14 +19,14 @@ import EmoticonHappyIcon from 'vue-material-design-icons/EmoticonHappy.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 import WebIcon from 'vue-material-design-icons/Web.vue';
 import StarIcon from 'vue-material-design-icons/Star.vue';
-import LazyEmojiPicker from '../../LazyEmojiPicker.vue';
+import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue';
 import StoryTextCard from './item/StoryTextCard.vue';
 import MediaPreview from './item/MediaPreview.vue';
 import EarthIcon from 'vue-material-design-icons/Earth.vue';
 import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
 import AccountMultipleMinusIcon from 'vue-material-design-icons/AccountMultipleMinus.vue';
 import AccountStarIcon from 'vue-material-design-icons/AccountStar.vue';
-import HoverScrollbar from '../../HoverScrollbar.vue';
+import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
 import PostItem from '../../post/PostItem.vue';
 import PostCreatorToolbar from '../PostCreatorToolbar.vue';
 

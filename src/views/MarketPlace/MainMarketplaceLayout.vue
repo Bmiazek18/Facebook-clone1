@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import MarketplaceLeftSidebar from '@/components/MarketplaceLeftSidebar.vue';
-import BaseModal from '@/components/BaseModal.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
 import MapRadius from '@/components/MapRadius.vue';
 
 // Modal state for location selection

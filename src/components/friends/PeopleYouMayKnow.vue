@@ -63,7 +63,7 @@
 <script setup lang="ts">
 import { ref, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
-import Card from './PeopleYouMayKnowCard.vue';
+import Card from '@/components/friends/PeopleYouMayKnowCard.vue';
 import type { Person } from '../types/Person';
 import {useCarousel} from '../composables/useCarousel';
 

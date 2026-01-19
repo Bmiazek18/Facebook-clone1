@@ -7,14 +7,14 @@ import PhoneIcon from 'vue-material-design-icons/Phone.vue';
 import VideoIcon from 'vue-material-design-icons/Video.vue';
 import LinkVariantIcon from 'vue-material-design-icons/LinkVariant.vue';
 
-import MessegePool from './MessegePool.vue';
-import BaseModal from './BaseModal.vue';
-import PlayerVideo from './PlayerVideo.vue';
-import ReactionPanel from './ReactionPanel.vue';
-import MessageReplyContext from './MessageReplyContext.vue';
-import MessageMediaGallery from './MessageMediaGallery.vue';
-import MessageFileAttachment from './MessageFileAttachment.vue';
-import MessageReactions from './MessageReactions.vue';
+import MessegePool from '@/components/messenger/MessagePool.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
+import PlayerVideo from '@/components/media/PlayerVideo.vue';
+import ReactionPanel from '@/components/feed/ReactionPanel.vue';
+import MessageReplyContext from '@/components/messenger/MessageReplyContext.vue';
+import MessageMediaGallery from '@/components/messenger/MessageMediaGallery.vue';
+import MessageFileAttachment from '@/components/messenger/MessageFileAttachment.vue';
+import MessageReactions from '@/components/messenger/MessageReactions.vue';
 
 // UWAGA: Usunięto bezpośredni import useFlipAnimation, teraz używamy inject
 // import { useFlipAnimation } from '@/composables/useFlipAnimation';

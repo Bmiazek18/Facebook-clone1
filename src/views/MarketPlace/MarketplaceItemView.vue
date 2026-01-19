@@ -14,11 +14,11 @@ import Speedometer from 'vue-material-design-icons/Speedometer.vue';
 import CarShiftPattern from 'vue-material-design-icons/CarShiftPattern.vue'; // Jako skrzynia biegów
 import Palette from 'vue-material-design-icons/Palette.vue';
 import MultiMediaLightbox from '@/components/MessageBox/MediaLightbox.vue';
-import StoryShareModal from '@/components/StoryShareModal.vue';
-import BaseModal from '@/components/BaseModal.vue';
+import StoryShareModal from '@/components/stories/StoryShareModal.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
 import SellerModal from '@/components/MarketPlace/SellerModal.vue';
 import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
-import HoverScrollbar from '@/components/HoverScrollbar.vue';
+import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
 
 const route = useRoute();
 const router = useRouter();

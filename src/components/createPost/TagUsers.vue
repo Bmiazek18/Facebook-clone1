@@ -7,7 +7,7 @@ import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
 
 import { getAllUsers } from '@/data/users';
 import type { User } from '@/data/users';
-import HoverScrollbar from '../../HoverScrollbar.vue';
+import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
 
 const emit = defineEmits<{
   (e: 'confirm', users: User[]): void;

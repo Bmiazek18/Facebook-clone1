@@ -10,7 +10,7 @@ import CellphoneIcon from 'vue-material-design-icons/Cellphone.vue'; // Telefon
 import RocketLaunchIcon from 'vue-material-design-icons/RocketLaunch.vue'; // Rakieta
 import LockIcon from 'vue-material-design-icons/Lock.vue'; // Kłódka
 import EarthIcon from 'vue-material-design-icons/Earth.vue'; // Globus
-import BaseModal from '@/components/BaseModal.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
 import SellerModal from '@/components/MarketPlace/SellerModal.vue';
 
 // --- STAN ---

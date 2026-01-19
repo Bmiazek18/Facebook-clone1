@@ -2,17 +2,18 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import ImageWithGradient from '@/components/media/ImageWithGradient.vue';
 import EventsSidebar from '@/components/events/EventsSidebar.vue';
-import CreatePost from '@/components/createPost/CreateModal.vue';
-
+import CreatePost from '@/components/createPost/CreatePost.vue';
+// --- LEAFLET IMPORTS (Czysty Leaflet) ---
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-
+// Fix dla ikon (Standardowy problem w Vue/Vite)
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 
-
+// Reset domyślnych ikon
+// @ts-expect-error Leaflet prototype property
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl,
