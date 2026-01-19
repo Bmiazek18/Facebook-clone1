@@ -64,8 +64,8 @@
 import { ref, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Card from '@/components/friends/PeopleYouMayKnowCard.vue';
-import type { Person } from '../types/Person';
-import {useCarousel} from '../composables/useCarousel';
+import type { Person } from '@/types/Person';
+import {useCarousel} from '@/composables/useCarousel';
 
 // i18n
 useI18n()

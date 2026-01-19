@@ -163,7 +163,7 @@ import CommentTextMultiple from 'vue-material-design-icons/CommentTextMultiple.v
 import ShareVariant from 'vue-material-design-icons/ShareVariant.vue';
 import MusicNote from 'vue-material-design-icons/MusicNote.vue';
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
-import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
+import NavbarRight from '@/layouts/Navbar/NavbarRight.vue';
 import CommentFilter from '@/components/feed/CommentFilter.vue';
 import CommentItem from '@/components/feed/CommentItem.vue';
 import CommentReplyInput from '@/components/feed/CommentReplyInput.vue';

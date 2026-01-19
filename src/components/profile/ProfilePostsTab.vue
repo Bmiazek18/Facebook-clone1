@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import { ref, onMounted, onUnmounted} from 'vue';
 import CreateBox from '@/components/createPost/CreateBox.vue';
 import ProfileFriendsMini from '@/components/profile/ProfileFriendsMini.vue';
-import PostItem from './post/PostItem.vue';
+import PostItem from '@/components/feed/post/PostItem.vue';
 import BirthdayPostFeed from './BirthdayPostFeed.vue';
 import { usePostsStore } from '@/stores/posts';
 import PostFilter from '@/components/feed/PostFilter.vue';

@@ -13,7 +13,7 @@ import ControllerClassicOutline from 'vue-material-design-icons/ControllerClassi
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue'
 
 import ContactList from '@/components/friends/ContactList.vue'
-import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue'
+import NavbarRight from '@/layouts/Navbar/NavbarRight.vue'
 
 type ActiveMenuType = 'profile' | 'notifications' | 'message' | null;
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import EmoticonHappyOutline from 'vue-material-design-icons/EmoticonHappyOutline.vue';
 import CameraOutline from 'vue-material-design-icons/CameraOutline.vue';
 import FileGifBox from 'vue-material-design-icons/FileGifBox.vue';
@@ -11,7 +11,7 @@ import { usePostsStore } from '@/stores/posts';
 import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue';
 import { useCommentsStore } from '@/stores/comments';
 import { Dropdown as VDropdown } from 'floating-vue';
-import MentionInput from './MentionInput.vue';
+import MentionInput from '@/components/MentionInput.vue';
 
 const props = defineProps<{
     postAvatarSrc: string
@@ -24,7 +24,7 @@ const authStore = useAuthStore();
 const postsStore = usePostsStore();
 const commentsStore = useCommentsStore();
 
-const postContent = ref(''); 
+const postContent = ref('');
 const mentionInputRef = ref<InstanceType<typeof MentionInput> | null>(null);
 
 const taggedUser = computed(() => {
@@ -114,7 +114,7 @@ const submitComment = () => {
         </div>
 
         <div class="grow bg-[#f0f2f5] rounded-[18px] px-3 py-2 relative group-focus-within:bg-gray-100 transition-colors">
-            
+
             <MentionInput
                 ref="mentionInputRef"
                 v-model="postContent"

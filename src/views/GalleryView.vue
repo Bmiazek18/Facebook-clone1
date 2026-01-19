@@ -146,9 +146,10 @@ import CommentItem from '@/components/feed/CommentItem.vue'
 import GalleryImageViewer from '@/components/gallery/GalleryImageViewer.vue'
 import { usePostsStore } from '@/stores/posts';
 import CommentReplyInput from '@/components/feed/CommentReplyInput.vue'
-import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue'
-import type {  Comment } from '@/types/Post';
-import type { ImageTagType } from '@/types//ImageTag';
+import NavbarRight from '@/layouts/Navbar/NavbarRight.vue'
+import type {  Comment, Post } from '@/types/Post';
+import type { ImageTagType } from '@/types/ImageTag';
+
 import CommentFilter from '@/components/feed/CommentFilter.vue'
 const route = useRoute()
 const router = useRouter()
@@ -168,7 +169,7 @@ const currentImageIndex = ref(imageIndexParam.value)
 const currentComment = ref<Comment | null>(null); // New ref for the current comment
 
 // Get the current post data
-const currentPost = computed(() => postsStore.posts.find(p => p.id === postId.value))
+const currentPost = computed(() => postsStore.posts.find((p: Post) => p.id === postId.value))
 
 // Current image URL
 const currentImage = computed((): { src: string; altText?: string; tags?: ImageTagType[]; } | undefined => {

@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import CreateBox from '../components/createPost/CreateBox.vue'
-import PostItem from '../components/post/PostItem.vue'
-import PeopleYouMayKnow from '../components/PeopleYouMayKnow.vue'
-import StoriesList from '../components/StoriesList.vue'
+import PostItem from '../components/feed/post/PostItem.vue'
+import PeopleYouMayKnow from '../components/friends/PeopleYouMayKnow.vue'
+import StoriesList from '../components/stories/StoriesList.vue'
 import LeftSidebar from '../components/home/LeftSidebar.vue'
 import RightSidebar from '../components/home/RightSidebar.vue'
 import { ref, watch } from 'vue'
 import { useVirtualList } from '@vueuse/core'
-import PostItemSceleton from '@/components/feed/PostItemSkeleton.vue'
+import PostItemSkeleton from '@/components/feed/PostItemSkeleton.vue'
 import { usePostsStore } from '@/stores/posts'
 import { onBeforeRouteLeave, useRouter, type RouteLocation } from 'vue-router'
 import { useCreatePostStore } from '@/stores/createPost'
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
-import ReelSGalerry from '@/components/ReelSGalerry.vue'
+import ReelsGallery from '@/components/ReelsGallery.vue'
 import { getPostById } from '@/data/posts'
 import PostModal from '@/components/feed/PostModal.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -99,15 +99,15 @@ const handleCancelLeave = () => {
 
           <div>
             <template v-if="isLoading">
-              <PostItemSceleton />
-              <PostItemSceleton />
+              <PostItemSkeleton />
+              <PostItemSkeleton />
             </template>
 
             <template v-else>
               <template v-for="(post, i) in virtualPosts" :key="post.data.id">
                 <PostItem :post="post.data" />
                 <PeopleYouMayKnow v-if="i + 1 === peopleYouMayKnowIndex" />
-                <ReelSGalerry v-if="i + 2 === peopleYouMayKnowIndex" />
+                <ReelsGallery v-if="i + 2 === peopleYouMayKnowIndex" />
               </template>
             </template>
           </div>

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 // Dodajemy import strzałki
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue';
 import ViewDashboard from 'vue-material-design-icons/ViewDashboard.vue';

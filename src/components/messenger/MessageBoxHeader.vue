@@ -26,7 +26,7 @@ const close = (boxId: string | number) => {
 const minimize = (boxId: string | number) => {
     chatStore.toggleMinimize(boxId)
 };
-import IncomingCallModal from '../components/IncomingCallModal.vue';
+import IncomingCallModal from './IncomingCallModal.vue';
 
 const isCallIncoming = ref(false);
 

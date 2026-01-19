@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue' // 1. Importujemy hooki
+import { onMounted, onUnmounted } from 'vue'
 import Close from 'vue-material-design-icons/Close.vue'
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue'
 
@@ -16,14 +16,12 @@ defineProps<{
     back?: boolean
 }>()
 
-// 2. Logika blokowania scrollowania
+
 onMounted(() => {
-  // Zablokuj przewijanie po otwarciu modala
   document.body.style.overflow = 'hidden'
 })
 
 onUnmounted(() => {
-  // Odblokuj przewijanie po zamknięciu (zniszczeniu) modala
   document.body.style.overflow = ''
 })
 </script>

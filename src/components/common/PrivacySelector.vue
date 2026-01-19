@@ -107,7 +107,7 @@ const handleCancel = () => {
 </script>
 
 <template>
-  <div class="privacy-selector-modal flex flex-col p-0 h-[500px]">
+  <div class="privacy-selector-modal flex flex-col p-0 h-125">
 
     <div class="p-0 pb-4 border-b border-gray-200 shrink-0">
       <h2 class="text-xl font-bold text-gray-800">Kto może zobaczyć Twój post?</h2>

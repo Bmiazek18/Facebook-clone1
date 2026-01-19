@@ -19,7 +19,7 @@ import CarSideIcon from 'vue-material-design-icons/CarSide.vue'; // Pojazd
 import HomeIcon from 'vue-material-design-icons/Home.vue'; // Dom
 // FAB
 import PencilIcon from 'vue-material-design-icons/Pencil.vue';
-import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
+import NavbarRight from '@/layouts/Navbar/NavbarRight.vue';
 
 // --- DANE ---
 

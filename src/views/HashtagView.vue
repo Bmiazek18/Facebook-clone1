@@ -41,7 +41,7 @@ import { useRoute } from 'vue-router'
 import { usePostsStore } from '@/stores/posts'
 import PostItem from '@/components/feed/post/PostItem.vue'
 import { useI18n } from 'vue-i18n'
-
+import type { Post } from '@/types/Post'
 const { t } = useI18n()
 const route = useRoute()
 const postsStore = usePostsStore()
@@ -49,12 +49,12 @@ const postsStore = usePostsStore()
 const hashtag = computed(() => route.params.hashtag)
 
 const filteredPosts = computed(() => {
-  return postsStore.posts.filter((post) => {
+  return postsStore.posts.filter((post: Post) => {
     return post.content.includes(`#${hashtag.value}`)
   })
 })
 
-// Pomocnicza funkcja do formatowania liczby (np. 525 tys.)
+
 const formatCount = (count: number) => {
   if (count === 0) return `525 ${t('hashtag.thousand')}` // Placeholder dla wyglądu jak na screenie, gdy brak danych
   if (count > 1000) {

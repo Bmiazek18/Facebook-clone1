@@ -56,7 +56,7 @@
   </BaseModal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
 import HomeIcon from 'vue-material-design-icons/Home.vue';
@@ -84,7 +84,4 @@ const categories = [
 ];
 </script>
 
-<style>
-aside::-webkit-scrollbar { width: 4px; }
-aside::-webkit-scrollbar-thumb { background: #bcc0c4; border-radius: 10px; }
-</style>
+

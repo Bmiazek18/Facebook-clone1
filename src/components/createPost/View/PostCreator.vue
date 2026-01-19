@@ -27,7 +27,7 @@ import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
 import AccountMultipleMinusIcon from 'vue-material-design-icons/AccountMultipleMinus.vue';
 import AccountStarIcon from 'vue-material-design-icons/AccountStar.vue';
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
-import PostItem from '../../post/PostItem.vue';
+import PostItem from '@/components/feed/post/PostItem.vue';
 import PostCreatorToolbar from '../PostCreatorToolbar.vue';
 
 // --- LEAFLET (MAPA) ---

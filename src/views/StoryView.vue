@@ -20,7 +20,7 @@ import Apps from 'vue-material-design-icons/Apps.vue';
 import AccountCircle from 'vue-material-design-icons/AccountCircle.vue';
 import ThumbUp from 'vue-material-design-icons/ThumbUp.vue';
 import Heart from 'vue-material-design-icons/Heart.vue';
-import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
+import NavbarRight from '@/layouts/Navbar/NavbarRight.vue';
 import { useI18n } from 'vue-i18n';
 import ActiveStoriesList from '@/components/stories/ActiveStoriesList.vue';
 

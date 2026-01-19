@@ -1,12 +1,12 @@
 <template>
-  <div class="w-full lg:max-w-[490px] flex flex-col lg:min-w-[370px] bg-white border-t lg:border-t-0 lg:border-l border-gray-200 h-full">
+  <div class="w-full lg:max-w-122.5 flex flex-col lg:min-w-92.5 bg-white border-t lg:border-t-0 lg:border-l border-gray-200 h-full">
     <!-- Navbar Right -->
-    <div class="w-full h-[65px] flex justify-end py-2 px-5 border-b border-gray-200">
+    <div class="w-full h-16.25 flex justify-end py-2 px-5 border-b border-gray-200">
 
     </div>
 
     <div class="flex-1 flex flex-row-reverse overflow-hidden">
-      <div class="hidden md:block w-[90px] border-l border-gray-200"></div>
+      <div class="hidden md:block w-22.5 border-l border-gray-200"></div>
 
       <div class="w-full">
         <HoverScrollbar class="grow overflow-y-auto">
@@ -88,15 +88,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import type { Reel } from '@/stores/reels';
-import Earth from 'vue-material-design-icons/Earth.vue';
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
-import ThumbUp from 'vue-material-design-icons/ThumbUp.vue';
-import ThumbUpOutline from 'vue-material-design-icons/ThumbUpOutline.vue';
-import CommentTextMultiple from 'vue-material-design-icons/CommentTextMultiple.vue';
-import ShareVariant from 'vue-material-design-icons/ShareVariant.vue';
 import MusicNote from 'vue-material-design-icons/MusicNote.vue';
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
-import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
 import CommentFilter from '@/components/feed/CommentFilter.vue';
 
 defineProps<{
@@ -115,6 +109,3 @@ const submitComment = () => {
 };
 </script>
 
-<style scoped>
-/* Custom scrollbar styles if needed */
-</style>

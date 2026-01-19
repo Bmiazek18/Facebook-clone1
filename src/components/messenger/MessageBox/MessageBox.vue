@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, onUnmounted, computed, nextTick, onMounted, watch, provide } from 'vue';
 import { storeToRefs } from 'pinia';
-import MultiMediaLightbox from './MessageBox/MediaLightbox.vue';
+import MultiMediaLightbox from './MediaLightbox.vue';
 import MessageBoxHeader from '@/components/messenger/MessageBoxHeader.vue';
-import MessageBoxFooter from '@/components/messenger/MessageBoxFooter.vue';
+import MessageBoxFooter from '@/components/messenger/MessageBoxFooter/MessageBoxFooter.vue';
 import MessageItem from '@/components/messenger/MessageItem.vue';
 import { useConversationsStore } from '@/stores/conversations';
 import { useAudioPlayer } from '@/composables/useAudioPlayer';

@@ -7,7 +7,7 @@ import TagUsers from './View/TagUsers.vue';
 import LocationSelector from './View/LocationSelector.vue';
 import GifSelector from '@/components/common/GifSelector.vue';
 import ImageEditor from './View/ImageEditor.vue';
-import VideoEditor from './View/videoEditor.vue';
+import VideoEditor from './View/VideoEditor.vue';
 import FeelingModal from './View/FeelingModal.vue';
 import '@/assets/animations/slideTransition.css';
 import { useSlideTransition } from '@/composables/useSlideTransition';

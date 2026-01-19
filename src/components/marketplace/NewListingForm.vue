@@ -1,20 +1,32 @@
-<script setup>
+<script setup lang="ts">
 import { reactive, ref } from 'vue';
 
 // Import ikon
 import CloseIcon from 'vue-material-design-icons/Close.vue';
-import CameraPlusIcon from 'vue-material-design-icons/CameraPlus.vue'; // Ikona w kafelku
-import PlusIcon from 'vue-material-design-icons/Plus.vue'; // Alternatywa dla plusa
+import PlusIcon from 'vue-material-design-icons/Plus.vue';
 import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue';
-import CellphoneIcon from 'vue-material-design-icons/Cellphone.vue'; // Telefon
-import RocketLaunchIcon from 'vue-material-design-icons/RocketLaunch.vue'; // Rakieta
-import LockIcon from 'vue-material-design-icons/Lock.vue'; // Kłódka
-import EarthIcon from 'vue-material-design-icons/Earth.vue'; // Globus
+import CellphoneIcon from 'vue-material-design-icons/Cellphone.vue';
+import RocketLaunchIcon from 'vue-material-design-icons/RocketLaunch.vue';
+import LockIcon from 'vue-material-design-icons/Lock.vue';
+import EarthIcon from 'vue-material-design-icons/Earth.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import SellerModal from '@/components/marketplace/SellerModal.vue';
 
+// --- TYPY ---
+
+interface FormState {
+  title: string;
+  price: string;
+  category: string;
+  condition: string;
+  description: string;
+}
+
+// Typ pól, które mogą być "focused"
+type FocusedFieldType = 'title' | 'price' | 'category' | 'condition' | 'description' | 'photo' | null;
+
 // --- STAN ---
-const form = reactive({
+const form = reactive<FormState>({
   title: '',
   price: '',
   category: '',
@@ -22,13 +34,14 @@ const form = reactive({
   description: '',
 });
 
-const focusedField = ref(null);
+const focusedField = ref<FocusedFieldType>(null);
 
-// Funkcja Spotlight (bez zmian)
-const getHighlightClass = (fieldName) => {
+// Funkcja Spotlight
+const getHighlightClass = (fieldName: string): string => {
   const isAnyFocused = focusedField.value !== null;
   const isThisFocused = focusedField.value === fieldName;
 
+  // Logika dla sekcji szczegółów (podświetla się, gdy edytujemy kategorię lub stan)
   if (fieldName === 'details') {
      if (focusedField.value === 'category' || focusedField.value === 'condition') {
        return 'bg-[#EAF3FF] ring-2 ring-transparent opacity-100 -mx-2 px-2';
@@ -44,33 +57,39 @@ const getHighlightClass = (fieldName) => {
   }
 };
 
-const categories = ['Narzędzia', 'Meble', 'Ogród', 'Elektronika', 'Motoryzacja'];
-const conditions = ['Nowy', 'Używany - jak nowy', 'Używany - dobry', 'Używany - akceptowalny'];
+const categories: string[] = ['Narzędzia', 'Meble', 'Ogród', 'Elektronika', 'Motoryzacja'];
+const conditions: string[] = ['Nowy', 'Używany - jak nowy', 'Używany - dobry', 'Używany - akceptowalny'];
 
-// Obsługa zdjęć (Symulacja listy zdjęć)
-const fileInput = ref(null);
-// Na start pusta tablica lub jedno zdjęcie żeby wyglądało jak na screenie
-const uploadedImages = ref([]);
+// Obsługa zdjęć
+const fileInput = ref<HTMLInputElement | null>(null);
+const uploadedImages = ref<string[]>([]);
 
-const triggerUpload = () => { fileInput.value.click(); };
+const triggerUpload = () => {
+  fileInput.value?.click();
+};
 
 // Seller modal
-const isSellerModalOpen = ref(false);
+const isSellerModalOpen = ref<boolean>(false);
 const openSellerModal = () => { isSellerModalOpen.value = true; };
 const closeSellerModal = () => { isSellerModalOpen.value = false; };
 
-const handleFileChange = (event) => {
-  const files = Array.from(event.target.files);
-  files.forEach(file => {
-    if (file && uploadedImages.value.length < 10) {
-      uploadedImages.value.push(URL.createObjectURL(file));
-    }
-  });
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+
+  if (target.files) {
+    const files = Array.from(target.files);
+    files.forEach(file => {
+      if (file && uploadedImages.value.length < 10) {
+        uploadedImages.value.push(URL.createObjectURL(file));
+      }
+    });
+  }
+
   // Wyczyść input żeby można było dodać ten sam plik ponownie
-  event.target.value = '';
+  target.value = '';
 };
 
-const removeImage = (index) => {
+const removeImage = (index: number) => {
   uploadedImages.value.splice(index, 1);
 };
 </script>
@@ -369,7 +388,6 @@ const removeImage = (index) => {
 
     </main>
   </div>
-  <!-- Seller modal -->
   <BaseModal v-if="isSellerModalOpen" @close="closeSellerModal" :title="'Profil sprzedawcy'">
     <SellerModal :profile="{ name: 'Bartosz Miazek', joinedText: 'Na Facebooku od 2015', location: '', avatarUrl: 'https://i.pravatar.cc/150?img=12' }" @close="closeSellerModal" />
   </BaseModal>

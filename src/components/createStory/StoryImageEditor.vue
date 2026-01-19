@@ -10,10 +10,9 @@ import { useAuthStore } from '@/stores/auth';
 // --- IMPORT KOMPONENTÓW ---
 import MusicModal, { type MusicTrack } from '@/components/MusicModal.vue';
 import LinkStickerModal from '@/components/LinkStickerModal.vue';
-import PostShareModal from '@/components/PostShareModal.vue';
 import StorySidebar from './StorySidebar/StorySidebar.vue';
 import ImageToolbar from '@/components/media/ImageToolbar.vue';
-import MusicToolbar from '@/components/story/MusicToolbar.vue';
+import MusicToolbar from './MusicToolbar.vue';
 import StoryElement from './StoryElement.vue';
 // --- IKONY ---
 import VolumeHigh from 'vue-material-design-icons/VolumeHigh.vue';

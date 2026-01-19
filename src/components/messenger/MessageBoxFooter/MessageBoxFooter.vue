@@ -14,9 +14,9 @@ import EmoticonHappyOutlineIcon from 'vue-material-design-icons/EmoticonHappyOut
 // --- KOMPONENTY ---
 import GifBox from '@/components/common/GifBox.vue';
 import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue';
-import VoiceRecorder from './MessageBoxFooter/VoiceRecorder.vue';
-import LikeButton from './MessageBoxFooter/LikeButton.vue';
-import MediaPreview from './MessageBoxFooter/MediaPreview.vue';
+import VoiceRecorder from './VoiceRecorder.vue';
+import LikeButton from './LikeButton.vue';
+import MediaPreview from './MediaPreview.vue';
 
 
 import type { Message } from '@/types/Message';
