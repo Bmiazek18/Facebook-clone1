@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import { usePostsStore } from '@/stores/posts';
 
 // Import components
-import PostItem from '@/components/post/PostItem.vue';
+import PostItem from '@/components/feed/post/PostItem.vue';
 import type { Post } from '@/types/Post';
 // Import icons
 import AccountGroup from 'vue-material-design-icons/AccountGroup.vue';

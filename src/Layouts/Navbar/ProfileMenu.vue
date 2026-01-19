@@ -19,10 +19,10 @@
 import { type Component, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import MainMenu from '@/components/ProfileMenu/MainMenu.vue';
-import SubMenuDisplay from '@/components/ProfileMenu/SubMenu.vue';
-import LanguageSelector from '@/components/ProfileMenu/LanguageSelector.vue';
-import SettingsMenu from '@/components/ProfileMenu/SettingsMenu.vue';
+import MainMenu from '@/components/profile/menu/MainMenu.vue';
+import SubMenuDisplay from '@/components/profile/menu/SubMenu.vue';
+import LanguageSelector from '@/components/profile/menu/LanguageSelector.vue';
+import SettingsMenu from '@/components/profile/menu/SettingsMenu.vue';
 
 // --- Import Animacji ---
 import '@/assets/animations/slideTransition.css';

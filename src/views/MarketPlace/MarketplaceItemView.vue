@@ -16,7 +16,7 @@ import Palette from 'vue-material-design-icons/Palette.vue';
 import MultiMediaLightbox from '@/components/MessageBox/MediaLightbox.vue';
 import StoryShareModal from '@/components/stories/StoryShareModal.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
-import SellerModal from '@/components/MarketPlace/SellerModal.vue';
+import SellerModal from '@/components/marketplace/SellerModal.vue';
 import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
 

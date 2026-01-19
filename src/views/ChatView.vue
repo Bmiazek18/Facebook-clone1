@@ -49,7 +49,7 @@ import { ref, watch, computed, nextTick } from 'vue';
 
 import MessageMenu from '@/Layouts/Navbar/MessageMenu.vue';
 import MessageBox from '@/components/messenger/MessageBox.vue';
-import ChatInfoPanel from '@/components/ChatView/ChatInfoPanel.vue';
+import ChatInfoPanel from '@/components/messenger/ChatInfoPanel.vue';
 import { useConversationsStore } from '@/stores/conversations';
 import { useRoute } from 'vue-router';
 // chatSettings moved into conversations store (convStore.settings)

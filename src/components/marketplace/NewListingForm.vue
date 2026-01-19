@@ -11,7 +11,7 @@ import RocketLaunchIcon from 'vue-material-design-icons/RocketLaunch.vue'; // Ra
 import LockIcon from 'vue-material-design-icons/Lock.vue'; // Kłódka
 import EarthIcon from 'vue-material-design-icons/Earth.vue'; // Globus
 import BaseModal from '@/components/common/BaseModal.vue';
-import SellerModal from '@/components/MarketPlace/SellerModal.vue';
+import SellerModal from '@/components/marketplace/SellerModal.vue';
 
 // --- STAN ---
 const form = reactive({

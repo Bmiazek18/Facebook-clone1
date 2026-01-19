@@ -1,6 +1,6 @@
 <script setup>
 import { shallowRef, ref } from 'vue';
-import NewListingForm from '@/components/MarketPlace/NewListingForm.vue';
+import NewListingForm from '@/components/marketplace/NewListingForm.vue';
 
 
 // --- IMPORT IKON ---
