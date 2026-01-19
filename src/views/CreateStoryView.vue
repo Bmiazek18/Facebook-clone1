@@ -4,9 +4,9 @@
   import type { PostData, ReelData } from '@/types/StoryElement';
 
   // Sub-views rendered conditionally
-  import StoryPicker from '@/components/story/StoryPicker.vue';
-  import StoryImageEditor from '@/components/story/StoryImageEditor.vue';
-  import StoryTextEditor from '@/components/story/StoryTextEditor.vue';
+  import StoryPicker from '@/components/createStory/StoryPicker.vue';
+  import StoryImageEditor from '@/components/createStory/StoryImageEditor.vue';
+  import StoryTextEditor from '@/components/createStory/StoryTextEditor.vue';
 
   type StoryMode = 'picker' | 'image' | 'text';
 
@@ -17,7 +17,7 @@
   const initialPost = ref<PostData | null>(null);
   const initialReel = ref<ReelData | null>(null);
 
-  // Check for pending post or reel to share on mount
+
   onMounted(() => {
     const pendingPost = storyShareStore.getPendingPost();
     const pendingReel = storyShareStore.getPendingReel();
@@ -31,7 +31,7 @@
     }
   });
 
-  // Handlers from picker
+
   const onSelectImage = (imageUrl: string) => {
     selectedImage.value = { url: imageUrl, altText: '' };
     mode.value = 'image';
@@ -71,7 +71,7 @@
         @back="onBack"
       />
 
-      <!-- Text editor -->
+
       <StoryTextEditor
         v-else-if="mode === 'text'"
         @back="onBack"

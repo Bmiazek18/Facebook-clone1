@@ -2,8 +2,9 @@
 import { ref } from 'vue';
 import ImageMultiple from 'vue-material-design-icons/ImageMultiple.vue';
 import FormatFont from 'vue-material-design-icons/FormatFont.vue';
-import StorySidebar from '@/components/StorySidebar.vue';
-
+import StorySidebar from './StorySidebar/StorySidebar.vue';
+import { useRouter } from 'vue-router';
+const route = useRouter()
 const emit = defineEmits<{
   'select-image': [imageUrl: string];
   'select-text': [];
@@ -31,7 +32,7 @@ const onSelectText = () => {
 
 <template>
   <div class="flex h-screen w-full bg-[#F0F2F5] font-sans">
-    <StorySidebar :is-music-modal-open="false" :current-alt-text="''" :is-image-selected="false" />
+    <StorySidebar :is-music-modal-open="false" :current-alt-text="''" :is-image-selected="false" @back="route.push('/')" />
 
     <main class="flex-1 flex items-center justify-center p-8 relative">
       <div class="flex gap-6">

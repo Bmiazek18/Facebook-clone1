@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 
 // --- IMPORT KOMPONENTÓW ---
-import StorySidebar from '@/components/StorySidebar.vue';
+import StorySidebar from './StorySidebar/StorySidebar.vue';
 import EmoticonOutlineIcon from 'vue-material-design-icons/EmoticonOutline.vue';
 
 // --- EMIT ---
@@ -18,9 +18,7 @@ interface FontStyle {
   class: string;
 }
 
-// --- KONFIGURACJA DANYCH ---
 
-// Lista wszystkich teł (gradienty + solid)
 const allBackgrounds = [
   { id: 1, name: 'Błękitny Ocean', class: 'bg-gradient-to-b from-blue-500 to-blue-700' },
   { id: 2, name: 'Zachód Słońca', class: 'bg-gradient-to-tr from-pink-500 via-red-500 to-yellow-500' },
@@ -50,7 +48,7 @@ const fontStyles: FontStyle[] = [
 
 // --- STAN APLIKACJI ---
 
-const textContent = ref('😎 DDD');
+const textContent = ref('');
 const selectedBackgroundId = ref<number>(1);
 const selectedFont = ref<FontStyle>(fontStyles[0]!);
 const isMusicModalOpen = ref(false);
@@ -140,6 +138,6 @@ const toggleMusicModal = () => {
 </template>
 
 <style>
-/* Import czcionek z Google Fonts */
+
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Playfair+Display:ital,wght@1,700&family=Poppins:ital,wght@0,900;1,900&family=VT323&display=swap');
 </style>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import Cog from 'vue-material-design-icons/Cog.vue';
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue';
-import TextModeOptions from './StorySidebar/TextModeOptions.vue';
-import ImageModeOptions from './StorySidebar/ImageModeOptions.vue';
+import TextModeOptions from './TextModeOptions.vue';
+import ImageModeOptions from './ImageModeOptions.vue';
 
 // --- TYPY ---
 interface FontStyle {
@@ -15,7 +15,6 @@ interface FontStyle {
   isMusicModalOpen: boolean;
   isImageSelected: boolean;
   mode?: 'image' | 'text';
-  // Text mode props
   selectedBackgroundId?: number;
   selectedFontId?: string;
 }>();
@@ -25,11 +24,10 @@ const emit = defineEmits<{
   (e: 'add-image'): void;
   (e: 'toggle-music'): void;
   (e: 'add-link'): void;
-  (e: 'share-post'): void;
   (e: 'back'): void;
   (e: 'save-alt-text', text: string): void;
   (e: 'export-story'): void;
-  // Text mode emits
+
   (e: 'select-background', id: number): void;
   (e: 'select-font', font: FontStyle): void;
 }>();
@@ -67,7 +65,7 @@ const emit = defineEmits<{
             @toggle-music="emit('toggle-music')"
         />
         <ImageModeOptions
-            v-else
+            v-if="mode == 'image'"
             :is-music-modal-open="isMusicModalOpen"
             :is-image-selected="isImageSelected"
             @add-text="emit('add-text')"
@@ -79,7 +77,7 @@ const emit = defineEmits<{
       </div>
 
 
-      <div class="p-4 flex gap-3 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] bg-white z-30 sticky bottom-0">
+      <div  v-if="mode !== undefined " class="p-4 flex gap-3 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] bg-white z-30 sticky bottom-0">
          <button @click="emit('back')" class="flex-1 py-2.5 rounded-lg bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition text-sm">Odrzuć</button>
          <button @click="emit('export-story')" class="flex-1 py-2.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition shadow-md text-sm">Udostępnij</button>
       </div>

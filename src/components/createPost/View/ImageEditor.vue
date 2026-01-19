@@ -15,7 +15,7 @@ import VueCropper from 'vue-cropperjs';
 import 'cropperjs/dist/cropper.css';
 
 import { useStoryElementInteraction } from '@/composables/useStoryElementInteraction';
-import StoryElement from './item/StoryElement.vue';
+import StoryElement from '@/components/createStory/StoryElement.vue';
 import ImageTag from '../../ImageTag.vue';
 import EditorSidebar from './item/EditorSidebar.vue';
 import type { StoryElement as StoryElementType } from '@/types/StoryElement';

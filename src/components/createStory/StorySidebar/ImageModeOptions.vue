@@ -22,13 +22,7 @@
             <span class="font-medium text-gray-700 text-sm">Dodaj naklejkę z linkiem</span>
         </div>
 
-        <!-- Share Post -->
-        <div @click="emit('share-post')" class="flex items-center gap-4 px-4 py-3 hover:bg-gray-100 cursor-pointer transition active:scale-95">
-            <div class="bg-green-500 p-2.5 rounded-full">
-                <ShareVariant :size="24" class="text-white" />
-            </div>
-            <span class="font-medium text-gray-700 text-sm">Udostępnij post</span>
-        </div>
+
 
         <div @click="toggleAltTextSection" class="flex items-center justify-between px-4 py-3 hover:bg-gray-100 cursor-pointer transition" :class="{'bg-gray-50': isAltTextExpanded}">
             <div class="flex items-center gap-4">
@@ -39,7 +33,7 @@
             </div>
         </div>
 
-        <AltTextEditor v-if="isAltTextExpanded" :alt-text="currentAltText" @update:altText="(text) => currentAltText = text" />
+        <AltTextEditor v-if="isAltTextExpanded" :alt-text="currentAltText" @update:altText="(text: string) => currentAltText = text" />
     </div>
 </template>
 
@@ -48,7 +42,7 @@ import { ref } from 'vue';
 import FormatFont from 'vue-material-design-icons/FormatFont.vue';
 import MusicNote from 'vue-material-design-icons/MusicNote.vue';
 import Link from 'vue-material-design-icons/Link.vue';
-import ShareVariant from 'vue-material-design-icons/ShareVariant.vue';
+
 import AlphaABox from 'vue-material-design-icons/AlphaABox.vue';
 import AltTextEditor from './AltTextEditor.vue';
 
@@ -61,7 +55,6 @@ const emit = defineEmits<{
     (e: 'add-text'): void;
     (e: 'toggle-music'): void;
     (e: 'add-link'): void;
-    (e: 'share-post'): void;
     (e: 'save-alt-text', text: string): void;
 }>();
 

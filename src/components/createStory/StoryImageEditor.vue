@@ -11,10 +11,10 @@ import { useAuthStore } from '@/stores/auth';
 import MusicModal, { type MusicTrack } from '@/components/MusicModal.vue';
 import LinkStickerModal from '@/components/LinkStickerModal.vue';
 import PostShareModal from '@/components/PostShareModal.vue';
-import StorySidebar from '@/components/StorySidebar.vue';
+import StorySidebar from './StorySidebar/StorySidebar.vue';
 import ImageToolbar from '@/components/ImageToolbar.vue';
-import MusicToolbar from '@/components/MusicToolbar.vue';
-import StoryElement from '@/components/StoryElement.vue';
+import MusicToolbar from '@/components/story/MusicToolbar.vue';
+import StoryElement from './StoryElement.vue';
 // --- IKONY ---
 import VolumeHigh from 'vue-material-design-icons/VolumeHigh.vue';
 import VolumeOff from 'vue-material-design-icons/VolumeOff.vue';
@@ -194,11 +194,7 @@ const handleExportStory = async () => {
 
     console.log('Story dodane:', newStory);
 
-    // Clean up blob URL after story is saved
-    // Note: Don't revoke immediately as the story needs to display it
-    // It will be cleaned up when the page is refreshed or navigated away
 
-    // Redirect back to home/stories view
     alert('Story zostało dodane! ✅');
     router.push('/');
 
@@ -332,9 +328,7 @@ const toggleMusicModal = () => isMusicModalOpen.value = !isMusicModalOpen.value;
 const isLinkModalOpen = ref(false);
 const toggleLinkModal = () => isLinkModalOpen.value = !isLinkModalOpen.value;
 
-// --- MODAL POST SHARE ---
-const isPostShareModalOpen = ref(false);
-const togglePostShareModal = () => isPostShareModalOpen.value = !isPostShareModalOpen.value;
+
 
 const addMusicPoster = (track: MusicTrack) => {
   const newId = `el_${Date.now()}`;
@@ -439,7 +433,7 @@ const addPostToStory = (postData: PostData) => {
     postData: postData
   });
   selectedElementId.value = newId;
-  isPostShareModalOpen.value = false;
+
 };
 
 const goBack = () => {
@@ -467,6 +461,7 @@ const goBack = () => {
     </div>
 
     <StorySidebar
+      mode="image"
       :is-music-modal-open="isMusicModalOpen"
       :is-image-selected="selectedElement?.type === 'image'"
       @add-text="addTextElement"
@@ -549,11 +544,7 @@ const goBack = () => {
           @add-link="addLinkSticker"
         />
 
-        <PostShareModal
-          :is-open="isPostShareModalOpen"
-          @close="isPostShareModalOpen = false"
-          @select-post="addPostToStory"
-        />
+
       </div>
     </main>
   </div>

@@ -4,12 +4,12 @@ import Close from 'vue-material-design-icons/Close.vue'
 import type { StoryElement } from '@/types/StoryElement'
 
 // Import sub-components
-import StoryImageElement from '@/components/StoryElements/StoryImageElement.vue'
-import StoryMusicElement from '@/components/StoryElements/StoryMusicElement.vue'
-import StoryLinkElement from '@/components/StoryElements/StoryLinkElement.vue'
-import StoryPostElement from '@/components/StoryElements/StoryPostElement.vue'
-import StoryTextElement from '@/components/StoryElements/StoryTextElement.vue'
-import StoryReelElement from '@/components/StoryElements/StoryReelElement.vue'
+import StoryImageElement from './StoryElements/StoryImageElement.vue'
+import StoryMusicElement from './StoryElements/StoryMusicElement.vue'
+import StoryLinkElement from './StoryElements/StoryLinkElement.vue'
+import StoryPostElement from './StoryElements/StoryPostElement.vue'
+import StoryTextElement from './StoryElements/StoryTextElement.vue'
+import StoryReelElement from './StoryElements/StoryReelElement.vue'
 
 const props = defineProps<{
   element: StoryElement
