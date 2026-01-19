@@ -279,7 +279,7 @@ const preloadNextVideo = () => {
   }
 };
 
-// Watch zmiany currentIndex i aktualizuj URL + preload
+
 watch(currentIndex, (newIndex) => {
   const newReel = reels.value[newIndex];
   if (newReel && route.params.id !== newReel.id) {
