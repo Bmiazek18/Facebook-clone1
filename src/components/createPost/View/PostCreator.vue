@@ -28,7 +28,7 @@ import AccountMultipleMinusIcon from 'vue-material-design-icons/AccountMultipleM
 import AccountStarIcon from 'vue-material-design-icons/AccountStar.vue';
 import HoverScrollbar from '../../HoverScrollbar.vue';
 import PostItem from '../../post/PostItem.vue';
-import PostCreatorToolbar from '../../PostCreator/PostCreatorToolbar.vue';
+import PostCreatorToolbar from '../PostCreatorToolbar.vue';
 
 // --- LEAFLET (MAPA) ---
 import MapPreview from '../../MapPreview.vue';
@@ -115,7 +115,7 @@ const isPublishButtonDisabled = computed(() => {
 // Wrapper for content input to handle link detection
 const onContentInput = (e: Event) => {
     baseOnContentInput(); // Handle content update and tagging
-    
+
     // Link detection logic
     if (linkCheckTimeout) clearTimeout(linkCheckTimeout);
     linkCheckTimeout = setTimeout(() => {
