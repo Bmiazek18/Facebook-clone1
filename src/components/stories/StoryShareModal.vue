@@ -6,9 +6,9 @@
         <!-- Main View -->
         <div v-if="currentView === 'main'" key="main" class="view-container bg-white" data-view="main">
           <div class="p-4 flex items-start gap-3">
-            <img :src="user.avatar" class="w-10 h-10 rounded-full" alt="Profile">
+            <img :src="postsStore.currentUser.avatar" class="w-10 h-10 rounded-full" alt="Profile">
             <div class="flex-1">
-              <h3 class="font-bold text-gray-900">{{ user.name }}</h3>
+              <h3 class="font-bold text-gray-900">{{ postsStore.currentUser.name }}</h3>
               <div class="flex gap-2 mt-1 text-[13px] font-semibold text-gray-700">
                 <button class="bg-gray-100 px-3 py-1 rounded-md">Aktualności</button>
                 <button
@@ -189,7 +189,6 @@ const { wrapperRef, currentView, previousView, updateHeight, transitionName } = 
 // Initialize view to 'main'
 currentView.value = 'main';
 
-const user = ref({ name: 'Bartosz Miazek', avatar: 'https://i.pravatar.cc/150?u=b' });
 const showEmojiPicker = ref(false);
 const textareaContent = ref('');
 const selectedPrivacy = ref({ icon: LockIcon, label: 'Tylko ja' });
@@ -264,19 +263,28 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
 const handleShareNow = () => {
   // Obsługa udostępniania Reel
   if (props.reel) {
-    const newPost = {
+    const newPost: Post = {
       id: `post_${Date.now()}`,
-      authorName: user.value.name,
-      authorAvatar: user.value.avatar,
-      authorId: 1,
+      authorId: postsStore.currentUser.id,
       content: textareaContent.value,
       date: new Date().toLocaleDateString('pl-PL'),
       timestamp: Date.now(),
-      images: [],
-      likesCount: 0,
-      commentsCount: 0,
-      sharesCount: 0,
-      sharedReelId: props.reel.id,
+      media: {
+        images: [],
+        videoUrl: props.reel.videoSrc, // Use reel's video
+      },
+      context: {
+        privacy: selectedPrivacy.value.label === 'Tylko ja' ? 'only_me' : 'public',
+      },
+      stats: {
+        comments: 0,
+        shares: 0,
+      },
+      reactions: {},
+      sharedContent: {
+        type: 'reel',
+        originalId: props.reel.id,
+      },
     };
     postsStore.addPost(newPost);
     emit('close');
@@ -286,23 +294,32 @@ const handleShareNow = () => {
 
   // Obsługa udostępniania produktu z Marketplace
   if (props.marketplaceItem) {
-    const newPost = {
+    const newPost: Post = {
       id: `marketplace_${Date.now()}`,
-      authorName: user.value.name,
-      authorAvatar: user.value.avatar,
-      authorId: 1,
-      content: textareaContent.value ,
+      authorId: postsStore.currentUser.id,
+      content: textareaContent.value,
       date: new Date().toLocaleDateString('pl-PL'),
       timestamp: Date.now(),
-      images: props.marketplaceItem.images.length > 0 ? props.marketplaceItem.images.map((img: string) => ({ src: img, altText: props.marketplaceItem.title })) : [],
-      likesCount: 0,
-      commentsCount: 0,
-      sharesCount: 0,
-      isLiked: false,
-      reactionCount: 0,
-      commentCount: 0,
-      comments: [],
-      // Dodatkowe dane marketplace
+      media: {
+        images: props.marketplaceItem.images.length > 0 ? props.marketplaceItem.images.map((img: string) => ({ src: img, altText: props.marketplaceItem!.title })) : [],
+      },
+      context: {
+        privacy: selectedPrivacy.value.label === 'Tylko ja' ? 'only_me' : 'public',
+        location: {
+          title: props.marketplaceItem.location,
+          subtitle: '', // Default subtitle
+          type: 'place', // Assuming 'place' is a valid PostLocationType
+          lat: null,
+          lon: null,
+        }
+      },
+      stats: {
+        comments: 0,
+        shares: 0,
+      },
+      reactions: {},
+      // sharedContent will be undefined as 'marketplace' is not a valid type
+      // Custom marketplaceData field (handled as any in PostItem)
       marketplaceData: {
         title: props.marketplaceItem.title,
         price: props.marketplaceItem.price,
@@ -310,7 +327,7 @@ const handleShareNow = () => {
         itemId: props.marketplaceItem.id,
         description: props.marketplaceItem.description,
       }
-    };
+    } as Post;
     postsStore.addPost(newPost);
     emit('close');
     router.push('/');

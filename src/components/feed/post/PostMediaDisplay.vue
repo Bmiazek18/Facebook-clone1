@@ -1,7 +1,7 @@
 <template>
   <div v-if="!post.sharedContent">
     <!-- Video -->
-    <div v-if="post.media.videoUrl" ref="videoContainerRef" class="w-full">
+    <div v-if="post.media && post.media.videoUrl" ref="videoContainerRef" class="w-full">
       <PlayerVideo
         :settings="true"
         :lightbox="true"
@@ -12,7 +12,7 @@
 
     <!-- Images -->
     <PostImageGallery
-      v-else-if="post.media.images && post.media.images.length > 0"
+      v-else-if="post.media && post.media.images && post.media.images.length > 0"
       :images="post.media.images"
       :post-id="Number(post.id) ?? 0"
       @click="$emit('image-click', (post as any).marketplaceData?.itemId)"

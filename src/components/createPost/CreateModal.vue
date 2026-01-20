@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import {  onMounted, type Component } from 'vue';
 import { storeToRefs } from 'pinia';
-import PostCreator from './View/PostCreator.vue';
+import PostCreator from './tabs/PostCreator.vue';
 import PrivacySelector from '@/components/common/PrivacySelector.vue';
-import TagUsers from './View/TagUsers.vue';
-import LocationSelector from './View/LocationSelector.vue';
+import TagUsers from './tabs/TagUsers.vue';
+import LocationSelector from './tabs/LocationSelector.vue';
 import GifSelector from '@/components/common/GifSelector.vue';
-import ImageEditor from './View/ImageEditor.vue';
-import VideoEditor from './View/VideoEditor.vue';
-import FeelingModal from './View/FeelingModal.vue';
+import ImageEditor from './tabs/ImageEditor.vue';
+import VideoEditor from './tabs/VideoEditor.vue';
+import FeelingModal from './tabs/FeelingModal.vue';
 import '@/assets/animations/slideTransition.css';
 import { useSlideTransition } from '@/composables/useSlideTransition';
 import { useCreatePostStore } from '@/stores/createPost';

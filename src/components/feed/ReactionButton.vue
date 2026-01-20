@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTimeoutFn } from '@vueuse/core'
 import ThumbUpOutline from 'vue-material-design-icons/ThumbUpOutline.vue'
@@ -55,6 +55,10 @@ const props = defineProps({
   display: {
     type: String,
     default: 'full' // 'full' or 'compact'
+  },
+  userReaction: {
+    type: String as () => string | null,
+    default: null
   }
 })
 
@@ -80,8 +84,12 @@ const reactions = computed(() =>
   }))
 )
 
-const selectedReaction = ref<string | null>(null)
+const selectedReaction = ref<string | null>(props.userReaction)
 const isVisible = ref(false)
+
+watch(() => props.userReaction, (newVal) => {
+  selectedReaction.value = newVal
+})
 
 const getReactionSrc = (name: string) => {
   return reactionConfigs.find(r => r.name === name)?.src || ''

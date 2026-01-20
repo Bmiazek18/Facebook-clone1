@@ -16,12 +16,12 @@
               <div class="flex items-center gap-2.5">
                 <img
                   class="rounded-full w-10 h-10 object-cover border border-gray-200 cursor-pointer hover:brightness-95"
-                  :src="reel.user.avatar"
+                  :src="reelUser?.avatar"
                   alt="Avatar"
                 >
                 <div class="flex flex-col">
                   <div class="font-semibold text-[15px] text-gray-900 leading-5 cursor-pointer hover:underline">
-                    {{ reel.user.name }}
+                    {{ reelUser?.name }}
                   </div>
                   <div v-if="reel.music" class=" pb-3 flex items-center gap-2 text-[13px] text-gray-600">
             <MusicNote :size="16" />
@@ -30,13 +30,15 @@
                 </div>
               </div>
               <button
-                v-if="!reel.user.isFollowing"
+                v-if="!props.reel.isFollowing"
+                @click="handleFollowToggle"
                 class="text-blue-600 hover:bg-blue-50 font-semibold px-3 py-1.5 rounded-md text-sm transition-colors"
               >
                 Obserwuj
               </button>
               <button
                 v-else
+                @click="handleFollowToggle"
                 class="text-gray-600 hover:bg-gray-100 rounded-full p-2 -mr-2 transition-colors"
               >
                 <DotsHorizontal :size="20" fillColor="#65686C" />
@@ -92,13 +94,25 @@ import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
 import MusicNote from 'vue-material-design-icons/MusicNote.vue';
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
 import CommentFilter from '@/components/feed/CommentFilter.vue';
+import { getUserById } from '@/data/users';
+import { useReelsStore } from '@/stores/reels';
 
 defineProps<{
   reel: Reel;
 }>();
 
+const reelsStore = useReelsStore();
+
 const commentInput = ref('');
 const hasComments = computed(() => false); // Future: Check if reel has comments
+
+const reelUser = computed(() => getUserById(props.reel.authorId));
+
+const handleFollowToggle = () => {
+  if (reelUser.value) {
+    reelsStore.toggleFollow(reelUser.value.id);
+  }
+};
 
 const submitComment = () => {
   if (commentInput.value.trim()) {

@@ -109,9 +109,9 @@
 
               <div class="absolute bottom-4 left-4 right-4 text-white z-10">
                 <div class="flex items-center gap-2 mb-2">
-                  <img :src="reel.user.avatar" class="w-8 h-8 rounded-full object-cover border border-white/20" />
-                  <span class="font-bold text-[14px] md:text-[15px] hover:underline cursor-pointer truncate">{{ reel.user.name }}</span>
-                  <button v-if="!reel.user.isFollowing" class="ml-1 text-white font-bold text-[14px] hover:underline whitespace-nowrap">• Obserwuj</button>
+                  <img :src="currentReelUser?.avatar" class="w-8 h-8 rounded-full object-cover border border-white/20" />
+                  <span class="font-bold text-[14px] md:text-[15px] hover:underline cursor-pointer truncate">{{ currentReelUser?.name }}</span>
+                  <button v-if="!currentReel?.isFollowing" class="ml-1 text-white font-bold text-[14px] hover:underline whitespace-nowrap">• Obserwuj</button>
                 </div>
                 <p class="text-[13px] md:text-[15px] leading-snug line-clamp-2 pr-4 text-shadow-sm">
                   {{ reel.caption }} <span class="text-gray-300">{{ reel.hashtags }}</span>
@@ -224,6 +224,7 @@ import NavbarRight from '@/layouts/Navbar/NavbarRight.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import StoryShareModal from '@/components/stories/StoryShareModal.vue';
 import ReelInfoPanel from '@/components/reel/ReelInfoPanel.vue';
+import { getUserById } from '@/data/users';
 
 const router = useRouter();
 const route = useRoute();
@@ -297,6 +298,7 @@ const setReelRef = (el: Element | ComponentPublicInstance | null, index: number)
 };
 
 const currentReel = computed(() => reels.value[currentIndex.value]!);
+const currentReelUser = computed(() => getUserById(currentReel.value.authorId));
 
 const canGoUp = computed(() => currentIndex.value > 0);
 const canGoDown = computed(() => currentIndex.value < reels.value.length - 1);

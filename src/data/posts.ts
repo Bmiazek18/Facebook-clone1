@@ -322,7 +322,7 @@ export const getPostImage = (
   imageIndex: number,
 ): string | undefined => {
   const post = getPostById(postId)
-  if (post && post.media.images && post.media.images[imageIndex]) {
+  if (post && post.media && post.media.images && post.media.images[imageIndex]) {
     return post.media.images[imageIndex].src
   }
   return undefined

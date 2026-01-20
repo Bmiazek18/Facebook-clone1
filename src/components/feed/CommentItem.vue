@@ -211,7 +211,7 @@ v-if="showReplies || showReplyInput || hasReplies"
 
                 <!-- Akcje komentarza -->
                 <div class="flex items-center space-x-2 text-xs font-semibold text-gray-500 mt-1">
-                    <ReactionButton @react="handleReaction" display="compact" />
+                    <ReactionButton @react="handleReaction" display="compact" :userReaction="userReaction" />
                     <span
                         @click="startReply"
                         class="cursor-pointer hover:underline"
@@ -220,11 +220,7 @@ v-if="showReplies || showReplyInput || hasReplies"
                     </span>
                     <span>{{ props.comment.date }}</span>
 
-                    <!-- Ikonka mojej reakcji -->
-                    <div v-if="userReaction" class="flex items-center" :title="userReaction">
-                         <span v-if="reactionIcons[userReaction]?.emoji" class="text-sm">{{ reactionIcons[userReaction].emoji }}</span>
-                         <img v-else :src="reactionIcons[userReaction]?.src" class="w-3 h-3" />
-                    </div>
+
 
                     <!-- Licznik reakcji -->
                     <VDropdown v-if="totalLikes > 0" placement="top-start" :distance="5">

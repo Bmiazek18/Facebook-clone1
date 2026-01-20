@@ -36,8 +36,8 @@ const postData = computed(() => {
             id: props.post.authorId
         },
         content: props.post.content,
-        imageUrl: props.post.media.images?.[0]?.src,
-        images: props.post.media.images,
+        imageUrl: props.post.media?.images?.[0]?.src,
+        images: props.post.media?.images,
         videoUrl: props.post.media?.videoUrl,
         timestamp: props.post.timestamp
     };

@@ -112,6 +112,30 @@ const isPublishButtonDisabled = computed(() => {
   return !postContent.value.trim() && !selectedImage.value?.url && !selectedLocation.value && !selectedGif.value && !linkPreview.value;
 });
 
+const sharedPostAsPost = computed<Post | null>(() => {
+  if (!props.sharedPost) return null;
+  return {
+    id: props.sharedPost.id,
+    authorId: props.sharedPost.author.id,
+    content: props.sharedPost.content,
+    date: new Date(props.sharedPost.timestamp).toLocaleDateString(),
+    timestamp: props.sharedPost.timestamp,
+    media: {
+      images: props.sharedPost.images,
+      videoUrl: props.sharedPost.videoUrl,
+    },
+    context: {
+      privacy: 'public',
+      taggedUsersIds: [],
+    },
+    stats: {
+        comments: 0,
+        shares: 0,
+    },
+    reactions: {},
+  } as Post;
+});
+
 // Wrapper for content input to handle link detection
 const onContentInput = (e: Event) => {
     baseOnContentInput(); // Handle content update and tagging
@@ -510,8 +534,8 @@ const handlePublish = async () => {
 
       <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleImageSelect" />
 
-      <div v-if="props.sharedPost" class="mb-4 rounded-lg overflow-hidden">
-        <PostItem :post="(props.sharedPost as Post)" :is-shared="true" />
+      <div v-if="sharedPostAsPost" class="mb-4 rounded-lg overflow-hidden">
+        <PostItem :post="sharedPostAsPost" :is-shared="true" />
       </div>
 
       <!-- Shared Event Preview -->

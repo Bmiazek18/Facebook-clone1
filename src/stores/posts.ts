@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { posts as postsData, type Post, type Comment } from '@/data/posts';
+import { posts as postsData } from '@/data/posts';
+import type { Post, Comment } from '@/types/Post';
 
 export const usePostsStore = defineStore('posts', () => {
   const posts = ref<Post[]>(JSON.parse(JSON.stringify(postsData)));
@@ -124,9 +125,40 @@ export const usePostsStore = defineStore('posts', () => {
   }
 
   function handleCommentReaction(postId: string, commentId: number, reaction: string | null, oldReaction: string | null) {
-    // ... (This function looks fine, keeping it for now but note that Comment interface might need similar update if we want detailed reactions there too)
-    const post = posts.value.find(p => p.id === postId);
-    // ... implementation ...
+      const post = posts.value.find(p => p.id === postId);
+      if (post && post.comments) {
+          const comment = findComment(post.comments, commentId);
+          if (comment) {
+              // Update userReaction property
+              comment.userReaction = reaction || undefined;
+
+              // Update reactions count/list
+              // Ensure reactions object exists
+              if (!comment.reactions) comment.reactions = {};
+
+              const currentUserId = currentUser.id;
+
+               // Remove user from ALL previous reactions
+              for (const type in comment.reactions) {
+                  const userIds = comment.reactions[type as keyof typeof comment.reactions];
+                  if (userIds && userIds.includes(currentUserId)) {
+                       const newUserIds = userIds.filter(id => id !== currentUserId);
+                       if (newUserIds.length === 0) {
+                           delete comment.reactions[type as keyof typeof comment.reactions];
+                       } else {
+                           comment.reactions[type as keyof typeof comment.reactions] = newUserIds;
+                       }
+                  }
+              }
+
+              // Add new reaction
+              if (reaction) {
+                   const type = reaction as keyof typeof comment.reactions;
+                   const currentList = comment.reactions[type] || [];
+                   comment.reactions[type] = [...currentList, currentUserId];
+              }
+          }
+      }
   }
 
   return {
