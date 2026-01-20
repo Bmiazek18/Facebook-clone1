@@ -20,6 +20,8 @@ import { usePostsStore } from '@/stores/posts'
 
 import type { Post } from '@/types/Post';
 import ShareAsMessageModal from '@/components/feed/ShareAsMessageModal.vue'
+import { getUserById } from '@/data/users';
+import ReactionPanel from '../ReactionPanel.vue';
 
 
 const props = defineProps<{
@@ -37,48 +39,76 @@ const postsStore = usePostsStore()
 
 const isModalOpen = ref(false)
 const isShareAsPostModalOpen = ref(false)
+const isReactionModalOpen = ref(false);
 
 const toggleModal = () => {
     isModalOpen.value = !isModalOpen.value
 }
 
+const toggleReactionModal = () => {
+    console.log('Toggling reaction modal', isReactionModalOpen.value);
+    isReactionModalOpen.value = !isReactionModalOpen.value;
+};
+
+// Helper to count reactions from the map
+const reactionCount = computed(() => {
+    if (!props.post?.reactions) return 0;
+    let count = 0;
+    Object.values(props.post.reactions).forEach(ids => {
+        if (ids) count += ids.length;
+    });
+    return count;
+});
+
+// Helper to determine if liked by current user (mocked ID 1)
+const isLikedByCurrentUser = computed(() => {
+    if (!props.post?.reactions) return false;
+    // Check all reaction arrays for user ID 1
+    const currentUserId = 1; // Mocked
+    return Object.values(props.post.reactions).some(ids => ids && ids.includes(currentUserId));
+});
+
 const postData = computed<Post>(() => {
   return {
     id: String(props.post?.id || Date.now()),
-    authorName: props.post?.authorName,
-    authorAvatar: props.post?.authorAvatar,
-    content: props.post?.content,
-    imageUrl: props.post?.imageUrl,
-    images: props.post?.images,
-    videoUrl: props.post?.videoUrl,
     authorId: props.post?.authorId ?? 0,
+    stats: {
+        comments: props.post?.stats?.comments ?? 0,
+        shares: props.post?.stats?.shares ?? 0,
+    },
+    reactions: props.post?.reactions ?? {},
+    content: props.post?.content,
+    media: props.post?.media ?? {},
+    context: props.post?.context ?? { privacy: 'public' },
     date: props.post?.date ?? '',
-    likesCount: props.post?.likesCount ?? 0,
-    commentsCount: props.post?.commentsCount ?? 0,
-    sharesCount: props.post?.sharesCount ?? 0,
     timestamp: props.post?.timestamp ?? Date.now(),
-    taggedUsers: props.post?.taggedUsers ?? [],
-    location: props.post?.location,
-    gif: props.post?.gif,
-    isLiked: props.post?.isLiked ?? false,
-    likedType: props.post?.likedType ?? null,
-    reactionCount: props.post?.reactionCount ?? 0,
-    commentCount: props.post?.commentCount ?? 0,
     comments: props.post?.comments ?? [],
     selectedCardBgId: props.post?.selectedCardBgId ?? 0,
-    privacy: props.post?.privacy ?? '',
-    feeling: props.post?.feeling,
-    activity: props.post?.activity,
-    sharedFromId: props.post?.sharedFromId,
-    sharedEventId: props.post?.sharedEventId,
-    createdEvent: props.post?.createdEvent
+    sharedContent: props.post?.sharedContent,
+    detectedLanguage: props.post?.detectedLanguage
   }
 })
 
 const { t } = useI18n()
 
 const shareToStory = () => {
-  storyShareStore.setPostToShare(postData.value)
+  // Convert to PostData for story share
+  // We need to fetch author details here since PostData still needs them for display
+  const author = getUserById(postData.value.authorId);
+
+  const storyPostData = {
+      id: postData.value.id,
+      author: {
+          name: author?.name || 'Unknown',
+          avatar: author?.avatar || '',
+          id: postData.value.authorId
+      },
+      content: postData.value.content,
+      imageUrl: postData.value.media.images?.[0]?.src, // Simplified
+      timestamp: postData.value.timestamp
+  };
+
+  storyShareStore.setPostToShare(storyPostData)
   router.push('/stories/create')
 }
 
@@ -119,8 +149,8 @@ const openMessenger = (itemId: string) => {
 };
 
 const originalPost = computed(() => {
-  if (props.post.sharedFromId) {
-    return postsStore.getPostById(props.post.sharedFromId);
+  if (props.post.sharedContent?.type === 'post' && props.post.sharedContent.originalId) {
+    return postsStore.getPostById(props.post.sharedContent.originalId);
   }
   return undefined;
 });
@@ -190,8 +220,9 @@ const postToShare = computed(() => {
 
     <PostReactions v-if="!isShared"
       :post-id="post.id"
-      :comments-count="post.commentsCount"
-      :shares-count="post.sharesCount"
+      :comments-count="post.stats.comments"
+      :shares-count="post.stats.shares"
+      @show-reaction-details="toggleReactionModal"
     />
 
     <PostActions v-if="!isShared"
@@ -201,9 +232,14 @@ const postToShare = computed(() => {
       @share-to-message="shareToMessage"
     />
 
-    <BaseModal v-if="isModalOpen" @close="toggleModal" :title="`Post ${post.authorName}`">
+    <BaseModal v-if="isModalOpen" @close="toggleModal" :title="`Post ${getUserById(post.authorId)?.name}`">
       <PostModal v-if="props.post" :post="props.post" />
     </BaseModal>
+    
+    <BaseModal v-if="isReactionModalOpen" @close="toggleReactionModal" title="Reakcje">
+      <ReactionPanel :reactions="post.reactions" />
+    </BaseModal>
+
     <BaseModal :title="t('post.sendTo')" v-if="isShareAsMessageModalOpen" @close="isShareAsMessageModalOpen = false">
       <ShareAsMessageModal  />
     </BaseModal>

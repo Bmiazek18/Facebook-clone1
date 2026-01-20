@@ -116,7 +116,7 @@ const clearGridAndFetchGifs = (): void => {
 </script>
 
 <template>
-    <div class="flex flex-col bottom-18 items-center justify-center w-[280px] h-[350px] bg-white shadow-lg rounded-2xl border p-4">
+    <div class="flex flex-col bottom-18 items-center justify-center w-70 h-87.5 bg-white shadow-lg rounded-2xl border p-4">
 
         <div v-if="previewGifUrl" class="w-full mb-3 p-2 bg-indigo-50 border border-indigo-200 rounded-lg flex flex-col items-center">
             <span class="text-xs text-indigo-700 mb-1">{{ $t('post.gifSelected') }}</span>

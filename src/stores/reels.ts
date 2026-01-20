@@ -2,13 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import reelsData from '@/data/reels.json';
 
-export interface ReelUser {
-  id: string;
-  name: string;
-  avatar: string;
-  isFollowing: boolean;
-}
-
+// Updated interface: removed nested user object, added authorId and isFollowing
 export interface Reel {
   id: string;
   videoSrc: string;
@@ -19,19 +13,21 @@ export interface Reel {
   caption: string;
   hashtags: string;
   music: string;
-  user: ReelUser;
+  authorId: number;
   isLiked: boolean;
+  isFollowing?: boolean; // Interaction state
 }
 
 export const useReelsStore = defineStore('reels', () => {
-  const reels = ref<Reel[]>(reelsData);
+  // Initialize with isFollowing default to false if not present, though we might want to fetch this
+  const reels = ref<Reel[]>(reelsData.map((r: any) => ({ ...r, isFollowing: false })));
 
-  // Pobierz reel po ID
+  // Get reel by ID
   const getReelById = (id: string) => {
     return reels.value.find(reel => reel.id === id);
   };
 
-  // Pobierz reel i następny (dla płynnej animacji)
+  // Get reel and next (for smooth animation)
   const getReelWithNext = (id: string) => {
     const currentIndex = reels.value.findIndex(reel => reel.id === id);
     if (currentIndex === -1) return { current: null, next: null };
@@ -42,7 +38,7 @@ export const useReelsStore = defineStore('reels', () => {
     return { current, next };
   };
 
-  // Pobierz index reela
+  // Get index of reel
   const getReelIndex = (id: string) => {
     return reels.value.findIndex(reel => reel.id === id);
   };
@@ -52,19 +48,22 @@ export const useReelsStore = defineStore('reels', () => {
     const reel = reels.value.find(r => r.id === id);
     if (reel) {
       reel.isLiked = !reel.isLiked;
-      const likesNum = parseInt(reel.likes.replace(/[^\d]/g, ''));
+      // Handle 'k' notation roughly or just parse simple numbers
+      let likesNum = parseInt(reel.likes.replace(/[^\d]/g, ''));
+      if (isNaN(likesNum)) likesNum = 0;
+      
       reel.likes = reel.isLiked
         ? (likesNum + 1).toString()
-        : (likesNum - 1).toString();
+        : (likesNum > 0 ? (likesNum - 1).toString() : '0');
     }
   };
 
-  // Toggle follow
-  const toggleFollow = (userId: string) => {
-    const reel = reels.value.find(r => r.user.id === userId);
-    if (reel) {
-      reel.user.isFollowing = !reel.user.isFollowing;
-    }
+  // Toggle follow (by authorId)
+  const toggleFollow = (authorId: number) => {
+    // Update all reels by this author
+    reels.value.filter(r => r.authorId === authorId).forEach(reel => {
+        reel.isFollowing = !reel.isFollowing;
+    });
   };
 
   return {

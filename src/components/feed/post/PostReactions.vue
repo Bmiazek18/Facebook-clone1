@@ -2,7 +2,7 @@
   <div class="mx-3 mb-3 mt-2 rounded-lg overflow-hidden">
     <div class="flex items-center justify-between text-theme-text-secondary text-[15px]">
 
-      <div class="flex items-center gap-1.5 cursor-pointer group" v-if="likesCount > 0">
+      <div class="flex items-center gap-1.5 cursor-pointer group" v-if="likesCount > 0" @click="emit('show-reaction-details')">
 
         <div class="flex items-center relative pl-1">
 
@@ -45,6 +45,7 @@
           </template>
 
           <template v-else>
+            <!-- Fallback if not liked by current user -->
             <span>{{ t('post.likedBy', { name: 'Anna Kowalska ' }) }}</span>
             <span v-if="likesCount > 1"> {{ t('post.andOthers', { count: likesCount - 1 }) }}</span>
           </template>
@@ -70,7 +71,7 @@ import Heart from 'vue-material-design-icons/Heart.vue'
 
 import { usePostReactions } from '@/composables/usePostReactions'
 
- defineProps<{
+const props = defineProps<{
   postId: string | number
   commentsCount: number
   sharesCount: number
@@ -79,7 +80,11 @@ import { usePostReactions } from '@/composables/usePostReactions'
 const { t } = useI18n()
 
 
-const { userReaction, likesCount, handleReaction } = usePostReactions(24)
+const emit = defineEmits<{
+  (e: 'show-reaction-details'): void
+}>()
+
+const { userReaction, likesCount, handleReaction } = usePostReactions(String(props.postId))
 
 
 const getReactionConfig = (type: string) => {

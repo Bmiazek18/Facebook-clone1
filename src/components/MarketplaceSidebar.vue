@@ -36,7 +36,7 @@ const menuItems = [
 </script>
 
 <template>
-  <aside class=" w-[340px] mt-[56px] bg-white min-h-screen font-sans">
+  <aside class=" w-85 mt-14 bg-white min-h-screen font-sans">
     <div class="px-4 py-2">
 
       <div class="flex items-center gap-3 mb-4">

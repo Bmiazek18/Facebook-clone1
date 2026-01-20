@@ -40,7 +40,7 @@
     <!-- User name -->
     <div class="absolute bottom-3 left-3 right-3 text-white z-30">
       <p class="text-xs font-semibold leading-tight line-clamp-2 drop-shadow-lg">
-        {{ userStory.userName }}
+        {{ isOwner ? t('story.myStory') : userStory.userName }}
       </p>
     </div>
   </div>
@@ -49,10 +49,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { UserStories } from '../types/Story';
+import { useStoriesStore } from '@/stores/stories';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
   userStory: UserStories;
 }>();
+
+const { t } = useI18n();
+const storiesStore = useStoriesStore();
+const isOwner = computed(() => props.userStory.userId === storiesStore.currentUserId);
 
 // Get the first story for preview
 const firstStory = computed(() => props.userStory.stories[0]);

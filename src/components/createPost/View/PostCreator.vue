@@ -292,25 +292,33 @@ const handlePublish = async () => {
   const newPost: Post = {
     id: `${Date.now()}`,
     content: postContent.value,
-    images: selectedImage.value ? [{ src: selectedImage.value.url, altText: selectedImage.value.altText, tags: selectedImage.value.tags }] : [],
-    videoUrl: undefined,
-    authorName: userName.value,
-    authorAvatar: profilePicUrl.value,
     authorId: currentUser.value?.id ?? postsStore.currentUser?.id ?? 0,
+    media: {
+        images: selectedImage.value ? [{ src: selectedImage.value.url, altText: selectedImage.value.altText, tags: selectedImage.value.tags }] : [],
+        videoUrl: undefined,
+        gif: selectedGif.value || undefined,
+    },
+    context: {
+        taggedUsersIds: taggedUsers.value.map(u => u.id),
+        location: selectedLocation.value || undefined,
+        privacy: selectedPrivacy.value,
+        feeling: selectedFeeling.value,
+        activity: selectedActivity.value,
+        createdEvent: !!props.sharedEventId
+    },
+    stats: {
+        comments: 0,
+        shares: 0,
+    },
+    reactions: {}, // Empty reactions map
     date: new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long' }),
-    likesCount: 0,
-    commentsCount: 0,
-    sharesCount: 0,
-    taggedUsers: taggedUsers.value,
-    location: selectedLocation.value || undefined,
-    gif: selectedGif.value || undefined,
     selectedCardBgId: selectedCardBgId.value,
-    privacy: selectedPrivacy.value,
-    feeling: selectedFeeling.value,
-    activity: selectedActivity.value,
     timestamp: Date.now(),
-    sharedEventId: props.sharedEventId,
     detectedLanguage: detectedLanguage.value || undefined,
+    sharedContent: props.sharedEventId ? {
+        type: 'event',
+        originalId: props.sharedEventId,
+    } : undefined
   };
   postsStore.addPost(newPost);
   emit('close');

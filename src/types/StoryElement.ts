@@ -6,8 +6,11 @@ import type { ImageTagType } from './ImageTag';
 // --- Shared Data Types ---
 export interface PostData {
   id: string;
-  authorName: string;
-  authorAvatar: string;
+  author: {
+    name: string;
+    avatar: string;
+    id: number;
+  };
   content: string;
   imageUrl?: string;
   images?: {
@@ -21,8 +24,7 @@ export interface PostData {
 
 export interface ReelData {
   id: string;
-  authorName: string;
-  authorAvatar: string;
+  authorId: number;
   videoSrc: string;
   poster?: string;
   caption: string;

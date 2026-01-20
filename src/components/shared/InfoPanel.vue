@@ -16,12 +16,12 @@
               <div class="flex items-center gap-2.5">
                 <img
                   class="rounded-full w-10 h-10 object-cover border border-gray-200 cursor-pointer hover:brightness-95"
-                  :src="item.user?.avatar || item.authorAvatar"
+                  :src="author?.avatar"
                   alt="Avatar"
                 >
                 <div class="flex flex-col">
                   <div class="font-semibold text-[15px] text-gray-900 leading-5 cursor-pointer hover:underline">
-                    {{ item.user?.name || item.authorName }}
+                    {{ author?.name }}
                   </div>
                   <div class="flex items-center text-[13px] text-gray-600 font-normal mt-0.5">
                     <span class="hover:underline cursor-pointer">{{ item.date || 'Teraz' }}</span>
@@ -31,7 +31,7 @@
                 </div>
               </div>
               <button
-                v-if="showFollowButton && !item.user?.isFollowing"
+                v-if="showFollowButton && !item.isFollowing"
                 class="text-blue-600 hover:bg-blue-50 font-semibold px-3 py-1.5 rounded-md text-sm transition-colors"
               >
                 Obserwuj
@@ -67,14 +67,14 @@
               <div class="bg-blue-500 rounded-full p-1 mr-1.5 flex items-center justify-center w-[18px] h-[18px]">
                 <ThumbUp fillColor="#FFFFFF" :size="10" />
               </div>
-              <span class="hover:underline cursor-pointer">{{ item.likes || item.likesCount }}</span>
+              <span class="hover:underline cursor-pointer">{{ likes }}</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="cursor-pointer hover:underline">
-                {{ item.comments || item.commentsCount }} {{ item.comments ? 'komentarzy' : $t('comments.count', { count: item.commentsCount || 0 }) }}
+                {{ commentsCount }} {{ commentsCount === 1 ? 'komentarz' : 'komentarzy' }}
               </span>
               <span class="cursor-pointer hover:underline">
-                {{ item.shares || item.sharesCount }} {{ item.shares ? 'udostępnień' : $t('post.sharesCount', { count: item.sharesCount || 0 }) }}
+                {{ sharesCount }} {{ sharesCount === 1 ? 'udostępnienie' : 'udostępnień' }}
               </span>
             </div>
           </div>
@@ -117,7 +117,7 @@
               v-for="comment in comments"
               :key="comment.id"
               :comment="comment"
-              :post-avatar-src="item.user?.avatar || item.authorAvatar"
+              :post-avatar-src="author?.avatar"
               :depth="0"
               :post-id="item.id"
             />
@@ -128,8 +128,8 @@
         <div v-if="!hideComments" class="p-4 border-t border-gray-200 flex items-center bg-white sticky bottom-0 z-10">
           <CommentReplyInput
             v-if="useCommentReplyInput"
-            :post-avatar-src="item.user?.avatar || item.authorAvatar"
-            :placeholder="$t('post.writeCommentAs', { name: item.user?.name || item.authorName })"
+            :post-avatar-src="author?.avatar"
+            :placeholder="$t('post.writeCommentAs', { name: author?.name })"
             :post-id="item.id"
           />
           <template v-else>
@@ -167,6 +167,7 @@ import NavbarRight from '@/layouts/Navbar/NavbarRight.vue';
 import CommentFilter from '@/components/feed/CommentFilter.vue';
 import CommentItem from '@/components/feed/CommentItem.vue';
 import CommentReplyInput from '@/components/feed/CommentReplyInput.vue';
+import { getUserById } from '@/data/users';
 
 
 interface Props {
@@ -185,6 +186,22 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const commentInput = ref('');
+
+const author = computed(() => {
+  if (props.item.authorId) return getUserById(props.item.authorId);
+  return { name: 'Unknown', avatar: '' };
+});
+
+const likes = computed(() => {
+    if (props.item.likes) return props.item.likes;
+    if (props.item.reactions) {
+         return Object.values(props.item.reactions).reduce((acc: number, val: any) => acc + (val?.length || 0), 0);
+    }
+    return 0;
+});
+
+const commentsCount = computed(() => props.item.commentsCount || props.item.comments || props.item.stats?.comments || 0);
+const sharesCount = computed(() => props.item.sharesCount || props.item.shares || props.item.stats?.shares || 0);
 
 const hasComments = computed(() => {
   return props.item.comments && props.item.comments.length > 0;

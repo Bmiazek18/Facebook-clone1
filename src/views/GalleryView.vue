@@ -44,12 +44,12 @@
                             <div class="flex items-center gap-2.5">
                                 <img
                                     class="rounded-full w-10 h-10 object-cover border border-gray-200 cursor-pointer hover:brightness-95"
-                                    :src="(currentComment || currentPost).authorAvatar"
+                                    :src="author?.avatar"
                                     alt="Avatar"
                                 >
                                 <div class="flex flex-col">
                                     <div class="font-semibold text-[15px] text-theme-text leading-5 cursor-pointer hover:underline">
-                                        {{ (currentComment || currentPost).authorName }}
+                                        {{ author?.name }}
                                     </div>
                                     <div class="flex items-center text-[13px] text-theme-text-secondary font-normal mt-0.5">
                                         <span class="hover:underline cursor-pointer">{{ (currentComment || currentPost).date }}</span>
@@ -73,11 +73,11 @@
                             <div class="bg-blue-500 rounded-full p-1 mr-1.5 flex items-center justify-center w-[18px] h-[18px]">
                                 <ThumbUp fillColor="#FFFFFF" :size="10"/>
                             </div>
-                            <span class="hover:underline cursor-pointer">{{ (currentPost || currentComment).likesCount }}</span>
+                            <span class="hover:underline cursor-pointer">{{ likesCount }}</span>
                         </div>
                         <div class="flex items-center gap-3">
-                             <span class="cursor-pointer hover:underline">{{ $t('comments.count', { count: (currentPost || currentComment).commentsCount }) }}</span>
-                             <span class="cursor-pointer hover:underline">{{ $t('post.sharesCount', { count: (currentPost || currentComment).sharesCount }) }}</span>
+                             <span class="cursor-pointer hover:underline">{{ $t('comments.count', { count: commentsCount }) }}</span>
+                             <span class="cursor-pointer hover:underline">{{ $t('post.sharesCount', { count: sharesCount }) }}</span>
                         </div>
                     </div>
 
@@ -110,7 +110,7 @@
                             v-for="comment in currentPost.comments"
                             :key="comment.id"
                             :comment="comment"
-                            :post-avatar-src="(currentComment || currentPost).authorAvatar"
+                            :post-avatar-src="author?.avatar"
                             :depth="0"
                             :post-id="currentPost.id"
                         />
@@ -119,8 +119,8 @@
 
                 <div v-if="!currentComment" class="p-4 border-t border-gray-200 flex items-center bg-theme-bg-secondary sticky bottom-0 z-10">
                     <CommentReplyInput
-                        :post-avatar-src="(currentPost || currentComment).authorAvatar"
-                        :placeholder="$t('post.writeCommentAs', { name: (currentPost || currentComment).authorName })"
+                        :post-avatar-src="author?.avatar"
+                        :placeholder="$t('post.writeCommentAs', { name: author?.name })"
                         :post-id="currentPost.id"
                     />
                 </div>
@@ -149,6 +149,7 @@ import CommentReplyInput from '@/components/feed/CommentReplyInput.vue'
 import NavbarRight from '@/layouts/Navbar/NavbarRight.vue'
 import type {  Comment, Post } from '@/types/Post';
 import type { ImageTagType } from '@/types/ImageTag';
+import { getUserById } from '@/data/users';
 
 import CommentFilter from '@/components/feed/CommentFilter.vue'
 const route = useRoute()
@@ -171,17 +172,37 @@ const currentComment = ref<Comment | null>(null); // New ref for the current com
 // Get the current post data
 const currentPost = computed(() => postsStore.posts.find((p: Post) => p.id === postId.value))
 
+const authorId = computed(() => (currentComment.value || currentPost.value)?.authorId ?? 0);
+const author = computed(() => getUserById(authorId.value));
+
+const likesCount = computed(() => {
+    if (currentComment.value) return currentComment.value.likesCount;
+    if (currentPost.value?.reactions) {
+        return Object.values(currentPost.value.reactions).reduce((sum, ids) => sum + (ids ? ids.length : 0), 0);
+    }
+    return 0;
+});
+
+const commentsCount = computed(() => {
+    if (currentComment.value) return 0;
+    return currentPost.value?.stats?.comments || 0;
+});
+
+const sharesCount = computed(() => {
+    if (currentComment.value) return 0;
+    return currentPost.value?.stats?.shares || 0;
+});
+
 // Current image URL
 const currentImage = computed((): { src: string; altText?: string; tags?: ImageTagType[]; } | undefined => {
-
-    return currentPost.value?.images[currentImageIndex.value]
+    return currentPost.value?.media?.images?.[currentImageIndex.value]
 })
 
 // Navigation helpers
 const hasPrevImage = computed(() => currentImageIndex.value > 0)
 const hasNextImage = computed(() => {
     if (!currentPost.value) return false
-    return currentImageIndex.value < (currentPost.value.images?.length || 0) - 1
+    return currentImageIndex.value < (currentPost.value.media?.images?.length || 0) - 1
 })
 
 const goToPrevImage = () => {

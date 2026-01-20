@@ -1,7 +1,7 @@
 <template>
-  <div v-if="totalReactions > 0" class="w-full">
+  <div class="w-full">
 
-    <div class="flex overflow-x-auto whitespace-nowrap mb-4 border-b border-gray-200">
+    <div v-if="totalReactions > 0" class="flex overflow-x-auto whitespace-nowrap mb-4 border-b border-gray-200">
       <button
         @click="selectTab(null)"
         :class="['px-4 py-2 text-sm font-medium border-b-2 transition-colors duration-200 focus:outline-none', {
@@ -26,7 +26,12 @@
       </button>
     </div>
 
-    <HoverScrollbar class="max-h-[300px]"> <div
+    <div v-else class="p-4 text-center text-gray-500">
+        Brak reakcji do wyświetlenia.
+    </div>
+
+    <HoverScrollbar class="max-h-[300px]" v-if="totalReactions > 0">
+      <div
         v-for="reaction in filteredReactions"
         :key="`${reaction.userId}-${reaction.emoji}`"
         class="flex items-center justify-between px-6 py-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
@@ -58,58 +63,66 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
+import { getUserById } from '@/data/users';
+import { usePostReactions } from '@/composables/usePostReactions';
 
 // --- Typy ---
-interface Reaction {
+interface ReactionUser {
   userId: number;
   userName: string;
   emoji: string;
   avatarUrl?: string;
 }
 
+const props = defineProps<{
+  reactions: Partial<Record<string, number[]>>
+}>();
 
-const mockReactions: Reaction[] = [
-  { userId: 1, userName: 'Bartosz Miazek', emoji: '😢' },
-  { userId: 2, userName: 'Anna Kowalska', emoji: '👍' },
-  { userId: 3, userName: 'Piotr Nowak', emoji: '😢' },
-  { userId: 4, userName: 'Krzysztof Zając', emoji: '😂' },
-  { userId: 5, userName: 'Magdalena Wójcik', emoji: '👍' },
-  { userId: 6, userName: 'Tomasz Lewandowski', emoji: '👍' },
-  { userId: 7, userName: 'Ewa Zielińska', emoji: '😂' },
-  { userId: 8, userName: 'Robert Wiśniewski', emoji: '😢' },
-  { userId: 9, userName: 'Dominika Krawczyk', emoji: '❤️' },
-  { userId: 10, userName: 'Jan Nowakowski', emoji: '❤️' },
-];
+const { reactionIcons } = usePostReactions();
 
+const reactionsList = computed<ReactionUser[]>(() => {
+  const list: ReactionUser[] = [];
+  if (!props.reactions) return list;
 
-const reactions = ref<Reaction[]>(mockReactions);
+  for (const [type, userIds] of Object.entries(props.reactions)) {
+    if (userIds) {
+      userIds.forEach(userId => {
+        const user = getUserById(userId);
+        if (user) {
+          list.push({
+            userId: user.id,
+            userName: user.name,
+            emoji: reactionIcons[type]?.emoji || '👍', // Fallback emoji
+            avatarUrl: user.avatar
+          });
+        }
+      });
+    }
+  }
+  return list;
+});
+
 const selectedReaction = ref<string | null>(null);
 
-
-const totalReactions = computed(() => reactions.value.length);
-
+const totalReactions = computed(() => reactionsList.value.length);
 
 const reactionSummary = computed(() => {
-  return reactions.value.reduce((acc, reaction) => {
+  return reactionsList.value.reduce((acc, reaction) => {
     acc[reaction.emoji] = (acc[reaction.emoji] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 });
 
-
 const filteredReactions = computed(() => {
-  let filtered = reactions.value;
+  let filtered = reactionsList.value;
 
   if (selectedReaction.value !== null) {
-    filtered = reactions.value.filter(r => r.emoji === selectedReaction.value);
+    filtered = reactionsList.value.filter(r => r.emoji === selectedReaction.value);
   }
-
 
   return [...filtered].sort((a, b) => a.userName.localeCompare(b.userName, 'pl'));
 });
-
 
 const selectTab = (emoji: string | null) => {
   selectedReaction.value = emoji;

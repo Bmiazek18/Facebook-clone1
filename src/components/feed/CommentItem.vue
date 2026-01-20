@@ -9,13 +9,14 @@ import Heart from 'vue-material-design-icons/Heart.vue'
 import CommentReplyInput from '@/components/feed/CommentReplyInput.vue'
 import ReactionButton from '@/components/feed/ReactionButton.vue'
 import ProfilePopper from '@/components/profile/ProfilePopper.vue'
-import { usePostReactions } from '@/composables/usePostReactions'
+// Removed incompatible usePostReactions
 import type { Comment } from '@/types/Post'
 import { useCommentsStore } from '@/stores/comments'
 import { usePostsStore } from '@/stores/posts'
 import { getUserById } from '@/data/users'
 import { processContent } from '@/utils/contentProcessor'
 import { Dropdown as VDropdown } from 'floating-vue'
+import { reactionIcons } from '@/composables/usePostReactions'
 
 const props = defineProps<{
     comment: Comment
@@ -28,14 +29,13 @@ const router = useRouter()
 const commentsStore = useCommentsStore()
 const postsStore = usePostsStore()
 
-const { userReaction, handleReaction: setLocalReaction, reactionIcons } = usePostReactions(props.comment.likesCount);
-if (props.comment.userReaction) {
-    setLocalReaction(props.comment.userReaction);
-}
+const author = computed(() => getUserById(props.comment.authorId));
+
+const userReaction = computed(() => props.comment.userReaction || null); // Assuming updated via store prop
 
 const handleReaction = (reaction: string | null) => {
     const oldReaction = userReaction.value;
-    setLocalReaction(reaction);
+    // Optimistic update should be handled by store/parent if possible, or just emit
     postsStore.handleCommentReaction(props.postId, props.comment.id, reaction, oldReaction);
 };
 
@@ -66,7 +66,7 @@ const startReply = () => {
         commentsStore.clearReplyingTo()
     } else {
         commentsStore.setReplyingTo(
-            { id: props.comment.authorId, name: props.comment.authorName },
+            { id: props.comment.authorId, name: author.value?.name || 'Unknown' },
             props.comment.id
         )
     }
@@ -143,8 +143,8 @@ const getReactionConfig = (type: string) => {
                 <a :class="[isRootComment ? 'w-8 h-8' : 'w-6 h-6']">
                     <img
                         :class="['rounded-full mt-1', isRootComment ? 'w-8 h-8' : 'w-6 h-6']"
-                        :src="props.comment.authorAvatar"
-                        :alt="props.comment.authorName + ' Avatar'"
+                        :src="author?.avatar"
+                        :alt="(author?.name || 'User') + ' Avatar'"
                     >
                 </a>
 
@@ -165,14 +165,14 @@ v-if="showReplies || showReplyInput || hasReplies"
                         'p-2': (props.comment.image || props.comment.gif)
                     }"
                 >
-                    <ProfilePopper :name="props.comment.authorName">
+                    <ProfilePopper :name="author?.name || 'Unknown'">
                         <span
                             :class="[
                                 'text-theme-text hover:underline cursor-pointer block leading-4 mb-0.5',
                                 isRootComment ? 'font-extrabold text-[13px]' : 'font-semibold text-[12px]'
                             ]"
                         >
-                            {{ props.comment.authorName }}
+                            {{ author?.name || 'Unknown' }}
                         </span>
                     </ProfilePopper>
 
@@ -219,6 +219,12 @@ v-if="showReplies || showReplyInput || hasReplies"
                         {{ $t('actions.reply') }}
                     </span>
                     <span>{{ props.comment.date }}</span>
+
+                    <!-- Ikonka mojej reakcji -->
+                    <div v-if="userReaction" class="flex items-center" :title="userReaction">
+                         <span v-if="reactionIcons[userReaction]?.emoji" class="text-sm">{{ reactionIcons[userReaction].emoji }}</span>
+                         <img v-else :src="reactionIcons[userReaction]?.src" class="w-3 h-3" />
+                    </div>
 
                     <!-- Licznik reakcji -->
                     <VDropdown v-if="totalLikes > 0" placement="top-start" :distance="5">

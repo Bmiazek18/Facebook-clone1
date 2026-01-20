@@ -3,7 +3,7 @@ import { markRaw, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { Component } from 'vue';
 
-// 1. Importowanie komponentów ikon z vue-material-design-icons
+
 import EmailOutlineIcon from 'vue-material-design-icons/EmailOutline.vue';
 import MessageTextOutlineIcon from 'vue-material-design-icons/MessageTextOutline.vue';
 import BellOffOutlineIcon from 'vue-material-design-icons/BellOffOutline.vue';
@@ -13,7 +13,7 @@ import ExitToAppIcon from 'vue-material-design-icons/ExitToApp.vue';
 
 const { t } = useI18n();
 
-// 2. Definicja interfejsu MenuItem
+
 interface MenuItemConfig {
   id: number;
   labelKey: string;
@@ -26,7 +26,7 @@ interface MenuItemData extends MenuItemConfig {
   label: string;
 }
 
-// 3. Dane menu z przypisanymi ikonami
+
 const menuItemsConfig: MenuItemConfig[] = [
   { id: 1, labelKey: 'chat.markAsRead', icon: markRaw(EmailOutlineIcon), action: 'mark-as-read' },
   { id: 2, labelKey: 'chat.openMacMessenger', icon: markRaw(MessageTextOutlineIcon), action: 'open-mac-messenger' },
@@ -36,7 +36,7 @@ const menuItemsConfig: MenuItemConfig[] = [
   { id: 6, labelKey: 'chat.leaveChannel', icon: markRaw(ExitToAppIcon), action: 'leave-channel', isDestructive: true },
 ];
 
-// Computed property to get translated menu items
+
 const menuItems = computed(() =>
   menuItemsConfig.map(item => ({
     ...item,
@@ -44,12 +44,12 @@ const menuItems = computed(() =>
   }))
 );
 
-// 4. Definicja Emisji Zdarzeń
+
 const emit = defineEmits<{
   (e: 'select-action', action: string): void;
 }>();
 
-// 5. Funkcja obsługująca kliknięcie
+
 const handleItemClick = (item: MenuItemData) => {
   emit('select-action', item.action);
   console.log(`Akcja: ${item.action}`);

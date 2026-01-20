@@ -17,6 +17,7 @@ import { getPostById } from '@/data/posts'
 import PostModal from '@/components/feed/PostModal.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { useI18n } from 'vue-i18n'
+import { getUserById } from '@/data/users'
 
 const { t } = useI18n()
 const postsStore = usePostsStore()
@@ -119,7 +120,7 @@ const handleCancelLeave = () => {
       </div>
     </div>
     <ConfirmationModal v-if="showConfirmModal" @confirm="handleConfirmLeave" @cancel="handleCancelLeave" />
-    <BaseModal v-if="post" :title="post.authorName" @close="post = undefined; router.push('/')">
+    <BaseModal v-if="post" :title="getUserById(post.authorId)?.name" @close="post = undefined; router.push('/')">
       <PostModal :post="post" />
     </BaseModal>
 

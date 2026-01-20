@@ -1,341 +1,315 @@
-import type { User } from './users';
+import type { Post, ReactionType } from '@/types/Post';
 import { getUserById } from './users';
 
-import type { Person } from '@/types/Person';
+// Helper to get reaction count (not used directly in data, but for conceptual understanding)
+const countReactions = (post: Post) => {
+    let count = 0;
+    if (post.reactions) {
+        Object.values(post.reactions).forEach(userIds => {
+            count += userIds ? userIds.length : 0;
+        });
+    }
+    return count;
+};
 
-import type { Post } from '@/types/Post';
+// Available user IDs for reactions (from users.json)
+const availableUserIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-const anna = getUserById(2)
+// Helper to generate a random subset of user IDs for reactions
+const getRandomUserIds = (maxUsers: number, includeCurrentUser = false): number[] => {
+    let ids = [...availableUserIds];
+    if (includeCurrentUser && !ids.includes(1)) {
+        ids.unshift(1); // Ensure current user is in the list if specified
+    }
+    
+    // Shuffle and pick a random number of unique IDs
+    for (let i = ids.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [ids[i], ids[j]] = [ids[j], ids[i]];
+    }
+    const numToPick = Math.floor(Math.random() * maxUsers) + 1; // At least 1 reaction
+    return ids.slice(0, numToPick);
+};
 
-const userToPerson = (user: User): Person => ({
-  id: user.id,
-  name: user.name,
-  imageUrl: user.avatar,
-  commonFriends: user.mutualFriendsCount || 0,
-  isFriend: true,
-})
+// Helper to assign random reactions
+const generateRandomReactions = (): Partial<Record<ReactionType, number[]>> => {
+    const reactionTypes: ReactionType[] = ['like', 'love', 'haha', 'wow', 'sad', 'angry'];
+    const reactions: Partial<Record<ReactionType, number[]>> = {};
+
+    // Ensure 'like' reaction is always present and often includes current user
+    reactions['like'] = getRandomUserIds(availableUserIds.length / 2, true);
+
+    // Add other random reactions
+    reactionTypes.forEach(type => {
+        if (type !== 'like' && Math.random() > 0.6) { // 40% chance to have other reactions
+            reactions[type] = getRandomUserIds(availableUserIds.length / 3);
+        }
+    });
+    
+    // Ensure all reaction arrays are unique and contain actual IDs
+    for (const type in reactions) {
+        if (reactions[type as ReactionType]) {
+            reactions[type as ReactionType] = Array.from(new Set(reactions[type as ReactionType]));
+        }
+    }
+
+    return reactions;
+};
+
 
 export const posts: Post[] = [
-  // Post po angielsku do testowania tłumaczenia
   {
     id: '100',
     content: 'Hello everyone! I hope you are all having a wonderful day. The weather is absolutely beautiful today, and I decided to take a long walk in the park. It was so peaceful and relaxing. How are you spending your weekend? 🌞🌳',
-    images: [
-      { src: 'https://picsum.photos/800/600?random=100', altText: 'Beautiful park view' },
-    ],
-    authorName: 'John Smith',
-    authorAvatar: 'https://randomuser.me/api/portraits/men/75.jpg',
-    authorId: 100,
+    authorId: 100, // Assuming 100 is a valid user for testing international posts
     date: '4 stycznia',
-    likesCount: 45,
-    commentsCount: 8,
-    sharesCount: 2,
-    isLiked: false,
-    reactionCount: 45,
-    commentCount: 8,
-    comments: [],
     timestamp: Date.now(),
+    media: {
+        images: [
+            { src: 'https://picsum.photos/800/600?random=100', altText: 'Beautiful park view' },
+        ]
+    },
+    context: {
+        privacy: 'public'
+    },
+    stats: {
+        comments: 8,
+        shares: 2,
+    },
+    reactions: generateRandomReactions(),
+    comments: [],
     detectedLanguage: 'en',
   },
-  // Post po niemiecku do testowania tłumaczenia
   {
     id: '101',
     content: 'Guten Morgen! Heute ist ein wunderschöner Tag. Ich freue mich sehr auf das Wochenende mit meiner Familie. Wir werden zusammen wandern gehen und die Natur genießen. Was habt ihr für Pläne? 🏔️🌲',
-    images: [
-      { src: 'https://picsum.photos/800/600?random=101', altText: 'Mountain hiking view' },
-      { src: 'https://picsum.photos/800/600?random=102', altText: 'Nature landscape' },
-    ],
-    authorName: 'Hans Müller',
-    authorAvatar: 'https://randomuser.me/api/portraits/men/85.jpg',
-    authorId: 101,
+    authorId: 101, // Assuming 101 is a valid user for testing international posts
     date: '4 stycznia',
-    likesCount: 32,
-    commentsCount: 5,
-    sharesCount: 1,
-    isLiked: false,
-    reactionCount: 32,
-    commentCount: 5,
-    comments: [],
     timestamp: Date.now(),
+    media: {
+        images: [
+            { src: 'https://picsum.photos/800/600?random=101', altText: 'Mountain hiking view' },
+            { src: 'https://picsum.photos/800/600?random=102', altText: 'Nature landscape' },
+        ]
+    },
+    context: { privacy: 'friends' },
+    stats: { comments: 5, shares: 1 },
+    reactions: generateRandomReactions(),
+    comments: [],
     detectedLanguage: 'de',
   },
-  // Post po francusku do testowania tłumaczenia
   {
     id: '102',
     content: 'Bonjour à tous! Quelle magnifique journée ensoleillée! Je viens de terminer un délicieux déjeuner au café près de la Seine. Paris est vraiment magique en cette saison. Profitez bien de votre journée! ☕🥐🗼',
-    images: [],
-    authorName: 'Marie Dubois',
-    authorAvatar: 'https://randomuser.me/api/portraits/women/65.jpg',
-    authorId: 102,
+    authorId: 102, // Assuming 102 is a valid user for testing international posts
     date: '4 stycznia',
-    likesCount: 67,
-    commentsCount: 12,
-    sharesCount: 3,
-    isLiked: false,
-    reactionCount: 67,
-    commentCount: 12,
-    comments: [],
     timestamp: Date.now(),
+    media: {},
+    context: { privacy: 'public' },
+    stats: { comments: 12, shares: 3 },
+    reactions: generateRandomReactions(),
+    comments: [],
     detectedLanguage: 'fr',
   },
-  // Post z video
   {
     id: '0',
     content: 'Niesamowity zachód słońca nad oceanem 🌅 #zachod',
-    images: [],
-    videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-    authorName: 'Bartosz Miazek',
-    authorAvatar:
-      'https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg',
-    authorId: 1,
+    authorId: 1, // Bartosz Miazek
     date: '17 grudnia',
-    likesCount: 156,
-    commentsCount: 23,
-    sharesCount: 8,
-    isLiked: false,
-    reactionCount: 156,
-    commentCount: 23,
-    comments: [],
     timestamp: Date.now(),
+    media: {
+        videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
+    },
+    context: { privacy: 'public' },
+    stats: { comments: 23, shares: 8 },
+    reactions: generateRandomReactions(),
+    comments: [],
   },
-  // Post z 1 zdjęciem
   {
     id: '1',
     content: 'Piękny dzień na spacer! 🌞',
-    images: [
-      {
-        src: 'https://picsum.photos/800/600?random=1',
-        altText: 'A beautiful day for a walk',
-        tags: anna
-          ? [
-              {
-                id: '1',
-                x: 50,
-                y: 50,
-                user: userToPerson(anna),
-              },
-            ]
-          : [],
-      },
-    ],
-    authorName: 'Anna Kowalska',
-    authorAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-    authorId: 2,
+    authorId: 2, // Anna Kowalska
     date: '16 grudnia',
-    likesCount: 24,
-    commentsCount: 3,
-    sharesCount: 1,
-    isLiked: false,
-    reactionCount: 24,
-    commentCount: 3,
-    comments: [],
     timestamp: Date.now(),
+    media: {
+        images: [
+          {
+            src: 'https://picsum.photos/800/600?random=1',
+            altText: 'A beautiful day for a walk',
+            tags: [
+                  {
+                    id: '1',
+                    x: 50,
+                    y: 50,
+                    user: { id: 2, name: 'Anna Kowalska', imageUrl: '...', commonFriends: 0, isFriend: true }, // Simplified for tag
+                  },
+                ]
+          },
+        ]
+    },
+    context: { privacy: 'friends' },
+    stats: { comments: 3, shares: 1 },
+    reactions: generateRandomReactions(),
+    comments: [],
   },
-  // Post z 2 zdjęciami
   {
     id: '2',
     content: 'Weekendowy wypad z rodziną 👨‍👩‍👧‍👦',
-    images: [
-      { src: 'https://picsum.photos/800/600?random=2', altText: 'Family weekend trip' },
-      { src: 'https://picsum.photos/800/600?random=3', altText: 'Family weekend trip' },
-    ],
-    authorName: 'Jan Nowak',
-    authorAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    authorId: 3,
+    authorId: 3, // Jan Nowak
     date: '15 grudnia',
-    likesCount: 56,
-    commentsCount: 8,
-    sharesCount: 2,
-    isLiked: false,
-    reactionCount: 56,
-    commentCount: 8,
-    comments: [],
     timestamp: Date.now(),
+    media: {
+        images: [
+            { src: 'https://picsum.photos/800/600?random=2', altText: 'Family weekend trip' },
+            { src: 'https://picsum.photos/800/600?random=3', altText: 'Family weekend trip' },
+        ]
+    },
+    context: { privacy: 'friends' },
+    stats: { comments: 8, shares: 2 },
+    reactions: generateRandomReactions(),
+    comments: [],
   },
-  // Post z 3 zdjęciami
   {
     id: '3',
     content: 'Nowa kolekcja zdjęć z podróży ✈️',
-    images: [
-      { src: 'https://picsum.photos/800/800?random=4', altText: 'Travel photo' },
-      { src: 'https://picsum.photos/800/600?random=5', altText: 'Travel photo' },
-      { src: 'https://picsum.photos/800/600?random=6', altText: 'Travel photo' },
-    ],
-    authorName: 'Jan Nowak',
-    authorAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    authorId: 3,
+    authorId: 3, // Jan Nowak
     date: '15 grudnia',
-    likesCount: 112,
-    commentsCount: 15,
-    sharesCount: 5,
-    isLiked: false,
-    reactionCount: 112,
-    commentCount: 15,
-    comments: [],
     timestamp: Date.now(),
+    media: {
+        images: [
+            { src: 'https://picsum.photos/800/800?random=4', altText: 'Travel photo' },
+            { src: 'https://picsum.photos/800/600?random=5', altText: 'Travel photo' },
+            { src: 'https://picsum.photos/800/600?random=6', altText: 'Travel photo' },
+        ]
+    },
+    context: { privacy: 'public' },
+    stats: { comments: 15, shares: 5 },
+    reactions: generateRandomReactions(),
+    comments: [],
   },
-  // Post z 4 zdjęciami
   {
     id: '4',
     content: 'Cztery pory roku w jednym poście 🍂🌸☀️❄️',
-    images: [
-      { src: 'https://picsum.photos/800/600?random=7', altText: 'Four seasons in one post' },
-      { src: 'https://picsum.photos/800/600?random=8', altText: 'Four seasons in one post' },
-      { src: 'https://picsum.photos/800/600?random=9', altText: 'Four seasons in one post' },
-      { src: 'https://picsum.photos/800/600?random=10', altText: 'Four seasons in one post' },
-    ],
-    authorName: 'Katarzyna Wiśniewska',
-    authorAvatar: 'https://randomuser.me/api/portraits/women/28.jpg',
-    authorId: 4,
+    authorId: 4, // Katarzyna Wiśniewska
     date: '14 grudnia',
-    likesCount: 89,
-    commentsCount: 12,
-    sharesCount: 3,
-    isLiked: false,
-    reactionCount: 89,
-    commentCount: 12,
-    comments: [],
     timestamp: Date.now(),
+    media: {
+        images: [
+            { src: 'https://picsum.photos/800/600?random=7', altText: 'Four seasons in one post' },
+            { src: 'https://picsum.photos/800/600?random=8', altText: 'Four seasons in one post' },
+            { src: 'https://picsum.photos/800/600?random=9', altText: 'Four seasons in one post' },
+            { src: 'https://picsum.photos/800/600?random=10', altText: 'Four seasons in one post' },
+        ]
+    },
+    context: { privacy: 'public' },
+    stats: { comments: 12, shares: 3 },
+    reactions: generateRandomReactions(),
+    comments: [],
   },
-  // Post z 5 zdjęciami
   {
     id: '5',
     content: 'Album z imprezy urodzinowej 🎂🎉',
-    images: [
-      { src: 'https://picsum.photos/800/600?random=11', altText: 'Birthday party album' },
-      { src: 'https://picsum.photos/800/600?random=12', altText: 'Birthday party album' },
-      { src: 'https://picsum.photos/800/600?random=13', altText: 'Birthday party album' },
-      { src: 'https://picsum.photos/800/600?random=14', altText: 'Birthday party album' },
-      { src: 'https://picsum.photos/800/600?random=15', altText: 'Birthday party album' },
-    ],
-    authorName: 'Piotr Kowalczyk',
-    authorAvatar: 'https://randomuser.me/api/portraits/men/45.jpg',
-    authorId: 5,
+    authorId: 5, // Piotr Kowalczyk
     date: '13 grudnia',
-    likesCount: 234,
-    commentsCount: 45,
-    sharesCount: 12,
-    isLiked: false,
-    reactionCount: 234,
-    commentCount: 45,
-    comments: [],
     timestamp: Date.now(),
+    media: {
+        images: [
+            { src: 'https://picsum.photos/800/600?random=11', altText: 'Birthday party album' },
+            { src: 'https://picsum.photos/800/600?random=12', altText: 'Birthday party album' },
+            { src: 'https://picsum.photos/800/600?random=13', altText: 'Birthday party album' },
+            { src: 'https://picsum.photos/800/600?random=14', altText: 'Birthday party album' },
+            { src: 'https://picsum.photos/800/600?random=15', altText: 'Birthday party album' },
+        ]
+    },
+    context: { privacy: 'friends' },
+    stats: { comments: 45, shares: 12 },
+    reactions: generateRandomReactions(),
+    comments: [],
   },
-  // Post z 7 zdjęciami (więcej niż 5)
   {
     id: '6',
     content: 'Cały album z wakacji w Grecji 🇬🇷🏖️',
-    images: [
-      { src: 'https://picsum.photos/800/600?random=16', altText: 'Greece vacation album' },
-      { src: 'https://picsum.photos/800/600?random=17', altText: 'Greece vacation album' },
-      { src: 'https://picsum.photos/800/600?random=18', altText: 'Greece vacation album' },
-      { src: 'https://picsum.photos/800/600?random=19', altText: 'Greece vacation album' },
-      { src: 'https://picsum.photos/800/600?random=20', altText: 'Greece vacation album' },
-      { src: 'https://picsum.photos/800/600?random=21', altText: 'Greece vacation album' },
-      { src: 'https://picsum.photos/800/600?random=22', altText: 'Greece vacation album' },
-    ],
-    authorName: 'Maria Lewandowska',
-    authorAvatar: 'https://randomuser.me/api/portraits/women/65.jpg',
-    authorId: 6,
+    authorId: 6, // Maria Lewandowska
     date: '12 grudnia',
-    likesCount: 567,
-    commentsCount: 89,
-    sharesCount: 34,
-    isLiked: false,
-    reactionCount: 567,
-    commentCount: 89,
-    comments: [],
     timestamp: Date.now(),
+    media: {
+        images: [
+          { src: 'https://picsum.photos/800/600?random=16', altText: 'Greece vacation album' },
+          { src: 'https://picsum.photos/800/600?random=17', altText: 'Greece vacation album' },
+          { src: 'https://picsum.photos/800/600?random=18', altText: 'Greece vacation album' },
+          { src: 'https://picsum.photos/800/600?random=19', altText: 'Greece vacation album' },
+          { src: 'https://picsum.photos/800/600?random=20', altText: 'Greece vacation album' },
+          { src: 'https://picsum.photos/800/600?random=21', altText: 'Greece vacation album' },
+          { src: 'https://picsum.photos/800/600?random=22', altText: 'Greece vacation album' },
+        ]
+    },
+    context: { privacy: 'public' },
+    stats: { comments: 89, shares: 34 },
+    reactions: generateRandomReactions(),
+    comments: [],
   },
-  // Post z 10 zdjęciami
   {
     id: '7',
     content: 'Mega album - 10 najlepszych zdjęć tego roku! 📸',
-    images: [
-      { src: 'https://picsum.photos/800/600?random=23', altText: 'Top 10 photos of the year' },
-      { src: 'https://picsum.photos/800/600?random=24', altText: 'Top 10 photos of the year' },
-      { src: 'https://picsum.photos/800/600?random=25', altText: 'Top 10 photos of the year' },
-      { src: 'https://picsum.photos/800/600?random=26', altText: 'Top 10 photos of the year' },
-      { src: 'https://picsum.photos/800/600?random=27', altText: 'Top 10 photos of the year' },
-      { src: 'https://picsum.photos/800/600?random=28', altText: 'Top 10 photos of the year' },
-      { src: 'https://picsum.photos/800/600?random=29', altText: 'Top 10 photos of the year' },
-      { src: 'https://picsum.photos/800/600?random=30', altText: 'Top 10 photos of the year' },
-      { src: 'https://picsum.photos/800/600?random=31', altText: 'Top 10 photos of the year' },
-      { src: 'https://picsum.photos/800/600?random=32', altText: 'Top 10 photos of the year' },
-    ],
-    authorName: 'Tomasz Zieliński',
-    authorAvatar: 'https://randomuser.me/api/portraits/men/67.jpg',
-    authorId: 7,
+    authorId: 7, // Tomasz Zieliński
     date: '10 grudnia',
-    likesCount: 1234,
-    commentsCount: 156,
-    sharesCount: 78,
-    isLiked: false,
-    reactionCount: 1234,
-    commentCount: 156,
-    comments: [],
     timestamp: Date.now(),
+    media: {
+        images: Array.from({length: 10}, (_, i) => ({ src: `https://picsum.photos/800/600?random=${23+i}`, altText: 'Top photo' }))
+    },
+    context: { privacy: 'public' },
+    stats: { comments: 156, shares: 78 },
+    reactions: generateRandomReactions(),
+    comments: [],
   },
-  // Post z 1 zdjęciem (dla porównania)
   {
     id: '8',
     content: 'Kolejne piękne ujęcie 📷',
-    images: [{ src: 'https://picsum.photos/800/600?random=33', altText: 'Another beautiful shot' }],
-    authorName: 'Ewa Kamińska',
-    authorAvatar: 'https://randomuser.me/api/portraits/women/33.jpg',
-    authorId: 8,
+    authorId: 8, // Ewa Kamińska
     date: '9 grudnia',
-    likesCount: 45,
-    commentsCount: 6,
-    sharesCount: 1,
-    isLiked: false,
-    reactionCount: 45,
-    commentCount: 6,
-    comments: [],
     timestamp: Date.now(),
+    media: {
+        images: [{ src: 'https://picsum.photos/800/600?random=33', altText: 'Another beautiful shot' }]
+    },
+    context: { privacy: 'friends' },
+    stats: { comments: 6, shares: 1 },
+    reactions: generateRandomReactions(),
+    comments: [],
   },
-  // Post z 2 zdjęciami
   {
     id: '9',
     content: 'Przed i po remoncie 🏠',
-    images: [
-      { src: 'https://picsum.photos/800/600?random=34', altText: 'Before and after renovation' },
-      { src: 'https://picsum.photos/800/600?random=35', altText: 'Before and after renovation' },
-    ],
-    authorName: 'Michał Wójcik',
-    authorAvatar: 'https://randomuser.me/api/portraits/men/52.jpg',
-    authorId: 9,
+    authorId: 9, // Michał Wójcik
     date: '8 grudnia',
-    likesCount: 78,
-    commentsCount: 23,
-    sharesCount: 4,
-    isLiked: false,
-    reactionCount: 78,
-    commentCount: 23,
-    comments: [],
     timestamp: Date.now(),
+    media: {
+        images: [
+            { src: 'https://picsum.photos/800/600?random=34', altText: 'Before' },
+            { src: 'https://picsum.photos/800/600?random=35', altText: 'After' },
+        ]
+    },
+    context: { privacy: 'friends' },
+    stats: { comments: 23, shares: 4 },
+    reactions: generateRandomReactions(),
+    comments: [],
   },
-  // Post z 3 zdjęciami
   {
     id: '10',
     content: 'Trzy wspaniałe momenty 💫',
-    images: [
-      { src: 'https://picsum.photos/800/800?random=36', altText: 'Three wonderful moments' },
-      { src: 'https://picsum.photos/800/600?random=37', altText: 'Three wonderful moments' },
-      { src: 'https://picsum.photos/800/600?random=38', altText: 'Three wonderful moments' },
-    ],
-    authorName: 'Aleksandra Dąbrowska',
-    authorAvatar: 'https://randomuser.me/api/portraits/women/55.jpg',
-    authorId: 10,
+    authorId: 10, // Aleksandra Dąbrowska
     date: '7 grudnia',
-    likesCount: 167,
-    commentsCount: 34,
-    sharesCount: 9,
-    isLiked: false,
-    reactionCount: 167,
-    commentCount: 34,
-    comments: [],
     timestamp: Date.now(),
+    media: {
+        images: [
+            { src: 'https://picsum.photos/800/800?random=36', altText: 'Moment 1' },
+            { src: 'https://picsum.photos/800/600?random=37', altText: 'Moment 2' },
+            { src: 'https://picsum.photos/800/600?random=38', altText: 'Moment 3' },
+        ]
+    },
+    context: { privacy: 'friends' },
+    stats: { comments: 34, shares: 9 },
+    reactions: generateRandomReactions(),
+    comments: [],
   },
 ]
 
@@ -348,8 +322,8 @@ export const getPostImage = (
   imageIndex: number,
 ): string | undefined => {
   const post = getPostById(postId)
-  if (post && post.images[imageIndex]) {
-    return post.images[imageIndex].src
+  if (post && post.media.images && post.media.images[imageIndex]) {
+    return post.media.images[imageIndex].src
   }
   return undefined
 }

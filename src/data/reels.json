@@ -9,12 +9,7 @@
     "caption": "Cieszę się, że jestem jedną z nich",
     "hashtags": "#dc #siłownia #treningnasiłowni #trenerpersonalny #fyp #ćwiczenia",
     "music": "RAYE - WHERE IS MY HUSBAND!",
-    "user": {
-      "id": "user-2",
-      "name": "Paulina Banaszek",
-      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
-      "isFollowing": false
-    },
+    "authorId": 2,
     "isLiked": false
   },
   {
@@ -27,12 +22,7 @@
     "caption": "Nowy trening na dziś! 💪",
     "hashtags": "#fitness #workout #gym #motivation",
     "music": "Eye of the Tiger - Survivor",
-    "user": {
-      "id": "user-3",
-      "name": "Fitness Master",
-      "avatar": "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
-      "isFollowing": true
-    },
+    "authorId": 3,
     "isLiked": true
   },
   {
@@ -45,12 +35,7 @@
     "caption": "Wieczorny spacer z widokiem 🌅",
     "hashtags": "#nature #sunset #relax #weekend",
     "music": "Sunset Lover - Petit Biscuit",
-    "user": {
-      "id": "user-4",
-      "name": "Travel Diary",
-      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
-      "isFollowing": false
-    },
+    "authorId": 4,
     "isLiked": false
   },
   {
@@ -63,12 +48,7 @@
     "caption": "Przepis na idealne śniadanie 🍳",
     "hashtags": "#food #cooking #breakfast #recipe",
     "music": "Good Morning - Kanye West",
-    "user": {
-      "id": "user-5",
-      "name": "Chef Anna",
-      "avatar": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
-      "isFollowing": true
-    },
+    "authorId": 5,
     "isLiked": false
   }
 ]

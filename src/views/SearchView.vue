@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { usePostsStore } from '@/stores/posts';
+import { getUserById } from '@/data/users';
 
 // Import components
 import PostItem from '@/components/feed/post/PostItem.vue';
@@ -82,10 +83,11 @@ const filteredPosts = computed(() => {
   const allPosts = postsStore?.posts || [];
   if (!searchQuery.value.trim()) return allPosts;
   const query = searchQuery.value.toLowerCase();
-  return allPosts.filter((post: Post) =>
-    post.authorName.toLowerCase().includes(query) ||
-    post.content.toLowerCase().includes(query)
-  );
+  return allPosts.filter((post: Post) => {
+    const authorName = getUserById(post.authorId)?.name || '';
+    return authorName.toLowerCase().includes(query) ||
+           post.content.toLowerCase().includes(query);
+  });
 });
 </script>
 

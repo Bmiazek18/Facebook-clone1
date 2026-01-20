@@ -7,6 +7,7 @@ import type { UserStories, StoryItem } from '@/types/Story';
 // --- IMPORT IKON ---
 import ChevronLeft from 'vue-material-design-icons/ChevronLeft.vue';
 import ChevronRight from 'vue-material-design-icons/ChevronRight.vue';
+import ChevronUp from 'vue-material-design-icons/ChevronUp.vue';
 import Close from 'vue-material-design-icons/Close.vue';
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
 import VolumeHigh from 'vue-material-design-icons/VolumeHigh.vue';
@@ -23,6 +24,7 @@ import Heart from 'vue-material-design-icons/Heart.vue';
 import NavbarRight from '@/layouts/Navbar/NavbarRight.vue';
 import { useI18n } from 'vue-i18n';
 import ActiveStoriesList from '@/components/stories/ActiveStoriesList.vue';
+import { getUserById } from '@/data/users';
 
 
 const { t } = useI18n();
@@ -65,6 +67,16 @@ const isPaused = ref(false);
 const isMuted = ref(true);
 const progress = ref(0);
 const messageInput = ref('');
+const showViewers = ref(false);
+
+const isOwner = computed(() => {
+    return storiesStore.currentUserId === currentUserStories.value?.userId;
+});
+
+const viewersList = computed(() => {
+    if (!currentStoryItem.value?.viewers) return [];
+    return currentStoryItem.value.viewers.map(id => getUserById(Number(id))).filter(u => u !== undefined);
+});
 
 // Timer for images (10 seconds)
 const IMAGE_DURATION = 10000; // 10 seconds in milliseconds
@@ -524,7 +536,18 @@ console.log(currentItem.value.src)
 
 
         </div>
-<div class="shrink-0 w-full md:w-[650px] flex items-end justify-between gap-3 pt-4 pb-2 z-30">
+<div class="shrink-0 w-full md:w-[650px] flex flex-col items-center justify-end gap-3 pt-4 pb-2 z-30">
+        <template v-if="isOwner">
+            <div 
+                @click="showViewers = true; isPaused = true" 
+                class="flex flex-col items-center justify-center cursor-pointer text-white animate-bounce hover:opacity-80 transition"
+            >
+                <ChevronUp :size="32" />
+                <span class="text-sm font-medium">{{ viewersList.length }} {{ t('createLive.viewers') }}</span>
+            </div>
+        </template>
+        <template v-else>
+            <div class="w-full flex items-end justify-between gap-3">
                 <div class="relative flex-1 h-[44px]">
                    <input v-model="messageInput" type="text" :placeholder="t('story.sendMessage')" class="w-full h-full bg-black border-[2px] border-white rounded-full px-6 text-white placeholder-gray-300 focus:outline-none focus:border-gray-200 transition text-[16px] font-normal tracking-wide"/>
                 </div>
@@ -537,6 +560,32 @@ console.log(currentItem.value.src)
                     </div>
                 </div>
             </div>
+        </template>
+</div>
+
+        <!-- Viewers List Overlay -->
+        <div v-if="showViewers" class="absolute inset-0 z-50 flex flex-col items-center justify-end bg-black/60 backdrop-blur-sm" @click.self="showViewers = false; isPaused = false">
+             <div class="bg-white dark:bg-[#242526] w-full md:w-[400px] rounded-t-xl h-[60vh] flex flex-col shadow-2xl animate-slide-up">
+                 <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                     <h3 class="font-bold text-lg dark:text-white">{{ t('createLive.viewers') }}</h3>
+                     <button @click="showViewers = false; isPaused = false" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                         <Close :size="24" class="dark:text-white" />
+                     </button>
+                 </div>
+                 <div class="flex-1 overflow-y-auto p-2">
+                     <div v-if="viewersList.length === 0" class="flex flex-col items-center justify-center h-full text-gray-500">
+                         <p>{{ t('search.noResults') }}</p> <!-- Using existing key for 'No X' or just generic empty -->
+                     </div>
+                     <div v-else class="flex flex-col gap-2">
+                         <div v-for="viewer in viewersList" :key="viewer?.id" class="flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg cursor-pointer">
+                             <img :src="viewer?.avatar" class="w-10 h-10 rounded-full object-cover" />
+                             <span class="font-medium dark:text-white">{{ viewer?.name }}</span>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+        </div>
+
         <button @click="nextStory" v-if="currentStoryIndex < storyItems.length - 1 || currentUserIndex < allUserStories.length - 1" class="absolute right-4 lg:right-24 z-20 w-12 h-12 bg-gray-700/50 hover:bg-gray-600 rounded-full flex items-center justify-center text-white transition"><ChevronRight :size="32" /></button>
       </div>
     </main>
@@ -549,4 +598,11 @@ console.log(currentItem.value.src)
 .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #bcc0c4; border-radius: 4px; }
 .custom-scrollbar:hover::-webkit-scrollbar-thumb { background-color: #a0a4a8; }
 
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
 </style>

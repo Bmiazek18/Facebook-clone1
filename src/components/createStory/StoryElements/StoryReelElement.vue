@@ -1,10 +1,19 @@
 <script setup lang="ts">
 import Play from 'vue-material-design-icons/Play.vue'
 import type { StoryElement } from '@/types/StoryElement'
+import { computed } from 'vue';
+import { getUserById } from '@/data/users';
 
-defineProps<{
+const props = defineProps<{
   element: StoryElement
 }>()
+
+const author = computed(() => {
+    if (props.element.type === 'reel' && props.element.reelData) {
+        return getUserById(props.element.reelData.authorId);
+    }
+    return null;
+});
 </script>
 
 <template>
@@ -42,8 +51,8 @@ defineProps<{
     <!-- Reel Info -->
     <div class="p-2 bg-linear-to-t from-black/80 to-transparent absolute bottom-0 left-0 right-0">
       <div class="flex items-center gap-2">
-        <img :src="element.reelData.authorAvatar" class="w-6 h-6 rounded-full object-cover border border-white/30" />
-        <span class="text-white text-xs font-medium truncate">{{ element.reelData.authorName }}</span>
+        <img :src="author?.avatar" class="w-6 h-6 rounded-full object-cover border border-white/30" />
+        <span class="text-white text-xs font-medium truncate">{{ author?.name }}</span>
       </div>
       <p v-if="element.reelData.caption" class="text-white/80 text-xs mt-1 line-clamp-2">
         {{ element.reelData.caption }}

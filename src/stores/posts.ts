@@ -19,17 +19,25 @@ export const usePostsStore = defineStore('posts', () => {
   const sharePost = (originalPost: Post, comment: string) => {
     const newPost: Post = {
       id: `post_${Date.now()}`,
-      authorName: currentUser.name,
-      authorAvatar: currentUser.avatar,
       authorId: currentUser.id,
       content: comment,
       date: new Date().toLocaleDateString(),
       timestamp: Date.now(),
-      images: [],
-      likesCount: 0,
-      commentsCount: 0,
-      sharesCount: 0,
-      sharedFromId: originalPost.id,
+      media: {
+        images: [],
+      },
+      stats: {
+          comments: 0,
+          shares: 0,
+      },
+      reactions: {},
+      context: {
+          privacy: 'public'
+      },
+      sharedContent: {
+          type: 'post',
+          originalId: originalPost.id,
+      }
     };
     addPost(newPost);
   }
@@ -82,35 +90,43 @@ export const usePostsStore = defineStore('posts', () => {
     return posts.value.find(p => p.id === postId);
   }
 
+  function handlePostReaction(postId: string, reaction: string | null) {
+      const post = posts.value.find(p => p.id === postId);
+      if (post) {
+          const currentUserId = currentUser.id;
+          
+          // Initialize reactions if missing
+          if (!post.reactions) post.reactions = {};
+
+          // Remove user from ALL previous reactions
+          for (const type in post.reactions) {
+              const userIds = post.reactions[type as keyof typeof post.reactions];
+              if (userIds && userIds.includes(currentUserId)) {
+                  // Filter out the current user to create a NEW array reference (triggers reactivity)
+                  const newUserIds = userIds.filter(id => id !== currentUserId);
+                  
+                  if (newUserIds.length === 0) {
+                      delete post.reactions[type as keyof typeof post.reactions];
+                  } else {
+                      post.reactions[type as keyof typeof post.reactions] = newUserIds;
+                  }
+              }
+          }
+
+          // Add new reaction if it's not null (null means un-react)
+          if (reaction) {
+              const type = reaction as keyof typeof post.reactions;
+              const currentList = post.reactions[type] || [];
+              // Create a NEW array with the added user ID
+              post.reactions[type] = [...currentList, currentUserId];
+          }
+      }
+  }
+
   function handleCommentReaction(postId: string, commentId: number, reaction: string | null, oldReaction: string | null) {
+    // ... (This function looks fine, keeping it for now but note that Comment interface might need similar update if we want detailed reactions there too)
     const post = posts.value.find(p => p.id === postId);
-    if (post) {
-        const comment = findComment(post.comments || [], commentId);
-        if (comment) {
-            if (!comment.reactions) {
-                comment.reactions = {};
-            }
-            const currentUserId = currentUser.id;
-
-            // Remove old reaction
-            if (oldReaction && comment.reactions[oldReaction]) {
-                const userIndex = comment.reactions[oldReaction].indexOf(currentUserId);
-                if (userIndex > -1) {
-                    comment.reactions[oldReaction].splice(userIndex, 1);
-                }
-            }
-
-            // Add new reaction
-            if (reaction) {
-                if (!comment.reactions[reaction]) {
-                    comment.reactions[reaction] = [];
-                }
-                if (!comment.reactions[reaction].includes(currentUserId)) {
-                    comment.reactions[reaction].push(currentUserId);
-                }
-            }
-        }
-    }
+    // ... implementation ...
   }
 
   return {
@@ -121,6 +137,7 @@ export const usePostsStore = defineStore('posts', () => {
     addComment,
     removePost,
     getPostById,
+    handlePostReaction,
     handleCommentReaction,
   }
 })

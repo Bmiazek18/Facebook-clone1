@@ -14,6 +14,7 @@ import AccountStarIcon from 'vue-material-design-icons/AccountStar.vue'
 import { Dropdown as VDropdown } from 'floating-vue';
 import 'floating-vue/dist/style.css';
 import PostSettingPopper from './PostSettingPopper.vue';
+import { getUserById } from '@/data/users';
 
 const props = defineProps<{
   post: Post
@@ -31,11 +32,18 @@ const _emit = defineEmits<{
 const { isDark } = useTheme()
 const router = useRouter()
 
+const author = computed(() => getUserById(props.post.authorId));
+
 const handleAvatarClick = () => {
   if (props.post.authorId) {
     router.push({ name: 'userProfile', params: { userId: props.post.authorId } })
   }
 }
+
+const taggedUsers = computed(() => {
+    if (!props.post.context.taggedUsersIds) return [];
+    return props.post.context.taggedUsersIds.map(id => getUserById(id)).filter(u => u !== undefined);
+});
 
 const privacyInfo = computed(() => {
   type Info = { label: string; icon: DefineComponent | null };
@@ -46,8 +54,9 @@ const privacyInfo = computed(() => {
     friends_except: { label: 'Znajomi z wyjątkiem...', icon: AccountMultipleMinusIcon },
     specific_friends: { label: 'Konkretni znajomi', icon: AccountStarIcon },
   };
-  if (!props.post.privacy) return { label: 'Publiczne', icon: EarthIcon };
-  return map[props.post.privacy] || { label: props.post.privacy, icon: null };
+  const privacy = props.post.context.privacy;
+  if (!privacy) return { label: 'Publiczne', icon: EarthIcon };
+  return map[privacy] || { label: privacy, icon: null };
 });
 </script>
 
@@ -57,32 +66,32 @@ const privacyInfo = computed(() => {
       <button @click="handleAvatarClick" class="mr-2.5 rounded-full hover:opacity-80 transition-opacity">
         <img
           class="rounded-full w-10 h-10 object-cover cursor-pointer"
-          :src="post.authorAvatar"
-          :alt="post.authorName"
+          :src="author?.avatar"
+          :alt="author?.name"
         >
       </button>
 
       <div class="flex-1 min-w-0 mt-0.5">
         <div class="text-theme-text text-[15px] flex leading-tight">
-          <ProfilePopper :name="post.authorName" :user-id="post.authorId" class="font-semibold hover:underline cursor-pointer" />
-          <template v-if="post.taggedUsers && post.taggedUsers.length">
+          <ProfilePopper :name="author?.name || 'Unknown'" :user-id="post.authorId" class="font-semibold hover:underline cursor-pointer" />
+          <template v-if="taggedUsers && taggedUsers.length">
             <span class="font-normal text-gray-600"> z: </span>
-            <template v-for="(user, idx) in post.taggedUsers" :key="user.id">
+            <template v-for="(user, idx) in taggedUsers" :key="user.id">
               <span v-if="idx > 0">, </span>
               <ProfilePopper :name="user.name" :user-id="user.id" class="font-semibold hover:underline cursor-pointer" />
             </template>
           </template>
-          <template v-if="post.feeling">
-            <span class="font-normal text-gray-600 ml-1"> — czuje się <span class="font-semibold">{{ post.feeling.label }}</span> {{ post.feeling.emoji }}</span>
+          <template v-if="post.context.feeling">
+            <span class="font-normal text-gray-600 ml-1"> — czuje się <span class="font-semibold">{{ post.context.feeling.label }}</span> {{ post.context.feeling.emoji }}</span>
           </template>
-          <template v-if="post.activity">
-            <span class="font-normal text-gray-600 ml-1"> — {{ post.activity.parent.slice(0, -3) }} <span class="font-semibold">{{ post.activity.item.label }}</span></span>
+          <template v-if="post.context.activity">
+            <span class="font-normal text-gray-600 ml-1"> — {{ post.context.activity.parent.slice(0, -3) }} <span class="font-semibold">{{ post.context.activity.item.label }}</span></span>
           </template>
-          <template v-if="post.location">
+          <template v-if="post.context.location">
             <span class="font-normal text-gray-600"> jest w: </span>
-            <span class="font-semibold">{{ post.location.title }}</span>
+            <span class="font-semibold">{{ post.context.location.title }}</span>
           </template>
-          <template v-if="post.createdEvent">
+          <template v-if="post.context.createdEvent">
             <span class="font-normal text-gray-600 ml-1">Dodał(a) nowe wydarzenie</span>
           </template>
         </div>

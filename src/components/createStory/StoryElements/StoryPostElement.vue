@@ -15,9 +15,9 @@ defineProps<{
   >
     <!-- Post Header -->
     <div class="p-3 flex items-center gap-2">
-      <img :src="element.postData.authorAvatar" class="w-8 h-8 rounded-full object-cover" />
+      <img :src="element.postData.author.avatar" class="w-8 h-8 rounded-full object-cover" />
       <div class="flex-1 min-w-0">
-        <p class="text-sm font-semibold text-gray-900 truncate">{{ element.postData.authorName }}</p>
+        <p class="text-sm font-semibold text-gray-900 truncate">{{ element.postData.author.name }}</p>
         <div class="flex items-center gap-1 text-xs text-gray-500">
           <Earth :size="10" />
           <span>Publiczny</span>

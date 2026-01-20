@@ -1,5 +1,6 @@
-import type { User } from '@/data/users';
+import type { Component } from 'vue';
 import type { ImageTagType } from './ImageTag';
+
 export interface PostLocation {
   title: string;
   subtitle: string;
@@ -12,47 +13,38 @@ export interface PostLocation {
 export interface Comment {
   id: number;
   authorId: number;
-  authorName: string;
-  authorAvatar: string;
   content: string;
   date: string;
   likesCount: number;
-  reactions?: { [key: string]: number[] };
-  isLiked?: boolean;
-  userReaction?: string;
+  // Nested replies structure remains specific to comments
+  replies?: Comment[];
   image?: string;
   gif?: string;
-  replies?: Comment[];
+  userReaction?: string;
+  reactions?: Partial<Record<ReactionType, number[]>>;
 }
 
-export interface Post {
-  id: string
-  content: string
-  images: {
-    src: string
-    altText?: string
-    tags?: ImageTagType[]
-  }[]
-  imageUrl?: string;
-  videoUrl?: string
-  authorName: string
-  authorAvatar: string
-  authorId: number
-  date: string
-  likesCount: number
-  commentsCount: number
-  sharesCount: number
-  taggedUsers?: User[]
-  location?: PostLocation
-  gif?: string
-  isLiked?: boolean
-  likedType?: 'super' | 'like' | null
-  reactionCount?: number
-  commentCount?: number
-  comments?: Comment[]
-  selectedCardBgId?: number;
-  privacy?: string;
-  timestamp: number;
+export interface PostStats {
+  comments: number;
+  shares: number;
+}
+
+// Grouping all media assets
+export interface PostMedia {
+  images?: {
+    src: string;
+    altText?: string;
+    tags?: ImageTagType[];
+  }[];
+  videoUrl?: string;
+  gif?: string;
+}
+
+
+export interface PostContext {
+  taggedUsersIds?: number[]; // Changed to IDs
+  location?: PostLocation;
+  privacy: string;
   feeling?: {
     emoji: string;
     label: string;
@@ -61,13 +53,35 @@ export interface Post {
     parent: string;
     item: {
       label: string;
-      icon: any;
+      icon: Component;
       color: string;
     }
   } | null;
-  sharedFromId?: string;
-  sharedReelId?: string;
-  sharedEventId?: string;
   createdEvent?: boolean;
+}
+
+export type SharedContentType = 'post' | 'reel' | 'event';
+
+export interface SharedContent {
+  type: SharedContentType;
+  originalId: string;
+
+}
+
+export type ReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry';
+
+export interface Post {
+  id: string;
+  authorId: number;
+  content: string;
+  date: string;
+  timestamp: number;
+  media: PostMedia;
+  context: PostContext;
+  reactions: Partial<Record<ReactionType, number[]>>;
+  stats: PostStats;
+  sharedContent?: SharedContent;
+  comments?: Comment[];
+  selectedCardBgId?: number;
   detectedLanguage?: string;
 }

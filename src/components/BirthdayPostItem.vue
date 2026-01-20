@@ -4,14 +4,14 @@
       <div class="flex items-center">
         <div class="relative">
              <img
-            :src="post.authorAvatar"
+            :src="author?.avatar"
             class="w-10 h-10 rounded-full object-cover border border-gray-200 cursor-pointer"
             />
             </div>
 
         <div class="ml-2.5">
           <div class="text-[15px] font-semibold text-[#050505] leading-tight flex flex-wrap items-center">
-            <span class="hover:underline cursor-pointer">{{ post.authorName }}</span>
+            <span class="hover:underline cursor-pointer">{{ author?.name }}</span>
             <span class="mx-1 text-gray-500 font-normal text-xs">▶</span>
             <span class="hover:underline cursor-pointer">Bartosz Miazek</span>
           </div>
@@ -103,11 +103,16 @@ import ShareOutlineIcon from 'vue-material-design-icons/ShareOutline.vue'; // Uw
 import CommentItem from '@/components/feed/CommentItem.vue';
 import type { Post } from '@/types/Post';
 import CommentReplyInput from '@/components/feed/CommentReplyInput.vue';
+import { computed } from 'vue';
+import { getUserById } from '@/data/users';
+
 const currentUserAvatar = "https://i.pravatar.cc/150?u=me";
 
-defineProps<{
+const props = defineProps<{
   post: Post;
 }>();
+
+const author = computed(() => getUserById(props.post.authorId));
 </script>
 
 <style scoped>

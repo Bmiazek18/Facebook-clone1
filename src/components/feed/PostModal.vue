@@ -9,10 +9,14 @@ import PostItem from './post/PostItem.vue'
 import type { Post } from '@/types/Post';
 import CommentReplyInput from '@/components/feed/CommentReplyInput.vue'
 import CommentFilter from '@/components/feed/CommentFilter.vue';
+import { getUserById } from '@/data/users';
+import { computed } from 'vue';
 
 const props = defineProps<{
     post: Post
 }>()
+
+const author = computed(() => getUserById(props.post.authorId));
 </script>
 
 <template>
@@ -27,7 +31,7 @@ const props = defineProps<{
                         v-for="comment in props.post.comments"
                         :key="comment.id"
                         :comment="comment"
-                        :postAvatarSrc="props.post.authorAvatar"
+                        :postAvatarSrc="author?.avatar"
                         :depth="0"
                         :postId="props.post.id"
                     />
@@ -38,7 +42,7 @@ const props = defineProps<{
 
         <div class="p-2 sm:p-3 md:p-4 border-t border-theme-border shrink-0 bg-white dark:bg-[#242526] z-10">
            <CommentReplyInput
-                :post-avatar-src="props.post.authorAvatar"
+                :post-avatar-src="author?.avatar"
                 placeholder="Napisz komentarz..."
                 :post-id="props.post.id"
             />
