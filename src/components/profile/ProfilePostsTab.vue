@@ -99,7 +99,7 @@ onUnmounted(() => {
         <div
             id="LeftSection"
             ref="leftSectionRef"
-            class="w-full md:w-5/12 mt-4 mr-4 sticky z-10"
+            class="w-full md:w-5/12 mt-4 mr-4 md:sticky md:z-10 self-start"
             :style="{ top: `${stickyTop}px` }"
         >
             <div class="bg-theme-bg-secondary p-3 rounded-lg shadow-lg">

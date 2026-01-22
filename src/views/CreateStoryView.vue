@@ -44,9 +44,10 @@
   // Go back to picker
   const onBack = () => {
     // Revoke blob URL if exists
-    if (selectedImage.value?.url.startsWith('blob:')) {
-      URL.revokeObjectURL(selectedImage.value.url);
-    }
+    // Responsibility for revoking moved to StoryImageEditor to avoid race condition
+    // if (selectedImage.value?.url.startsWith('blob:')) {
+    //   URL.revokeObjectURL(selectedImage.value.url);
+    // }
     selectedImage.value = null;
     initialPost.value = null;
     initialReel.value = null;

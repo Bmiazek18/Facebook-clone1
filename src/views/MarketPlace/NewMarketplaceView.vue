@@ -1,18 +1,13 @@
-<script setup>
+<script setup lang="ts">
 import { shallowRef, ref } from 'vue';
 import NewListingForm from '@/components/marketplace/NewListingForm.vue';
 
 
-// --- IMPORT IKON ---
-// Sidebar
-import CloseIcon from 'vue-material-design-icons/Close.vue';
+
 import TagIcon from 'vue-material-design-icons/Tag.vue';
 import FormatListBulletedIcon from 'vue-material-design-icons/FormatListBulleted.vue';
 import HelpCircleIcon from 'vue-material-design-icons/HelpCircle.vue';
-// Top Nav
-import AppsIcon from 'vue-material-design-icons/Apps.vue'; // Siatka menu
-import FacebookMessengerIcon from 'vue-material-design-icons/FacebookMessenger.vue';
-import BellIcon from 'vue-material-design-icons/Bell.vue';
+
 // Karty
 import KettleIcon from 'vue-material-design-icons/Kettle.vue'; // Przedmiot
 import CarSideIcon from 'vue-material-design-icons/CarSide.vue'; // Pojazd

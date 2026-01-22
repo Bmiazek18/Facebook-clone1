@@ -13,7 +13,7 @@ import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
 import Speedometer from 'vue-material-design-icons/Speedometer.vue';
 import CarShiftPattern from 'vue-material-design-icons/CarShiftPattern.vue'; // Jako skrzynia biegów
 import Palette from 'vue-material-design-icons/Palette.vue';
-import MultiMediaLightbox from '@/components/MessageBox/MediaLightbox.vue';
+import MultiMediaLightbox from '@/components/messenger/MessageBox/MediaLightbox.vue';
 import StoryShareModal from '@/components/stories/StoryShareModal.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import SellerModal from '@/components/marketplace/SellerModal.vue';

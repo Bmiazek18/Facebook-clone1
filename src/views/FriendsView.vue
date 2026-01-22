@@ -81,7 +81,7 @@ import AccountMultipleIcon from 'vue-material-design-icons/AccountMultiple.vue';
 import GiftIcon from 'vue-material-design-icons/Gift.vue';
 import FormatListBulletedIcon from 'vue-material-design-icons/FormatListBulleted.vue';
 import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
-import FriendCard from '../components/PeopleYouMayKnowCard.vue'
+import FriendCard from '../components/friends/PeopleYouMayKnowCard.vue'
 // --- Menu Data ---
 const menuItems = [
   { label: 'friends.friendRequests', icon: AccountPlusIcon },

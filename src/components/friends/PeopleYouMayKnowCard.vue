@@ -22,7 +22,7 @@
         {{ person.name }}
       </h3>
 
-      <div class="flex items-center text-[13px] text-[#65676b] mb-3 h-[20px]">
+      <div class="flex items-center text-[13px] text-[#65676b] mb-3">
         <div class="flex -space-x-1 mr-2" v-if="person.commonFriends > 0 && variant === 'request'">
            <div class="w-4 h-4 rounded-full bg-red-500 border border-white"></div>
            <div class="w-4 h-4 rounded-full bg-blue-500 border border-white"></div>
@@ -72,7 +72,7 @@
 <script setup lang="ts">
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 import AccountPlusIcon from 'vue-material-design-icons/AccountPlus.vue';
-import type { Person } from '../types/Person';
+import type { Person } from '@/types/Person';
 
 withDefaults(defineProps<{
   person: Person;
