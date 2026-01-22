@@ -5,7 +5,7 @@
   import OverviewSection from './info-tab/OverviewSection.vue'
   import WorkEducationSection from './info-tab/WorkEducationSection.vue'
   import PlacesSection from './info-tab/PlacesSection.vue'
-  import ContactBasicSection from './info-tab/ContactBasicSection.vue'
+  
   import FamilySection from './info-tab/FamilySection.vue'
   import DetailsSection from './info-tab/DetailsSection.vue'
   import EventsSection from './info-tab/EventsSection.vue'
@@ -90,7 +90,7 @@
                 <OverviewSection v-if="activeTab === 'overview'" :profile-user="profileUser" />
                 <WorkEducationSection v-else-if="activeTab === 'work_edu'" :profile-user="profileUser" />
                 <PlacesSection v-else-if="activeTab === 'places'" :profile-user="profileUser" />
-                <ContactBasicSection v-else-if="activeTab === 'contact_basic'" :profile-user="profileUser" />
+                <OverviewSection v-else-if="activeTab === 'contact_basic'" :profile-user="profileUser" />
                 <FamilySection v-else-if="activeTab === 'family'" :profile-user="profileUser" />
                 <DetailsSection v-else-if="activeTab === 'details'" :profile-user="profileUser" />
                 <EventsSection v-else-if="activeTab === 'events'" :profile-user="profileUser" />
