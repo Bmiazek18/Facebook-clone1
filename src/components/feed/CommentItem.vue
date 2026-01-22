@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import ThumbUp from 'vue-material-design-icons/ThumbUp.vue'
 import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
 import Heart from 'vue-material-design-icons/Heart.vue'
+import WebIcon from 'vue-material-design-icons/Web.vue'
 
 
 import CommentReplyInput from '@/components/feed/CommentReplyInput.vue'
@@ -207,6 +208,27 @@ v-if="showReplies || showReplyInput || hasReplies"
                         class="rounded-lg max-h-40 mt-1 cursor-pointer"
                         @click="viewCommentImage(props.comment.id, props.postId)"
                     />
+                </div>
+
+                <!-- Link Preview -->
+                <div v-if="props.comment.linkPreview && !(props.comment.image || props.comment.gif)" class="mt-1">
+                    <a :href="props.comment.linkPreview.url" target="_blank" class="block bg-white rounded-lg overflow-hidden border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer no-underline max-w-sm">
+                        <div v-if="props.comment.linkPreview.image" class="w-full h-32 overflow-hidden bg-gray-200 relative border-b border-gray-300">
+                            <img :src="props.comment.linkPreview.image" class="w-full h-full object-cover" alt="Link preview" />
+                        </div>
+                        <div class="p-2">
+                            <div class="text-[10px] text-gray-500 uppercase font-semibold mb-0.5 flex items-center truncate">
+                                <WebIcon :size="10" class="mr-1" v-if="!props.comment.linkPreview.image" />
+                                {{ props.comment.linkPreview.domain }}
+                            </div>
+                            <div class="font-bold text-gray-900 text-[13px] leading-snug mb-0.5 line-clamp-1">
+                                {{ props.comment.linkPreview.title }}
+                            </div>
+                            <div class="text-gray-600 text-[11px] leading-snug line-clamp-1">
+                                {{ props.comment.linkPreview.description }}
+                            </div>
+                        </div>
+                    </a>
                 </div>
 
                 <!-- Akcje komentarza -->

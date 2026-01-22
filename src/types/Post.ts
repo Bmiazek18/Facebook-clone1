@@ -10,6 +10,14 @@ export interface PostLocation {
   searchbox_id?: string;
 }
 
+export interface LinkPreviewData {
+  url: string;
+  title: string;
+  description: string;
+  image?: string;
+  domain: string;
+}
+
 export interface Comment {
   id: number;
   authorId: number;
@@ -22,6 +30,7 @@ export interface Comment {
   gif?: string;
   userReaction?: string;
   reactions?: Partial<Record<ReactionType, number[]>>;
+  linkPreview?: LinkPreviewData;
 }
 
 export interface PostStats {
