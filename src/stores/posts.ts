@@ -95,36 +95,43 @@ export const usePostsStore = defineStore('posts', () => {
       const post = posts.value.find(p => p.id === postId);
       if (post) {
           const currentUserId = currentUser.id;
-          
-          // Initialize reactions if missing
           if (!post.reactions) post.reactions = {};
 
-          // Remove user from ALL previous reactions
+    const newReactions: typeof post.reactions = {};
+    let userCurrentReactionType: ReactionType | null = null;
+
+    // First pass: Determine current user's reaction and populate newReactions without current user
           for (const type in post.reactions) {
-              const userIds = post.reactions[type as keyof typeof post.reactions];
-              if (userIds && userIds.includes(currentUserId)) {
-                  // Filter out the current user to create a NEW array reference (triggers reactivity)
-                  const newUserIds = userIds.filter(id => id !== currentUserId);
-                  
-                  if (newUserIds.length === 0) {
-                      delete post.reactions[type as keyof typeof post.reactions];
+        const userIds = post.reactions[type as keyof typeof post.reactions] || [];
+        if (userIds.includes(currentUserId)) {
+            userCurrentReactionType = type as ReactionType;
+            // Filter out current user for this reaction type
+            const filteredUserIds = userIds.filter(id => id !== currentUserId);
+            if (filteredUserIds.length > 0) {
+                newReactions[type as keyof typeof newReactions] = [...filteredUserIds];
+            }
                   } else {
-                      post.reactions[type as keyof typeof post.reactions] = newUserIds;
+            // Copy other reactions as is (ensuring new array reference)
+            if (userIds.length > 0) {
+                 newReactions[type as keyof typeof newReactions] = [...userIds];
                   }
               }
           }
 
-          // Add new reaction if it's not null (null means un-react)
-          if (reaction) {
-              const type = reaction as keyof typeof post.reactions;
-              const currentList = post.reactions[type] || [];
-              // Create a NEW array with the added user ID
-              post.reactions[type] = [...currentList, currentUserId];
-          }
+    // Second pass: Apply the new reaction logic
+    if (reaction && reaction !== userCurrentReactionType) { // User is adding a new reaction or changing it
+        const currentList = newReactions[reaction as keyof typeof newReactions] || [];
+        newReactions[reaction as keyof typeof newReactions] = [...currentList, currentUserId];
+    }
+    // If reaction is null OR reaction is the same as userCurrentReactionType,
+    // it means the user un-reacted (or clicked their current reaction to remove it).
+    // In this case, `newReactions` already has the user removed from all reactions, which is correct.
+
+    post.reactions = newReactions;
       }
   }
 
-  function handleCommentReaction(postId: string, commentId: number, reaction: string | null, oldReaction: string | null) {
+  function handleCommentReaction(postId: string, commentId: number, reaction: string | null) {
       const post = posts.value.find(p => p.id === postId);
       if (post && post.comments) {
           const comment = findComment(post.comments, commentId);
