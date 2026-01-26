@@ -4,13 +4,31 @@ import { ref, computed } from 'vue';
 
 const emit = defineEmits(['feeling-selected', 'back']);
 
+// --- TYPY DANYCH ---
+interface Feeling {
+  emoji: string;
+  label: string;
+}
+
+interface Activity {
+  id: string;
+  label: string;
+  emoji: string;
+  colorBg: string;
+}
+
+interface SubActivity {
+  label: string;
+  emoji: string;
+}
+
 // --- STAN ---
 const activeTab = ref('activities');
 const searchQuery = ref('');
-const selectedActivity = ref<any>(null);
+const selectedActivity = ref<Activity | null>(null);
 
 
-const feelings = [
+const feelings: Feeling[] = [
   { emoji: '🙂', label: 'szczęśliwy' },
   { emoji: '🥰', label: 'kochany' },
   { emoji: '🤩', label: 'rewelacyjnie' },
@@ -26,7 +44,7 @@ const feelings = [
 ];
 
 
-const activities = [
+const activities: Activity[] = [
   { id: 'celebrating', label: 'Świętuje...', emoji: '🎉', colorBg: 'bg-yellow-100' },
   { id: 'watching', label: 'Ogląda...', emoji: '📺', colorBg: 'bg-red-100' },
   { id: 'eating', label: 'Je...', emoji: '🍴', colorBg: 'bg-green-100' },
@@ -36,7 +54,7 @@ const activities = [
 ];
 
 
-const subCategories: Record<string, Array<{label: string, emoji: string}>> = {
+const subCategories: Record<string, SubActivity[]> = {
   celebrating: [
     { label: 'urodziny', emoji: '🎂' },
     { label: 'przyjaźń', emoji: '🤝' },
@@ -86,7 +104,7 @@ const subCategories: Record<string, Array<{label: string, emoji: string}>> = {
 
 // --- LOGIKA ---
 
-const handleActivityClick = (activity: any) => {
+const handleActivityClick = (activity: Activity) => {
   selectedActivity.value = activity;
   searchQuery.value = '';
 };
@@ -113,7 +131,7 @@ const currentActivityList = computed(() => {
   return activities.filter(a => a.label.toLowerCase().includes(query));
 });
 
-const selectFinalItem = (item: any) => {
+const selectFinalItem = (item: SubActivity) => {
     emit('feeling-selected', {
         type: 'activity',
         data: {
@@ -123,7 +141,7 @@ const selectFinalItem = (item: any) => {
     });
 };
 
-const selectFeeling = (feeling: any) => {
+const selectFeeling = (feeling: Feeling) => {
   emit('feeling-selected', {
     type: 'feeling',
     data: feeling

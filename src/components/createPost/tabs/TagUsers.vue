@@ -91,21 +91,21 @@ const confirmSelection = () => {
       </div>
 
       <div>
-        <h3 class="text-xs font-bold text-gray-500 tracking-wide mb-3 uppercase">Propozycje</h3>
+        <h3 class="text-xs font-bold text-theme-text-secondary tracking-wide mb-3 uppercase">Propozycje</h3>
         <div class="flex flex-col gap-1">
           <div
             v-for="user in filteredUsers"
             :key="user.id"
             @click="toggleUser(user)"
-            class="flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+            class="flex items-center p-2 rounded-lg cursor-pointer hover:bg-theme-hover transition-colors"
           >
             <div class="relative mr-3">
                <img :src="user.avatar" :alt="user.name" class="w-10 h-10 rounded-full object-cover border border-gray-100" />
             </div>
 
             <div class="flex-1 flex flex-col justify-center">
-              <span class="text-[15px] font-semibold text-black leading-tight">{{ user.name }}</span>
-              <span class="text-[13px] text-gray-500 leading-tight mt-0.5">Znajomy</span>
+              <span class="text-[15px] font-semibold text-theme-text leading-tight">{{ user.name }}</span>
+              <span class="text-[13px] text-gray-500 text-theme-text-secondary leading-tight mt-0.5">Znajomy</span>
             </div>
 
             <div v-if="isSelected(user)" class="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white">

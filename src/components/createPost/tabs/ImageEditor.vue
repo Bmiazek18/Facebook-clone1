@@ -9,8 +9,8 @@ import TagIcon from 'vue-material-design-icons/Tag.vue';
 import FormatLetterCaseIcon from 'vue-material-design-icons/FormatLetterCase.vue';
 import FileImageIcon from 'vue-material-design-icons/FileImage.vue';
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
-
-import { ref, reactive, onMounted, onUnmounted, computed, watchEffect, nextTick, watch } from 'vue';
+import {watchEffect} from 'vue'
+import { ref, reactive, onMounted, onUnmounted, computed, nextTick, watch } from 'vue';
 import VueCropper from 'vue-cropperjs';
 import 'cropperjs/dist/cropper.css';
 
@@ -22,6 +22,7 @@ import type { StoryElement as StoryElementType } from '@/types/StoryElement';
 import type { ImageTagType } from '@/types/ImageTag';
 
 import { useCreatePostStore } from '@/stores/createPost';
+import { storeToRefs } from 'pinia';
 
 // --- TYPY DANYCH ---
 type CropData = {
@@ -46,9 +47,7 @@ const userToPerson = (user: User): Person => ({
 });
 
 // --- PROPS ---
-const props = defineProps<{
-  initialImage?: string | null;
-}>();
+// Removed initialImage prop as it's now fetched from store
 
 const emit = defineEmits<{
   (e: 'done', editedImageUrl: string): void;
@@ -56,6 +55,7 @@ const emit = defineEmits<{
 
 // --- STATE ---
 const createPostStore = useCreatePostStore();
+const { imageToEdit } = storeToRefs(createPostStore); // Get imageToEdit from store
 const imageRotation = ref(0);
 const taggingMode = ref(false);
 const tags = ref<ImageTagType[]>(createPostStore.selectedImage?.tags || []);
@@ -82,13 +82,24 @@ const currentCropData = ref<CropData>({
   height: 0,
   rotate: 0
 });
-const imageUrl = ref(createPostStore.selectedImage?.url || props.initialImage);
-const altText = ref(createPostStore.selectedImage?.altText || '');
+const imageUrl = ref(imageToEdit.value?.url || ''); // Initialize from store
+const altText = ref(imageToEdit.value?.altText || ''); // Initialize from store
+watch(imageToEdit, (newImageToEdit) => {
+  imageUrl.value = newImageToEdit?.url || '';
+  altText.value = newImageToEdit?.altText || '';
+  if (cropperRef.value && imageUrl.value) {
+    cropperRef.value.replace(imageUrl.value);
+  }
+}, { immediate: true });
 watch(altText, (newAltText) => {
   if (createPostStore.selectedImage) {
     createPostStore.selectedImage.altText = newAltText;
-  } else {
-    createPostStore.setSelectedImage({ url: imageUrl.value || '', altText: newAltText, tags: [] });
+  } else if (imageToEdit.value) { // Update imageToEdit if selectedImage is not set
+    createPostStore.setImageToEdit({
+      url: imageToEdit.value.url,
+      altText: newAltText,
+      tags: imageToEdit.value.tags || []
+    });
   }
 });
 const showAltTextInput = ref(false);
@@ -287,8 +298,8 @@ const rotateImage = () => {
       const height = img.height;
 
       // Przy obrocie o 90/270 stopni zamieniamy szerokość z wysokością
-      let rotatedWidth = height;
-      let rotatedHeight = width;
+      const rotatedWidth = height;
+      const rotatedHeight = width;
 
       canvas.width = rotatedWidth;
       canvas.height = rotatedHeight;

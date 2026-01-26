@@ -137,7 +137,7 @@ const sharedPostAsPost = computed<Post | null>(() => {
 });
 
 // Wrapper for content input to handle link detection
-const onContentInput = (e: Event) => {
+const onContentInput = () => {
     baseOnContentInput(); // Handle content update and tagging
 
     // Link detection logic
@@ -201,7 +201,7 @@ const detectLanguage = async (text: string): Promise<string | null> => {
   }
 };
 
-const onBackspace = (e: KeyboardEvent) => { /* Opcjonalne */ };
+
 
 const selectUser = async (user: User) => {
   selectUserFromComposable(user);
@@ -335,7 +335,7 @@ const handlePublish = async () => {
         shares: 0,
     },
     reactions: {}, // Empty reactions map
-    date: new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long' }),
+    date: new Date().toISOString(),
     selectedCardBgId: selectedCardBgId.value,
     timestamp: Date.now(),
     detectedLanguage: detectedLanguage.value || undefined,
@@ -357,10 +357,10 @@ const handlePublish = async () => {
     <div class="flex items-center mb-4">
       <img :src="profilePicUrl" :alt="userName" class="w-10 h-10 rounded-full mr-3 object-cover" />
       <div class="flex flex-col">
-        <div class="text-[15px] leading-tight mb-1 text-gray-900">
+        <div class="text-[15px] leading-tight mb-1 text-theme-text">
           <span class="font-bold">{{ userName }}</span>
           <template v-if="taggedUsers && taggedUsers.length">
-            <span class="font-normal text-gray-600"> {{ t('post.with') }} </span>
+            <span class="font-normal text-theme-text-secondary"> {{ t('post.with') }} </span>
             <span class="font-bold">
               <template v-for="(user, idx) in taggedUsers" :key="user.id">
                 <span v-if="idx > 0">, </span>
@@ -369,19 +369,19 @@ const handlePublish = async () => {
             </span>
           </template>
           <template v-if="selectedFeeling">
-            <span class="font-normal text-gray-600"> {{ t('post.feelingWith') }} <button @click="emit('openFeelingSelector')" class="font-bold  hover:underline rounded-md px-1">{{ selectedFeeling.label }}</button> {{ selectedFeeling.emoji }}</span>
+            <span class="font-normal text-theme-text-secondary"> {{ t('post.feelingWith') }} <button @click="emit('openFeelingSelector')" class="font-bold  hover:underline rounded-md px-1">{{ selectedFeeling.label }}</button> {{ selectedFeeling.emoji }}</span>
           </template>
           <template v-if="selectedActivity">
-            <button @click="emit('openFeelingSelector')" class="font-normal text-gray-600   rounded-md px-1"> {{ t('post.feelingWith') }} {{ selectedActivity.parent.slice(0,-3) }} <span class="font-semibold hover:underline">{{ selectedActivity.item.label }}</span>  {{ selectedActivity.item.emoji }} </button>
+            <button @click="emit('openFeelingSelector')" class="font-normal text-theme-text-secondary   rounded-md px-1"> {{ t('post.feelingWith') }} {{ selectedActivity.parent.slice(0,-3) }} <span class="font-semibold hover:underline">{{ selectedActivity.item.label }}</span>  {{ selectedActivity.item.emoji }} </button>
           </template>
           <template v-if="selectedLocation">
-            <span class="font-normal text-gray-600"> {{ t('post.isAt') }} </span>
+            <span class="font-normal text-theme-text-secondary"> {{ t('post.isAt') }} </span>
             <span class="font-semibold">{{ selectedLocation.title }}</span>
           </template>
         </div>
 
         <div
-            class="flex items-center bg-gray-200 px-2 py-0.5 rounded-md text-xs font-semibold text-gray-700 w-fit cursor-pointer hover:bg-gray-300 transition-colors"
+            class="flex items-center bg-theme-bg-tertiary px-2 py-0.5 rounded-md text-xs font-semibold text-theme-text-secondary w-fit cursor-pointer hover:bg-theme-bg-hover transition-colors"
             @click="openPrivacySelector"
         >
           <component v-if="privacyInfo.icon" :is="privacyInfo.icon" :size="12" class="mr-1" />
@@ -405,7 +405,7 @@ const handlePublish = async () => {
                 ref="contentEditableDiv"
                 contenteditable="true"
                 @input="onContentInput"
-                @keydown.backspace="onBackspace"
+
                 class="w-full border-none resize-none text-xl focus:ring-0 focus:outline-none p-0 pt-2 cursor-text whitespace-pre-wrap bg-transparent"
                 :class="{
                     'text-base': postContent.length > 80,
@@ -415,7 +415,7 @@ const handlePublish = async () => {
 
               <div
                 v-if="!postContent && selectedCardBgId === 0"
-                class="absolute top-2 left-0 text-gray-500 text-xl pointer-events-none"
+                class="absolute top-2 left-0 text-theme-text-secondary text-xl pointer-events-none"
               >
                 {{ sharedPost ? t('post.saySomething') : (selectedLocation ? t('post.whatAreYouThinking', { name: 'Bartosz' }) : t('post.whatsUp')) }}
               </div>
@@ -425,7 +425,7 @@ const handlePublish = async () => {
               <format-color-text-icon :size="24" @click="toggleTextCard" />
             </div>
 
-            <div class="absolute bottom-2 right-0 text-gray-500 cursor-pointer" :title="t('post.addEmoji')">
+            <div class="absolute bottom-2 right-0 text-theme-text-secondary cursor-pointer" :title="t('post.addEmoji')">
               <VDropdown
                 placement="top-end"
                 :distance="10"
@@ -433,7 +433,7 @@ const handlePublish = async () => {
                 :triggers="['click']"
                 :autoHide="true"
               >
-                <emoticon-happy-icon :size="24" class="cursor-pointer hover:text-gray-700 transition" />
+                <emoticon-happy-icon :size="24" class="cursor-pointer hover:text-theme-text-secondary-hover transition" />
 
                 <template #popper>
                   <div class="emoji-popper-content">
@@ -460,10 +460,10 @@ const handlePublish = async () => {
                   <li
                     v-for="user in matchingUsers"
                     :key="user.id"
-                    class="px-4 py-2 cursor-pointer hover:bg-gray-100 flex items-center gap-2"
+                    class="px-4 py-2 cursor-pointer hover:bg-theme-bg-hover flex items-center gap-2"
                     @mousedown.prevent="selectUser(user)"
                   >
-                    <div class="w-8 h-8 bg-gray-300 rounded-full flex-shrink-0">
+                    <div class="w-8 h-8 bg-theme-bg-tertiary rounded-full flex-shrink-0">
                       <img v-if="user.avatar" :src="user.avatar" class="w-full h-full object-cover rounded-full" />
                     </div>
                     <span class="font-medium text-sm">{{ user.name }}</span>
@@ -476,35 +476,35 @@ const handlePublish = async () => {
       </div>
 
       <!-- Loading state dla link preview -->
-      <div v-if="isLoadingPreview" class="mb-3 bg-gray-100 rounded-lg p-4 border border-gray-300">
+      <div v-if="isLoadingPreview" class="mb-3 bg-theme-bg-tertiary rounded-lg p-4 border border-theme-border">
         <div class="flex items-center gap-3">
-          <div class="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600"></div>
-          <span class="text-sm text-gray-600">Pobieranie podglądu linku...</span>
+          <div class="animate-spin rounded-full h-5 w-5 border-2 border-theme-border border-t-theme-primary"></div>
+          <span class="text-sm text-theme-text-secondary">{{ $t('post.fetchingLinkPreview') }}</span>
         </div>
       </div>
 
       <div v-if="linkPreview && !selectedImage && !selectedGif && !isLoadingPreview" class="relative mb-3 group">
         <button
           @click="removeLinkPreview"
-          class="absolute top-2 right-2 z-20 bg-gray-900 bg-opacity-60 hover:bg-opacity-80 rounded-full p-1 text-white transition-all opacity-0 group-hover:opacity-100"
+          class="absolute top-2 right-2 z-20 bg-theme-text bg-opacity-60 hover:bg-opacity-80 rounded-full p-1 text-white transition-all opacity-0 group-hover:opacity-100"
         >
           <close-icon :size="16" />
         </button>
 
-        <a :href="linkPreview.url" target="_blank" class="block bg-gray-100 rounded-lg overflow-hidden border border-gray-300 hover:bg-gray-200 transition-colors cursor-pointer no-underline">
-           <div v-if="linkPreview.image" class="w-full h-48 overflow-hidden bg-gray-200 relative border-b border-gray-300">
+        <a :href="linkPreview.url" target="_blank" class="block bg-theme-bg-tertiary rounded-lg overflow-hidden border border-theme-border hover:bg-theme-bg-hover transition-colors cursor-pointer no-underline">
+           <div v-if="linkPreview.image" class="w-full h-48 overflow-hidden bg-theme-bg-tertiary relative border-b border-theme-border">
              <img :src="linkPreview.image" class="w-full h-full object-cover" alt="Link preview" />
            </div>
 
            <div class="p-3">
-             <div class="text-xs text-gray-500 uppercase font-semibold mb-1 flex items-center truncate">
+             <div class="text-xs text-theme-text-secondary uppercase font-semibold mb-1 flex items-center truncate">
                <web-icon :size="12" class="mr-1" v-if="!linkPreview.image" />
                {{ linkPreview.domain }}
              </div>
-             <div class="font-bold text-gray-900 text-[15px] leading-snug mb-0.5 line-clamp-2">
+             <div class="font-bold text-theme-text text-[15px] leading-snug mb-0.5 line-clamp-2">
                {{ linkPreview.title }}
              </div>
-             <div class="text-gray-600 text-sm leading-snug line-clamp-1">
+             <div class="text-theme-text-secondary text-sm leading-snug line-clamp-1">
                {{ linkPreview.description }}
              </div>
            </div>
@@ -539,45 +539,45 @@ const handlePublish = async () => {
       </div>
 
       <!-- Shared Event Preview -->
-<div v-if="sharedEvent" class="mb-4 border border-[#ced0d4] rounded-lg overflow-hidden cursor-pointer group hover:opacity-95 transition-opacity">
-        <div class="relative w-full aspect-[1.91/1] bg-gray-100 border-b border-[#ced0d4]">
+<div v-if="sharedEvent" class="mb-4 border border-theme-border rounded-lg overflow-hidden cursor-pointer group hover:opacity-95 transition-opacity">
+        <div class="relative w-full aspect-[1.91/1] bg-theme-bg-tertiary border-b border-theme-border">
           <img
             v-if="sharedEvent.images && sharedEvent.images[0]"
             :src="sharedEvent.images[0]"
             alt="Event cover"
             class="w-full h-full object-cover"
           />
-          <div v-else class="w-full h-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl">
+          <div v-else class="w-full h-full bg-linear-to-br from-theme-primary to-purple-600 flex items-center justify-center text-white font-bold text-2xl">
              {{ sharedEvent.date ? sharedEvent.date.split(' ')[0] : 'EVENT' }}
           </div>
         </div>
 
-        <div class="p-3 bg-[#f0f2f5] flex items-center justify-between gap-3">
+        <div class="p-3 bg-theme-bg flex items-center justify-between gap-3">
 
           <div class="flex-1 min-w-0 flex flex-col justify-center">
-            <div class="text-[#F02849] text-[13px] font-semibold mb-0.5 uppercase tracking-wide leading-none">
-              {{ sharedEvent.date || 'SOB, 16 MAJ O 15:00' }}
+            <div class="text-theme-danger text-[13px] font-semibold mb-0.5 uppercase tracking-wide leading-none">
+              {{ sharedEvent.date || $t('post.eventDateFallback') }}
             </div>
 
-            <h3 class="font-bold text-[17px] text-[#050505] leading-tight mb-0.5 truncate">
+            <h3 class="font-bold text-[17px] text-theme-text leading-tight mb-0.5 truncate">
               {{ sharedEvent.title || sharedEvent.name }}
             </h3>
 
-            <div class="text-[13px] text-[#65676B] truncate leading-tight">
+            <div class="text-[13px] text-theme-text-secondary truncate leading-tight">
               {{ sharedEvent.locationName || sharedEvent.location || 'Camper Park Politechniki Gdańskiej' }}
             </div>
           </div>
 
-          <button class="shrink-0 flex items-center gap-1.5 bg-[#eaf3ff] hover:bg-[#dce9fc] text-[#1877f2] px-3 py-1.5 rounded-md font-semibold text-[15px] transition-colors border border-transparent">
+          <button class="shrink-0 flex items-center gap-1.5 bg-theme-blue-light hover:bg-theme-blue-light-hover text-theme-primary px-3 py-1.5 rounded-md font-semibold text-[15px] transition-colors border border-transparent">
             <StarIcon :size="18" />
-            <span>Interesuję się</span>
+            <span>{{ $t('post.interesujeSie') }}</span>
             <ChevronDownIcon :size="16" class="ml-0.5" />
           </button>
         </div>
       </div>
     </HoverScrollbar>
 
-    <hr class="my-4 border-gray-200">
+    <hr class="my-4 border-theme-border">
 
     <PostCreatorToolbar
         @openImageSelector="handleImageClick"
@@ -603,6 +603,48 @@ const handlePublish = async () => {
 </template>
 
 <style scoped>
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+:deep(.leaflet-container) {
+    z-index: 1111;
+    font-family: inherit;
+    background-color: #e5e7eb;
+}
+:deep(.leaflet-pane) {
+    z-index: 1111;
+}
+:deep(.leaflet-top), :deep(.leaflet-bottom) {
+    z-index: 1111;
+}
+
+.emoji-popper-content {
+  overflow: hidden;
+}
+
+/* Styl dla VDropdown żeby był na szerokość inputa */
+:deep(.v-popper) {
+  width: 100%;
+}
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;

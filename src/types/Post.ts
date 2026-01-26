@@ -93,4 +93,5 @@ export interface Post {
   comments?: Comment[];
   selectedCardBgId?: number;
   detectedLanguage?: string;
+  groupId?: string;
 }

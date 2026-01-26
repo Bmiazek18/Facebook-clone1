@@ -15,11 +15,10 @@ interface Feeling {
   label: string;
 }
 interface Activity {
-  parent: string;
+  parent: string | undefined;
   item: {
     label: string;
-    icon: any;
-    color: string;
+    emoji: string;
   }
 }
 

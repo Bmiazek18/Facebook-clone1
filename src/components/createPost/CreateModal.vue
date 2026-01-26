@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {  onMounted, type Component } from 'vue';
-import { storeToRefs } from 'pinia';
+import { computed,watch, onMounted, type Component } from 'vue';
+import { useCreatePostStore } from '@/stores/createPost';
 import PostCreator from './tabs/PostCreator.vue';
 import PrivacySelector from '@/components/common/PrivacySelector.vue';
 import TagUsers from './tabs/TagUsers.vue';
@@ -11,7 +11,8 @@ import VideoEditor from './tabs/VideoEditor.vue';
 import FeelingModal from './tabs/FeelingModal.vue';
 import '@/assets/animations/slideTransition.css';
 import { useSlideTransition } from '@/composables/useSlideTransition';
-import { useCreatePostStore } from '@/stores/createPost';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 import type { PostData } from '@/types/StoryElement';
 import type { User } from '@/data/users';
 
@@ -24,6 +25,8 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'close'): void;
   (e: 'publish', content: string): void;
+  (e: 'update:showBack', value: boolean): void;
+  (e: 'update:title', value: string): void;
 }>();
 
 onMounted(() => {
@@ -34,10 +37,27 @@ onMounted(() => {
 });
 const { wrapperRef, currentView, previousView, updateHeight, transitionName } = useSlideTransition();
 const createPostStore = useCreatePostStore();
-const {
-  imageToEdit,
-  videoToEdit,
-} = storeToRefs(createPostStore);
+
+const showBack = computed(() => currentView.value !== 'creator');
+watch(showBack, (newValue) => {
+  emit('update:showBack', newValue);
+});
+
+const viewTitles: Record<string, string> = {
+  creator: t('post.createPost'),
+  privacy: t('post.selectPrivacy'),
+  tagUsers: t('post.tagUsers'),
+  location: t('post.addLocation'),
+  gifSelector: t('post.selectGif'),
+  imageEditor: t('post.editImage'),
+  videoEditor: t('post.editVideo'),
+  feeling: t('post.feelingActivity'),
+};
+
+const currentTitle = computed(() => viewTitles[currentView.value] || '');
+watch(currentTitle, (newTitle) => {
+  emit('update:title', newTitle);
+});
 
 const openFeelingView = () => {
   previousView.value = currentView.value;
@@ -54,6 +74,14 @@ const viewComponents: Record<string, Component> = {
   feeling: FeelingModal,
 };
 
+const goBack = () => {
+  if (previousView.value) {
+    currentView.value = previousView.value;
+    previousView.value = null; // Clear previous view after going back
+  }
+};
+defineExpose({ goBack });
+
 const handleNavigation = (viewName: string, data: string | null = null) => {
   if (viewName === 'imageEditor' && data) {
     const existingAltText = createPostStore.selectedImage?.altText || '';
@@ -66,19 +94,13 @@ const handleNavigation = (viewName: string, data: string | null = null) => {
     previousView.value = currentView.value;
     currentView.value = viewName;
   } else {
-    console.log(`Akcja poza nawigacją widoku: ${viewName}`);
+    console.log(`${t('post.actionOutsideViewNavigation')}: ${viewName}`);
   }
 };
 
 const handleClose = () => {
   emit('close');
   createPostStore.reset();
-};
-
-const handleNavigationBack = () => {
-    previousView.value = currentView.value;
-    currentView.value = 'creator';
-    handleClose();
 };
 
 const handleImageEditorBack = () => {
@@ -110,9 +132,6 @@ const openTagUsers = () => {
   previousView.value = currentView.value;
   currentView.value = 'tagUsers';
 };
-const backToCreator = () => {
-  currentView.value = 'creator';
-};
 const handleTagUsersConfirm = (users: User[]) => {
   createPostStore.setTaggedUsers(users);
   currentView.value = 'creator';
@@ -133,6 +152,11 @@ const handleRemoveGif = () => {
   createPostStore.setGif(null);
 };
 
+const handleGifSelect = (url: string) => {
+  createPostStore.setGif(url);
+  currentView.value = 'creator';
+};
+
 
 try {
   const saved = localStorage.getItem('fc_default_privacy');
@@ -150,8 +174,20 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
   currentView.value = 'creator';
 };
 
+interface Feeling {
+  emoji: string;
+  label: string;
+}
 
-const handleFeelingOrActivitySelected = (payload: { type: string; data: any }) => {
+interface SubActivity {
+  label: string;
+  emoji: string;
+}
+
+type FeelingPayload = { type: 'feeling'; data: Feeling };
+type ActivityPayload = { type: 'activity'; data: { parent: string | undefined; item: SubActivity } };
+
+const handleFeelingOrActivitySelected = (payload: FeelingPayload | ActivityPayload) => {
   if (payload.type === 'feeling') {
     createPostStore.setSelectedFeeling(payload.data);
     createPostStore.setSelectedActivity(null);
@@ -175,13 +211,12 @@ const handleInternalPublish = (content: string) => {
         <PostCreator
           v-if="currentView === 'creator'"
           key="creator"
-          class="view-container bg-white"
+          class="view-container bg-theme-bg-secondary"
           data-view="creator"
           :shared-post="sharedPost"
           :shared-event-id="sharedEventId"
 
           @navigate="handleNavigation"
-          @back="handleNavigationBack"
           @publish="handleInternalPublish"
 
           @close="handleClose"
@@ -196,50 +231,45 @@ const handleInternalPublish = (content: string) => {
         <PrivacySelector
           v-else-if="currentView === 'privacy'"
           key="privacy"
-          class="view-container bg-white"
+          class="view-container bg-theme-bg-secondary"
           data-view="privacy"
           @navigate="handleNavigation"
-          @back="handleNavigationBack"
           @confirm="handlePrivacyConfirm"
         />
         <TagUsers
           v-else-if="currentView === 'tagUsers'"
           key="tagUsers"
-          class="view-container bg-white"
+          class="view-container bg-theme-bg-secondary"
           data-view="tagUsers"
-          @back="backToCreator"
           @confirm="handleTagUsersConfirm"
         />
         <LocationSelector
           v-else-if="currentView === 'location'"
           key="location"
-          class="view-container bg-white"
+          class="view-container bg-theme-bg-secondary"
           data-view="location"
-          @back="backToCreator"
         />
         <GifSelector
           v-else-if="currentView === 'gifSelector'"
           key="gifSelector"
-          class="view-container bg-white"
+          class="view-container bg-theme-bg-secondary"
           data-view="gifSelector"
-          @back="backToCreator"
+          @select="handleGifSelect"
         />
         <ImageEditor
           v-else-if="currentView === 'imageEditor'"
           key="imageEditor"
-          class="view-container bg-white"
+          class="view-container bg-theme-bg-secondary"
           data-view="imageEditor"
-          :initial-image="imageToEdit"
           @back="handleImageEditorBack"
           @done="handleImageEdited"
           @updateHeight="updateHeight"
         />
         <VideoEditor
-          v-else-if="currentView === 'videoEditor' && videoToEdit"
+          v-else-if="currentView === 'videoEditor' && createPostStore.videoToEdit"
           key="videoEditor"
-          class="view-container bg-white"
+          class="view-container bg-theme-bg-secondary"
           data-view="videoEditor"
-          :video="videoToEdit"
           @back="handleVideoEditorBack"
           @done="handleVideoEdited"
           @updateHeight="updateHeight"
@@ -247,9 +277,8 @@ const handleInternalPublish = (content: string) => {
         <FeelingModal
           v-else-if="currentView === 'feeling'"
           key="feeling"
-          class="view-container bg-white"
+          class="view-container bg-theme-bg-secondary"
           data-view="feeling"
-          @back="backToCreator"
           @feeling-selected="handleFeelingOrActivitySelected"
         />
       </Transition>

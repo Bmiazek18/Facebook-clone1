@@ -41,7 +41,7 @@ onUnmounted(() => {
             @click="handleBack"
             class="text-theme-text hover:bg-theme-hover rounded-full p-2 transition-colors"
             >
-            <ArrowLeft :size="24" fillColor="#65686C" />
+            <ArrowLeft :size="24" fillColor="currentColor" />
             </button>
         </div>
 
@@ -54,7 +54,7 @@ onUnmounted(() => {
             @click="closeModal"
             class="text-theme-text hover:bg-theme-hover rounded-full p-2 transition-colors"
             >
-            <Close :size="24" fillColor="#65686C" />
+            <Close :size="24" fillColor="currentColor" />
             </button>
         </div>
     </div>

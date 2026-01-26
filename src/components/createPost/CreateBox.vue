@@ -2,6 +2,8 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
+
 import VideoImage from 'vue-material-design-icons/VideoImage.vue'
 import Image from 'vue-material-design-icons/Image.vue'
 import EmoticonOutline from 'vue-material-design-icons/EmoticonOutline.vue'
@@ -18,8 +20,16 @@ const currentUser = computed(() => authStore.currentUser)
 
 const isOpen = ref(false)
 const image = computed(() => currentUser.value?.avatar || '')
-const placeholder = ref('Co nowego?')
+const placeholder = ref(t('post.whatAreYouThinking', { name: currentUser.value?.name || 'Bartosz' }));
 const fileInput = ref<HTMLInputElement | null>(null)
+
+const createModalRef = ref<InstanceType<typeof CreateModal> | null>(null);
+const showBackButton = ref(false);
+const modalTitle = ref(t('post.createPost'));
+
+const handleGoBack = () => {
+  createModalRef.value?.goBack();
+};
 
 const openCreatePost = () => {
   isOpen.value = true
@@ -62,13 +72,13 @@ const closeCreatePost = () => {
 
 <template>
   <div id="CreatePostBox" class="w-full bg-theme-bg-secondary rounded-lg px-3 mt-4 shadow-md dark:shadow-lg">
-    <div class="flex items-center py-3 border-b border-b-gray-300 dark:border-b-gray-700">
+    <div class="flex items-center py-3 border-b border-theme-border">
       <a class="mr-2">
   <img class="rounded-full ml-1 min-w-9 max-h-9" :src="image" />
       </a>
       <div
         @click="openCreatePost"
-        class="flex items-center justify-start bg-[#EFF2F5] dark:bg-gray-700 hover:bg-[#E5E6E9] dark:hover:bg-gray-600 p-2 rounded-full w-full cursor-pointer"
+        class="flex items-center justify-start bg-[#F1F2F5] dark:bg-[#333334] hover:bg-theme-bg-hover p-2 rounded-full w-full cursor-pointer"
       >
         <div class="text-left pl-2 text-theme-text-secondary">{{ placeholder }}</div>
       </div>
@@ -79,14 +89,14 @@ const closeCreatePost = () => {
         class="flex items-center justify-center hover:bg-theme-hover p-1 w-full rounded-lg cursor-pointer"
       >
         <VideoImage :size="35" fillColor="#F12848" />
-        <div class="text-[#6F7275] text-theme-text-secondary font-medium">{{ $t('post.addLive') }}</div>
+        <div class="text-theme-text-secondary font-medium">{{ $t('post.addLive') }}</div>
       </RouterLink>
       <button
         @click="handleFileClick"
         class="flex items-center justify-center hover:bg-theme-hover w-full rounded-lg cursor-pointer"
       >
         <Image :size="35" fillColor="#43BE62" />
-        <div class="text-[#6F7275] text-theme-text-secondary font-medium">{{ $t('post.addPhoto') }}</div>
+        <div class="text-theme-text-secondary font-medium">{{ $t('post.addPhoto') }}</div>
       </button>
       <input
         ref="fileInput"
@@ -100,14 +110,16 @@ const closeCreatePost = () => {
         class="hidden md:flex items-center justify-center hover:bg-theme-hover w-full rounded-lg cursor-pointer"
       >
         <EmoticonOutline :size="35" fillColor="#F8B927" />
-        <div class="text-[#6F7275] text-theme-text-secondary font-medium">{{ $t('post.addFeeling') }}</div>
+        <div class="text-theme-text-secondary font-medium">{{ $t('post.addFeeling') }}</div>
       </button>
     </div>
   </div>
 
-  <BaseModal v-if="isOpen" title="Utwórz post" @close="closeCreatePost">
+  <BaseModal v-if="isOpen" :title="modalTitle" :back="showBackButton" @close="closeCreatePost" @back="handleGoBack">
     <CreateModal
-
+      ref="createModalRef"
+      v-model:showBack="showBackButton"
+      v-model:title="modalTitle"
       @close="closeCreatePost"
     />
   </BaseModal>

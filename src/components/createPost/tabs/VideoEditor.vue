@@ -3,12 +3,10 @@ import { ref, reactive, computed } from 'vue';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import type { LogEvent } from '@ffmpeg/ffmpeg/types/events';
+import { useCreatePostStore } from '@/stores/createPost';
+import { storeToRefs } from 'pinia';
 
-interface VideoEditorProps {
-  video: string;
-}
-
-const props = defineProps<VideoEditorProps>();
+// Removed VideoEditorProps and defineProps
 
 const emit = defineEmits<{
   (e: 'done', url: string): void;
@@ -28,6 +26,9 @@ const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm';
 
 
 // --- STAN ---
+const createPostStore = useCreatePostStore();
+const { videoToEdit } = storeToRefs(createPostStore); // Get videoToEdit from store
+
 const videoPlayer = ref<HTMLVideoElement | null>(null);
 const timelineRef = ref<HTMLDivElement | null>(null);
 const isPlaying = ref(false);
@@ -78,11 +79,11 @@ const stopDrag = () => {
 
 // --- KLATKI PODGLĄDU ---
 const generateFrames = async () => {
-  if (!duration.value) return;
+  if (!duration.value || !videoToEdit.value) return;
 
   const tempVideo = document.createElement('video');
   tempVideo.crossOrigin = 'anonymous';
-  tempVideo.src = props.video;
+  tempVideo.src = videoToEdit.value;
   tempVideo.muted = true;
 
   await new Promise(resolve => {
@@ -158,7 +159,10 @@ const transcode = async () => {
 
     message.value = 'Pobieranie pliku wideo...';
 
-    await ffmpeg.writeFile('input.mp4', await fetchFile(props.video));
+    if (!videoToEdit.value) {
+      throw new Error('No video to transcode.');
+    }
+    await ffmpeg.writeFile('input.mp4', await fetchFile(videoToEdit.value));
 
     message.value = 'Przycinanie wideo...';
 
@@ -181,10 +185,15 @@ const transcode = async () => {
 
     message.value = 'Gotowe!';
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("FFmpeg Error:", error);
-    message.value = `Błąd: ${error.message}`;
-    alert(`Wystąpił błąd: ${error.message}`);
+    if (error instanceof Error) {
+        message.value = `Błąd: ${error.message}`;
+        alert(`Wystąpił błąd: ${error.message}`);
+    } else {
+        message.value = `Błąd: ${String(error)}`;
+        alert(`Wystąpił błąd: ${String(error)}`);
+    }
   } finally {
     isProcessing.value = false;
   }
@@ -221,7 +230,7 @@ const transcode = async () => {
         <div class="relative shadow-2xl rounded-lg overflow-hidden w-full max-w-5xl bg-black border border-gray-800" style="aspect-ratio: 16/9;">
           <video
             ref="videoPlayer"
-            :src="props.video"
+            :src="videoToEdit"
             crossorigin="anonymous"
             @loadedmetadata="onMetadataLoaded"
             @timeupdate="onTimeUpdate"
