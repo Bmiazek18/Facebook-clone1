@@ -84,7 +84,7 @@ const fullMenuData = [
   {
     title: 'Społecznościowe',
     items: [
-      { name: 'Wydarzenia', description: 'Organizuj oraz wyszukuj wydarzenia i inne aktywności online i w pobliżu.', icon: markRaw(CalendarStarIcon), iconColor: 'text-red-500',to:'/live/produce/create-event' },
+      { name: 'Wydarzenia', description: 'Organizuj oraz wyszukuj wydarzenia i inne aktywności online i w pobliżu.', icon: markRaw(CalendarStarIcon), iconColor: 'text-red-500',to:'/event' },
       { name: 'Znajomi', description: 'Wyszukuj znajomych lub osoby, które możesz znać.', icon: markRaw(AccountGroupIcon), iconColor: 'text-blue-500' },
       { name: 'Grupy', description: 'Nawiąż kontakt z osobami, które podzielają Twoje zainteresowania.', icon: markRaw(AccountGroupIcon), iconColor: 'text-blue-600' },
       { name: 'Aktualności', description: 'Zobacz więcej niedawnych postów od znajomych, z grup, stron i nie tylko.', icon: markRaw(NewspaperVariantIcon), iconColor: 'text-blue-400' },

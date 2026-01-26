@@ -13,7 +13,7 @@ import ControllerClassicOutline from 'vue-material-design-icons/ControllerClassi
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue'
 
 import ContactList from '@/components/friends/ContactList.vue'
-import NavbarRight from '@/layouts/Navbar/NavbarRight.vue'
+import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue'
 
 type ActiveMenuType = 'profile' | 'notifications' | 'message' | null;
 
@@ -49,7 +49,7 @@ const handleSearchSubmit = () => {
 <template>
   <div
     id="MainNav"
-    class="fixed z-50 w-full flex items-center justify-between top-0 h-14 bg-theme-bg-secondary shadow-md px-4"
+    class="fixed z-50 w-full flex items-center justify-between top-0 h-14 bg-theme-bg-secondary shadow-md px-4 mb-[50px]"
   >
     <div
         id="NavLeft"
@@ -58,7 +58,7 @@ const handleSearchSubmit = () => {
     >
       <div
         v-if="isSearchFocused"
-        class="absolute -top-2 -left-4 w-[360px] bg-white dark:bg-[#242526] rounded-b-xl shadow-[0_12px_28px_0_rgba(0,0,0,0.2),0_2px_4px_0_rgba(0,0,0,0.1)] z-10 pt-[65px] min-h-[400px] border-t-0"
+        class="absolute -top-2 -left-4 w-[360px] bg-theme-bg-secondary rounded-b-xl shadow-[0_12px_28px_0_rgba(0,0,0,0.2),0_2px_4px_0_rgba(0,0,0,0.1)] z-10 pt-[65px] min-h-[400px] border-t-0"
       >
           <div class="flex justify-between items-center px-4 py-2 mb-1 mx-2">
               <span class="text-[17px] font-semibold text-[#050505] dark:text-gray-200">Ostatnie</span>
@@ -71,13 +71,13 @@ const handleSearchSubmit = () => {
 
       <div class="z-20 flex items-center w-full">
         <Transition name="slide-fade" mode="out-in">
-          <RouterLink v-if="!isSearchFocused" to="/" class="mr-2 min-w-10">
+          <RouterLink v-if="!isSearchFocused" to="/" class="mr-2 min-w-10 bg-white rounded-full">
             <img class="w-10" src="../assets/images/FacebookLogoCircle.png" />
           </RouterLink>
 
           <div
             v-else
-            class="mr-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer text-[#64676B] dark:text-gray-200"
+            class="mr-2 p-2 rounded-full hover:bg-gray-200 dark:bg-[#808080]  cursor-pointer text-[#64676B] dark:text-gray-200"
             @click="isSearchFocused = false"
           >
             <ArrowLeft :size="24" />
@@ -86,8 +86,8 @@ const handleSearchSubmit = () => {
 
         <div class="flex relative w-full">
           <div
-            class="flex items-center justify-center p-1 rounded-full h-10 transition-all"
-            :class="isSearchFocused ? 'w-full bg-[#EFF2F5] dark:bg-gray-800' : 'lg:w-full lg:bg-[#EFF2F5] lg:dark:bg-gray-800 w-10 border-2 border-gray-300 dark:border-gray-600'"
+            class="flex items-center justify-center p-1 rounded-full h-10 transition-all bg-[#F1F2F5] dark:bg-[#333334] "
+            :class="isSearchFocused ? 'w-full bg-theme-hover' : 'lg:w-full lg:bg-theme-sec w-10  dark:border-none'"
             @click="!isSearchFocused && (isSearchFocused = true)"
           >
             <Magnify
@@ -99,7 +99,7 @@ const handleSearchSubmit = () => {
             />
             <input
               :class="isSearchFocused ? 'block' : 'lg:block hidden'"
-              class="border-none p-0 bg-transparent text-theme-text placeholder-[#64676B] ring-0 focus:ring-0 w-full px-3"
+              class="bg-transparent p-0  text-theme-text-secondary placeholder-[#64676B]  w-full pr-3"
               placeholder="Szukaj na Facebooku"
               type="text"
               @focus="isSearchFocused = true"
@@ -125,9 +125,9 @@ const handleSearchSubmit = () => {
         <StorefrontOutline :size="27" :fillColor="route.path.includes('marketplace') ? '#1A73E3' : '#64676B'" />
       </RouterLink>
 
-      <RouterLink to="/friends" class="flex items-center justify-center h-12 w-full mx-1" :class="route.path === '/friends' ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'">
-        <span class="rounded-full border-2 p-1" :class="route.path === '/friends' ? 'border-blue-500' : 'dark:border-gray-400 border-[#64676B]'">
-          <AccountGroup :size="22" :fillColor="route.path === '/friends' ? '#1A73E3' : '#64676B'" />
+      <RouterLink to="/groups" class="flex items-center justify-center h-12 w-full mx-1" :class="route.path === '/groups' ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'">
+        <span class="rounded-full border-2 p-1" :class="route.path === '/groups' ? 'border-blue-500' : 'dark:border-gray-400 border-[#64676B]'">
+          <AccountGroup :size="22" :fillColor="route.path === '/groups' ? '#1A73E3' : '#64676B'" />
         </span>
       </RouterLink>
 
