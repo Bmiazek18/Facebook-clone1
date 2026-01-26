@@ -19,6 +19,7 @@ import VolumeHigh from 'vue-material-design-icons/VolumeHigh.vue';
 import VolumeOff from 'vue-material-design-icons/VolumeOff.vue';
 
 import type { StoryElement as StoryElementType, BackgroundSettings, PostData, ReelData } from '@/types/StoryElement';
+import type { StoryItem } from '@/types/Story';
 
 // --- PROPS & EMITS ---
 const props = defineProps<{
@@ -142,7 +143,7 @@ const { isRendering, renderProgress, renderStoryToImage } = useStoryExport();
 const storiesStore = useStoriesStore();
 const authStore = useAuthStore();
 const router = useRouter();
-
+const selectedMusicUrl = ref();
 const handleExportStory = async () => {
   if (!storyContainerRef.value) return;
 
@@ -153,22 +154,8 @@ const handleExportStory = async () => {
     // Wait a frame for UI to update
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Temporarily hide interactive elements before rendering
-    const guideLines = storyContainerRef.value.querySelectorAll('[data-guide-line]');
-    const shadows = storyContainerRef.value.querySelectorAll('[data-story-shadow]');
-    const controls = storyContainerRef.value.querySelectorAll('[data-story-control]');
-
-    guideLines.forEach((el) => (el as HTMLElement).style.display = 'none');
-    shadows.forEach((el) => (el as HTMLElement).style.display = 'none');
-    controls.forEach((el) => (el as HTMLElement).style.display = 'none');
-
-    // Render story to image (bez automatycznego pobierania)
+    // Render story to image
     const imageUrl = await renderStoryToImage(storyContainerRef.value, storyElements.value, false);
-
-    // Restore interactive elements
-    guideLines.forEach((el) => (el as HTMLElement).style.display = '');
-    shadows.forEach((el) => (el as HTMLElement).style.display = '');
-    controls.forEach((el) => (el as HTMLElement).style.display = '');
 
     // Get current user info
     const currentUser = authStore.currentUser;
@@ -177,6 +164,27 @@ const handleExportStory = async () => {
       return;
     }
 
+    let sharedPostInfoForExport: StoryItem['sharedPostInfo'] | null = null;
+    if (props.initialPost) {
+      const postElement = storyElements.value.find(el => {
+        if (el.type === 'post') {
+          const postEl = el as PostElement;
+          return postEl.postData?.id === props.initialPost?.id;
+        }
+        return false;
+      });
+      if (postElement) {
+        sharedPostInfoForExport = {
+          postId: props.initialPost.id,
+          x: (postElement.x / CANVAS_WIDTH) * 100,
+          y: (postElement.y / CANVAS_HEIGHT) * 100,
+          width: (postElement.width ? postElement.width / CANVAS_WIDTH : 0) * 100, // Handle optional width
+          height: (postElement.height ? postElement.height / CANVAS_HEIGHT : 0) * 100, // Handle optional height
+        };
+      }
+    }
+
+    console.log('sharedPostInfoForExport', sharedPostInfoForExport);
     // Add story to store
     const newStory = storiesStore.addStory(
       currentUser.id.toString(),
@@ -185,15 +193,15 @@ const handleExportStory = async () => {
       {
         type: props.initialImage ? 'image' : 'text',
         imageUrl: imageUrl, // Używamy wyrenderowanego obrazu
+        musicUrl: selectedMusicUrl.value,
         backgroundColor: background.type === 'image' ? undefined : background.value,
         backgroundGradient: background.type === 'gradient' ? background.value : undefined,
-        elements: storyElements.value
+        elements: storyElements.value,
+        sharedPostInfo: sharedPostInfoForExport // Pass the dynamically calculated shared post info
       }
     );
 
     console.log('Story dodane:', newStory);
-
-
     alert('Story zostało dodane! ✅');
     router.push('/');
 
@@ -232,18 +240,20 @@ onMounted(() => {
 
   // Load initial post if provided (from share button)
   if (props.initialPost) {
+    // Add PostElement to storyElements for editing purposes
     const newId = `el_post_${Date.now()}`;
     storyElements.value.push({
       id: newId,
       type: 'post',
       content: props.initialPost.content,
-      x: 50, y: 200,
-      width: 280, height: 180,
+      x: 28, y: 150, // Updated hardcoded pixel values for editor
+      width: 502, height: 300, // Updated hardcoded pixel values for editor
       rotation: 0, scale: 1,
       styles: {},
       postData: props.initialPost
     });
     selectedElementId.value = newId;
+
 
     // Set gradient background based on post image if available
     if (props.initialPost.imageUrl) {
@@ -317,10 +327,16 @@ onMounted(() => {
 
 onUnmounted(() => {
   audioPlayer.pause();
+
+
 });
 
 // --- MODAL MUZYKI ---
 const isMusicModalOpen = ref(false);
+
+
+provide('croppingId', croppingId);
+
 const toggleMusicModal = () => isMusicModalOpen.value = !isMusicModalOpen.value;
 
 // --- MODAL LINK STICKER ---
@@ -344,6 +360,7 @@ const addMusicPoster = (track: MusicTrack) => {
     musicStyle: 'large'
   });
   selectedElementId.value = newId;
+  selectedMusicUrl.value = track.previewUrl; // Zapisz URL muzyki
 
   if (track.previewUrl && audioPlayer.src !== track.previewUrl) {
     audioPlayer.src = track.previewUrl;
@@ -382,6 +399,12 @@ const addTextElement = () => {
 };
 
 const removeElement = (id: string) => {
+  const element = storyElements.value.find((el: StoryElementType) => el.id === id);
+  if (element && element.musicTitle) {
+    selectedMusicUrl.value = null;
+    audioPlayer.pause();
+    audioPlayer.src = '';
+  }
   storyElements.value = storyElements.value.filter((el: StoryElementType) => el.id !== id);
   if (selectedElementId.value === id) selectedElementId.value = null;
 };
@@ -418,22 +441,7 @@ const addLinkSticker = (data: { url: string; title: string; style: 'default' | '
   isLinkModalOpen.value = false;
 };
 
-// --- UDOSTĘPNIANIE POSTA NA STORY ---
-const addPostToStory = (postData: PostData) => {
-  const newId = `el_post_${Date.now()}`;
-  storyElements.value.push({
-    id: newId,
-    type: 'post',
-    content: postData.content,
-    x: 50, y: 200,
-    width: 280, height: 200,
-    rotation: 0, scale: 1,
-    styles: {},
-    postData: postData
-  });
-  selectedElementId.value = newId;
 
-};
 
 const goBack = () => {
   emit('back');
@@ -441,11 +449,11 @@ const goBack = () => {
 </script>
 
 <template>
-  <div class="flex h-screen w-full bg-[#F0F2F5] font-sans overflow-hidden select-none relative">
+  <div class="flex h-screen w-full bg-theme-bg font-sans overflow-hidden select-none relative">
     <!-- Rendering Modal -->
     <div v-if="isRendering" class="absolute inset-0 bg-black/90 flex items-center justify-center z-50">
-      <div class="bg-gray-900 rounded-lg p-8 max-w-md w-full mx-4 text-center">
-        <h3 class="text-white text-xl font-bold mb-4">Renderowanie...</h3>
+      <div class="bg-theme-bg-secondary rounded-lg p-8 max-w-md w-full mx-4 text-center">
+        <h3 class="text-theme-text text-xl font-bold mb-4">Renderowanie...</h3>
         <div class="mb-4">
           <div class="bg-gray-700 rounded-full h-4 overflow-hidden">
             <div
@@ -453,9 +461,9 @@ const goBack = () => {
               :style="{ width: renderProgress + '%' }"
             ></div>
           </div>
-          <div class="text-white text-center mt-2 font-bold">{{ renderProgress }}%</div>
+          <div class="text-theme-text text-center mt-2 font-bold">{{ renderProgress }}%</div>
         </div>
-        <p class="text-gray-400 text-sm">Tworzenie obrazu story...</p>
+        <p class="text-theme-text-secondary text-sm">Tworzenie obrazu story...</p>
       </div>
     </div>
 
@@ -466,25 +474,25 @@ const goBack = () => {
       @add-text="addTextElement"
       @toggle-music="toggleMusicModal"
       @add-link="toggleLinkModal"
-      @share-post="togglePostShareModal"
+
       @export-story="handleExportStory"
       @back="goBack"
     />
 
-    <main class="flex-1 flex flex-col items-center justify-center p-6 bg-[#F0F2F5] overflow-hidden relative">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 w-full h-full max-w-[1000px] flex flex-col relative">
+    <main class="flex-1 flex flex-col items-center justify-center p-6 bg-theme-bg overflow-hidden relative">
+      <div class="bg-theme-bg-secondary rounded-xl shadow-sm border border-theme-border p-4 w-full h-full max-w-[1000px] flex flex-col relative">
         <div class="flex justify-between items-center mb-2 px-1">
-          <span class="text-sm font-semibold text-gray-700">Podgląd</span>
+          <span class="text-sm font-semibold text-theme-text-secondary">Podgląd</span>
           <div v-if="audioPlayer.src">
-            <button @click="toggleBackgroundMusic" class="p-2 rounded-full hover:bg-gray-100 transition text-gray-800" title="Wycisz podgląd">
+            <button @click="toggleBackgroundMusic" class="p-2 rounded-full hover:bg-theme-hover transition text-theme-text" title="Wycisz podgląd">
               <VolumeHigh v-if="isPlaying" :size="20" class="text-blue-600"/>
-              <VolumeOff v-else :size="20" class="text-gray-400"/>
+              <VolumeOff v-else :size="20" class="text-theme-text-secondary"/>
             </button>
           </div>
         </div>
 
-        <div class="flex-1 bg-[#18191A] rounded-lg flex items-center justify-center overflow-hidden relative shadow-inner border border-gray-800" @mousedown.self="onBackgroundClick">
-          <div ref="storyContainerRef" class="relative aspect-9/16 h-[calc(100%-68px)] bg-black shadow-2xl rounded-md border border-gray-700" style="overflow: visible;">
+        <div class="flex-1 bg-theme-bg rounded-lg flex items-center justify-center overflow-hidden relative shadow-inner border border-theme-border" @mousedown.self="onBackgroundClick">
+          <div ref="storyContainerRef" class="relative aspect-9/16 h-[calc(100%-68px)] bg-black shadow-2xl rounded-md border border-theme-border" style="overflow: visible;">
             <div class="absolute inset-0 w-full h-full pointer-events-none rounded-md overflow-hidden" :style="{ background: background.value }" ref="backgroundRef"></div>
 
             <!-- GUIDE LINES -->

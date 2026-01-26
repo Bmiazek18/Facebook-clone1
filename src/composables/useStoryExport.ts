@@ -1,53 +1,18 @@
 import { ref } from 'vue';
-import { toBlob } from 'html-to-image';
+import { domToPng } from 'modern-screenshot';
 import type { StoryElement } from '@/types/StoryElement';
-
-const CANVAS_WIDTH = 558;
-const CANVAS_HEIGHT = 1000;
 
 export function useStoryExport() {
   const isRendering = ref(false);
   const renderProgress = ref(0);
 
-  const downloadImage = (blobUrl: string, filename: string = 'story.png') => {
+  const downloadImage = (dataUrl: string, filename: string = 'story.png') => {
     const link = document.createElement('a');
     link.download = filename;
-    link.href = blobUrl;
+    link.href = dataUrl;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
-
-
-  const preloadImage = (img: HTMLImageElement): Promise<void> => {
-    return new Promise((resolve) => {
-      if (img.complete && img.naturalHeight !== 0) {
-        resolve();
-        return;
-      }
-      img.onload = () => resolve();
-      img.onerror = () => {
-        console.warn('Pominięto uszkodzony obrazek:', img.src);
-        resolve();
-      };
-    });
-  };
-
-
-  const blobToDataURL = async (blobUrl: string): Promise<string> => {
-    try {
-      const response = await fetch(blobUrl);
-      const blob = await response.blob();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    } catch (error) {
-      console.error('Failed to convert blob to data URL:', error);
-      return blobUrl; // Return original if conversion fails
-    }
   };
 
   const renderStoryToImage = async (
@@ -57,71 +22,62 @@ export function useStoryExport() {
   ): Promise<string> => {
     try {
       isRendering.value = true;
-      renderProgress.value = 5;
+      renderProgress.value = 10;
 
+      // Czekamy chwilę, aby upewnić się, że DOM jest stabilny
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-      const images = Array.from(backgroundElement.querySelectorAll('img'));
+      renderProgress.value = 20;
 
-
-      let loadedCount = 0;
-      const totalImages = images.length;
-
-      if (totalImages > 0) {
-        await Promise.all(
-          images.map(async (img) => {
-
-            if (img.src.startsWith('blob:')) {
-              const dataUrl = await blobToDataURL(img.src);
-              img.src = dataUrl;
-
-              await preloadImage(img);
-            }
-
-            else if (img.src.startsWith('http') && !img.src.includes(window.location.origin)) {
-              if (!img.crossOrigin) img.crossOrigin = 'anonymous';
-              await preloadImage(img);
-            } else {
-              await preloadImage(img);
-            }
-            loadedCount++;
-            renderProgress.value = 5 + Math.floor((loadedCount / totalImages) * 20);
-          })
-        );
-      } else {
-         renderProgress.value = 25;
-      }
-
-
-      const blob = await toBlob(backgroundElement, {
-        width: CANVAS_WIDTH,
-        height: CANVAS_HEIGHT,
-        pixelRatio: 2,
-        cacheBust: true,
-        skipAutoScale: true,
-        backgroundColor: '#ffffff',
-        includeQueryParams: false,
-        fetchRequestInit: {
-            cache: 'no-cache',
+      // modern-screenshot lepiej radzi sobie z nowoczesnym CSS (oklch) i Blobami
+      const dataUrl = await domToPng(backgroundElement, {
+        scale: 2, // Lepsza jakość
+        backgroundColor: '#ffffff', // Ustaw kolor tła (usuwa przezroczystość)
+        quality: 1.0,
+        filter: (node) => {
+          // Filtrowanie elementów UI
+          if (node instanceof HTMLElement) {
+             if (node.hasAttribute('data-story-control')) return false;
+             if (node.hasAttribute('data-guide-line')) return false;
+             if (node.hasAttribute('data-story-shadow')) return false;
+             if (node.classList.contains('ui-control')) return false;
+          }
+          return true;
         },
+        // Opcje fetch pomagają przy problemach z CORS i Blobami
+        fetch: {
+          bypassingCache: true,
+          requestInit: {
+             cache: 'no-store' // Wymusza świeże pobranie zasobów
+          }
+        },
+        // Ważne dla Safari i niektórych problemów z renderowaniem
+        features: {
+            removeControlCharacter: true
+        }
       });
 
-      if (!blob) throw new Error('Blob jest pusty');
-
-      renderProgress.value = 90;
-      const blobUrl = URL.createObjectURL(blob);
-
-      if (autoDownload) {
-        downloadImage(blobUrl, `story-${Date.now()}.png`);
+      if (!dataUrl || dataUrl === 'data:,') {
+        throw new Error('Wygenerowano pusty obraz');
       }
 
-      console.log('Wygenerowano URL:', blobUrl);
+      renderProgress.value = 90;
+
+      if (autoDownload) {
+        downloadImage(dataUrl, `story-${Date.now()}.png`);
+      }
+
       renderProgress.value = 100;
 
-      setTimeout(() => isRendering.value = false, 500);
-      return blobUrl;
+      setTimeout(() => {
+        isRendering.value = false;
+        renderProgress.value = 0;
+      }, 500);
+
+      return dataUrl;
 
     } catch (error) {
-      console.error('Błąd renderowania:', error);
+      console.error('Błąd renderowania modern-screenshot:', error);
       isRendering.value = false;
       renderProgress.value = 0;
       throw error;

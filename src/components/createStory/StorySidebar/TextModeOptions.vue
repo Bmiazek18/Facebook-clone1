@@ -1,54 +1,59 @@
 <template>
     <div class="flex flex-col mt-2 pb-4 px-4">
-        <!-- Font Style Selector -->
         <div class="relative mb-4">
-            <div @click="toggleFontMenu" class="border border-gray-300 rounded-md p-3 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition">
-                <div class="flex items-center gap-2 text-gray-700">
+            <div @click="toggleFontMenu" class="border border-theme-border rounded-md p-3 flex justify-between items-center cursor-pointer hover:bg-theme-hover transition">
+                <div class="flex items-center gap-2 text-theme-text-secondary">
                     <FormatSize :size="20" />
                     <div class="flex flex-col items-start leading-tight">
-                        <span class="text-xs text-gray-400 font-semibold uppercase">Styl tekstu</span>
-                        <span class="text-sm font-medium">{{ currentFont?.label }}</span>
+                        <span class="text-xs text-theme-text-secondary font-semibold uppercase">Styl tekstu</span>
+                        <span class="text-sm font-medium text-theme-text">{{ currentFont?.label }}</span>
                     </div>
                 </div>
-                <ChevronDown :size="20" class="text-gray-500 transition-transform" :class="{'rotate-180': isFontMenuOpen}" />
+                <ChevronDown :size="20" class="text-theme-text-secondary transition-transform" :class="{'rotate-180': isFontMenuOpen}" />
             </div>
 
-            <div v-if="isFontMenuOpen" class="absolute top-full left-0 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-30 overflow-hidden">
+            <div v-if="isFontMenuOpen" class="absolute top-full left-0 w-full mt-1 bg-theme-bg-secondary border border-theme-border rounded-md shadow-lg z-30 overflow-hidden">
                 <ul>
-                    <li v-for="font in fontStyles" :key="font.id" @click="selectFont(font)" class="px-4 py-3 hover:bg-blue-50 cursor-pointer flex items-center justify-between group border-b border-gray-100 last:border-0">
-                        <span :class="font.class" class="text-xl text-gray-800 scale-90 origin-left">{{ font.label }}</span>
+                    <li v-for="font in fontStyles" :key="font.id" @click="selectFont(font)" class="px-4 py-3 hover:bg-theme-hover cursor-pointer flex items-center justify-between group border-b border-theme-border last:border-0">
+                        <span :class="font.class" class="text-xl text-theme-text scale-90 origin-left">{{ font.label }}</span>
                         <span v-if="currentFont?.id === font.id" class="text-blue-600 font-bold">✓</span>
                     </li>
                 </ul>
             </div>
         </div>
 
-        <!-- Background Selector -->
-        <div class="border border-gray-200 rounded-lg p-4 mb-4 shadow-sm bg-white">
+        <div class="border border-theme-border rounded-lg p-4 mb-4 shadow-sm bg-theme-bg-secondary">
             <div class="flex justify-between items-end mb-3">
-                <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Tła</p>
+                <p class="text-xs text-theme-text-secondary font-bold uppercase tracking-wider">Tła</p>
                 <span class="text-xs font-medium text-blue-600 truncate max-w-[150px] text-right">
                 {{ currentBackground?.name }}
                 </span>
             </div>
 
             <div class="flex flex-wrap gap-2.5">
-                <div v-for="bg in visibleBackgrounds" :key="bg.id" class="rounded-full p-0.5 border-2 transition-all duration-200" :class="selectedBackgroundId === bg.id ? 'border-blue-500 scale-110' : 'border-transparent'">
-                    <button @click="selectBackground(bg.id)" :class="['w-9 h-9 rounded-full cursor-pointer shadow-sm border border-black/10 hover:opacity-80 transition', bg.class]" :title="bg.name"></button>
+                <div
+                    v-for="bg in visibleBackgrounds"
+                    :key="bg.id"
+                    class="rounded-full p-0.5 border-2 transition-all duration-200 shrink-0 flex items-center justify-center"
+                    :class="selectedBackgroundId === bg.id ? 'border-blue-500 ' : 'border-transparent'"
+                >
+                    <button
+                        @click="selectBackground(bg.id)"
+                        :class="['w-9 h-9 rounded-full cursor-pointer shadow-sm border border-black/10 hover:opacity-80 transition block', bg.class]"
+                        :title="bg.name"
+                    ></button>
                 </div>
-
-                <button @click="toggleBackgrounds" class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-full hover:bg-gray-200 transition text-gray-600 ml-1" :title="isBackgroundsExpanded ? 'Zwiń' : 'Pokaż więcej'">
+                <button @click="toggleBackgrounds" class="w-10 h-10 flex items-center justify-center bg-theme-bg-secondary rounded-full hover:bg-theme-hover-strong transition text-theme-text-secondary ml-1 shrink-0" :title="isBackgroundsExpanded ? 'Zwiń' : 'Pokaż więcej'">
                     <ChevronDown :size="20" class="transition-transform duration-300" :class="{'rotate-180': isBackgroundsExpanded}" />
                 </button>
             </div>
         </div>
 
-        <!-- Music button for text mode -->
-        <div @click="emit('toggle-music')" class="flex items-center gap-4 py-3 hover:bg-gray-100 cursor-pointer transition rounded-md" :class="{'bg-blue-50 border-l-4 border-blue-500': isMusicModalOpen}">
-            <div class="bg-gray-200 p-2.5 rounded-full border border-gray-300">
-                <MusicNote :size="24" class="text-gray-700" />
+        <div @click="emit('toggle-music')" class="flex items-center gap-4 py-3 hover:bg-theme-hover cursor-pointer transition rounded-md" :class="{'bg-blue-50 border-l-4 border-blue-500': isMusicModalOpen}">
+            <div class="bg-theme-bg-secondary p-2.5 rounded-full border border-theme-border">
+                <MusicNote :size="24" class="text-theme-text-secondary" />
             </div>
-            <span class="font-medium text-gray-700 text-sm">Dodaj muzykę</span>
+            <span class="font-medium text-theme-text-secondary text-sm">Dodaj muzykę</span>
         </div>
     </div>
 </template>

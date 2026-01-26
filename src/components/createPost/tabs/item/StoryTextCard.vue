@@ -52,15 +52,15 @@ const currentTextClass = computed(() => {
 </script>
 
 <template>
-  <div class="relative mb-4 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+  <div class="relative mb-4 bg-theme-bg-tertiary rounded-lg overflow-hidden border border-theme-border">
     <div :class="['w-full h-60 rounded-lg flex items-center justify-center relative', currentClass]">
 
       <div class="z-10 w-full h-full px-4 flex items-center justify-center">
         <textarea
           v-model="localText"
-          class="w-full resize-none overflow-hidden bg-transparent text-center outline-none px-2 py-6 placeholder-white/50"
+          class="w-full resize-none overflow-hidden bg-transparent text-center outline-none px-2 py-6 placeholder-theme-text-placeholder"
           :class="[currentTextClass, 'text-2xl leading-normal']"
-          placeholder="Napisz tekst..."
+          :placeholder="$t('post.writeText')"
           spellcheck="false"
         ></textarea>
       </div>
@@ -73,7 +73,7 @@ const currentTextClass = computed(() => {
           :triggers="['click']"
           :autoHide="true"
         >
-          <button class="bg-white p-2 rounded-full shadow text-gray-700 hover:bg-gray-50 transition">
+          <button class="bg-theme-bg-secondary p-2 rounded-full shadow-theme-shadow-sm text-theme-text-secondary hover:bg-theme-bg-hover transition">
             <EmoticonHappyIcon :size="20" />
           </button>
 
@@ -87,7 +87,7 @@ const currentTextClass = computed(() => {
 
       <div class="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-2 z-30">
         <template v-for="bg in backgrounds" :key="bg.id">
-          <button @click="selectBg(bg.id)" :class="['w-8 h-8 rounded-md overflow-hidden', bg.id === bgId ? 'ring-2 ring-white' : 'ring-0']">
+          <button @click="selectBg(bg.id)" :class="['w-8 h-8 rounded-md overflow-hidden', bg.id === bgId ? 'ring-2 ring-theme-border-highlight' : 'ring-0']">
             <div :class="bg.class + ' w-full h-full'" />
           </button>
         </template>

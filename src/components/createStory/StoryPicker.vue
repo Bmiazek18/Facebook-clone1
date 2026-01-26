@@ -31,7 +31,7 @@ const onSelectText = () => {
 </script>
 
 <template>
-  <div class="flex h-screen w-full bg-[#F0F2F5] font-sans">
+  <div class="flex h-screen w-full bg-theme-bg font-sans">
     <StorySidebar :is-music-modal-open="false" :current-alt-text="''" :is-image-selected="false" @back="route.push('/')" />
 
     <main class="flex-1 flex items-center justify-center p-8 relative">
@@ -44,7 +44,7 @@ const onSelectText = () => {
           <div class="absolute inset-0 bg-linear-to-b from-[#56C3F8] via-[#488AD4] to-[#2F5C96]"></div>
           <div class="relative z-10 flex flex-col items-center justify-center h-full gap-4">
             <div class="bg-white p-3 rounded-full shadow-md">
-              <ImageMultiple class="text-gray-800" :size="28" />
+              <ImageMultiple class="text-theme-text" :size="28" />
             </div>
             <span class="text-white font-semibold text-center px-4">
               Utwórz relację ze zdjęciem
@@ -61,7 +61,7 @@ const onSelectText = () => {
           <div class="absolute inset-0 bg-linear-to-b from-[#AA50E1] via-[#B9449C] to-[#E94E5A]"></div>
           <div class="relative z-10 flex flex-col items-center justify-center h-full gap-4">
             <div class="bg-white p-3 rounded-full shadow-md">
-              <FormatFont class="text-gray-800" :size="28" />
+              <FormatFont class="text-theme-text" :size="28" />
             </div>
             <span class="text-white font-semibold text-center px-4">
               Utwórz relację tekstową

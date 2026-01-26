@@ -9,7 +9,7 @@ export function useTimelineDrag<T extends BaseTimelineItem>(
   onSelect?: (item: T) => void
 ) {
   let draggedItem: T | null = null;
-  let dragMode: 'move' | 'resize-left' | 'resize-right' | null = null;
+  
   let dragStartX = 0;
   let dragStartTime = 0;
   let dragStartEndTime = 0;
@@ -21,7 +21,7 @@ export function useTimelineDrag<T extends BaseTimelineItem>(
     if (!trackRef.value) return;
 
     draggedItem = item;
-    dragMode = 'move';
+    
     dragStartX = event.clientX;
     dragStartTime = item.startTime;
     dragStartEndTime = item.endTime;
@@ -57,7 +57,7 @@ export function useTimelineDrag<T extends BaseTimelineItem>(
       document.removeEventListener('mousemove', handleMove);
       document.removeEventListener('mouseup', stopMove);
       draggedItem = null;
-      dragMode = null;
+      
     };
 
     document.addEventListener('mousemove', handleMove);
@@ -72,7 +72,7 @@ export function useTimelineDrag<T extends BaseTimelineItem>(
     if (!trackRef.value) return;
 
     draggedItem = item;
-    dragMode = side === 'left' ? 'resize-left' : 'resize-right';
+    
     dragStartX = event.clientX;
     dragStartTime = item.startTime;
     dragStartEndTime = item.endTime;
@@ -111,7 +111,7 @@ export function useTimelineDrag<T extends BaseTimelineItem>(
       document.removeEventListener('mousemove', handleResize);
       document.removeEventListener('mouseup', stopResize);
       draggedItem = null;
-      dragMode = null;
+      
     };
 
     document.addEventListener('mousemove', handleResize);

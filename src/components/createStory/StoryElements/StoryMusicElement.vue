@@ -11,7 +11,7 @@ defineProps<{
   <div class="w-full h-full relative select-none">
     <!-- Large Style (default) -->
     <template v-if="element.musicStyle === 'large' || !element.musicStyle">
-      <div class="w-full h-full bg-white/95 backdrop-blur-sm rounded-xl p-3 flex flex-col gap-3 shadow-lg pointer-events-none border border-gray-100">
+      <div class="w-full h-full bg-white/95 backdrop-blur-sm rounded-xl p-3 flex flex-col gap-3  pointer-events-none border border-gray-100">
         <img :src="element.content" class="w-full aspect-square object-cover rounded-lg shadow-sm" />
         <div class="text-center overflow-hidden pb-1">
           <p class="text-gray-900 font-bold text-lg leading-tight truncate">{{ element.musicTitle }}</p>
@@ -22,7 +22,7 @@ defineProps<{
 
     <!-- Small Style -->
     <template v-else-if="element.musicStyle === 'small'">
-      <div class="w-full h-full bg-white/90 backdrop-blur-md rounded-lg p-2 flex items-center gap-3 shadow-md pointer-events-none border border-white/20">
+      <div class="w-full h-full bg-white/90 backdrop-blur-md rounded-lg p-2 flex items-center gap-3  pointer-events-none border border-white/20">
         <img :src="element.content" class="w-12 h-12 rounded-md object-cover shrink-0" />
         <div class="flex flex-col min-w-0 flex-1">
           <p class="text-gray-900 font-bold text-sm truncate">{{ element.musicTitle }}</p>

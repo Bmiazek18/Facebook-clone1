@@ -19,6 +19,7 @@ const props = defineProps<{
     editing: boolean
     selected: boolean
   }
+  isViewing?: boolean
   onStartDrag: (e: MouseEvent, element: StoryElement) => void
   onStartResize: (e: MouseEvent, element: StoryElement) => void
   onToggleCrop: (id: string) => void
@@ -27,11 +28,18 @@ const props = defineProps<{
   onRemove: (id: string) => void
 }>()
 
-const emit = defineEmits<{ 'update-content': [id: string, value: string] }>()
+const emit = defineEmits<{
+  'update-content': [id: string, value: string],
+  'post-clicked': [postId: string]
+}>()
 
 const elementTransform = computed(() => `rotate(${props.element.rotation}deg) scale(${props.element.scale ?? 1})`)
 
-const handleStartDrag = (e: MouseEvent) => props.onStartDrag?.(e, props.element)
+const handleStartDrag = (e: MouseEvent) => {
+  if (!props.isViewing) {
+    props.onStartDrag?.(e, props.element)
+  }
+}
 const handleRemove = () => props.onRemove?.(props.element.id)
 
 const handleUpdateContent = (id: string, value: string) => {
@@ -41,37 +49,35 @@ const handleUpdateContent = (id: string, value: string) => {
 
 <template>
   <div
-    class="absolute cursor-move group transition-transform duration-75"
-    :class="{ 'z-50': state.active }"
+    class="absolute group transition-transform duration-75"
+    :class="{ 'z-50': state.active, 'cursor-move': !isViewing, 'pointer-events-none': isViewing && element.type !== 'post' }"
     :style="{ top: `${element.y}px`, left: `${element.x}px` }"
     @mousedown="handleStartDrag"
   >
     <div
       class="relative transition-transform duration-75 origin-center"
       :style="{
-        width: element.width ? element.width + 'px' : 'auto',
-        height: element.height ? element.height + 'px' : 'auto',
+
+        width: element.type === 'post' ? 'auto' : (element.width ? element.width + 'px' : 'auto'),
+        height: element.type === 'post' ? 'auto' : (element.height ? element.height + 'px' : 'auto'),
         transform: elementTransform,
         ...element.styles
       }"
     >
-      <!-- Remove Button -->
       <button
         data-story-control
-        v-if="!state.editing && !state.cropping"
+        v-if="!state.editing && !state.cropping && !isViewing"
         @click.stop="handleRemove"
         class="absolute -top-3 -right-3 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-600 z-50 transition-opacity shadow-md"
       >
         <Close :size="14" />
       </button>
 
-      <!-- Music Element -->
       <StoryMusicElement
         v-if="element.type === 'image' && element.musicTitle"
         :element="element"
       />
 
-      <!-- Image Element -->
       <StoryImageElement
         v-else-if="element.type === 'image'"
         :element="element"
@@ -81,25 +87,22 @@ const handleUpdateContent = (id: string, value: string) => {
         :on-toggle-crop="onToggleCrop"
       />
 
-      <!-- Link Element -->
       <StoryLinkElement
         v-else-if="element.type === 'link'"
         :element="element"
       />
 
-      <!-- Post Element -->
       <StoryPostElement
         v-else-if="element.type === 'post'"
         :element="element"
+
       />
 
-      <!-- Reel Element -->
       <StoryReelElement
         v-else-if="element.type === 'reel'"
         :element="element"
       />
 
-      <!-- Text Element -->
       <StoryTextElement
         v-else-if="element.type === 'text'"
         :element="element"

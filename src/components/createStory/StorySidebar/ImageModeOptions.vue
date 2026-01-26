@@ -1,35 +1,35 @@
 <template>
     <div class="flex flex-col mt-2 pb-4">
-        <div @click="emit('add-text')" class="flex items-center gap-4 px-4 py-3 hover:bg-gray-100 cursor-pointer transition active:scale-95">
-            <div class="bg-gray-200 p-2.5 rounded-full border border-gray-300">
-                <FormatFont :size="24" class="text-gray-700" />
+        <div @click="emit('add-text')" class="flex items-center gap-4 px-4 py-3 hover:bg-theme-hover cursor-pointer transition active:scale-95">
+            <div class="bg-theme-bg-secondary p-2.5 rounded-full border border-theme-border">
+                <FormatFont :size="24" class="text-theme-text-secondary" />
             </div>
-            <span class="font-medium text-gray-700 text-sm">Dodaj tekst</span>
+            <span class="font-medium text-theme-text-secondary text-sm">Dodaj tekst</span>
         </div>
 
-        <div @click="emit('toggle-music')" class="flex items-center gap-4 px-4 py-3 hover:bg-gray-100 cursor-pointer transition" :class="{'bg-blue-50 border-l-4 border-blue-500': isMusicModalOpen}">
-            <div class="bg-gray-200 p-2.5 rounded-full border border-gray-300">
-                <MusicNote :size="24" class="text-gray-700" />
+        <div @click="emit('toggle-music')" class="flex items-center gap-4 px-4 py-3 hover:bg-theme-hover cursor-pointer transition" :class="{'bg-blue-50 border-l-4 border-blue-500': isMusicModalOpen}">
+            <div class="bg-theme-bg-secondary p-2.5 rounded-full border border-theme-border">
+                <MusicNote :size="24" class="text-theme-text-secondary" />
             </div>
-            <span class="font-medium text-gray-700 text-sm">Dodaj muzykę</span>
+            <span class="font-medium text-theme-text-secondary text-sm">Dodaj muzykę</span>
         </div>
 
         <!-- Link Sticker -->
-        <div @click="emit('add-link')" class="flex items-center gap-4 px-4 py-3 hover:bg-gray-100 cursor-pointer transition active:scale-95">
+        <div @click="emit('add-link')" class="flex items-center gap-4 px-4 py-3 hover:bg-theme-hover cursor-pointer transition active:scale-95">
             <div class="bg-linear-to-r from-blue-500 to-purple-500 p-2.5 rounded-full">
                 <Link :size="24" class="text-white" />
             </div>
-            <span class="font-medium text-gray-700 text-sm">Dodaj naklejkę z linkiem</span>
+            <span class="font-medium text-theme-text-secondary text-sm">Dodaj naklejkę z linkiem</span>
         </div>
 
 
 
-        <div @click="toggleAltTextSection" class="flex items-center justify-between px-4 py-3 hover:bg-gray-100 cursor-pointer transition" :class="{'bg-gray-50': isAltTextExpanded}">
+        <div @click="toggleAltTextSection" class="flex items-center justify-between px-4 py-3 hover:bg-theme-hover cursor-pointer transition" :class="{'bg-theme-hover': isAltTextExpanded}">
             <div class="flex items-center gap-4">
-                <div class="bg-gray-200 p-2.5 rounded-full border border-gray-300">
-                    <AlphaABox :size="24" class="text-gray-700" />
+                <div class="bg-theme-bg-secondary p-2.5 rounded-full border border-theme-border">
+                    <AlphaABox :size="24" class="text-theme-text-secondary" />
                 </div>
-                <span class="font-medium text-gray-700 text-sm">Tekst alternatywny</span>
+                <span class="font-medium text-theme-text-secondary text-sm">Tekst alternatywny</span>
             </div>
         </div>
 

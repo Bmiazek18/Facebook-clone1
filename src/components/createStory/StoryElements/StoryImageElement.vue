@@ -21,6 +21,7 @@ defineProps<{
     >
       <img
         :src="element.content"
+        crossorigin="anonymous"
         class="absolute max-w-none pointer-events-none origin-center"
         :style="{
           transform: `translate(${element.cropX || 0}px, ${element.cropY || 0}px) scale(${element.cropZoom || 1})`,

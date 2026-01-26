@@ -13,7 +13,7 @@ defineProps<{
     <!-- Default Style -->
     <div
       v-if="element.linkStyle === 'default' || !element.linkStyle"
-      class="inline-flex items-center gap-2 bg-linear-to-r from-blue-500 to-purple-500 rounded-xl px-4 py-2.5 text-white font-medium shadow-lg"
+      class="inline-flex items-center gap-2 bg-linear-to-r from-blue-500 to-purple-500 rounded-xl px-4 py-2.5 text-white font-medium "
     >
       <Link :size="18" />
       <span>{{ element.linkTitle || element.content }}</span>
@@ -23,7 +23,7 @@ defineProps<{
     <!-- Minimal Style -->
     <div
       v-else-if="element.linkStyle === 'minimal'"
-      class="inline-flex items-center gap-2 bg-white/95 backdrop-blur border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 font-medium shadow-md"
+      class="inline-flex items-center gap-2 bg-white/95 backdrop-blur border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 font-medium "
     >
       <Link :size="18" class="text-gray-500" />
       <span>{{ element.linkTitle || element.content }}</span>
@@ -33,7 +33,7 @@ defineProps<{
     <!-- Button Style -->
     <div
       v-else-if="element.linkStyle === 'button'"
-      class="inline-block bg-black rounded-full px-6 py-3 text-white font-bold shadow-lg"
+      class="inline-block bg-black rounded-full px-6 py-3 text-white font-bold "
     >
       {{ element.linkTitle || element.content }}
     </div>
