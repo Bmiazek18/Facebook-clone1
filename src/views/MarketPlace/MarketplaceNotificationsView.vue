@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
 
@@ -40,53 +40,53 @@ const notifications = ref([
 <template>
   <div class="max-w-4xl mt-14 mx-auto">
 
-        <div class="bg-white rounded-t-lg shadow-sm border-b border-gray-200 p-4 flex justify-between items-center">
+        <div class="bg-theme-bg-secondary rounded-t-lg shadow-sm border-b border-theme-border p-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold">Powiadomienia</h1>
-            <button class="p-2 hover:bg-gray-100 rounded-full">
-                <DotsHorizontal class="text-gray-500" />
+            <button class="p-2 hover:bg-theme-hover rounded-full">
+                <DotsHorizontal class="text-theme-text-secondary" />
             </button>
         </div>
 
-        <div class="bg-white rounded-b-lg shadow-sm border-x border-b border-gray-200">
+        <div class="bg-theme-bg-secondary rounded-b-lg shadow-sm border-x border-b border-theme-border">
 
             <div class="p-4">
-                <h2 class="text-[17px] font-semibold text-gray-900 mb-3">Wcześniejsze</h2>
+                <h2 class="text-[17px] font-semibold text-theme-text mb-3">Wcześniejsze</h2>
 
                 <div class="space-y-2">
                     <div
                         v-for="notification in notifications"
                         :key="notification.id"
-                        class="flex items-start p-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group relative"
+                        class="flex items-start p-2 rounded-lg hover:bg-theme-hover transition-colors cursor-pointer group relative"
                     >
                         <div class="relative shrink-0 mr-3">
                             <img
                                 :src="notification.image"
                                 alt="Product"
-                                class="w-14 h-14 rounded-md object-cover border border-gray-200"
+                                class="w-14 h-14 rounded-md object-cover border border-theme-border"
                             >
-                            <div v-if="notification.unread" class="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white"></div>
+                            <div v-if="notification.unread" class="absolute -top-1 -right-1 w-3 h-3 bg-theme-primary rounded-full border-2 border-theme-bg-secondary"></div>
                         </div>
 
                         <div class="flex-1 pr-8">
-                            <p class="text-[15px] leading-snug text-gray-900">
+                            <p class="text-[15px] leading-snug text-theme-text">
                                 {{ notification.textPrefix }}
                                 <span class="font-bold">{{ notification.highlight1 }}</span>
                                 {{ notification.textMiddle }}
                                 <span v-if="notification.highlight2" class="font-bold">{{ notification.highlight2 }}</span>
                                 {{ notification.textSuffix }}
                             </p>
-                            <span class="text-xs font-medium text-blue-600 block mt-1" v-if="notification.unread">Nowe</span>
-                            <span class="text-xs text-gray-500 block mt-1" v-else>{{ notification.time }}</span>
+                            <span class="text-xs font-medium text-theme-primary block mt-1" v-if="notification.unread">Nowe</span>
+                            <span class="text-xs text-theme-text-secondary block mt-1" v-else>{{ notification.time }}</span>
                         </div>
 
-                        <button class="absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity border border-gray-200">
-                            <DotsHorizontal :size="20" class="text-gray-600" />
+                        <button class="absolute right-2 top-1/2 -translate-y-1/2 bg-theme-bg-secondary shadow rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity border border-theme-border">
+                            <DotsHorizontal :size="20" class="text-theme-text" />
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div v-if="notifications.length === 0" class="p-8 text-center text-gray-500">
+            <div v-if="notifications.length === 0" class="p-8 text-center text-theme-text-secondary">
               Brak powiadomień
             </div>
 

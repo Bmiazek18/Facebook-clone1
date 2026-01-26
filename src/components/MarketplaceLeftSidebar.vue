@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { defineEmits, defineProps } from 'vue';
 import Magnify from 'vue-material-design-icons/Magnify.vue';
 import Cog from 'vue-material-design-icons/Cog.vue';
@@ -56,64 +56,64 @@ const openLocation = () => emit('open-location');
 </script>
 
 <template>
-  <aside class="w-[360px] bg-white h-screen fixed left-0 top-0 overflow-y-auto border-r border-gray-200 shadow-sm z-10 flex flex-col">
+  <aside class="w-[360px] bg-theme-bg-secondary h-screen fixed left-0 top-0 overflow-y-auto border-r border-theme-border shadow-sm z-10 flex flex-col">
 
-      <div class="p-4 flex justify-between items-center sticky top-0 bg-white z-20">
-        <h1 class="text-2xl font-bold">Marketplace</h1>
-        <button class="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition">
-          <Cog :size="20" />
+      <div class="p-4 flex justify-between items-center sticky top-0 bg-theme-bg-secondary z-20">
+        <h1 class="text-2xl font-bold text-theme-text">Marketplace</h1>
+        <button class="p-2 bg-theme-bg-secondary rounded-full hover:bg-theme-hover transition">
+          <Cog :size="20" class="text-theme-text" />
         </button>
       </div>
 
       <div class="px-4 pb-2">
-        <div class="relative bg-gray-100 rounded-full h-10 flex items-center px-3">
-          <Magnify :size="20" class="text-gray-500 mr-2" />
+        <div class="relative bg-theme-bg rounded-full h-10 flex items-center px-3">
+          <Magnify :size="20" class="text-theme-text-secondary mr-2" />
           <input
             type="text"
             placeholder="Wyszukaj w Marketplace"
-            class="bg-transparent border-none outline-none text-sm w-full placeholder-gray-500"
+            class="bg-transparent border-none outline-none text-sm w-full placeholder:text-theme-text-secondary text-theme-text-secondary"
           >
         </div>
       </div>
 
       <nav class="px-2 mt-2 space-y-1">
-        <router-link to="/marketplace" class="flex items-center px-2 py-2 bg-blue-50 text-blue-600 rounded-lg group">
-          <div class="p-2 bg-blue-500 text-white rounded-full mr-3">
+        <router-link to="/marketplace" class="flex items-center px-2 py-2 bg-theme-bg-tertiary text-theme-primary rounded-lg group">
+          <div class="p-2 bg-theme-primary text-white rounded-full mr-3">
             <Storefront :size="20" />
           </div>
           <span class="font-medium text-[15px]">Przeglądaj wszystkie</span>
         </router-link>
 
-        <router-link to="/marketplace/notifications" class="flex items-center px-2 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
-          <div class="p-2 bg-gray-200 rounded-full mr-3">
-            <Bell :size="20" />
+        <router-link to="/marketplace/notifications" class="flex items-center px-2 py-2 hover:bg-theme-hover rounded-lg transition cursor-pointer">
+          <div class="p-2 bg-theme-bg rounded-full mr-3">
+            <Bell :size="20" class="text-theme-text" />
           </div>
-          <span class="font-medium text-[15px]">Powiadomienia</span>
+          <span class="font-medium text-[15px] text-theme-text">Powiadomienia</span>
         </router-link>
 
-        <router-link to="/marketplace" class="flex items-center px-2 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
-            <div class="p-2 bg-gray-200 rounded-full mr-3">
-            <Shopping :size="20" />
+        <router-link to="/marketplace" class="flex items-center px-2 py-2 hover:bg-theme-hover rounded-lg transition cursor-pointer">
+            <div class="p-2 bg-theme-bg rounded-full mr-3">
+            <Shopping :size="20" class="text-theme-text" />
           </div>
-          <span class="font-medium text-[15px]">Kupno</span>
+          <span class="font-medium text-[15px] text-theme-text">Kupno</span>
         </router-link>
 
-        <router-link to="/marketplace/you/dashboard" class="flex items-center px-2 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
-          <div class="p-2 bg-gray-200 rounded-full mr-3">
-            <TagOutline :size="20" />
+        <router-link to="/marketplace/you/dashboard" class="flex items-center px-2 py-2 hover:bg-theme-hover rounded-lg transition cursor-pointer">
+          <div class="p-2 bg-theme-bg rounded-full mr-3">
+            <TagOutline :size="20" class="text-theme-text" />
           </div>
-          <span class="font-medium text-[15px]">Sprzedaż</span>
+          <span class="font-medium text-[15px] text-theme-text">Sprzedaż</span>
         </router-link>
       </nav>
 
-      <div class="px-4 py-3 border-b border-gray-300">
-        <RouterLink to="/marketplace/create/item" class="w-full bg-blue-100 text-blue-600 font-semibold py-2 rounded-lg hover:bg-blue-200 transition text-sm flex justify-center items-center">
+      <div class="px-4 py-3 border-b border-theme-border">
+        <RouterLink to="/marketplace/create/item" class="w-full bg-theme-bg-tertiary text-theme-primary font-semibold py-2 rounded-lg hover:bg-theme-hover transition text-sm flex justify-center items-center">
           <span class="mr-1 text-lg">+</span> Utwórz nowe ogłoszenie
         </RouterLink>
       </div>
 
-      <div class="px-4 py-4 border-b border-gray-300">
-        <h3 class="font-semibold text-[17px] mb-2">Lokalizacja</h3>
+      <div class="px-4 py-4 border-b border-theme-border">
+        <h3 class="font-semibold text-[17px] mb-2 text-theme-text">Lokalizacja</h3>
         <button @click="openLocation" class="text-blue-600 text-sm hover:underline flex items-center">
           <MapMarker :size="16" class="mr-1" />
           Łęczyca gmina - W promieniu {{ props.selectedRadius }} km
@@ -122,14 +122,14 @@ const openLocation = () => emit('open-location');
 
 
       <div class="px-2 py-4">
-        <h3 class="font-semibold text-[17px] px-2 mb-2">Kategorie</h3>
+        <h3 class="font-semibold text-[17px] px-2 mb-2 text-theme-text">Kategorie</h3>
         <ul class="space-y-1">
           <li v-for="(cat, index) in categories" :key="index">
-            <a href="#" class="flex items-center px-2 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+            <a href="#" class="flex items-center px-2 py-2 hover:bg-theme-hover rounded-lg cursor-pointer">
               <div class="mr-3">
-                <component :is="cat.icon" :size="20" class="text-gray-800" />
+                <component :is="cat.icon" :size="20" class="text-theme-text" />
               </div>
-              <span class="font-medium text-[15px]">{{ cat.name }}</span>
+              <span class="font-medium text-[15px] text-theme-text">{{ cat.name }}</span>
             </a>
           </li>
         </ul>

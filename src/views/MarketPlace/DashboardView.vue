@@ -1,6 +1,4 @@
-<script setup>
-import { ref } from 'vue';
-
+<script setup lang="ts">
 // Import ikon z vue-material-design-icons
 // sidebar moved to MarketplaceSidebar.vue
 import Star from 'vue-material-design-icons/Star.vue';
@@ -35,26 +33,26 @@ const marketStats = [
 <template>
   <div class="max-w-5xl mx-auto mt-10 space-y-6">
 
-    <section class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <section class="bg-theme-bg-secondary rounded-lg shadow-sm border border-theme-border p-4">
       <h2 class="text-lg font-bold mb-3">Podsumowanie</h2>
-      <div class="border border-gray-200 rounded-lg p-4 w-full md:w-1/2">
+      <div class="border border-theme-border rounded-lg p-4 w-full md:w-1/2">
         <div class="flex items-center mb-1">
           <span class="text-2xl font-bold mr-2">0</span>
-          <Star class="text-black" />
+          <Star class="text-theme-text" />
         </div>
-        <div class="text-sm text-gray-600">Ocena sprzedawcy</div>
-        <div class="text-xs text-gray-400 mt-1">0 ocen</div>
+        <div class="text-sm text-theme-text-secondary">Ocena sprzedawcy</div>
+        <div class="text-xs text-theme-text-secondary mt-1">0 ocen</div>
       </div>
     </section>
 
-    <section class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <section class="bg-theme-bg-secondary rounded-lg shadow-sm border border-theme-border p-4">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-bold">Twoje ogłoszenia</h2>
         <div class="space-x-2">
-          <button class="px-3 py-1.5 text-blue-600 font-semibold bg-blue-50 rounded hover:bg-blue-100 text-sm">
+          <button class="px-3 py-1.5 text-theme-primary font-semibold bg-theme-bg-tertiary rounded hover:bg-theme-hover text-sm">
             <Pencil class="inline-block mr-1 align-middle text-sm" /> Promuj ogłoszenia
           </button>
-          <button class="px-3 py-1.5 text-blue-600 font-semibold bg-blue-50 rounded hover:bg-blue-100 text-sm">
+          <button class="px-3 py-1.5 text-theme-primary font-semibold bg-theme-bg-tertiary rounded hover:bg-theme-hover text-sm">
             <Pencil class="inline-block mr-1 align-middle text-sm" /> Utwórz nowe ogłoszenie
           </button>
         </div>
@@ -64,22 +62,22 @@ const marketStats = [
         <div
           v-for="(stat, index) in listingStats"
           :key="index"
-          class="border border-gray-200 rounded-lg p-3 flex flex-col justify-center min-h-[80px]"
+          class="border border-theme-border rounded-lg p-3 flex flex-col justify-center min-h-[80px]"
         >
           <span class="text-xl font-bold">{{ stat.value }}</span>
-          <span class="text-sm text-gray-600 leading-tight mt-1">{{ stat.label }}</span>
+          <span class="text-sm text-theme-text-secondary leading-tight mt-1">{{ stat.label }}</span>
         </div>
       </div>
 
-      <div class="mt-4 text-center border-t border-gray-100 pt-3">
-        <a href="#" class="text-blue-600 font-medium text-sm hover:underline">Zobacz wszystkie ogłoszenia</a>
+      <div class="mt-4 text-center border-t border-theme-border pt-3">
+        <a href="#" class="text-theme-primary font-medium text-sm hover:underline">Zobacz wszystkie ogłoszenia</a>
       </div>
     </section>
 
-    <section class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <section class="bg-theme-bg-secondary rounded-lg shadow-sm border border-theme-border p-4">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-bold">Statystyki dotyczące Marketplace</h2>
-        <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded text-sm font-medium flex items-center">
+        <button class="bg-theme-bg-tertiary hover:bg-theme-hover text-theme-text px-3 py-1.5 rounded text-sm font-medium flex items-center">
           Ostatnie 7 dni <ChevronDown class="ml-1" />
         </button>
       </div>
@@ -88,23 +86,23 @@ const marketStats = [
         <div
           v-for="(stat, index) in marketStats"
           :key="index"
-          class="border border-gray-200 rounded-lg p-4 flex flex-col min-h-[100px]"
+          class="border border-theme-border rounded-lg p-4 flex flex-col min-h-[100px]"
         >
           <div class="mb-2">
-             <component :is="stat.icon" class="text-gray-500" />
+             <component :is="stat.icon" class="text-theme-text-secondary" />
           </div>
           <span class="text-xl font-bold">{{ stat.value }}</span>
-          <span class="text-sm text-gray-600 mt-1 leading-tight">{{ stat.label }}</span>
+          <span class="text-sm text-theme-text-secondary mt-1 leading-tight">{{ stat.label }}</span>
         </div>
       </div>
 
-      <div class="mt-4 text-center border-t border-gray-100 pt-3">
-        <a href="#" class="text-blue-600 font-medium text-sm hover:underline">Zobacz więcej statystyk</a>
+      <div class="mt-4 text-center border-t border-theme-border pt-3">
+        <a href="#" class="text-theme-primary font-medium text-sm hover:underline">Zobacz więcej statystyk</a>
       </div>
     </section>
 
-    <div class="fixed bottom-6 right-6 bg-white p-3 rounded-full shadow-lg cursor-pointer hover:bg-gray-50 border border-gray-200">
-      <Pencil class="text-gray-700" />
+    <div class="fixed bottom-6 right-6 bg-theme-bg-secondary p-3 rounded-full shadow-lg cursor-pointer hover:bg-theme-hover border border-theme-border">
+      <Pencil class="text-theme-text" />
     </div>
 
   </div>

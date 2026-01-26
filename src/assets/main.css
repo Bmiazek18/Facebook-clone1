@@ -8,6 +8,12 @@
   --color-text-secondary: #65676B;
   --color-border: #CED0D4;
   --color-hover: #E5E6E9;
+  --color-hover-strong: #D8DADF;
+  --color-bg-subtle: #E5E6E9;
+  --color-primary: #1877F2;
+  --color-primary-hover: #166FE5;
+  --color-primary-subtle: #EBF5FF;
+  --color-primary-subtle-hover: #DBEAFE;
 }
 
 .dark {
@@ -18,6 +24,12 @@
   --color-text-secondary: #b0b3b8;
   --color-border: #3A3D42;
   --color-hover: #35373D;
+  --color-hover-strong: #4E4F50;
+  --color-bg-subtle: #35373D;
+  --color-primary: #1877F2;
+  --color-primary-hover: #166FE5;
+  --color-primary-subtle: #0E2B4B;
+  --color-primary-subtle-hover: #173A64;
 }
 @theme {
   --breakpoint-3xl: 120rem;
@@ -31,12 +43,20 @@
   background-color: var(--color-bg-secondary);
 }
 
+.bg-theme-bg-subtle {
+    background-color: var(--color-bg-subtle);
+}
+
 .text-theme-text {
   color: var(--color-text);
 }
 
 .text-theme-text-secondary {
   color: var(--color-text-secondary);
+}
+
+.text-theme-text-muted {
+    color: var(--color-text-secondary);
 }
 
 .border-theme-border {
@@ -51,20 +71,32 @@
   background-color: var(--color-hover);
 }
 
-body {
-  line-height: 1.6;
-  font-family: ' system-ui, -apple-system, BlinkMacSystemFont, ".SFNSText-Regular", sans-serif;'
-
-  font-size: 15px;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-/* Base scrollbar hidden by default */
-.scrollbar-hidden::-webkit-scrollbar {
-  width: 8px;
+.hover\:bg-theme-bg-hover:hover {
+  background-color: var(--color-hover);
 }
 
+.hover\:bg-theme-hover-strong:hover {
+  background-color: var(--color-hover-strong);
+}
+
+.bg-theme-primary {
+  background-color: var(--color-primary);
+}
+.text-theme-primary {
+  color: var(--color-primary);
+}
+.hover\:bg-theme-primary-hover:hover {
+  background-color: var(--color-primary-hover);
+}
+.bg-theme-primary-subtle {
+  background-color: var(--color-primary-subtle);
+}
+.hover\\:bg-theme-primary-subtle-hover:hover {
+  background-color: var(--color-primary-subtle-hover);
+}
+.border-theme-primary {
+  border-color: var(--color-primary);
+}
 
 .scrollbar-hidden::-webkit-scrollbar-thumb {
   background-color: rgba(107, 114, 128, 0); /* fully transparent */

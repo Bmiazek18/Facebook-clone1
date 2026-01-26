@@ -27,7 +27,7 @@ const handleApply = (radius: number) => {
 </script>
 
 <template>
-  <div class="flex min-h-screen bg-[#F0F2F5] font-sans text-gray-900">
+  <div class="flex min-h-screen bg-theme-bg font-sans text-theme-text">
     <MarketplaceLeftSidebar 
       :selectedRadius="selectedRadius" 
       @open-location="openLocationModal" 

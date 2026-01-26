@@ -5,7 +5,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 // Import ikon - dodano nowe ikony potrzebne do odwzorowania UI
 import Close from 'vue-material-design-icons/Close.vue';
-import MapMarker from 'vue-material-design-icons/MapMarker.vue';
+
 import FacebookMessenger from 'vue-material-design-icons/FacebookMessenger.vue';
 import Bookmark from 'vue-material-design-icons/Bookmark.vue';
 import ShareVariant from 'vue-material-design-icons/ShareVariant.vue';
@@ -193,7 +193,7 @@ const openSellerModal = () => {
   <div
     class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 overflow-y-auto"
   >
-    <div class="w-full relative flex flex-col lg:flex-row h-full rounded-lg bg-white overflow-hidden">
+    <div class="w-full relative flex flex-col lg:flex-row h-full rounded-lg bg-theme-bg-secondary overflow-hidden">
 
       <button
         @click="goBack"
@@ -215,9 +215,9 @@ const openSellerModal = () => {
       </div>
 
       <div
-        class="w-full lg:w-[360px] xl:w-[400px] flex flex-col bg-white border-l border-gray-200 h-full max-h-full"
+        class="w-full lg:w-[360px] xl:w-[400px] flex flex-col bg-theme-bg-secondary border-l border-theme-border h-full max-h-full"
       >
-        <div class="w-full flex justify-end py-2 px-4 border-b border-gray-200 shrink-0">
+        <div class="w-full flex justify-end py-2 px-4 border-b border-theme-border shrink-0">
           <NavbarRight />
         </div>
 
@@ -225,106 +225,98 @@ const openSellerModal = () => {
             <HoverScrollbar class="h-full overflow-y-auto">
               <div class="p-4 pb-10">
 
-                <h1 class="text-2xl font-bold text-gray-900 mb-1">
+                <h1 class="text-2xl font-bold text-theme-text mb-1">
                   {{ currentItem.title }}
                 </h1>
-                <div class="text-lg font-semibold text-gray-900 mb-1">
+                <div class="text-lg font-semibold text-theme-text mb-1">
                     {{ currentItem.price }}
                 </div>
-                <div class="text-xs text-gray-500 mb-4">
+                <div class="text-xs text-theme-text-secondary mb-4">
                   Opublikowano {{ currentItem.postedDate }} w: {{ currentItem.location.split(',')[0] }}
                 </div>
 
                 <div class="flex gap-2 mb-6">
-                    <button class="flex-1 flex items-center justify-center gap-2 bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold py-2 px-4 rounded-md transition-colors">
+                    <button class="flex-1 flex items-center justify-center gap-2 bg-theme-bg-tertiary hover:bg-theme-hover text-theme-primary font-semibold py-2 px-4 rounded-md transition-colors">
                         <FacebookMessenger :size="20" />
                         Wyślij wiadomość
                     </button>
-                    <button class="bg-gray-100 hover:bg-gray-200 p-2 rounded-md text-gray-700 transition-colors">
+                    <button class="bg-theme-bg hover:bg-theme-hover p-2 rounded-md text-theme-text-secondary transition-colors">
                         <Bookmark :size="24" />
                     </button>
                     <button
                       @click="openShareModal"
-                      class="bg-gray-100 hover:bg-gray-200 p-2 rounded-md text-gray-700 transition-colors"
+                      class="bg-theme-bg hover:bg-theme-hover p-2 rounded-md text-theme-text-secondary transition-colors"
                       title="Udostępnij"
                     >
                         <ShareVariant :size="24" />
                     </button>
-                    <button class="bg-gray-100 hover:bg-gray-200 p-2 rounded-md text-gray-700 transition-colors">
+                    <button class="bg-theme-bg hover:bg-theme-hover p-2 rounded-md text-theme-text-secondary transition-colors">
                         <DotsHorizontal :size="24" />
                     </button>
                 </div>
 
                 <div class="mb-6">
-                    <h2 class="text-lg font-bold text-gray-900 mb-3">Informacje o pojeździe</h2>
+                    <h2 class="text-lg font-bold text-theme-text mb-3">Informacje o pojeździe</h2>
                     <div class="space-y-3">
-                        <div class="flex items-center gap-3 text-gray-900">
-                            <Speedometer :size="20" class="text-gray-500" />
+                        <div class="flex items-center gap-3 text-theme-text">
+                            <Speedometer :size="20" class="text-theme-text-secondary" />
                             <span class="text-[15px]">Przebieg {{ currentItem.details?.mileage }}</span>
                         </div>
-                        <div class="flex items-center gap-3 text-gray-900">
-                            <CarShiftPattern :size="20" class="text-gray-500" />
+                        <div class="flex items-center gap-3 text-theme-text">
+                            <CarShiftPattern :size="20" class="text-theme-text-secondary" />
                             <span class="text-[15px]">{{ currentItem.details?.transmission }}</span>
                         </div>
-                        <div class="flex items-center gap-3 text-gray-900">
-                            <Palette :size="20" class="text-gray-500" />
+                        <div class="flex items-center gap-3 text-theme-text">
+                            <Palette :size="20" class="text-theme-text-secondary" />
                             <span class="text-[15px]">Kolor karoserii: {{ currentItem.details?.color }}</span>
                         </div>
                     </div>
                 </div>
 
-                <hr class="border-gray-200 my-4" />
-
-                <div class="mb-6">
-                  <h2 class="text-lg font-bold text-gray-900 mb-2">Opis sprzedawcy</h2>
-                  <p class="text-gray-900 text-[15px] whitespace-pre-wrap leading-relaxed">
-                    {{ currentItem.description }}
-                  </p>
-                  <button class="text-gray-900 font-semibold text-[15px] mt-2 hover:underline">Wyświetl mniej</button>
-                </div>
+                <hr class="border-theme-border my-4" />
 
                 <div class="mb-6">
                     <div
                       ref="mapContainer"
-                      class="rounded-lg overflow-hidden h-32 w-full relative bg-gray-100 mb-2 border border-gray-200"
+                      class="rounded-lg overflow-hidden h-32 w-full relative bg-theme-bg mb-2 border border-theme-border"
                     >
                     </div>
-                    <div class="font-bold text-gray-900 text-[15px]">{{ currentItem.location }}</div>
-                    <div class="text-xs text-gray-500">Lokacja jest przybliżona</div>
+                    <div class="font-bold text-theme-text text-[15px]">{{ currentItem.location }}</div>
+                    <div class="text-xs text-theme-text-secondary">Lokacja jest przybliżona</div>
                 </div>
 
-                <hr class="border-gray-200 my-4" />
+                <hr class="border-theme-border my-4" />
 
                <div class="flex justify-between items-baseline mb-4">
-                      <h2 class="text-[20px] font-bold text-gray-900">Informacje o sprzedawcy</h2>
-                      <button class="text-[#0064d1] font-semibold text-[15px] hover:underline">
+                      <h2 class="text-[20px] font-bold text-theme-text">Informacje o sprzedawcy</h2>
+                      <button class="text-theme-primary font-semibold text-[15px] hover:underline">
                         Informacje o sprzedawcy
                       </button>
                   </div>
 
                   <div @click="openSellerModal" class="flex items-center gap-3 mb-3 cursor-pointer">
                     <img
-                      class="rounded-full w-12 h-12 object-cover bg-gray-200"
+                      class="rounded-full w-12 h-12 object-cover bg-theme-bg"
                       :src="currentItem.seller.avatar"
                       alt="Seller avatar"
                     >
                     <div class="flex flex-col justify-center">
-                      <div class="font-semibold text-[17px] text-gray-900">
+                      <div class="font-semibold text-[17px] text-theme-text">
                         {{ currentItem.seller.name }}
                       </div>
                     </div>
                   </div>
 
                   <div @click="openSellerModal" class="flex items-center gap-3 mb-6 cursor-pointer">
-                    <div class="w-6 h-6 rounded-full bg-gray-500 flex items-center justify-center shrink-0">
-                         <Facebook :size="16" class="text-white relative top-[1px]" />
+                    <div class="w-6 h-6 rounded-full bg-theme-text-secondary flex items-center justify-center shrink-0">
+                         <Facebook :size="16" class="text-theme-text relative top-[1px]" />
                     </div>
-                    <div class="text-[15px] text-gray-900">
+                    <div class="text-[15px] text-theme-text">
                         Użytkownik Facebooka od {{ currentItem.seller.memberSince }}
                     </div>
                   </div>
 
-                  <button class="w-full bg-[#0064d1] hover:bg-[#0055b3] text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 h-10">
+                  <button class="w-full bg-theme-primary hover:bg-theme-primary-hover text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 h-10">
                      <FacebookMessenger :size="20" />
                      Wyślij wiadomość do sprzedawcy
                   </button>

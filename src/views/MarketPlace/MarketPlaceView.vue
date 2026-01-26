@@ -91,7 +91,7 @@ const listings = ref([
   <div>
 
       <div class="flex justify-between items-center mt-20">
-        <h2 class="text-xl font-bold">Propozycje na dziś</h2>
+        <h2 class="text-xl font-bold text-theme-text">Propozycje na dziś</h2>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -102,7 +102,7 @@ const listings = ref([
           :to="`/marketplace/item/${item.id}`"
           class="cursor-pointer group block"
         >
-          <div class="aspect-square w-full rounded-lg overflow-hidden bg-gray-200 mb-2 relative">
+          <div class="aspect-square w-full rounded-lg overflow-hidden bg-theme-bg mb-2 relative">
             <img
               :src="item.image"
               alt="Listing"
@@ -111,16 +111,16 @@ const listings = ref([
           </div>
 
           <div class="mb-0.5">
-            <span class="font-semibold text-lg" :class="item.isFree ? 'text-green-700' : 'text-gray-900'">
+            <span class="font-semibold text-lg" :class="item.isFree ? 'text-green-700' : 'text-theme-text'">
               {{ item.price }}
             </span>
           </div>
 
-          <div class="text-[15px] leading-snug text-gray-900 font-medium mb-0.5 truncate">
+          <div class="text-[15px] leading-snug text-theme-text font-medium mb-0.5 truncate">
             {{ item.title }}
           </div>
 
-          <div class="text-[13px] text-gray-500 truncate">
+          <div class="text-[13px] text-theme-text-secondary truncate">
             {{ item.location }}
           </div>
         </RouterLink>
@@ -135,13 +135,13 @@ const listings = ref([
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--theme-bg-secondary);
 }
 ::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: var(--theme-text-secondary);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #aaa;
+  background: var(--theme-text);
 }
 </style>

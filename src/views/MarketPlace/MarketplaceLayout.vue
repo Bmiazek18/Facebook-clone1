@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
 import MarketplaceSidebar from '@/components/MarketplaceSidebar.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
@@ -27,7 +27,7 @@ const handleApply = (radius) => {
 </script>
 
 <template>
-  <div class="flex min-h-screen bg-[#F0F2F5] font-sans text-gray-900">
+  <div class="flex min-h-screen bg-theme-bg font-sans text-theme-text">
     <MarketplaceSidebar
       :selectedRadius="selectedRadius"
       @open-location="openLocationModal"
