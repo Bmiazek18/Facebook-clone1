@@ -1,11 +1,11 @@
 <template>
   <div class="
      w-[113px] h-[200px] mt-3 rounded-xl shadow-sm overflow-hidden flex flex-col relative group transition duration-300 ease-in-out cursor-pointer shrink-0
-    ">
+    "       @click="createStory">
 
     <div class="absolute inset-x-0 top-0 h-[70%] z-0">
       <img
-        src="https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg?stp=dst-jpg_s320x320_tt6&amp;_nc_cat=104&amp;ccb=1-7&amp;_nc_sid=e99d92&amp;_nc_ohc=HjlBiaeY_e0Q7kNvwEN3-iG&amp;_nc_oc=AdnWBetTrKBcEcnqPCk9tA9-PRqtuwgxGOfQFcyXlxTP07KnY41OKQ00nb6SmFwqeF1Mk2Gq_RhtH3HLWf9qFDxD&amp;_nc_zt=24&amp;_nc_ht=scontent-waw2-1.xx&amp;_nc_gid=ptyBC2FNhs8UFm_JvSpjUw&amp;oh=00_AfhnQR53dqp1aOvigdhHIN8a2MjP5PP7mY0okqiTDnkcig&amp;oe=691C0CAC"
+        :src="auth.currentUser?.avatar"
         alt="Osoby na stacji metra"
         class="
           w-full h-full object-cover
@@ -18,7 +18,7 @@
       >
       </div>
 
-    <div class="absolute inset-x-0 bottom-0 h-[30%] bg-theme-bg-secondary pt-4 flex flex-col items-center justify-start z-50
+    <div class="absolute inset-x-0 bottom-0 h-[30%] bg-theme-bg-secondary pt-4 flex flex-col items-center justify-start z-45
     group-hover:bg-gray-200 transition-colors duration-300 ease-in-out">
       <button
         class="
@@ -31,15 +31,14 @@
           items-center
           justify-center
           shadow-md
-
           transition-colors
           mt-[-30px]
-
-          ring-4 ring-theme-bg-secondary
+          ring-4
+          dark:ring-[#252729]
           p-0
         "
         aria-label="Utwórz relację"
-        @click="createStory"
+
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -61,11 +60,12 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-// Funkcja, która zostanie wywołana po kliknięciu przycisku
+const auth = useAuthStore()
 const createStory = () => {
   router.push('/stories/create');
 };

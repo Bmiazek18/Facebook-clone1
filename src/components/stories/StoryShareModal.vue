@@ -1,19 +1,19 @@
 <template>
-  <div class="w-[500px] mx-auto bg-white rounded-xl shadow-lg border border-gray-200 font-sans overflow-hidden">
+  <div class="w-[500px] mx-auto bg-theme-bg-secondary rounded-xl shadow-lg border border-theme-border font-sans overflow-hidden">
 
     <div class="transition-wrapper" ref="wrapperRef">
       <Transition :name="transitionName" mode="out-in" @before-enter="updateHeight()">
         <!-- Main View -->
-        <div v-if="currentView === 'main'" key="main" class="view-container bg-white" data-view="main">
+        <div v-if="currentView === 'main'" key="main" class="view-container bg-theme-bg-secondary" data-view="main">
           <div class="p-4 flex items-start gap-3">
             <img :src="postsStore.currentUser.avatar" class="w-10 h-10 rounded-full" alt="Profile">
             <div class="flex-1">
-              <h3 class="font-bold text-gray-900">{{ postsStore.currentUser.name }}</h3>
-              <div class="flex gap-2 mt-1 text-[13px] font-semibold text-gray-700">
-                <button class="bg-gray-100 px-3 py-1 rounded-md">Aktualności</button>
+              <h3 class="font-bold text-theme-text">{{ postsStore.currentUser.name }}</h3>
+              <div class="flex gap-2 mt-1 text-[13px] font-semibold text-theme-text-secondary">
+                <button class="bg-theme-bg-tertiary px-3 py-1 rounded-md">Aktualności</button>
                 <button
                   @click="openPrivacySelector"
-                  class="bg-gray-100 px-3 py-1 rounded-md flex items-center gap-1 hover:bg-gray-200 transition-colors"
+                  class="bg-theme-bg-tertiary px-3 py-1 rounded-md flex items-center gap-1 hover:bg-theme-hover transition-colors"
                 >
                   <component :is="selectedPrivacy.icon" :size="14" />
                   {{ selectedPrivacy.label }}
@@ -27,10 +27,10 @@
             <textarea
               v-model="textareaContent"
               placeholder="Napisz coś o tym..."
-              class="w-full h-20 outline-none resize-none text-[17px] pr-10"
+              class="w-full h-20 outline-none resize-none text-[17px] pr-10 bg-transparent text-theme-text"
             ></textarea>
 
-            <div class="absolute bottom-2 right-4 text-gray-500 cursor-pointer">
+            <div class="absolute bottom-2 right-4 text-theme-text-secondary cursor-pointer">
               <VDropdown
                 placement="top"
                 :distance="10"
@@ -53,22 +53,22 @@
           <div class="px-4 pb-4">
             <button
               @click="handleShareNow"
-              class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              class="w-full bg-theme-primary text-white font-bold py-2 rounded-lg hover:bg-theme-primary-hover transition-colors"
             >
               Udostępnij teraz
             </button>
           </div>
 
-          <hr class="border-gray-100">
+          <hr class="border-theme-border">
 
           <div class="p-4">
-            <h4 class="font-bold mb-4">Wyślij w Messengerze</h4>
+            <h4 class="font-bold mb-4 text-theme-text">Wyślij w Messengerze</h4>
             <div class="relative group">
               <!-- Left arrow -->
               <button
                 v-if="!isStart"
                 @click="scrollLeft"
-                class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-theme-bg-secondary rounded-full shadow-lg border border-theme-border flex items-center justify-center hover:bg-theme-hover transition-colors"
               >
                 <ChevronLeftIcon :size="24" fillColor="#4B5563" />
               </button>
@@ -84,9 +84,9 @@
                   class="flex flex-col items-center min-w-[72px] cursor-pointer group/contact"
                 >
                   <div class="relative">
-                    <img :src="contact.avatar" class="w-14 h-14 rounded-full border-2 border-gray-200 group-hover/contact:border-blue-500 transition-colors">
+                    <img :src="contact.avatar" class="w-14 h-14 rounded-full border-2 border-theme-border group-hover/contact:border-theme-primary transition-colors">
                   </div>
-                  <span class="text-[11px] mt-2 text-center line-clamp-1 w-full">{{ contact.name }}</span>
+                  <span class="text-[11px] mt-2 text-center line-clamp-1 w-full text-theme-text">{{ contact.name }}</span>
                 </div>
               </div>
 
@@ -94,17 +94,17 @@
               <button
                 v-if="!isEnd"
                 @click="scrollRight"
-                class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-theme-bg-secondary rounded-full shadow-lg border border-theme-border flex items-center justify-center hover:bg-theme-hover transition-colors"
               >
                 <ChevronRightIcon :size="24" fillColor="#4B5563" />
               </button>
             </div>
           </div>
 
-          <hr class="border-gray-100">
+          <hr class="border-theme-border">
 
           <div class="p-4">
-            <h4 class="font-bold mb-4">Udostępnij</h4>
+            <h4 class="font-bold mb-4 text-theme-text">Udostępnij</h4>
             <div class="flex gap-3 overflow-x-auto no-scrollbar">
               <button
                 v-for="action in shareActions"
@@ -112,10 +112,10 @@
                 @click="handleShareAction(action.id)"
                 class="flex flex-col items-center gap-1 px-[5px]  shrink-0 cursor-pointer group"
               >
-                <div class="w-12 h-12 bg-gray-200 group-hover:bg-gray-300 rounded-full flex items-center justify-center text-gray-700 transition-colors">
+                <div class="w-12 h-12 bg-theme-bg-tertiary group-hover:bg-theme-hover rounded-full flex items-center justify-center text-theme-text-secondary transition-colors">
                   <component :is="action.icon" :size="24" />
                 </div>
-                <span class="text-[11px] font-medium text-gray-600 text-center">{{ action.label }}</span>
+                <span class="text-[11px] font-medium text-theme-text text-center">{{ action.label }}</span>
               </button>
             </div>
           </div>
@@ -125,7 +125,7 @@
         <PrivacySelector
           v-else-if="currentView === 'privacy'"
           key="privacy"
-          class="view-container bg-white"
+          class="view-container bg-theme-bg-secondary"
           data-view="privacy"
           @back="handlePrivacyBack"
           @confirm="handlePrivacyConfirm"
@@ -145,6 +145,7 @@ import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue';
 import { usePostsStore } from '@/stores/posts';
 import { useRouter } from 'vue-router';
 import type { Reel } from '@/stores/reels';
+import type { Post } from '@/types/Post';
 import '@/assets/animations/slideTransition.css';
 
 // Import poszczególnych ikon jako komponenty
@@ -178,7 +179,9 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  close: [];
+  (e: 'close'): void;
+  (e: 'update:showBack', value: boolean): void;
+  (e: 'update:title', value: string): void;
 }>();
 
 const postsStore = usePostsStore();
@@ -188,6 +191,21 @@ const { wrapperRef, currentView, previousView, updateHeight, transitionName } = 
 
 // Initialize view to 'main'
 currentView.value = 'main';
+
+const showBack = computed(() => currentView.value !== 'main');
+watch(showBack, (newValue) => {
+  emit('update:showBack', newValue);
+});
+
+const viewTitles: Record<string, string> = {
+  main: 'Udostępnij',
+  privacy: 'Wybierz prywatność',
+};
+
+const currentTitle = computed(() => viewTitles[currentView.value] || '');
+watch(currentTitle, (newTitle) => {
+  emit('update:title', newTitle);
+});
 
 const showEmojiPicker = ref(false);
 const textareaContent = ref('');
@@ -244,6 +262,11 @@ const handlePrivacyBack = () => {
   currentView.value = 'main';
 };
 
+const goBack = () => {
+  handlePrivacyBack();
+};
+defineExpose({ goBack });
+
 const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
   // Map privacy ID to icon and label
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -267,11 +290,11 @@ const handleShareNow = () => {
       id: `post_${Date.now()}`,
       authorId: postsStore.currentUser.id,
       content: textareaContent.value,
-      date: new Date().toLocaleDateString('pl-PL'),
+      date: new Date().toISOString(),
       timestamp: Date.now(),
       media: {
         images: [],
-        videoUrl: props.reel.videoSrc, // Use reel's video
+        videoUrl: props.reel.videoSrc,
       },
       context: {
         privacy: selectedPrivacy.value.label === 'Tylko ja' ? 'only_me' : 'public',
@@ -298,7 +321,7 @@ const handleShareNow = () => {
       id: `marketplace_${Date.now()}`,
       authorId: postsStore.currentUser.id,
       content: textareaContent.value,
-      date: new Date().toLocaleDateString('pl-PL'),
+      date: new Date().toISOString(),
       timestamp: Date.now(),
       media: {
         images: props.marketplaceItem.images.length > 0 ? props.marketplaceItem.images.map((img: string) => ({ src: img, altText: props.marketplaceItem!.title })) : [],

@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-lg ">
+  <div class="rounded-lg ">
 
 
     <div v-if="allUserStories.length === 0" class="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
@@ -46,7 +46,10 @@
           <p class="font-semibold text-sm text-gray-900 dark:text-white truncate">
             {{ userStory.userName }}
           </p>
-          <p class="text-xs text-gray-500 dark:text-gray-400">
+          <p v-if="userStory.userId === 'birthdays'" class="text-xs text-gray-500 dark:text-gray-400">
+            {{ todaysDate }}
+          </p>
+          <p v-else class="text-xs text-gray-500 dark:text-gray-400">
             {{ getTimeAgo(userStory.stories[0]?.createdAt) }}
           </p>
         </div>
@@ -71,6 +74,10 @@ const allUserStories = computed(() => storiesStore.allUserStories);
 const handleStoryClick = (userStory: UserStories) => {
   router.push(`/stories/${userStory.userId}`);
 };
+
+const todaysDate = computed(() => {
+  return new Date().toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
+});
 
 const getTimeAgo = (timestamp?: number) => {
   if (!timestamp) return '';

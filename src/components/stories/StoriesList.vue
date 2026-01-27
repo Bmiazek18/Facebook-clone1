@@ -4,10 +4,10 @@
       <button
         v-if="!isStart"
         @click="scrollLeft"
-        class="absolute top-1/2 z-30 left-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg border dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-150"
+        class="absolute top-1/2 z-30 left-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg border dark:border-gray-600 hover:bg-theme-bg-hover transition duration-150"
         style="margin-left: 64.5px;"
       >
-        <ChevronLeftIcon :size="24" fillColor="#4B5563" />
+        <ChevronLeftIcon :size="24" :fillColor="chevronFillColor" />
       </button>
 
       <div
@@ -29,10 +29,10 @@
       <button
         v-if="!isEnd"
         @click="scrollRight"
-        class="absolute top-1/2 z-30 right-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg border dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-150"
+        class="absolute top-1/2 z-30 right-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg border dark:border-gray-600 hover:bg-theme-bg-hover transition duration-150"
         style="margin-right: 64.5px;"
       >
-        <ChevronRightIcon :size="24" fillColor="#4B5563" />
+        <ChevronRightIcon :size="24" :fillColor="chevronFillColor" />
       </button>
     </div>
   </div>
@@ -45,6 +45,7 @@ import AddStoryCard from '@/components/stories/AddStoryCard.vue';
 import StoryCard from '@/components/stories/StoryCard.vue';
 import { useCarousel } from '@/composables/useCarousel';
 import { useStoriesStore } from '@/stores/stories';
+import { useTheme } from '@/composables/useTheme';
 import type { UserStories } from '@/types/Story';
 
 import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
@@ -52,6 +53,9 @@ import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue';
 
 const router = useRouter();
 const storiesStore = useStoriesStore();
+const { isDark } = useTheme();
+
+const chevronFillColor = computed(() => isDark.value ? '#B0B3B8' : '#4B5563');
 
 const {
   carouselRef,

@@ -5,14 +5,31 @@
     "userAvatar": "https://i.pravatar.cc/150?img=12",
     "stories": [
       {
+        "id": "story_1_birthday_1",
+        "userId": "1",
+        "type": "birthday",
+        "createdAt": 1736399000000,
+        "expiresAt": 1736485400000,
+        "viewCount": 3,
+        "interactions": [
+          { "userId": "2", "reaction": "like" },
+          { "userId": "3", "reaction": "like" },
+          { "userId": "4", "reaction": "love" }
+        ]
+      },
+      {
         "id": "story_1_1736400000000",
         "userId": "1",
         "type": "video",
         "imageUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         "createdAt": 1736400000000,
         "expiresAt": 1736486400000,
-        "viewCount": 5,
-        "viewers": ["2", "3", "4"]
+        "viewCount": 3,
+        "interactions": [
+          { "userId": "2", "reaction": "like" },
+          { "userId": "3", "reaction": null },
+          { "userId": "4", "reaction": null }
+        ]
       },
       {
         "id": "story_1_1736405000000",
@@ -21,8 +38,11 @@
         "imageUrl": "https://picsum.photos/558/1000?random=10",
         "createdAt": 1736405000000,
         "expiresAt": 1736491400000,
-        "viewCount": 8,
-        "viewers": ["2", "3"]
+        "viewCount": 2,
+        "interactions": [
+          { "userId": "2", "reaction": null },
+          { "userId": "3", "reaction": null }
+        ]
       },
       {
         "id": "story_1_1736410000000",
@@ -31,8 +51,11 @@
         "imageUrl": "https://picsum.photos/558/1000?random=11",
         "createdAt": 1736410000000,
         "expiresAt": 1736496400000,
-        "viewCount": 6,
-        "viewers": ["2", "4"]
+        "viewCount": 2,
+        "interactions": [
+          { "userId": "2", "reaction": null },
+          { "userId": "4", "reaction": null }
+        ]
       }
     ],
     "hasUnviewedStories": false
@@ -49,8 +72,13 @@
         "imageUrl": "https://picsum.photos/558/1000?random=1",
         "createdAt": 1736410000000,
         "expiresAt": 1736496400000,
-        "viewCount": 12,
-        "viewers": ["1", "3", "4", "5"]
+        "viewCount": 4,
+        "interactions": [
+          { "userId": "1", "reaction": "love" },
+          { "userId": "3", "reaction": null },
+          { "userId": "4", "reaction": null },
+          { "userId": "5", "reaction": null }
+        ]
       },
       {
         "id": "story_2_1736420000000",
@@ -59,8 +87,12 @@
         "imageUrl": "https://picsum.photos/558/1000?random=2",
         "createdAt": 1736420000000,
         "expiresAt": 1736506400000,
-        "viewCount": 8,
-        "viewers": ["1", "3", "5"]
+        "viewCount": 3,
+        "interactions": [
+          { "userId": "1", "reaction": "like" },
+          { "userId": "3", "reaction": null },
+          { "userId": "5", "reaction": null }
+        ]
       },
       {
         "id": "story_2_1736425000000",
@@ -69,8 +101,10 @@
         "imageUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
         "createdAt": 1736425000000,
         "expiresAt": 1736511400000,
-        "viewCount": 3,
-        "viewers": ["1"]
+        "viewCount": 1,
+        "interactions": [
+          { "userId": "1", "reaction": null }
+        ]
       }
     ],
     "hasUnviewedStories": true
@@ -87,8 +121,14 @@
         "imageUrl": "https://picsum.photos/558/1000?random=3",
         "createdAt": 1736415000000,
         "expiresAt": 1736501400000,
-        "viewCount": 15,
-        "viewers": ["1", "2", "4", "5", "6"]
+        "viewCount": 5,
+        "interactions": [
+          { "userId": "1", "reaction": "wow" },
+          { "userId": "2", "reaction": null },
+          { "userId": "4", "reaction": null },
+          { "userId": "5", "reaction": null },
+          { "userId": "6", "reaction": null }
+        ]
       },
       {
         "id": "story_3_1736425000000",
@@ -97,8 +137,12 @@
         "imageUrl": "https://picsum.photos/558/1000?random=12",
         "createdAt": 1736425000000,
         "expiresAt": 1736511400000,
-        "viewCount": 10,
-        "viewers": ["1", "2", "5"]
+        "viewCount": 3,
+        "interactions": [
+          { "userId": "1", "reaction": null },
+          { "userId": "2", "reaction": "haha" },
+          { "userId": "5", "reaction": null }
+        ]
       },
       {
         "id": "story_3_1736430000000",
@@ -107,8 +151,12 @@
         "imageUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
         "createdAt": 1736430000000,
         "expiresAt": 1736516400000,
-        "viewCount": 7,
-        "viewers": ["1", "2", "5"]
+        "viewCount": 3,
+        "interactions": [
+          { "userId": "1", "reaction": null },
+          { "userId": "2", "reaction": null },
+          { "userId": "5", "reaction": "sad" }
+        ]
       }
     ],
     "hasUnviewedStories": true
@@ -125,8 +173,15 @@
         "imageUrl": "https://picsum.photos/558/1000?random=4",
         "createdAt": 1736418000000,
         "expiresAt": 1736504400000,
-        "viewCount": 20,
-        "viewers": ["1", "2", "3", "5", "6", "7"]
+        "viewCount": 6,
+        "interactions": [
+          { "userId": "1", "reaction": null },
+          { "userId": "2", "reaction": null },
+          { "userId": "3", "reaction": "angry" },
+          { "userId": "5", "reaction": null },
+          { "userId": "6", "reaction": null },
+          { "userId": "7", "reaction": null }
+        ]
       },
       {
         "id": "story_4_1736423000000",
@@ -135,8 +190,12 @@
         "imageUrl": "https://picsum.photos/558/1000?random=13",
         "createdAt": 1736423000000,
         "expiresAt": 1736509400000,
-        "viewCount": 15,
-        "viewers": ["1", "2", "3"]
+        "viewCount": 3,
+        "interactions": [
+          { "userId": "1", "reaction": null },
+          { "userId": "2", "reaction": null },
+          { "userId": "3", "reaction": "like" }
+        ]
       },
       {
         "id": "story_4_1736428000000",
@@ -145,8 +204,11 @@
         "imageUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
         "createdAt": 1736428000000,
         "expiresAt": 1736514400000,
-        "viewCount": 12,
-        "viewers": ["1", "2"]
+        "viewCount": 2,
+        "interactions": [
+          { "userId": "1", "reaction": "love" },
+          { "userId": "2", "reaction": null }
+        ]
       }
     ],
     "hasUnviewedStories": true
@@ -163,8 +225,13 @@
         "imageUrl": "https://picsum.photos/558/1000?random=5",
         "createdAt": 1736425000000,
         "expiresAt": 1736511400000,
-        "viewCount": 9,
-        "viewers": ["1", "2", "3", "4"]
+        "viewCount": 4,
+        "interactions": [
+          { "userId": "1", "reaction": null },
+          { "userId": "2", "reaction": null },
+          { "userId": "3", "reaction": null },
+          { "userId": "4", "reaction": null }
+        ]
       },
       {
         "id": "story_5_1736430000000",
@@ -173,8 +240,11 @@
         "imageUrl": "https://picsum.photos/558/1000?random=14",
         "createdAt": 1736430000000,
         "expiresAt": 1736516400000,
-        "viewCount": 7,
-        "viewers": ["1", "2"]
+        "viewCount": 2,
+        "interactions": [
+          { "userId": "1", "reaction": null },
+          { "userId": "2", "reaction": "wow" }
+        ]
       }
     ],
     "hasUnviewedStories": true
