@@ -1,24 +1,24 @@
 <template>
-  <div class="min-h-screen bg-[#F0F2F5] py-8">
+  <div class="min-h-screen bg-theme-bg py-8">
 
     <div class="max-w-[680px] mx-auto px-4">
 
-      <header class="flex justify-between items-start mb-6 border-b border-gray-300 pb-4">
+      <header class="flex justify-between items-start mb-6 border-b border-theme-border pb-4">
 
         <div>
-          <h1 class="text-3xl font-black text-black tracking-tight mb-1">
+          <h1 class="text-3xl font-black text-theme-text tracking-tight mb-1">
             #{{ hashtag }}
           </h1>
-          <span class="text-gray-500 text-[15px] font-medium block">
+          <span class="text-theme-text-secondary text-[15px] font-medium block">
             {{ formatCount(filteredPosts.length) }} {{ t('hashtag.posts') }}
           </span>
         </div>
 
         <button
-          class="flex items-center justify-center w-12 h-9 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
+          class="flex items-center justify-center w-12 h-9 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-md transition-colors"
           :aria-label="t('hashtag.moreOptions')"
         >
-          <span class="text-black font-bold text-lg pb-1 tracking-widest leading-none">...</span>
+          <span class="text-theme-text font-bold text-lg pb-1 tracking-widest leading-none">...</span>
         </button>
       </header>
 

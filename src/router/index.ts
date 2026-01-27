@@ -1,6 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import ProfileView from '../views/ProfileView.vue'
+import GroupsLayout from '@/Layouts/GroupsLayout.vue'
+import GroupDiscussionView from '@/views/groups/GroupDiscussionView.vue'
+import GroupInfoView from '@/views/groups/GroupInfoView.vue'
+import GroupMembersView from '@/views/groups/GroupMembersView.vue'
+import GroupEventsView from '@/views/groups/GroupEventsView.vue'
+import GroupMediaView from '@/views/groups/GroupMediaView.vue'
+import GroupFilesView from '@/views/groups/GroupFilesView.vue'
 
 
 const router = createRouter({
@@ -47,7 +54,7 @@ const router = createRouter({
       path: '/groups',
       name: 'groups',
       component: () => import('@/views/GroupsView.vue'),
-      meta: { showMainLayout: false },
+
     },
      {
       path: '/live/produce/create-event',
@@ -58,6 +65,11 @@ const router = createRouter({
       path: '/friends',
       name: 'friends',
       component: () => import('@/views/FriendsView.vue'),
+    },
+    {
+      path: '/friends/birthday',
+      name: 'friends-birthday',
+      component: () => import('@/views/BirthdayView.vue'),
     },
     {
       path: '/marketplace/you/dashboard',
@@ -102,10 +114,17 @@ const router = createRouter({
        meta: { showMainLayout: false },
       props: true,
     },
+     {
+      path: '/marketplace/create',
+      name: 'MarketplaceItem',
+      component: () => import('@/views/MarketPlace/NewMarketplaceView.vue'),
+          meta: { showMainLayout: false },
+
+    },
     {
       path: '/marketplace/create/item',
       name: 'createMarketplaceItem',
-      component: () => import('@/views/MarketPlace/NewMarketplaceView.vue'),
+      component: () => import('@/views/MarketPlace/MarketplaceCreateItemView.vue'),
           meta: { showMainLayout: false },
       props: true,
     },
@@ -115,7 +134,7 @@ const router = createRouter({
       component: () => import('@/views/CreateReelView.vue'),
     },
     {
-      path: '/reel/:id',
+      path: '/reel/:id?',
       name: 'reel',
       meta: { showMainLayout: false },
       component: () => import('@/views/ReelView.vue'),
@@ -133,6 +152,12 @@ const router = createRouter({
       component: () => import('@/views/ChatView.vue'),
       props: true,
       meta: { hideMessageIcon: true },
+    },
+       {
+      path: '/addAlbum',
+      name: 'addAlbum',
+      component: () => import('@/views/addAlbum.vue'),
+  meta: { showMainLayout: false },
     },
      {
       path: '/stories/create',
@@ -174,6 +199,43 @@ const router = createRouter({
       component: () => import('@/views/EventView.vue'),
       props: true
     },
+    {
+      path: '/groups/:id',
+      component: GroupsLayout,
+      props: true,
+      children: [
+        {
+          path: '',
+          name: 'group-discussion',
+          component: GroupDiscussionView,
+        },
+        {
+          path: 'info',
+          name: 'group-info',
+          component: GroupInfoView,
+        },
+        {
+          path: 'members',
+          name: 'group-members',
+          component: GroupMembersView,
+        },
+        {
+          path: 'events',
+          name: 'group-events',
+          component: GroupEventsView,
+        },
+        {
+          path: 'media',
+          name: 'group-media',
+          component: GroupMediaView,
+        },
+        {
+          path: 'files',
+          name: 'group-files',
+          component: GroupFilesView,
+        }
+      ]
+    },
  {
       path: '/login/2',
       name: 'loginAs',
@@ -199,6 +261,11 @@ const router = createRouter({
       name: 'hashtag',
       component: () => import('../views/HashtagView.vue'),
       props: true
+    },
+    {
+      path: '/add-group',
+      name: 'addGroup',
+      component: () => import('@/views/AddGroupsView.vue'),
     },
   ],
 })

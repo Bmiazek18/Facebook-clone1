@@ -1,8 +1,9 @@
 <template>
   <div class="max-h-[calc(100vh-4rem)] bg-theme-bg p-4 rounded-b-2xl shadow-2xl font-sans text-[#1c1e21] overflow-hidden flex flex-col">
     <HoverScrollbar max-height="calc(100vh - 100px)">
-      <div class="max-w-[940px] mx-auto flex flex-col lg:flex-row gap-4">
-        <div class="flex-1 bg-white dark:bg-[#242526] rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.1)] p-4">
+      <div class="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-4">
+
+        <div class="flex-1 min-w-0 bg-white dark:bg-[#242526] rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.1)] p-4">
           <h1 class="text-2xl font-bold mb-4 px-2 text-theme-text">Menu</h1>
 
           <div class="relative mb-6 px-2">
