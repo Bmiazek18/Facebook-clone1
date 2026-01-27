@@ -22,7 +22,7 @@ export const useEventsStore = defineStore('events', () => {
       authorName: currentUser.name,
       authorAvatar: currentUser.avatar,
       authorId: currentUser.id,
-      date: new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long' }),
+      date: new Date().toISOString(),
       likesCount: 0,
       commentsCount: 0,
       sharesCount: 0,

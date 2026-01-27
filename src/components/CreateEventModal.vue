@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white max-w-[800px] rounded-xl shadow-[0_12px_28px_rgba(0,0,0,0.2)] flex flex-col overflow-hidden relative border border-gray-300 z-10 h-[850px]">
+    <div class="bg-theme-bg-secondary max-w-[800px] rounded-xl shadow-[0_12px_28px_rgba(0,0,0,0.2)] flex flex-col overflow-hidden relative border border-theme-border z-10 h-[850px]">
 <BaseModal
       :title="'Utwórz wydarzenie'"
       v-if="showLocationModal">
@@ -14,7 +14,7 @@
 
       <div class="overflow-y-auto flex-1 custom-scrollbar relative" @click="activeDatePicker = null">
 
-        <div class="relative w-full h-[200px] bg-[#f0f2f5] group shrink-0">
+        <div class="relative w-full h-[200px] bg-theme-bg group shrink-0">
           <input type="file" ref="fileInput" accept="image/*" class="hidden" @change="handleFileChange" multiple />
 
           <div ref="carouselRef" class="flex overflow-hidden w-full h-full">
@@ -49,53 +49,53 @@
 
         <div class="p-4">
           <div class="flex items-start gap-3 mb-6 mt-2">
-            <img src="https://i.pravatar.cc/100?u=1" class="w-10 h-10 rounded-full border border-gray-200" />
+            <img :src="auth.currentUser?.avatar" class="w-10 h-10 rounded-full border border-theme-border" />
             <div class="flex flex-col">
-              <span class="font-semibold text-[15px] text-[#050505]">Bartosz Miazek</span>
-              <span class="text-[13px] text-[#65676b]">Organizator — Twój profil</span>
+              <span class="font-semibold text-[15px] text-theme-text">{{ auth.currentUser?.name }}</span>
+              <span class="text-[13px] text-theme-text-secondary">Organizator — Twój profil</span>
             </div>
           </div>
 
           <div class="mb-4 relative group">
-              <input v-model="form.name" @focus="isNameFocused = true" @blur="isNameFocused = false" type="text" id="eventName" maxlength="100" class="block rounded-lg pl-4 pr-16 pt-6 pb-2 w-full text-[17px] text-[#050505] bg-transparent border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-[#1877f2] peer" placeholder=" " />
-              <label for="eventName" class="absolute text-[15px] text-[#65676b] duration-150 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-[#1877f2]">Nazwa wydarzenia</label>
-              <span v-if="isNameFocused || form.name.length > 0" class="absolute top-3 right-3 text-[12px] text-[#65676b] pointer-events-none transition-opacity duration-200">{{ form.name.length }}/100</span>
+              <input v-model="form.name" @focus="isNameFocused = true" @blur="isNameFocused = false" type="text" id="eventName" maxlength="100" class="block rounded-lg pl-4 pr-16 pt-6 pb-2 w-full text-[17px] text-theme-text bg-transparent border border-theme-border appearance-none focus:outline-none focus:ring-0 focus:border-theme-primary peer" placeholder=" " />
+              <label for="eventName" class="absolute text-[15px] text-theme-text-secondary duration-150 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-theme-primary">Nazwa wydarzenia</label>
+              <span v-if="isNameFocused || form.name.length > 0" class="absolute top-3 right-3 text-[12px] text-theme-text-secondary pointer-events-none transition-opacity duration-200">{{ form.name.length }}/100</span>
           </div>
 
           <div class="space-y-4 mb-4">
             <div class="grid grid-cols-2 gap-4">
               <div class="relative">
-                 <div @click.stop="toggleDatePicker('start')" :class="['border rounded-lg p-2 cursor-pointer flex items-center gap-2 hover:bg-gray-50 transition', activeDatePicker === 'start' ? 'border-[#1877f2]' : 'border-gray-300']">
-                   <calendar-month-icon class="text-[#65676b]" />
-                   <div class="flex flex-col"><span class="text-[12px] text-[#65676b] leading-none mb-0.5">Data rozpoczęcia</span><span class="text-[15px] text-[#050505]">{{ formatDate(form.startDate) }}</span></div>
+                 <div @click.stop="toggleDatePicker('start')" :class="['border rounded-lg p-2 cursor-pointer flex items-center gap-2 hover:bg-theme-hover transition', activeDatePicker === 'start' ? 'border-theme-primary' : 'border-theme-border']">
+                   <calendar-month-icon class="text-theme-text-secondary" />
+                   <div class="flex flex-col"><span class="text-[12px] text-theme-text-secondary leading-none mb-0.5">Data rozpoczęcia</span><span class="text-[15px] text-theme-text">{{ formatDate(form.startDate) }}</span></div>
                  </div>
                  <div v-if="activeDatePicker === 'start'" class="absolute top-full left-0 z-50 mt-1 shadow-xl rounded-xl" @click.stop><VDatePicker v-model="form.startDate" mode="date" locale="pl" @dayclick="activeDatePicker = null" /></div>
               </div>
-              <div class="border border-gray-300 rounded-lg p-2 hover:bg-gray-50 cursor-pointer flex items-center gap-2 relative overflow-hidden">
-                 <clock-outline-icon class="text-[#65676b]" />
-                 <div class="flex flex-col w-full"><span class="text-[12px] text-[#65676b] leading-none mb-0.5">Czas rozpoczęcia</span><input v-model="form.startTime" type="time" class="text-[15px] text-[#050505] bg-transparent border-none p-0 focus:ring-0 w-full font-sans" /></div>
+              <div class="border border-theme-border rounded-lg p-2 hover:bg-theme-hover cursor-pointer flex items-center gap-2 relative overflow-hidden">
+                 <clock-outline-icon class="text-theme-text-secondary" />
+                 <div class="flex flex-col w-full"><span class="text-[12px] text-theme-text-secondary leading-none mb-0.5">Czas rozpoczęcia</span><input v-model="form.startTime" type="time" class="text-[15px] text-theme-text bg-transparent border-none p-0 focus:ring-0 w-full font-sans" /></div>
               </div>
             </div>
 
             <div v-if="showEndDate" class="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
                <div class="relative">
-                 <div @click.stop="toggleDatePicker('end')" :class="['border rounded-lg p-2 cursor-pointer flex items-center gap-2 hover:bg-gray-50 transition', activeDatePicker === 'end' ? 'border-[#1877f2]' : 'border-gray-300']">
-                   <calendar-month-icon class="text-[#65676b]" />
-                   <div class="flex flex-col"><span class="text-[12px] text-[#65676b] leading-none mb-0.5">Data zakończenia</span><span class="text-[15px] text-[#050505]">{{ formatDate(form.endDate) }}</span></div>
+                 <div @click.stop="toggleDatePicker('end')" :class="['border rounded-lg p-2 cursor-pointer flex items-center gap-2 hover:bg-theme-hover transition', activeDatePicker === 'end' ? 'border-theme-primary' : 'border-theme-border']">
+                   <calendar-month-icon class="text-theme-text-secondary" />
+                   <div class="flex flex-col"><span class="text-[12px] text-theme-text-secondary leading-none mb-0.5">Data zakończenia</span><span class="text-[15px] text-theme-text">{{ formatDate(form.endDate) }}</span></div>
                  </div>
                  <div v-if="activeDatePicker === 'end'" class="absolute top-full left-0 z-50 mt-1 shadow-xl rounded-xl" @click.stop><VDatePicker v-model="form.endDate" :min-date="form.startDate" mode="date" locale="pl" @dayclick="activeDatePicker = null" /></div>
               </div>
-               <div class="border border-gray-300 rounded-lg p-2 hover:bg-gray-50 cursor-pointer flex items-center gap-2 relative overflow-hidden">
-                 <clock-outline-icon class="text-[#65676b]" />
-                 <div class="flex flex-col w-full"><span class="text-[12px] text-[#65676b] leading-none mb-0.5">Godzina zakończenia</span><input v-model="form.endTime" type="time" class="text-[15px] text-[#050505] bg-transparent border-none p-0 focus:ring-0 w-full font-sans" /></div>
+               <div class="border border-theme-border rounded-lg p-2 hover:bg-theme-hover cursor-pointer flex items-center gap-2 relative overflow-hidden">
+                 <clock-outline-icon class="text-theme-text-secondary" />
+                 <div class="flex flex-col w-full"><span class="text-[12px] text-theme-text-secondary leading-none mb-0.5">Godzina zakończenia</span><input v-model="form.endTime" type="time" class="text-[15px] text-theme-text bg-transparent border-none p-0 focus:ring-0 w-full font-sans" /></div>
               </div>
-              <div class="col-span-2 text-[13px] text-[#65676b]">Strefa czasowa: CET</div>
+              <div class="col-span-2 text-[13px] text-theme-text-secondary">Strefa czasowa: CET</div>
             </div>
 
             <div class="flex items-center">
               <button
                 @click="showEndDate = !showEndDate"
-                class="text-[#1877f2] font-semibold text-[15px] hover:underline flex items-center gap-1 transition"
+                class="text-theme-primary font-semibold text-[15px] hover:underline flex items-center gap-1 transition"
               >
                 <plus-icon v-if="!showEndDate" :size="20"/>
                 <minus-icon v-else :size="20"/>
@@ -108,28 +108,28 @@
           <div class="mb-4">
              <label class="text-[15px] font-semibold mb-2 block">Czy wydarzenie jest offline czy online?</label>
              <Dropdown class="w-full" :distance="6">
-                <div class="w-full p-3 border border-gray-300 rounded-lg flex items-center justify-between bg-white text-[15px] cursor-pointer hover:bg-gray-50 transition">
+                <div class="w-full p-3 border border-theme-border rounded-lg flex items-center justify-between bg-theme-bg-secondary text-[15px] cursor-pointer hover:bg-theme-hover transition">
                     <div class="flex items-center gap-2">
                        <component :is="selectedTypeOption.icon" v-if="selectedTypeOption.icon === 'send-outline'" class="transform -rotate-45" :size="20"/>
-                       <span class="text-[#050505]">{{ selectedTypeOption.title }}</span>
+                       <span class="text-theme-text">{{ selectedTypeOption.title }}</span>
                     </div>
-                    <chevron-down-icon class="text-[#65676b]" :size="20"/>
+                    <chevron-down-icon class="text-theme-text-secondary" :size="20"/>
                 </div>
 
                 <template #popper>
-                  <div class="w-[500px] p-2 bg-white rounded-xl shadow-xl">
+                  <div class="w-[500px] p-2 bg-theme-bg-secondary rounded-xl shadow-xl">
                      <div
                         v-for="option in eventTypeOptions"
                         :key="option.id"
                         @click="form.type = option.id"
-                        :class="['flex items-center gap-3 p-2 rounded-lg cursor-pointer transition', form.type === option.id ? 'bg-[#ebf5ff] text-[#1877f2]' : 'hover:bg-gray-100 text-[#050505]']"
+                        :class="['flex items-center gap-3 p-2 rounded-lg cursor-pointer transition', form.type === option.id ? 'bg-theme-primary-subtle text-theme-primary' : 'hover:bg-theme-hover text-theme-text']"
                      >
-                        <div :class="['p-2 rounded-full flex items-center justify-center', form.type === option.id ? 'bg-[#1877f2] text-white' : 'bg-[#e4e6eb] text-[#050505]']">
+                        <div :class="['p-2 rounded-full flex items-center justify-center', form.type === option.id ? 'bg-theme-primary text-white' : 'bg-theme-bg-subtle text-theme-text']">
                            <component :is="option.icon" :size="24" />
                         </div>
                         <div class="flex flex-col">
                            <span class="text-[15px] font-bold">{{ option.title }}</span>
-                           <span :class="['text-[13px]', form.type === option.id ? 'text-[#1877f2]/80' : 'text-[#65676b]']">{{ option.description }}</span>
+                           <span :class="['text-[13px]', form.type === option.id ? 'text-theme-primary/80' : 'text-theme-text-secondary']">{{ option.description }}</span>
                         </div>
                      </div>
                   </div>
@@ -140,45 +140,45 @@
            <div v-if="form.type === 'offline'" class="mb-4 relative">
              <div
                @click="showLocationModal = true"
-               class="w-full p-3.5 pl-4 pr-12 border border-gray-300 rounded-lg text-[15px] cursor-pointer hover:bg-gray-50 transition min-h-[52px] flex items-center truncate"
-               :class="{'text-[#65676b]': !form.location, 'text-[#050505]': form.location}"
+               class="w-full p-3.5 pl-4 pr-12 border border-theme-border rounded-lg text-[15px] cursor-pointer hover:bg-theme-hover transition min-h-[52px] flex items-center truncate"
+               :class="{'text-theme-text-secondary': !form.location, 'text-theme-text': form.location}"
              >
                {{ form.location || 'Dodaj lokalizację' }}
              </div>
-             <div class="absolute right-1.5 top-1.5 bottom-1.5 aspect-square bg-[#e4e6eb] hover:bg-[#d8dadf] rounded-md flex items-center justify-center cursor-pointer transition pointer-events-none">
-                <map-marker-icon class="text-[#050505]" :size="20"/>
+             <div class="absolute right-1.5 top-1.5 bottom-1.5 aspect-square bg-theme-bg-subtle hover:bg-theme-hover-strong rounded-md flex items-center justify-center cursor-pointer transition pointer-events-none">
+                <map-marker-icon class="text-theme-text" :size="20"/>
              </div>
           </div>
 
           <div class="mb-6">
              <label class="text-[15px] font-semibold mb-2 block">Kto może to zobaczyć?</label>
              <Dropdown class="w-full" :distance="6">
-                <div class="w-full p-3 border border-gray-300 rounded-lg flex items-center justify-between bg-white text-[15px] cursor-pointer hover:bg-gray-50 transition">
+                <div class="w-full p-3 border border-theme-border rounded-lg flex items-center justify-between bg-theme-bg-secondary text-[15px] cursor-pointer hover:bg-theme-hover transition">
                     <div class="flex items-center gap-2">
-                       <component :is="selectedPrivacyOption.icon" :size="20" class="text-[#65676b]"/>
-                       <span class="text-[#050505]">{{ selectedPrivacyOption.title }}</span>
+                       <component :is="selectedPrivacyOption.icon" :size="20" class="text-theme-text-secondary"/>
+                       <span class="text-theme-text">{{ selectedPrivacyOption.title }}</span>
                     </div>
-                    <chevron-down-icon class="text-[#65676b]" :size="20"/>
+                    <chevron-down-icon class="text-theme-text-secondary" :size="20"/>
                 </div>
 
                 <template #popper>
-                  <div class="w-[340px] p-2 bg-white rounded-xl shadow-xl">
+                  <div class="w-[340px] p-2 bg-theme-bg-secondary rounded-xl shadow-xl">
                      <div
                         v-for="option in privacyOptions"
                         :key="option.id"
                         @click="form.privacy = option.id"
-                        class="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-[#f0f2f5] transition relative"
+                        class="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-theme-bg transition relative"
                      >
-                        <div class="bg-[#e4e6eb] p-2.5 rounded-full text-[#050505] flex items-center justify-center">
+                        <div class="bg-theme-bg-subtle p-2.5 rounded-full text-theme-text flex items-center justify-center">
                            <component :is="option.icon" :size="24" />
                         </div>
                         <div class="flex flex-col flex-1">
-                           <span class="text-[15px] font-bold text-[#050505]">{{ option.title }}</span>
-                           <span class="text-[13px] text-[#65676b] leading-tight">{{ option.desc }}</span>
+                           <span class="text-[15px] font-bold text-theme-text">{{ option.title }}</span>
+                           <span class="text-[13px] text-theme-text-secondary leading-tight">{{ option.desc }}</span>
                         </div>
-                        <div v-if="form.privacy === option.id" class="w-5 h-5 rounded-full border-[6px] border-[#1877f2] bg-white"></div>
-                        <div v-else class="w-5 h-5 rounded-full border border-[#65676b]"></div>
-                        <chevron-right-icon v-if="option.hasArrow" class="absolute right-2 text-[#65676b]" :size="24" />
+                        <div v-if="form.privacy === option.id" class="w-5 h-5 rounded-full border-[6px] border-theme-primary bg-theme-bg-secondary"></div>
+                        <div v-else class="w-5 h-5 rounded-full border border-theme-text-secondary"></div>
+                        <chevron-right-icon v-if="option.hasArrow" class="absolute right-2 text-theme-text-secondary" :size="24" />
                      </div>
                   </div>
                 </template>
@@ -186,74 +186,74 @@
           </div>
 
           <div class="mb-6 mt-6 relative">
-             <textarea v-model="form.description" rows="3" id="desc" class="block rounded-lg px-4 pt-6 pb-2 w-full text-[15px] text-[#050505] bg-[#f0f2f5] border-b border-gray-300 focus:bg-gray-100 appearance-none focus:outline-none focus:border-[#1877f2] peer resize-none" placeholder=" "></textarea>
-             <label for="desc" class="absolute text-[15px] text-[#65676b] duration-150 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-[#1877f2]">Jakie są szczegółowe informacje?</label>
+             <textarea v-model="form.description" rows="3" id="desc" class="block rounded-lg px-4 pt-6 pb-2 w-full text-[15px] text-theme-text bg-theme-bg border-b border-theme-border focus:bg-theme-hover appearance-none focus:outline-none focus:border-theme-primary peer resize-none" placeholder=" "></textarea>
+             <label for="desc" class="absolute text-[15px] text-theme-text-secondary duration-150 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-theme-primary">Jakie są szczegółowe informacje?</label>
           </div>
 
           <div class="space-y-4">
 
-            <div class="border-t border-gray-200">
-              <button @click.stop="toggleAccordion('cohosts')" class="flex items-center justify-between w-full py-4 hover:bg-gray-50 -mx-4 px-4 transition">
+            <div class="border-t border-theme-border">
+              <button @click.stop="toggleAccordion('cohosts')" class="flex items-center justify-between w-full py-4 hover:bg-theme-hover -mx-4 px-4 transition">
                 <div class="flex items-center gap-3">
-                   <plus-circle-outline-icon :size="24" class="text-[#65676b]" />
-                   <span class="text-[15px] font-semibold text-[#050505]">Dodaj współorganizatorów</span>
+                   <plus-circle-outline-icon :size="24" class="text-theme-text-secondary" />
+                   <span class="text-[15px] font-semibold text-theme-text">Dodaj współorganizatorów</span>
                 </div>
-                <chevron-down-icon :class="['text-[#65676b] transition-transform', accordions.cohosts ? 'rotate-180' : '']" :size="20" />
+                <chevron-down-icon :class="['text-theme-text-secondary transition-transform', accordions.cohosts ? 'rotate-180' : '']" :size="20" />
               </button>
 
-              <div v-if="accordions.cohosts" class="pb-4 bg-[#f0f2f5] rounded-lg p-3">
-                 <input type="text" placeholder="Dodaj współorganizatorów" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-[15px] mb-2 focus:border-[#1877f2] focus:outline-none" />
-                 <p class="text-[12px] text-[#65676b] leading-tight">Współorganizatorzy mogą zaakceptować lub odrzucić zaproszenie dopiero po opublikowaniu wydarzenia.</p>
+              <div v-if="accordions.cohosts" class="pb-4 bg-theme-bg rounded-lg p-3">
+                 <input type="text" placeholder="Dodaj współorganizatorów" class="w-full bg-theme-bg-secondary border border-theme-border rounded-lg px-3 py-2 text-[15px] mb-2 focus:border-theme-primary focus:outline-none" />
+                 <p class="text-[12px] text-theme-text-secondary leading-tight">Współorganizatorzy mogą zaakceptować lub odrzucić zaproszenie dopiero po opublikowaniu wydarzenia.</p>
               </div>
             </div>
 
-            <div class="border-t border-gray-200">
-              <button @click.stop="toggleAccordion('recurring')" class="flex items-center justify-between w-full py-4 hover:bg-gray-50 -mx-4 px-4 transition">
+            <div class="border-t border-theme-border">
+              <button @click.stop="toggleAccordion('recurring')" class="flex items-center justify-between w-full py-4 hover:bg-theme-hover -mx-4 px-4 transition">
                 <div class="flex items-center gap-3">
-                   <refresh-icon :size="24" class="text-[#65676b]" />
-                   <span class="text-[15px] font-semibold text-[#050505]">Powtarzane wydarzenie</span>
+                   <refresh-icon :size="24" class="text-theme-text-secondary" />
+                   <span class="text-[15px] font-semibold text-theme-text">Powtarzane wydarzenie</span>
                 </div>
-                <chevron-down-icon :class="['text-[#65676b] transition-transform', accordions.recurring ? 'rotate-180' : '']" :size="20" />
+                <chevron-down-icon :class="['text-theme-text-secondary transition-transform', accordions.recurring ? 'rotate-180' : '']" :size="20" />
               </button>
 
-              <div v-if="accordions.recurring" class="pb-4 bg-[#f0f2f5] rounded-lg p-3">
+              <div v-if="accordions.recurring" class="pb-4 bg-theme-bg rounded-lg p-3">
                  <div class="mb-3">
-                    <label class="text-[13px] text-[#65676b] mb-1 block">Częstotliwość</label>
-                    <select v-model="form.frequency" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-[15px] focus:border-[#1877f2] focus:outline-none">
+                    <label class="text-[13px] text-theme-text-secondary mb-1 block">Częstotliwość</label>
+                    <select v-model="form.frequency" class="w-full bg-theme-bg-secondary border border-theme-border rounded-lg px-3 py-2 text-[15px] focus:border-theme-primary focus:outline-none">
                        <option>Nigdy</option>
                        <option>Codziennie</option>
                        <option>Co tydzień</option>
                     </select>
                  </div>
                  <div class="flex gap-2">
-                    <div class="flex-1 bg-gray-100 border border-gray-300 rounded-lg p-2 flex items-center justify-between text-[#bcc0c4]">
+                    <div class="flex-1 bg-theme-bg-subtle border border-theme-border rounded-lg p-2 flex items-center justify-between text-theme-text-muted">
                        <span>Data zakończenia</span>
                        <alert-circle-icon :size="18" class="text-[#d22d2d]" />
                     </div>
-                     <div class="flex-1 bg-gray-100 border border-gray-300 rounded-lg p-2 flex items-center justify-between text-[#bcc0c4]">
+                     <div class="flex-1 bg-theme-bg-subtle border border-theme-border rounded-lg p-2 flex items-center justify-between text-theme-text-muted">
                        <span>Godzina zakończ...</span>
                        <alert-circle-icon :size="18" class="text-[#d22d2d]" />
                     </div>
                  </div>
-                 <p class="text-[12px] text-[#65676b] mt-2">Wskaż datę zakończenia, która przypada po dacie rozpoczęcia.</p>
+                 <p class="text-[12px] text-theme-text-secondary mt-2">Wskaż datę zakończenia, która przypada po dacie rozpoczęcia.</p>
               </div>
             </div>
 
-            <div class="border-t border-gray-200">
-              <button @click.stop="toggleAccordion('settings')" class="flex items-center justify-between w-full py-4 hover:bg-gray-50 -mx-4 px-4 transition">
+            <div class="border-t border-theme-border">
+              <button @click.stop="toggleAccordion('settings')" class="flex items-center justify-between w-full py-4 hover:bg-theme-hover -mx-4 px-4 transition">
                 <div class="flex items-center gap-3">
-                   <format-list-bulleted-icon :size="24" class="text-[#65676b]" />
-                   <span class="text-[15px] font-semibold text-[#050505]">Dodatkowe ustawienia</span>
+                   <format-list-bulleted-icon :size="24" class="text-theme-text-secondary" />
+                   <span class="text-[15px] font-semibold text-theme-text">Dodatkowe ustawienia</span>
                 </div>
-                <chevron-down-icon :class="['text-[#65676b] transition-transform', accordions.settings ? 'rotate-180' : '']" :size="20" />
+                <chevron-down-icon :class="['text-theme-text-secondary transition-transform', accordions.settings ? 'rotate-180' : '']" :size="20" />
               </button>
 
               <div v-if="accordions.settings" class="pb-4 px-1">
                  <div class="flex items-center justify-between py-2">
-                    <span class="text-[15px] text-[#050505]">Pokaż listę gości</span>
+                    <span class="text-[15px] text-theme-text">Pokaż listę gości</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" v-model="form.showGuestList" class="sr-only peer">
-                      <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1877f2]"></div>
+                      <div class="w-11 h-6 bg-theme-bg-subtle peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-theme-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-primary"></div>
                     </label>
                  </div>
               </div>
@@ -264,15 +264,15 @@
         </div>
       </div>
 
-      <div class="p-4 border-t border-gray-200 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.05)] shrink-0 z-20">
-        <button @click="submit" :disabled="!isFormValid" :class="[isFormValid ? 'bg-[#1877f2] text-white hover:bg-[#166fe5]' : 'bg-[#e4e6eb] text-[#bcc0c4] cursor-not-allowed']" class="w-full font-bold text-[15px] py-2 rounded-lg transition">Utwórz wydarzenie</button>
+      <div class="p-4 border-t border-theme-border bg-theme-bg-secondary shadow-[0_-4px_12px_rgba(0,0,0,0.05)] shrink-0 z-20">
+        <button @click="submit" :disabled="!isFormValid" :class="[isFormValid ? 'bg-theme-primary text-white hover:bg-theme-primary-hover' : 'bg-theme-hover text-theme-text-muted cursor-not-allowed']" class="w-full font-bold text-[15px] py-2 rounded-lg transition">Utwórz wydarzenie</button>
       </div>
 
     </div>
 
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { DatePicker as VDatePicker } from 'v-calendar';
 import { Dropdown } from 'floating-vue';
@@ -280,7 +280,7 @@ import 'v-calendar/dist/style.css';
 import 'floating-vue/dist/style.css';
 import { v4 as uuidv4 } from 'uuid'; // Import uuid for unique IDs
 import { useEventsStore } from '@/stores/events'; // Import the events store
-
+const auth = useAuthStore()
 
 // Import nowego komponentu mapy
 import LocationModal from './LocationModal.vue';
@@ -308,9 +308,9 @@ import RefreshIcon from 'vue-material-design-icons/Refresh.vue';
 import FormatListBulletedIcon from 'vue-material-design-icons/FormatListBulleted.vue';
 import AlertCircleIcon from 'vue-material-design-icons/AlertCircle.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
+import { useAuthStore } from '@/stores/auth';
 
 
-const props = defineProps({ show: Boolean });
 const emit = defineEmits(['close', 'create']);
 
 const eventsStore = useEventsStore(); // Initialize the events store
@@ -416,6 +416,6 @@ const submit = () => {
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar { width: 8px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background-color: #bcc0c4; border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #65676b; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background-color: var(--color-text-secondary); border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: var(--color-text); }
 </style>
