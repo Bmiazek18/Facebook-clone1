@@ -18,9 +18,31 @@ export interface Reel {
   isFollowing?: boolean; // Interaction state
 }
 
+interface ReelFromJson {
+  id: number;
+  author: string;
+  authorId: number;
+  videoSrc: string;
+  poster: string;
+  caption: string;
+  likes: number;
+  commentsCount: number;
+  sharesCount: number;
+  hashtags: string;
+  music: string;
+}
+
 export const useReelsStore = defineStore('reels', () => {
   // Initialize with isFollowing default to false if not present, though we might want to fetch this
-  const reels = ref<Reel[]>(reelsData.map((r: any) => ({ ...r, isFollowing: false })));
+  const reels = ref<Reel[]>(reelsData.map((r: ReelFromJson) => ({
+    ...r,
+    id: String(r.id),
+    likes: String(r.likes),
+    comments: String(r.commentsCount),
+    shares: String(r.sharesCount),
+    isFollowing: false,
+    isLiked: false,
+  })));
 
   // Get reel by ID
   const getReelById = (id: string) => {

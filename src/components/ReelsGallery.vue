@@ -1,5 +1,5 @@
 <template>
-  <div class="py-4 pl-4 bg-white rounded-none lg:rounded-lg shadow-md max-w-4xl mx-0 lg:mx-auto border border-gray-200">
+  <div class="py-4 pl-4 bg-theme-bg-secondary rounded-none lg:rounded-lg shadow-md max-w-4xl mx-0 lg:mx-auto border border-theme-border">
 
     <div class="flex justify-between items-center mb-4 pr-4">
       <div class="flex items-center text-gray-800">
@@ -8,10 +8,10 @@
             <path fill-rule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clip-rule="evenodd" />
           </svg>
         </div>
-        <h2 class="text-xl font-bold">Rolki i krótkie filmy</h2>
+        <h2 class="text-xl font-bold text-theme-text">Rolki i krótkie filmy</h2>
       </div>
-      <button class="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition">
-        <DotsVerticalIcon :size="24" />
+      <button class="text-theme-text-secondary hover:bg-theme-bg-hover p-2 rounded-full transition">
+        <DotsVerticalIcon :size="24" :fillColor="dotsFillColor" />
       </button>
     </div>
 
@@ -20,9 +20,9 @@
       <button
         v-if="!isStart"
         @click="scrollLeft"
-        class="absolute top-1/2 left-4 transform -translate-y-1/2 p-3 bg-white rounded-full shadow-lg border hover:bg-gray-50 transition duration-150 z-20 flex"
+        class="absolute top-1/2 left-4 transform -translate-y-1/2 p-3 bg-theme-bg-secondary rounded-full shadow-lg border border-theme-border hover:bg-theme-bg-hover transition duration-150 z-20 flex"
       >
-        <ChevronLeftIcon :size="24" fillColor="#4B5563" />
+        <ChevronLeftIcon :size="24" :fillColor="chevronFillColor" />
       </button>
 
       <div
@@ -50,13 +50,13 @@
 
         <div
           v-if="reels.length > 0"
-          class="flex flex-col items-center justify-center cursor-pointer w-[180px] aspect-9/16 border border-gray-200 rounded-xl shadow-sm hover:bg-gray-100 transition duration-200 bg-gray-50 shrink-0 snap-start"
+          class="flex flex-col items-center justify-center cursor-pointer w-[180px] aspect-9/16 border border-theme-border rounded-xl shadow-sm hover:bg-theme-bg-hover transition duration-200 bg-theme-bg-tertiary shrink-0 snap-start"
           @click="openReel(reels[0]!.id)"
         >
-          <div class="bg-white p-3 rounded-full shadow-sm mb-3">
-             <ArrowRightIcon :size="24" fillColor="#4B5563" />
+          <div class="bg-theme-bg-secondary p-3 rounded-full shadow-sm mb-3">
+             <ArrowRightIcon :size="24" :fillColor="chevronFillColor" />
           </div>
-          <span class="text-gray-700 font-semibold text-sm">Zobacz wszystkie</span>
+          <span class="text-theme-text font-semibold text-sm">Zobacz wszystkie</span>
         </div>
 
         <div class="shrink-0" style="width: 1rem;"></div>
@@ -65,9 +65,9 @@
       <button
         v-if="!isEnd"
         @click="scrollRight"
-        class="absolute top-1/2 right-4 transform -translate-y-1/2 p-3 bg-white rounded-full shadow-lg border hover:bg-gray-50 transition duration-150 z-20 flex"
+        class="absolute top-1/2 right-4 transform -translate-y-1/2 p-3 bg-theme-bg-secondary rounded-full shadow-lg border border-theme-border hover:bg-theme-bg-hover transition duration-150 z-20 flex"
       >
-        <ChevronRightIcon :size="24" fillColor="#4B5563" />
+        <ChevronRightIcon :size="24" :fillColor="chevronFillColor" />
       </button>
 
     </div>
@@ -78,6 +78,7 @@
 import { useCarousel } from '../composables/useCarousel';
 import { useRouter } from 'vue-router';
 import { useReelsStore } from '@/stores/reels';
+import { useTheme } from '@/composables/useTheme';
 
 // --- IMPORT IKON ---
 import DotsVerticalIcon from 'vue-material-design-icons/DotsVertical.vue';
@@ -87,6 +88,10 @@ import ArrowRightIcon from 'vue-material-design-icons/ArrowRight.vue';
 
 const router = useRouter();
 const reelsStore = useReelsStore();
+const { isDark } = useTheme();
+
+const chevronFillColor = computed(() => isDark.value ? '#B0B3B8' : '#4B5563');
+const dotsFillColor = computed(() => isDark.value ? '#B0B3B8' : '#65676B');
 
 const {
   carouselRef,

@@ -192,9 +192,12 @@
     />
 
     <!-- Share Modal -->
-    <BaseModal v-if="showShareModal" @close="closeShareModal" title="Udostępnij">
+    <BaseModal v-if="showShareModal" :title="shareModalTitle" :back="showShareModalBackButton" @close="closeShareModal" @back="storyShareModalRef?.goBack()">
       <StoryShareModal
+        ref="storyShareModalRef"
         :reel="selectedReelToShare"
+        v-model:showBack="showShareModalBackButton"
+        v-model:title="shareModalTitle"
         @close="closeShareModal"
       />
     </BaseModal>
@@ -220,7 +223,7 @@ import PauseIcon from 'vue-material-design-icons/Pause.vue';
 import VolumeHighIcon from 'vue-material-design-icons/VolumeHigh.vue';
 import VolumeMuteIcon from 'vue-material-design-icons/VolumeMute.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
-import NavbarRight from '@/layouts/Navbar/NavbarRight.vue';
+import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import StoryShareModal from '@/components/stories/StoryShareModal.vue';
 import ReelInfoPanel from '@/components/reel/ReelInfoPanel.vue';
@@ -231,7 +234,7 @@ const route = useRoute();
 const reelsStore = useReelsStore();
 
 const props = defineProps<{
-  id?: string;
+  id?: string ;
 }>();
 
 const isCommentsOpen = ref(false);
@@ -241,7 +244,11 @@ const volume = ref(1);
 const showVolumeSlider = ref(false);
 const isVideoHovered = ref(false);
 const showShareModal = ref(false);
+const showShareModalBackButton = ref(false);
+const shareModalTitle = ref('Udostępnij');
 const selectedReelToShare = ref<typeof reels.value[0] | null>(null);
+const storyShareModalRef = ref<InstanceType<typeof StoryShareModal> | null>(null);
+
 const videoProgress = ref<number[]>([]);
 const scrollContainerRef = ref<HTMLDivElement | null>(null);
 const currentIndex = ref(0);
@@ -253,8 +260,8 @@ const reels = computed(() => reelsStore.reels);
 
 // Ustaw początkowy index na podstawie ID z route
 onMounted(() => {
-  if (props.id) {
-    const index = reelsStore.getReelIndex(props.id);
+
+    const index = reelsStore.getReelIndex(props.id||'1');
     if (index !== -1) {
       currentIndex.value = index;
       // Poczekaj na następny tick aby DOM się wyrenderował
@@ -262,7 +269,7 @@ onMounted(() => {
         scrollToReel(index);
       }, 100);
     }
-  }
+
 
   // Preload następnego video dla płynnej animacji
   preloadNextVideo();
@@ -359,7 +366,7 @@ const goBack = () => {
 };
 
 const shareToStory = (reel: typeof reels.value[0]) => {
-  selectedReelToShare.value = reel;
+  selectedReelToShare.value = JSON.parse(JSON.stringify(reel));
   showShareModal.value = true;
 };
 
