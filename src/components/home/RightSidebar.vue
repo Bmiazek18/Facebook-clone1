@@ -5,7 +5,7 @@ import CheckCircle from 'vue-material-design-icons/CheckCircle.vue';
 import Plus from 'vue-material-design-icons/Plus.vue'; // Nowy import
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
 import { useTheme } from '@/composables/useTheme';
-import rawChats from '@/data/rawChats';
+import rawChats, { type Chat } from '@/data/rawChats';
 import { useChatStore } from '@/stores/chat';
 import { computed } from 'vue';
 
@@ -17,7 +17,7 @@ defineProps<{
 }>();
 
 
-const mapChatData = (chat: any) => ({
+const mapChatData = (chat: Chat) => ({
   id: chat.id,
   name: chat.name,
   avatarUrl: chat.avatarUrl,
