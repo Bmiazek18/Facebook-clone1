@@ -3,10 +3,10 @@
 
     <div class="flex justify-between items-center mb-4">
       <div class="flex items-center text-theme-text">
-        <AccountGroupIcon :size="24" class="mr-2" fillColor="#4B5563" />
+        <AccountGroupIcon :size="24" class="mr-2" fillColor="var(--color-text-secondary)" />
         <h2 class="text-xl font-bold">{{ $t('home.peopleYouMayKnow') }}</h2>
       </div>
-      <button class="text-gray-500 hover:text-gray-700">
+      <button class="text-theme-text-secondary hover:text-theme-text">
         <DotsVerticalIcon :size="24" />
       </button>
     </div>
@@ -16,9 +16,9 @@
       <button
         v-if="!isStart"
         @click="scrollLeft"
-        class="absolute top-1/2 left-0 transform -translate-y-1/2 p-2 bg-white rounded-full shadow-lg border hover:bg-gray-100 transition duration-150 z-10"
+        class="absolute top-1/2 left-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg border border-theme-border hover:bg-theme-hover transition duration-150 z-10"
         style="margin-left: 104px;" >
-        <ChevronLeftIcon :size="24" fillColor="#4B5563" />
+        <ChevronLeftIcon :size="24" fillColor="var(--color-text-secondary)" />
       </button>
 
       <div
@@ -35,10 +35,10 @@
         />
 
         <div
-          class="flex flex-col items-center justify-center p-4 cursor-pointer w-49 h-72 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-200 bg-gray-50 shrink-0 mr-3"
+          class="flex flex-col items-center justify-center p-4 cursor-pointer w-49 h-72 border border-theme-border rounded-lg shadow-sm hover:shadow-md transition duration-200 bg-theme-bg-subtle shrink-0 mr-3"
         >
-          <PlusCircleIcon :size="32" class="text-blue-600 mb-2" fillColor="#2563EB" />
-          <span class="text-blue-600 font-semibold text-sm">{{ $t('home.showAll') }}</span>
+          <PlusCircleIcon :size="32" class="text-theme-primary mb-2" fillColor="var(--color-primary)" />
+          <span class="text-theme-primary font-semibold text-sm">{{ $t('home.showAll') }}</span>
         </div>
         <div class="shrink-0" style="width: 0.75rem;"></div>
       </div>
@@ -46,13 +46,13 @@
       <button
         v-if="!isEnd"
         @click="scrollRight"
-        class="absolute top-1/2 right-0 transform -translate-y-1/2 p-2 bg-white rounded-full shadow-lg border hover:bg-gray-100 transition duration-150 z-10"
+        class="absolute top-1/2 right-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg border border-theme-border hover:bg-theme-hover transition duration-150 z-10"
         style="margin-right: 104px;" >
-        <ChevronRightIcon :size="24" fillColor="#4B5563" />
+        <ChevronRightIcon :size="24" fillColor="var(--color-text-secondary)" />
       </button>
 
       <div class="text-center mt-2">
-        <button class="text-blue-600 font-medium py-1 px-4 rounded hover:bg-blue-50 transition duration-150">
+        <button class="text-theme-primary font-medium py-1 px-4 rounded hover:bg-theme-primary-subtle transition duration-150">
           {{ $t('home.showAll') }}
         </button>
       </div>

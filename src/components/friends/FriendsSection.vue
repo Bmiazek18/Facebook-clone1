@@ -16,7 +16,7 @@ defineProps<{
 
 <template>
 
-    <div class="bg-theme-bg-secondary p-4 rounded-lg shadow-lg border border-gray-200">
+    <div class="bg-theme-bg-secondary p-4 rounded-lg shadow-lg border border-theme-border">
 
         <div class="flex justify-between items-center mb-4 pb-3">
             <h2 :class="{'text-2xl font-extrabold': isFullView, 'text-xl font-extrabold': !isFullView, 'text-theme-text': true}">Znajomi</h2>
@@ -25,22 +25,22 @@ defineProps<{
                 <input
                     type="text"
                     placeholder="Szukaj znajomych"
-                    class="bg-gray-100 rounded-full py-2 pl-10 pr-4 w-full text-sm text-theme-text-secondary focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-200"
+                    class="bg-theme-bg-subtle rounded-full py-2 pl-10 pr-4 w-full text-sm text-theme-text-secondary focus:outline-none focus:ring-2 focus:ring-theme-primary hover:bg-theme-hover"
                 >
-                <Magnify :size="18" class="absolute left-3 top-2.5 text-gray-500"/>
+                <Magnify :size="18" class="absolute left-3 top-2.5 text-theme-text-secondary"/>
             </div>
 
-            <a v-if="!isFullView" class="text-blue-500 font-semibold text-[15px] hover:underline cursor-pointer">Wszyscy znajomi</a>
+            <a v-if="!isFullView" class="text-theme-primary font-semibold text-[15px] hover:underline cursor-pointer">Wszyscy znajomi</a>
         </div>
 
 
 
-        <div class="flex space-x-6 mb-4 text-theme-text-secondary border-b overflow-x-auto whitespace-nowrap">
-            <span class="font-bold border-b-4 border-b-blue-500 pb-3 text-blue-600 cursor-pointer text-[15px]">Wszyscy znajomi</span>
-            <span class="hover:border-b-4 hover:border-b-gray-300 pb-3 cursor-pointer text-[15px]">Urodziny</span>
-            <span class="hover:border-b-4 hover:border-b-gray-300 pb-3 cursor-pointer text-[15px]">Szkoła średnia</span>
-            <span class="hover:border-b-4 hover:border-b-gray-300 pb-3 cursor-pointer text-[15px]">Aktualne miejsce zamieszkania</span>
-            <span class="hover:border-b-4 hover:border-b-gray-300 pb-3 cursor-pointer text-[15px]">Obserwowani</span>
+        <div class="flex space-x-6 mb-4 text-theme-text-secondary border-b border-theme-border overflow-x-auto whitespace-nowrap">
+            <span class="font-bold border-b-4 border-b-theme-primary pb-3 text-theme-primary cursor-pointer text-[15px]">Wszyscy znajomi</span>
+            <span class="hover:border-b-4 hover:border-b-theme-border pb-3 cursor-pointer text-[15px]">Urodziny</span>
+            <span class="hover:border-b-4 hover:border-b-theme-border pb-3 cursor-pointer text-[15px]">Szkoła średnia</span>
+            <span class="hover:border-b-4 hover:border-b-theme-border pb-3 cursor-pointer text-[15px]">Aktualne miejsce zamieszkania</span>
+            <span class="hover:border-b-4 hover:border-b-theme-border pb-3 cursor-pointer text-[15px]">Obserwowani</span>
         </div>
 
 
@@ -54,7 +54,7 @@ defineProps<{
             />
         </div>
 
-        <button v-if="!isFullView" class="w-full bg-gray-200 hover:bg-gray-300 rounded-lg p-2 font-bold mt-4 text-theme-text">
+        <button v-if="!isFullView" class="w-full bg-theme-bg-subtle hover:bg-theme-hover-strong rounded-lg p-2 font-bold mt-4 text-theme-text">
             Zobacz wszystko
         </button>
     </div>
