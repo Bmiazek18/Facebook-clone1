@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, RouterLink } from 'vue-router';
 
 // Komponenty wewnętrzne (zakładam, że istnieją w Twoim projekcie)
 import ImageWithGradient from '@/components/media/ImageWithGradient.vue';
-import PostItem from '@/components/feed/post/PostItem.vue';
-import CreateBox from '@/components/createPost/CreateBox.vue';
 
 // Store
-import { usePostsStore } from '@/stores/posts';
 import { useGroupsStore } from '@/stores/groups';
 import type { Group as GroupType } from '@/types/Group';
 
@@ -28,13 +25,11 @@ import PlusIcon from 'vue-material-design-icons/Plus.vue';
 import { useStickySidebar } from '@/composables/useStickySidebar';
 import { useI18n } from 'vue-i18n';
 
-
 const { t } = useI18n();
 
 // --- LOGIKA "FACEBOOK DUAL STICKY" (Prawy pasek) ---
 const rightSectionRef = ref<HTMLDivElement | null>(null);
 const { stickyTop } = useStickySidebar(rightSectionRef, 125, 16);
-
 // --- STICKY HEADER LOGIC ---
 const tabsContainerRef = ref<HTMLElement | null>(null);
 const isTabsFixed = ref(false);
@@ -48,13 +43,13 @@ const handleScroll = () => {
 };
 
 onMounted(() => {
-
     window.addEventListener('scroll', handleScroll);
 });
 
 onUnmounted(() => {
     window.removeEventListener('scroll', handleScroll);
 });
+
 // --- DANE (Store) ---
 const route = useRoute();
 const groupsStore = useGroupsStore();
@@ -63,16 +58,6 @@ const groupDetails = computed<GroupType | undefined>(() => {
   const id = route.params.id as string;
   return groupsStore.getGroupById(id);
 });
-
-const postsStore = usePostsStore();
-const groupPosts = computed(() => {
-    const groupId = route.params.id as string;
-    return postsStore.posts.filter(post => post.groupId === groupId);
-});
-
-const handleDeletePost = (postId: string) => {
-    postsStore.removePost(postId);
-};
 
 // --- UI LOGIC ---
 const isDescriptionExpanded = ref(false);
@@ -85,8 +70,15 @@ const truncatedDescription = computed(() => {
   return description;
 });
 
+const navLinks = [
+      { name: 'group-info', text: t('groups.info') },
+    { name: 'group-discussion', text: t('groups.discussion') },
 
-
+    { name: 'group-members', text: t('groups.members') },
+    { name: 'group-events', text: t('groups.events') },
+    { name: 'group-media', text: t('groups.media') },
+    { name: 'group-files', text: t('groups.files') },
+]
 
 </script>
 
@@ -191,37 +183,27 @@ const truncatedDescription = computed(() => {
 
                 <div ref="tabsContainerRef" class="border-t flex items-center justify-between h-[60px] border-theme-border">
 
-                <div class="flex h-full overflow-x-auto no-scrollbar">
-                    <button class="px-4 h-full font-semibold text-[15px] rounded-lg  flex items-center transition-colors whitespace-nowrap text-theme-text-secondary hover:bg-theme-hover pb-[3px]">
-                        {{ t('groups.info') }}
-                    </button>
+                    <div class="flex h-full overflow-x-auto no-scrollbar">
+                        <RouterLink
+                          v-for="link in navLinks"
+                          :key="link.name"
+                          :to="{ name: link.name, params: { id: route.params.id } }"
+                          class="px-4 h-full font-semibold text-[15px] flex items-center transition-colors whitespace-nowrap text-theme-text-secondary hover:bg-theme-hover"
+                          active-class="text-[#0866FF] border-b-[3px] border-[#0866FF]"
+                          :exact="link.name === 'group-discussion'"
+                        >
+                          {{ link.text }}
+                        </RouterLink>
+                    </div>
 
-                    <button class="text-[#0866FF] px-4 h-full font-semibold text-[15px] border-b-[3px] border-[#0866FF] flex items-center transition-colors whitespace-nowrap">
-                        {{ t('groups.discussion') }}
-                    </button>
-
-                    <button class="px-4 h-full font-semibold text-[15px] rounded-lg  flex items-center transition-colors whitespace-nowrap text-theme-text-secondary hover:bg-theme-hover pb-[3px]">
-                        {{ t('groups.members') }}
-                    </button>
-                    <button class="px-4 h-full font-semibold text-[15px] rounded-lg  flex items-center transition-colors whitespace-nowrap text-theme-text-secondary hover:bg-theme-hover pb-[3px]">
-                        {{ t('groups.events') }}
-                    </button>
-                    <button class="px-4 h-full font-semibold text-[15px] rounded-lg  flex items-center transition-colors whitespace-nowrap text-theme-text-secondary hover:bg-theme-hover pb-[3px]">
-                        {{ t('groups.media') }}
-                    </button>
-                    <button class="px-4 h-full font-semibold text-[15px] rounded-lg  flex items-center transition-colors whitespace-nowrap text-theme-text-secondary hover:bg-theme-hover pb-[3px]">
-                        {{ t('groups.files') }}
-                    </button>
-                </div>
-
-                <div class="flex items-center gap-1 pl-2 shrink-0">
-                    <button class="p-2 rounded-full transition w-9 h-9 flex items-center justify-center bg-theme-bg-subtle hover:bg-theme-hover-strong text-theme-text">
-                        <MagnifyIcon :size="20"/>
-                    </button>
-                    <button class="p-2 rounded-full transition w-9 h-9 flex items-center justify-center bg-theme-bg-subtle hover:bg-theme-hover-strong text-theme-text">
-                        <DotsHorizontalIcon :size="20"/>
-                    </button>
-                </div>
+                    <div class="flex items-center gap-1 pl-2 shrink-0">
+                        <button class="p-2 rounded-full transition w-9 h-9 flex items-center justify-center bg-theme-bg-subtle hover:bg-theme-hover-strong text-theme-text">
+                            <MagnifyIcon :size="20"/>
+                        </button>
+                        <button class="p-2 rounded-full transition w-9 h-9 flex items-center justify-center bg-theme-bg-subtle hover:bg-theme-hover-strong text-theme-text">
+                            <DotsHorizontalIcon :size="20"/>
+                        </button>
+                    </div>
 
                 </div>
 
@@ -231,82 +213,9 @@ const truncatedDescription = computed(() => {
       </div>
 
       <div class="w-full max-w-[1200px] mx-auto px-4 lg:px-0 mt-4">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-
-          <div class="lg:col-span-7 space-y-4">
-            <CreateBox class="rounded-lg shadow-sm bg-theme-bg-secondary border border-theme-border" />
-
-            <PostItem
-                v-for="post in groupPosts"
-                :key="post.id"
-                :post="post"
-                isGroup
-                class="rounded-lg shadow-sm bg-theme-bg-secondary border border-theme-border"
-                @delete="handleDeletePost"
-            />
-
-            <div v-if="groupPosts.length === 0" class="text-center py-10 rounded-lg shadow-sm bg-theme-bg-secondary text-theme-text-secondary">
-               {{ t('groups.noPosts') }}
-            </div>
-          </div>
-
-          <div
-            ref="rightSectionRef"
-            class="lg:col-span-5 space-y-4 sticky self-start"
-            :style="{ top: `${stickyTop}px` }"
-          >
-            <div class="rounded-lg shadow-sm p-4 bg-theme-bg-secondary border border-theme-border">
-              <div class="flex justify-between items-center mb-3">
-                 <h2 class="text-[17px] font-bold text-theme-text">{{ t('groups.information') }}</h2>
-              </div>
-
-              <ul class="space-y-4">
-                <li class="flex items-start gap-3">
-                  <div class="mt-1"><InformationIcon class="text-theme-text-secondary" :size="20" /></div>
-                  <div class="text-[15px] leading-snug text-theme-text">
-                    {{ truncatedDescription }}
-                    <span
-                      v-if="(groupDetails?.description || '').length > 200"
-                      @click="isDescriptionExpanded = !isDescriptionExpanded"
-                      class="font-semibold cursor-pointer hover:underline ml-1 text-theme-primary"
-                    >
-                      {{ isDescriptionExpanded ? t('groups.hide') : t('groups.seeMore') }}
-                    </span>
-                  </div>
-                </li>
-
-                <li class="flex items-center gap-3">
-                  <div>
-                      <EarthIcon v-if="groupDetails?.privacy === 'public'" class="text-theme-text-secondary" :size="20" />
-                      <AccountGroupIcon v-else class="text-theme-text-secondary" :size="20" />
-                  </div>
-                  <div>
-                      <div class="text-[17px] font-semibold text-theme-text">
-                          {{ groupDetails?.privacy === 'public' ? t('groups.public') : t('groups.private') }}
-                      </div>
-                      <div class="text-[13px] text-theme-text-secondary">
-                          {{ groupDetails?.privacy === 'public' ? t('groups.publicDescription') : t('groups.privateDescription') }}
-                      </div>
-                  </div>
-                </li>
-
-                <li class="flex items-center gap-3">
-                  <div><AccountGroupIcon class="text-theme-text-secondary" :size="20" /></div>
-                  <div>
-                      <div class="text-[17px] font-semibold text-theme-text">
-                          {{ t('groups.visibility') }}
-                      </div>
-                      <div class="text-[13px] text-theme-text-secondary">
-                          {{ t('groups.visibleDescription') }}
-                      </div>
-                  </div>
-                </li>
-
-
-              </ul>
-            </div>
-            </div>
-        </div>
+        <router-view v-slot="{ Component }">
+          <component :is="Component" :group-details="groupDetails" :sticky-top="stickyTop" />
+        </router-view>
       </div>
     </div>
   </div>
@@ -351,4 +260,3 @@ const truncatedDescription = computed(() => {
     animation: slide-down 0.3s ease-out;
 }
 </style>
-
