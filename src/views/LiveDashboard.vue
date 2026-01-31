@@ -5,6 +5,7 @@ import { useLiveStore } from '@/stores/live';
 import { storeToRefs } from 'pinia';
 
 
+import { useTheme } from '@/composables/useTheme';
 import CameraOffIcon from 'vue-material-design-icons/CameraOff.vue';
 import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue';
 import EmoticonIcon from 'vue-material-design-icons/Emoticon.vue';
@@ -20,11 +21,13 @@ import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
 import InformationOutlineIcon from 'vue-material-design-icons/InformationOutline.vue';
 import LinkVariantIcon from 'vue-material-design-icons/LinkVariant.vue';
 import EyeIcon from 'vue-material-design-icons/Eye.vue';
+import VideoPreview from '@/components/live/VideoPreview.vue';
 
 
 const { t } = useI18n();
 const liveStore = useLiveStore();
 const { activeStream } = storeToRefs(liveStore);
+const { activeTheme } = useTheme();
 
 const videoElement = ref<HTMLVideoElement | null>(null);
 
@@ -75,17 +78,7 @@ const pollOption2 = ref('');
                         <ChevronDownIcon class="text-theme-text-secondary cursor-pointer" :size="24" />
                     </div>
                     <div class="p-4">
-                        <div class="relative w-full aspect-video bg-black rounded-lg flex flex-col items-center justify-center text-white mb-4 overflow-hidden">
-                            <video v-if="activeStream" ref="videoElement" autoplay muted playsinline class="w-full h-full object-contain"></video>
-                            <div v-else>
-                                <CameraOffIcon :size="48" class="text-theme-text-secondary mb-3" />
-                                <p class="font-bold text-[15px] text-theme-text text-center px-4 leading-snug">{{ t('createLive.cameraNotSupported') }}</p>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center border border-theme-border rounded-md px-4 py-2.5 bg-theme-bg-secondary hover:bg-theme-hover cursor-pointer transition-colors mb-4">
-                            <span class="text-[15px] font-semibold text-theme-text">{{ t('createLive.expandVideoPreview') }}</span>
-                            <ArrowExpandAllIcon :size="20" class="text-theme-text-secondary" />
-                        </div>
+                        <VideoPreview/>
                         <div class="flex items-center gap-2 text-theme-text font-semibold text-[15px] cursor-pointer hover:bg-theme-hover p-2 rounded-md -ml-2 w-max transition-colors">
                             <div class="bg-theme-bg-tertiary p-1.5 rounded-full">
                                     <ClipboardTextOutlineIcon :size="20"/>
@@ -141,18 +134,18 @@ const pollOption2 = ref('');
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg shadow-sm border border-[#CED0D4]">
-                        <div class="px-4 py-3 border-b border-[#E4E6EB] flex justify-between items-center">
-                        <h2 class="font-bold text-[17px]">{{ t('createLive.manageOnSecondDevice') }}</h2>
-                        <DotsHorizontalIcon class="text-[#65676B] cursor-pointer" :size="24" />
+                    <div class="bg-theme-bg-secondary rounded-lg shadow-sm border border-theme-border">
+                        <div class="px-4 py-3 border-b border-theme-border flex justify-between items-center">
+                        <h2 class="font-bold text-[17px] text-theme-text">{{ t('createLive.manageOnSecondDevice') }}</h2>
+                        <DotsHorizontalIcon class="text-theme-text-secondary cursor-pointer" :size="24" />
                     </div>
                     <div class="p-5">
-                        <p class="text-[13px] text-[#050505] mb-4 leading-snug">{{ t('createLive.manageOnSecondDeviceDescription') }}</p>
-                        <div class="flex bg-[#F0F2F5] rounded-md overflow-hidden border border-transparent hover:border-[#CED0D4] transition-colors h-10">
-                            <div class="flex-1 px-3 flex items-center text-[13px] text-[#050505] truncate select-all bg-[#F0F2F5]">
+                        <p class="text-[13px] text-theme-text mb-4 leading-snug">{{ t('createLive.manageOnSecondDeviceDescription') }}</p>
+                        <div class="flex bg-theme-bg-tertiary rounded-md overflow-hidden border border-transparent hover:border-theme-border transition-colors h-10">
+                            <div class="flex-1 px-3 flex items-center text-[13px] text-theme-text truncate select-all bg-theme-bg-tertiary">
                                 https://www.facebook.com/live/producer/1584...
                             </div>
-                            <button class="bg-[#E4E6EB] hover:bg-[#D8DADF] px-5 font-semibold text-[13px] text-[#050505] transition-colors border-l border-[#CED0D4]">{{ t('createLive.copy') }}</button>
+                            <button class="bg-theme-bg-tertiary hover:bg-theme-hover px-5 font-semibold text-[13px] text-theme-text transition-colors border-l border-theme-border">{{ t('createLive.copy') }}</button>
                         </div>
                     </div>
                 </div>
@@ -161,54 +154,52 @@ const pollOption2 = ref('');
 
             <div class="flex-1 flex flex-col gap-5">
 
-                <div class="bg-white rounded-lg shadow-sm border border-[#CED0D4]">
-                        <div class="px-4 py-3 border-b border-[#E4E6EB] flex justify-between items-center">
-                        <h2 class="font-bold text-[17px]">{{ t('createLive.polls') }}</h2>
-                        <DotsHorizontalIcon class="text-[#65676B] cursor-pointer" :size="24" />
+                <div class="bg-theme-bg-secondary rounded-lg shadow-sm border border-theme-border">
+                        <div class="px-4 py-3 border-b border-theme-border flex justify-between items-center">
+                        <h2 class="font-bold text-[17px] text-theme-text">{{ t('createLive.polls') }}</h2>
+                        <DotsHorizontalIcon class="text-theme-text-secondary cursor-pointer" :size="24" />
                     </div>
                     <div class="p-5">
-                        <div class="text-[15px] font-semibold mb-3">{{ t('createLive.createPoll') }}</div>
-                        <label class="block text-[13px] font-semibold text-[#050505] mb-1.5">{{ t('createLive.question') }}</label>
-                        <input v-model="pollQuestion" type="text" :placeholder="t('createLive.question')" class="block w-full bg-[#F0F2F5] border-transparent rounded-md px-3 py-3 text-[15px] placeholder-[#65676B] focus:border-[#1877F2] focus:ring-1 focus:ring-[#1877F2] mb-4 hover:bg-[#E4E6EB] transition-colors">
-
-                        <label class="block text-[13px] font-semibold text-[#050505] mb-1.5">{{ t('createLive.options') }}</label>
-                        <div class="space-y-2.5 mb-4">
-                            <div class="flex items-center gap-2">
-                                <div class="relative flex-1">
-                                    <input v-model="pollOption1" type="text" :placeholder="t('createLive.option')" class="block w-full bg-[#F0F2F5] border-transparent rounded-md px-3 py-3 text-[15px] placeholder-[#65676B] focus:border-[#1877F2] focus:ring-1 focus:ring-[#1877F2] hover:bg-[#E4E6EB] transition-colors">
-                                    <CheckIcon class="absolute right-3 top-3 text-[#BCC0C4]" :size="20"/>
+                                <div class="text-[15px] font-semibold mb-3 text-theme-text">{{ t('createLive.createPoll') }}</div>
+                                <label class="block text-[13px] font-semibold text-theme-text mb-1.5">{{ t('createLive.question') }}</label>
+                                <input v-model="pollQuestion" type="text" :placeholder="t('createLive.question')" class="block w-full bg-theme-bg-tertiary border-transparent rounded-md px-3 py-3 text-[15px] placeholder-theme-text-secondary focus:border-theme-primary focus:ring-1 focus:ring-theme-primary mb-4 hover:bg-theme-hover transition-colors">
+                        
+                                <label class="block text-[13px] font-semibold text-theme-text mb-1.5">{{ t('createLive.options') }}</label>
+                                <div class="space-y-2.5 mb-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="relative flex-1">
+                                            <input v-model="pollOption1" type="text" :placeholder="t('createLive.option')" class="block w-full bg-theme-bg-tertiary border-transparent rounded-md px-3 py-3 text-[15px] placeholder-theme-text-secondary focus:border-theme-primary focus:ring-1 focus:ring-theme-primary hover:bg-theme-hover transition-colors">
+                                            <CheckIcon class="absolute right-3 top-3 text-[#BCC0C4]" :size="20"/>
+                                        </div>
+                                        <div class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-theme-hover cursor-pointer transition-colors">
+                                            <DeleteOutlineIcon class="text-theme-text-secondary" :size="24" />
+                                        </div>
+                                    </div>
+                                        <div class="flex items-center gap-2">
+                                        <div class="relative flex-1">
+                                            <input v-model="pollOption2" type="text" :placeholder="t('createLive.option')" class="block w-full bg-theme-bg-tertiary border-transparent rounded-md px-3 py-3 text-[15px] placeholder-theme-text-secondary focus:border-theme-primary focus:ring-1 focus:ring-theme-primary hover:bg-theme-hover transition-colors">
+                                            <CheckIcon class="absolute right-3 top-3 text-[#BCC0C4]" :size="20"/>
+                                        </div>
+                                        <div class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-theme-hover cursor-pointer transition-colors">
+                                            <DeleteOutlineIcon class="text-theme-text-secondary" :size="24" />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[#F2F2F2] cursor-pointer transition-colors">
-                                    <DeleteOutlineIcon class="text-[#65676B]" :size="24" />
+                                <div class="text-theme-primary text-[15px] font-semibold cursor-pointer hover:bg-theme-hover mb-5 inline-flex items-center justify-center border-[2px] border-dashed border-theme-border rounded-full px-4 py-1.5 w-full text-center transition-colors">
+                                    {{ t('createLive.addOption') }}
                                 </div>
-                            </div>
-                                <div class="flex items-center gap-2">
-                                <div class="relative flex-1">
-                                    <input v-model="pollOption2" type="text" :placeholder="t('createLive.option')" class="block w-full bg-[#F0F2F5] border-transparent rounded-md px-3 py-3 text-[15px] placeholder-[#65676B] focus:border-[#1877F2] focus:ring-1 focus:ring-[#1877F2] hover:bg-[#E4E6EB] transition-colors">
-                                    <CheckIcon class="absolute right-3 top-3 text-[#BCC0C4]" :size="20"/>
+                        
+                                <div class="flex gap-3 mb-3">
+                                    <button class="flex-1 bg-theme-bg-tertiary text-theme-text-secondary py-2.5 rounded-md font-semibold text-[15px] cursor-not-allowed">{{ t('createLive.clear') }}</button>
+                                    <button class="flex-1 bg-theme-bg-tertiary text-theme-text-secondary py-2.5 rounded-md font-semibold text-[15px] cursor-not-allowed">{{ t('createLive.save') }}</button>
                                 </div>
-                                <div class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[#F2F2F2] cursor-pointer transition-colors">
-                                    <DeleteOutlineIcon class="text-[#65676B]" :size="24" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="text-[#1877F2] text-[15px] font-semibold cursor-pointer hover:bg-[#F2F2F2] mb-5 inline-flex items-center justify-center border-[2px] border-dashed border-[#CED0D4] rounded-full px-4 py-1.5 w-full text-center transition-colors">
-                            {{ t('createLive.addOption') }}
-                        </div>
-
-                        <div class="flex gap-3 mb-3">
-                            <button class="flex-1 bg-[#E4E6EB] text-[#BCC0C4] py-2.5 rounded-md font-semibold text-[15px] cursor-not-allowed">{{ t('createLive.clear') }}</button>
-                            <button class="flex-1 bg-[#E4E6EB] text-[#BCC0C4] py-2.5 rounded-md font-semibold text-[15px] cursor-not-allowed">{{ t('createLive.save') }}</button>
-                        </div>
-                        <button class="w-full bg-[#E7F3FF] text-[#1877F2] py-2.5 rounded-md font-semibold text-[15px] hover:bg-[#DBE7F2] transition-colors">{{ t('createLive.createPoll') }}</button>
-                    </div>
+                                <button class="w-full bg-theme-primary-soft text-theme-primary py-2.5 rounded-md font-semibold text-[15px] hover:bg-theme-primary-soft-hover transition-colors">{{ t('createLive.createPoll') }}</button>                    </div>
                 </div>
 
-                    <div class="bg-white rounded-lg shadow-sm border border-[#CED0D4]">
-                        <div class="px-4 py-3 border-b border-[#E4E6EB] flex justify-between items-center">
-                        <h2 class="font-bold text-[17px]">{{ t('createLive.postInfo') }}</h2>
-                        <DotsHorizontalIcon class="text-[#65676B] cursor-pointer" :size="24" />
+                    <div class="bg-theme-bg-secondary rounded-lg shadow-sm border border-theme-border">
+                        <div class="px-4 py-3 border-b border-theme-border flex justify-between items-center">
+                        <h2 class="font-bold text-[17px] text-theme-text">{{ t('createLive.postInfo') }}</h2>
+                        <DotsHorizontalIcon class="text-theme-text-secondary cursor-pointer" :size="24" />
                     </div>
                     <div class="p-5 space-y-4">
                         <input v-model="title" type="text" :placeholder="t('createLive.titleOptional')" class="block w-full border border-theme-border rounded-md px-4 py-3.5 text-[15px] placeholder-theme-text-secondary focus:border-theme-primary focus:ring-1 focus:ring-theme-primary outline-none hover:border-theme-border-hover transition-colors bg-theme-bg-tertiary">
@@ -224,42 +215,41 @@ const pollOption2 = ref('');
                                 </div>
                         </div>
                         <div>
-                            <label class="block text-[13px] font-semibold text-[#050505] mb-1.5">{{ t('createLive.game') }}</label>
+                            <label class="block text-[13px] font-semibold text-theme-text mb-1.5">{{ t('createLive.game') }}</label>
                             <div class="relative group">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#65676B] group-focus-within:text-[#1877F2]">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-theme-text-secondary group-focus-within:text-theme-primary">
                                     <MagnifyIcon :size="22"/>
                                 </div>
-                                <input v-model="gameSearch" type="text" :placeholder="t('createLive.tagGame')" class="block w-full bg-[#F0F2F5] border-transparent rounded-md pl-11 pr-3 py-3 text-[15px] placeholder-[#65676B] focus:border-[#1877F2] focus:ring-1 focus:ring-[#1877F2] hover:bg-[#E4E6EB] transition-colors">
+                                <input v-model="gameSearch" type="text" :placeholder="t('createLive.tagGame')" class="block w-full bg-theme-bg-tertiary border-transparent rounded-md pl-11 pr-3 py-3 text-[15px] placeholder-theme-text-secondary focus:border-theme-primary focus:ring-1 focus:ring-theme-primary hover:bg-theme-hover transition-colors">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg shadow-sm border border-[#CED0D4] h-72">
-                        <div class="px-4 py-3 border-b border-[#E4E6EB] flex justify-between items-center">
-                        <h2 class="font-bold text-[17px]">{{ t('createLive.alerts') }}</h2>
-                        <DotsHorizontalIcon class="text-[#65676B] cursor-pointer" :size="24" />
-                    </div>
-                    <div class="p-5 flex items-center justify-center h-full">
-                        <span class="text-[#65676B] text-[15px]">{{ t('createLive.noNewAlerts') }}</span>
-                    </div>
-                </div>
-
-                    <div class="bg-white rounded-lg shadow-sm border border-[#CED0D4]">
-                        <div class="px-4 py-3 border-b border-[#E4E6EB] flex justify-between items-center">
-                        <h2 class="font-bold text-[17px]">{{ t('createLive.previewLink') }}</h2>
-                        <DotsHorizontalIcon class="text-[#65676B] cursor-pointer" :size="24" />
+                                    <div class="bg-theme-bg-secondary rounded-lg shadow-sm border border-theme-border h-72">
+                                        <div class="px-4 py-3 border-b border-theme-border flex justify-between items-center">
+                                        <h2 class="font-bold text-[17px] text-theme-text">{{ t('createLive.alerts') }}</h2>
+                                        <DotsHorizontalIcon class="text-theme-text-secondary cursor-pointer" :size="24" />
+                                    </div>
+                                    <div class="p-5 flex items-center justify-center h-full">
+                                        <span class="text-theme-text-secondary text-[15px]">{{ t('createLive.noNewAlerts') }}</span>
+                                    </div>
+                                </div>
+                    <div class="bg-theme-bg-secondary rounded-lg shadow-sm border border-theme-border">
+                        <div class="px-4 py-3 border-b border-theme-border flex justify-between items-center">
+                        <h2 class="font-bold text-[17px] text-theme-text">{{ t('createLive.previewLink') }}</h2>
+                        <DotsHorizontalIcon class="text-theme-text-secondary cursor-pointer" :size="24" />
                     </div>
                     <div class="p-5">
-                        <p class="text-[13px] text-[#65676B] mb-3">{{ t('createLive.previewLinkDescription') }}</p>
-                        <div class="flex items-center bg-[#F0F2F5] rounded-md p-2 border border-transparent hover:border-[#CED0D4] transition-colors cursor-pointer group">
-                            <div class="bg-[#E4E6EB] p-2 rounded-full mr-3 text-[#65676B] group-hover:bg-[#D8DADF] transition-colors">
+                        <p class="text-theme-text-secondary mb-3">{{ t('createLive.previewLinkDescription') }}</p>
+                        <div class="flex items-center bg-theme-bg-tertiary rounded-md p-2 border border-transparent hover:border-theme-border transition-colors cursor-pointer group">
+                            <div class="bg-theme-bg-tertiary p-2 rounded-full mr-3 text-theme-text-secondary group-hover:bg-theme-hover transition-colors">
                                     <LinkVariantIcon :size="20"/>
                             </div>
-                            <div class="flex-1 truncate text-[13px] text-[#65676B] mr-2 leading-snug font-medium">
+                            <div class="flex-1 truncate text-theme-text-secondary mr-2 leading-snug font-medium">
                                 https://www.facebook.com/live/producer/1584...
                             </div>
-                            <button class="text-[#1877F2] font-semibold text-[15px] hover:underline px-2">{{ t('createLive.viewPost') }}</button>
+                            <button class="text-theme-primary font-semibold text-[15px] hover:underline px-2">{{ t('createLive.viewPost') }}</button>
                         </div>
                     </div>
                 </div>

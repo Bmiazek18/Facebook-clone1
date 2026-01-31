@@ -36,31 +36,34 @@ function selectOption(id: string) {
 
 <template>
   <div>
-    <label class="text-[15px] font-semibold mb-2 block">{{ label }}</label>
+
     <Dropdown class="w-full" :distance="6" :disabled="disabled" placement="bottom-start">
       <div
         class="w-full p-3 border border-theme-border rounded-lg flex items-center justify-between bg-theme-bg-secondary text-[15px] transition"
         :class="{'cursor-pointer hover:bg-theme-hover': !disabled, 'opacity-50 cursor-not-allowed': disabled}"
       >
-        <div class="flex items-center gap-2">
-          <component
-            :is="selectedOption.icon"
-            v-if="selectedOption.icon"
-            :class="iconClass"
-            class="text-theme-text"
-            :size="20"
-          />
-          <span class="text-theme-text">{{ selectedOption.title }}</span>
+        <div class="flex flex-col gap-0.5">
+          <div class="text-[12px] text-theme-text-secondary">{{ label }}</div>
+          <div class="flex items-center gap-2">
+            <component
+              :is="selectedOption.icon"
+              v-if="selectedOption.icon"
+              :class="iconClass"
+              class="text-theme-text"
+              :size="20"
+            />
+            <span class="text-theme-text font-medium ">{{ selectedOption.title }}</span>
+          </div>
         </div>
         <chevron-down-icon class="text-theme-text-secondary" :size="20" />
       </div>
 
-      <template #popper>
+      <template #popper="{ hide }">
         <div class="w-[500px] p-2 bg-theme-bg-secondary rounded-xl shadow-xl">
           <div
             v-for="option in options"
             :key="option.id"
-            @click="selectOption(option.id)"
+            @click="selectOption(option.id); hide();"
             :class="['flex items-center gap-3 p-2 rounded-lg cursor-pointer transition', modelValue === option.id ? 'bg-theme-primary-subtle text-theme-primary' : 'hover:bg-theme-hover text-theme-text']"
           >
             <div v-if="option.icon" :class="['p-2 rounded-full flex items-center justify-center', modelValue === option.id ? 'bg-theme-primary text-white' : 'bg-theme-bg-subtle text-theme-text']">

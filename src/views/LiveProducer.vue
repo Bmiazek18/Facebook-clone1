@@ -66,55 +66,15 @@ const actionCards: ActionCard[] = [
 </script>
 
 <template>
-  <div class="flex min-h-screen bg-[#F0F2F5] font-sans text-gray-900">
+  <div class="flex min-h-screen bg-theme-bg font-sans text-theme-text">
 
-    <aside class="w-80 bg-white border-r border-gray-200 flex flex-col fixed h-full z-10">
-      <div class="p-4">
-        <h1 class="text-xl font-bold mb-6 leading-tight">Utwórz transmisję wideo na żywo</h1>
 
-        <button class="flex items-center space-x-3 w-full p-2 bg-gray-100 rounded-lg mb-6 hover:bg-gray-200 transition">
-          <div class="bg-blue-600 rounded-full p-1">
-            <HomeIcon class="text-white" :size="20" />
-          </div>
-          <span class="font-semibold text-sm">Strona główna</span>
-        </button>
 
-        <div class="flex items-center space-x-3 mb-4 px-2">
-          <img
-            src="https://i.pravatar.cc/150?u=bartosz"
-            alt="Avatar"
-            class="w-10 h-10 rounded-full border border-gray-300"
-          />
-          <div class="flex flex-col">
-            <span class="font-bold text-sm">{{ userName }} Miazek</span>
-            <span class="text-xs text-gray-500">Organizator — Twój profil</span>
-          </div>
-        </div>
-
-        <div class="relative border border-blue-500 rounded-lg p-3 bg-blue-50 cursor-pointer hover:bg-blue-100 transition">
-          <div class="absolute top-2 right-2">
-            <ChevronDownIcon :size="20" />
-          </div>
-          <p class="text-xs text-blue-600 mb-1">Wskaż docelową lokalizację posta</p>
-          <p class="font-semibold text-sm">Opublikuj w profilu</p>
-        </div>
-      </div>
-
-      <div class="mt-auto p-4 border-t border-gray-100">
-        <button class="flex items-center space-x-3 text-gray-700 hover:bg-gray-100 w-full p-2 rounded-lg transition">
-          <div class="bg-gray-300 rounded-full p-1">
-            <MessageAlertIcon :size="18" class="text-gray-700"/>
-          </div>
-          <span class="font-medium">Przekaż opinię</span>
-        </button>
-      </div>
-    </aside>
-
-    <main class="flex-1 ml-80 p-8 flex flex-col items-center">
+    <main class="flex-1 w-[30vw] p-8 flex flex-col items-center">
 
       <div class="text-center mb-8 mt-4">
         <h2 class="text-2xl font-bold mb-1">Witaj ponownie, {{ userName }}!</h2>
-        <p class="text-gray-500">Określ, jak chcesz poprowadzić transmisję na żywo.</p>
+        <p class="text-theme-text-secondary">Określ, jak chcesz poprowadzić transmisję na żywo.</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-5xl mb-8">
@@ -122,7 +82,7 @@ const actionCards: ActionCard[] = [
           v-for="(card, index) in actionCards"
 
           :key="index"
-          class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col h-full"
+          class="bg-theme-bg-secondary rounded-xl text-center shadow-sm border border-gray-200 p-6 flex flex-col h-full"
         >
           <div class="mb-4">
             <div :class="`inline-flex items-center justify-center w-12 h-12 rounded-full text-white ${card.iconColor}`">
@@ -134,10 +94,10 @@ const actionCards: ActionCard[] = [
 
           <ul class="space-y-5 mb-8 grow">
             <li v-for="(feature, fIndex) in card.features" :key="fIndex" class="flex items-start">
-              <div class="mr-3 mt-0.5 text-gray-400">
+              <div class="mr-3 mt-0.5 text-theme-text-secondary">
                 <component :is="feature.icon" :size="20" />
               </div>
-              <span class="text-sm text-gray-600 leading-snug">{{ feature.text }}</span>
+              <span class="text-sm  text-theme-text-secondary leading-snug">{{ feature.text }}</span>
             </li>
           </ul>
 
@@ -147,14 +107,14 @@ const actionCards: ActionCard[] = [
         </div>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-5xl p-6 min-h-[300px]">
+      <div class="bg-theme-bg-secondary rounded-xl shadow-sm border border-gray-200 w-full max-w-5xl p-6 min-h-[300px]">
 
         <div class="flex space-x-2 mb-12">
           <button
             @click="currentTab = 'live'"
             :class="[
               'px-4 py-2 rounded-full text-sm font-semibold transition',
-              currentTab === 'live' ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'
+              currentTab === 'live' ? 'bg-blue-100 text-blue-700' : 'text-theme-text-secondary hover:bg-theme-hover'
             ]"
           >
             Na żywo teraz
@@ -163,7 +123,7 @@ const actionCards: ActionCard[] = [
             @click="currentTab = 'scheduled'"
             :class="[
               'px-4 py-2 rounded-full text-sm font-semibold transition',
-              currentTab === 'scheduled' ? 'bg-blue-100 text-blue-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              currentTab === 'scheduled' ? 'bg-blue-100 text-blue-700' : 'bg-theme-bg-tertiary text-theme-text-secondary hover:bg-theme-hover'
             ]"
           >
             Zaplanowane transmisje
@@ -171,11 +131,11 @@ const actionCards: ActionCard[] = [
         </div>
 
         <div class="flex flex-col items-center justify-center text-center py-8">
-          <div class="bg-gray-200 rounded-full p-4 mb-4">
-            <VideoOutlineIcon :size="32" class="text-gray-500" />
+          <div class="bg-theme-bg-tertiary rounded-full p-4 mb-4">
+            <VideoOutlineIcon :size="32" class="text-theme-text-secondary" />
           </div>
-          <h4 class="text-lg font-medium text-black mb-1">Obecnie nie transmitujesz na żywo.</h4>
-          <p class="text-sm text-gray-500">Szukasz transmisji? Upewnij się, że wybrałeś odpowiednią stronę.</p>
+          <h4 class="text-lg font-medium text-theme-text mb-1">Obecnie nie transmitujesz na żywo.</h4>
+          <p class="text-sm text-theme-text-secondary">Szukasz transmisji? Upewnij się, że wybrałeś odpowiednią stronę.</p>
         </div>
 
       </div>
