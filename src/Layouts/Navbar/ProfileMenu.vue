@@ -1,39 +1,37 @@
 <template>
-  <div class="w-full md:w-[360px] bg-theme-bg-secondary p-2 rounded-lg relative overflow-hidden max-h-[calc(100vh-4rem)] flex flex-col shadow-2xl">
-    <div class="profile-menu-wrapper overflow-y-auto flex-1 min-h-0" ref="wrapperRef">
-      <Transition :name="transitionName" mode="out-in" @before-enter="updateHeight()">
+  <div class="w-full md:w-[360px] bg-theme-bg-secondary rounded-xl shadow-2xl overflow-hidden">
+
+    <div
+      class="relative transition-[height] duration-300 ease-in-out"
+      ref="wrapperRef"
+      style="min-height: 50px"
+    >
+      <Transition
+        :name="transitionName"
+        @enter="onEnter"
+        @after-enter="onAfterEnter"
+      >
         <component
           :is="currentViewComponent"
           :key="currentView"
           class="view-container bg-theme-bg-secondary p-0"
-          :data-view="currentView"
           @navigate="handleNavigation"
           @back="handleNavigationBack"
         />
       </Transition>
     </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { type Component, computed } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { computed, type Component } from 'vue';
+import { useSlideTransition } from '@/composables/useSlideTransition';
 
 import MainMenu from '@/components/profile/menu/MainMenu.vue';
 import SubMenuDisplay from '@/components/profile/menu/SubMenu.vue';
 import LanguageSelector from '@/components/profile/menu/LanguageSelector.vue';
 import SettingsMenu from '@/components/profile/menu/SettingsMenu.vue';
-
-// --- Import Animacji ---
-import '@/assets/animations/slideTransition.css';
-
-// --- Import Composables ---
-import { useSlideTransition } from '@/composables/useSlideTransition';
-
-useI18n();
-
-// --- Use Composables ---
-const { wrapperRef, currentView, previousView, updateHeight, transitionName } = useSlideTransition();
 
 const viewComponents: Record<string, Component> = {
   main: MainMenu,
@@ -42,46 +40,63 @@ const viewComponents: Record<string, Component> = {
   settings: SettingsMenu,
 };
 
+const {
+  wrapperRef,
+  currentView,
+  transitionName,
+  navigateTo,
+  navigateBack,
+  onEnter,
+  onAfterEnter
+} = useSlideTransition('main');
+
 const currentViewComponent = computed(() => {
   return viewComponents[currentView.value] || MainMenu;
 });
 
-const handleNavigation = (viewName: string) => {
-  if (viewComponents[viewName]) {
-    previousView.value = currentView.value;
-    currentView.value = viewName;
-  } else {
-    console.log(`Kliknięto akcję: ${viewName}`);
-    if (viewName === 'logout') {
-        alert('Wylogowanie...');
-    }
-  }
-};
-
-const handleNavigationBack = () => {
-    const navigationHistory: Record<string, string> = {
-      'language': previousView.value === 'settings' ? 'settings' : 'main',
-      'settings': 'main',
-      'display': 'main',
-    };
-
-    const targetView = navigationHistory[currentView.value] || 'main';
-    previousView.value = currentView.value;
-    currentView.value = targetView;
-};
+const handleNavigation = (viewName: string) => navigateTo(viewName);
+const handleNavigationBack = () => navigateBack();
 </script>
 
 <style scoped>
-.profile-menu-wrapper {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  transition: height 0.08s ease;
-  min-height: 48px;
+/* Styl podstawowy kontenera widoku.
+  Musi mieć top:0 left:0, żeby przy position:absolute nie uciekał.
+*/
+.view-container {
+  top: 0;
+  left: 0;
+  /* Ważne: brak position: absolute w stanie spoczynku,
+     dzięki temu browser poprawnie liczy offsetHeight */
 }
 
-.view-container {
-  position: relative;
+/* --- ANIMACJE (Facebook Style) --- */
+
+.slide-left-enter-active,
+.slide-left-leave-active,
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
+  /* KLUCZOWE: Position absolute TYLKO podczas ruchu,
+     aby elementy mogły być na sobie (jeden nad drugim) */
+  position: absolute;
   width: 100%;
+}
+
+/* WCHODZENIE W GŁĄB (Next) */
+.slide-left-enter-from {
+  transform: translateX(100%);
+}
+.slide-left-leave-to {
+  transform: translateX(-100%);
+  opacity: 0; /* Opcjonalne: lekkie zanikanie starego */
+}
+
+/* POWRÓT (Back) */
+.slide-right-enter-from {
+  transform: translateX(-100%);
+}
+.slide-right-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
 }
 </style>
