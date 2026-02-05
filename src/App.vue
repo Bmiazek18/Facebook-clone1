@@ -1,8 +1,7 @@
 <template>
   <MainNavLayout v-if="showMainLayout"/>
 
-  <router-view :class="showMainLayout ? 'mt-[60px]' : ''"/>
-
+  <router-view />
   <div v-if="!isInChatView" class="fixed flex flex-row bottom-0 right-[60px]">
       <MessageBox
         v-for="boxId in chatStore.getBoxIds"
@@ -18,9 +17,9 @@
 <script setup lang="ts">
 
 
-import MainNavLayout from './layouts/MainNavLayouts.vue'
+import MainNavLayout from './Layouts/MainNavLayouts.vue'
 import { useRoute } from 'vue-router'
-import { computed } from 'vue'
+import { computed,onMounted, onUnmounted } from 'vue'
 
 import 'floating-vue/dist/style.css'
 import { useChatStore } from './stores/chat'
@@ -42,4 +41,22 @@ const isInChatView = computed(() => {
    return route.path.startsWith('/chat');
 })
 
+import { useNotify } from '@/composables/useNotify'; // Sprawdź ścieżkę
+
+const notify = useNotify();
+
+
+
+onMounted(() => {
+  window.addEventListener('offline', () => notify.offline());
+  window.addEventListener('online', () => notify.online());
+
+  // Sprawdzenie na starcie
+  if (!navigator.onLine) notify.offline();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('offline', () => notify.offline());
+  window.removeEventListener('online', () => notify.online());
+});
 </script>

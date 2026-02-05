@@ -19,11 +19,13 @@ import en from './locales/en.json'
 import App from './App.vue'
 import router from './router'
 import FloatingVue from 'floating-vue'
-
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
 
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
+
 
 const messages = {
   pl,
@@ -37,10 +39,23 @@ const i18n = createI18n({
   messages
 })
 
-const app = createApp(App)
 
+const app = createApp(App)
+app.use(Toast, {
+  transition: "Vue-Toastification__bounce",
+  maxToasts: 1,
+})
 app.use(pinia)
 app.use(router)
 app.use(i18n)
-app.use(FloatingVue)
+FloatingVue.options.handleResize = false
+app.use(FloatingVue, {
+  themes: {
+    'tooltip': {
+      $gap: 14,
+      placement: 'bottom',
+      delay: { show: 500, hide: 0 },
+    },
+  },
+})
 app.mount('#app')
