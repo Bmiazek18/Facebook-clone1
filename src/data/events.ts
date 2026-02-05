@@ -87,3 +87,7 @@ export const events: Event[] = [
     coordinates: [54.371661, 18.619082], // Gdańsk, Poland
   },
 ];
+
+export const getEventById = (id: string): Event | undefined => {
+  return events.find((event) => event.id === id);
+};

@@ -105,37 +105,13 @@
 
           </div>
 
-          <div class="mb-4">
-             <label class="text-[15px] font-semibold mb-2 block">Czy wydarzenie jest offline czy online?</label>
-             <Dropdown class="w-full" :distance="6">
-                <div class="w-full p-3 border border-theme-border rounded-lg flex items-center justify-between bg-theme-bg-secondary text-[15px] cursor-pointer hover:bg-theme-hover transition">
-                    <div class="flex items-center gap-2">
-                       <component :is="selectedTypeOption.icon" v-if="selectedTypeOption.icon === 'send-outline'" class="transform -rotate-45" :size="20"/>
-                       <span class="text-theme-text">{{ selectedTypeOption.title }}</span>
-                    </div>
-                    <chevron-down-icon class="text-theme-text-secondary" :size="20"/>
-                </div>
-
-                <template #popper>
-                  <div class="w-[500px] p-2 bg-theme-bg-secondary rounded-xl shadow-xl">
-                     <div
-                        v-for="option in eventTypeOptions"
-                        :key="option.id"
-                        @click="form.type = option.id"
-                        :class="['flex items-center gap-3 p-2 rounded-lg cursor-pointer transition', form.type === option.id ? 'bg-theme-primary-subtle text-theme-primary' : 'hover:bg-theme-hover text-theme-text']"
-                     >
-                        <div :class="['p-2 rounded-full flex items-center justify-center', form.type === option.id ? 'bg-theme-primary text-white' : 'bg-theme-bg-subtle text-theme-text']">
-                           <component :is="option.icon" :size="24" />
-                        </div>
-                        <div class="flex flex-col">
-                           <span class="text-[15px] font-bold">{{ option.title }}</span>
-                           <span :class="['text-[13px]', form.type === option.id ? 'text-theme-primary/80' : 'text-theme-text-secondary']">{{ option.description }}</span>
-                        </div>
-                     </div>
-                  </div>
-                </template>
-             </Dropdown>
-          </div>
+          <CustomDropdown
+            v-model="form.type"
+            :options="eventTypeOptions"
+            label="Czy wydarzenie jest offline czy online?"
+            class="mb-4"
+            :icon-class="{ 'transform -rotate-45': form.type === 'online' }"
+          />
 
            <div v-if="form.type === 'offline'" class="mb-4 relative">
              <div
@@ -278,6 +254,7 @@ import { DatePicker as VDatePicker } from 'v-calendar';
 import { Dropdown } from 'floating-vue';
 import 'v-calendar/dist/style.css';
 import 'floating-vue/dist/style.css';
+import CustomDropdown from '@/components/common/CustomDropdown.vue';
 import { v4 as uuidv4 } from 'uuid'; // Import uuid for unique IDs
 import { useEventsStore } from '@/stores/events'; // Import the events store
 const auth = useAuthStore()
@@ -346,7 +323,6 @@ const eventTypeOptions = [
   { id: 'offline', title: 'Offline', description: 'Spotkajcie się w określonej lokalizacji.', icon: SendOutlineIcon },
   { id: 'online', title: 'Wirtualne', description: 'Odbądźcie spotkanie wideo lub transmisję na żywo.', icon: VideoOutlineIcon }
 ];
-const selectedTypeOption = computed(() => eventTypeOptions.find(opt => opt.id === form.value.type));
 
 const privacyOptions = [
   { id: 'private', title: 'Prywatne', desc: 'Tylko zaproszone osoby', icon: LockIcon },

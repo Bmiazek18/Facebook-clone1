@@ -1,119 +1,20 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, computed } from 'vue';
 import ImageWithGradient from '@/components/media/ImageWithGradient.vue';
 import EventsSidebar from '@/components/events/EventsSidebar.vue';
 import CreatePost from '@/components/createPost/CreateModal.vue';
 
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-
-import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
-import iconUrl from 'leaflet/dist/images/marker-icon.png';
-import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
-
-
-
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl,
-  iconUrl,
-  shadowUrl,
-});
-
 // Import Icons (Material Design)
-import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue';
 import StarIcon from 'vue-material-design-icons/Star.vue';
 import CheckCircleIcon from 'vue-material-design-icons/CheckCircle.vue';
 import EmailIcon from 'vue-material-design-icons/Email.vue';
 import ShareVariantIcon from 'vue-material-design-icons/ShareVariant.vue';
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
-import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
-import EarthIcon from 'vue-material-design-icons/Earth.vue';
-import InformationIcon from 'vue-material-design-icons/Information.vue';
 import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue';
 import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
-import { useRoute } from 'vue-router';
-import { useEventsStore  } from '@/stores/events';
+import { useRoute, RouterLink } from 'vue-router';
+import { useEventsStore } from '@/stores/events';
 import type { Event as EventType } from '@/data/events';
-
-import { useStickySidebar } from '@/composables/useStickySidebar';
-
-// --- KONFIGURACJA MAPY ---
-const mapContainerRef = ref<HTMLDivElement | null>(null);
-let mapInstance: L.Map | null = null;
-const mapCenter: L.LatLngTuple = [54.371661, 18.619082]; // Gdańsk (default)
-
-// Definicja Czerwonej Ikony
-const redIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/markers/marker-icon-2x-red.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-// --- LOGIKA "FACEBOOK DUAL STICKY" ---
-const rightSectionRef = ref<HTMLDivElement | null>(null);
-const { stickyTop } = useStickySidebar(rightSectionRef, 56, 16);
-
-
-onMounted(() => {
-    // Inicjalizacja pozycji
-    stickyTop.value = HEADER_OFFSET;
-    lastScrollY = window.scrollY;
-
-    window.addEventListener('scroll', updateStickyPosition, { passive: true });
-    window.addEventListener('resize', updateStickyPosition);
-
-    if (rightSectionRef.value) {
-        resizeObserver = new ResizeObserver(() => {
-            updateStickyPosition();
-        });
-        resizeObserver.observe(rightSectionRef.value);
-    }
-  if (mapContainerRef.value) {
-    // 1. Inicjalizacja mapy - użyj współrzędnych z eventu lub domyślnych
-    const eventCoords = eventDetails.value?.coordinates || mapCenter;
-    mapInstance = L.map(mapContainerRef.value, {
-      center: eventCoords,
-      zoom: 15,
-      zoomControl: false,    // Ukrywa przyciski +/-
-      scrollWheelZoom: false,// Blokuje zoom kółkiem myszy
-      doubleClickZoom: false,// Blokuje zoom podwójnym kliknięciem
-      touchZoom: false,      // Blokuje zoom "uszczypnięciem" na mobile
-      boxZoom: false,        // Blokuje zoom zaznaczaniem obszaru (Shift+Drag)
-      keyboard: false,        // Blokuje skróty klawiszowe +/-
-      dragging: false         // Wyłącz domyślne kontrolki (dodamy własne niżej)
-    });
-
-    // 2. Styl Mapy: CartoDB Voyager (Jasny, nowoczesny styl)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      maxZoom: 20
-    }).addTo(mapInstance);
-
-    // 3. Dodanie Markera na współrzędne eventu
-    const markerCoords = eventDetails.value?.coordinates || mapCenter;
-    const markerName = eventDetails.value?.locationName || 'Lokalizacja eventu';
-    L.marker(markerCoords, { icon: redIcon })
-      .addTo(mapInstance)
-      .bindTooltip(markerName, { direction: 'top', offset: [0, -40] });
-
-    // 4. Kontrolki Zoomu na dole po prawej
-    L.control.zoom({ position: 'bottomright' }).addTo(mapInstance);
-  }
-});
-
-onUnmounted(() => {
-    window.removeEventListener('scroll', updateStickyPosition);
-    window.removeEventListener('resize', updateStickyPosition);
-    if (resizeObserver) resizeObserver.disconnect();
-  if (mapInstance) {
-    mapInstance.remove();
-    mapInstance = null;
-  }
-});
 
 const route = useRoute();
 const eventsStore = useEventsStore();
@@ -122,7 +23,7 @@ const eventDetails = computed<EventType | undefined>(() => {
   return eventsStore.getEventById(id);
 });
 
-// Computed properties dla formatowania dat
+// Computed properties for date formatting
 const eventMonth = computed(() => {
   if (!eventDetails.value?.startDate) return '';
   return new Date(eventDetails.value.startDate).toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase();
@@ -134,108 +35,63 @@ const eventDay = computed(() => {
 });
 
 const eventDateDisplay = computed(() => {
-
   if (!eventDetails.value?.startDate) return 'Brak daty';
-
   const date = new Date(eventDetails.value.startDate);
-
-  // Formatujemy datę z dniem tygodnia
   const dayNames = ['niedziela', 'poniedziałek', 'wtorek', 'środa', 'czwartek', 'piątek', 'sobota'];
   const monthNames = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca',
                       'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
-
   const dayOfWeek = dayNames[date.getDay()];
   const day = date.getDate();
   const month = monthNames[date.getMonth()];
   const year = date.getFullYear();
-
   const timeStr = eventDetails.value?.startTime || '';
   const dateFormatted = `${dayOfWeek}, ${day} ${month} ${year}`;
-
   return `${dateFormatted} ${timeStr ? ' o ' + timeStr : ''}`;
 });
 
-// Stan dla "Czytaj więcej"
-const isDescriptionExpanded = ref(false);
-
-const truncatedDescription = computed(() => {
-  const description = eventDetails.value?.description || '';
-  const maxLength = 200;
-  if (description.length > maxLength && !isDescriptionExpanded.value) {
-    return description.substring(0, maxLength) + '...';
-  }
-  return description;
-});
-
-// Carousel logika
+// Carousel logic
 const currentImageIndex = ref(0);
-
 const currentImage = computed(() => {
   const images = eventDetails.value?.images || [];
   if (images.length === 0) return '';
   return images[currentImageIndex.value];
 });
-
-const hasMultipleImages = computed(() => {
-  return (eventDetails.value?.images?.length || 0) > 1;
-});
-
+const hasMultipleImages = computed(() => (eventDetails.value?.images?.length || 0) > 1);
 const previousImage = () => {
   const imagesCount = eventDetails.value?.images?.length || 0;
   currentImageIndex.value = (currentImageIndex.value - 1 + imagesCount) % imagesCount;
 };
-
 const nextImage = () => {
   const imagesCount = eventDetails.value?.images?.length || 0;
   currentImageIndex.value = (currentImageIndex.value + 1) % imagesCount;
 };
 
-const friends = [
-  { name: 'Mikołaj Niedziela', avatar: 'https://i.pravatar.cc/150?u=1' },
-  { name: 'Wojtek Piotrowski', avatar: 'https://i.pravatar.cc/150?u=2' },
-  { name: 'Magda Chłopecka', avatar: 'https://i.pravatar.cc/150?u=3' },
-];
-
-const organizers = [
-  { name: 'Technikalia', type: 'Wydarzenie', role: '92 minionych wydarzeń', logo: 'https://placehold.co/100x100/1e293b/FFF?text=T.26' },
-  { name: 'Politechnika Gdańska', type: 'Szkoła wyższa', role: '361 minionych wydarzeń', logo: 'https://placehold.co/100x100/white/000?text=PG' },
-];
-
 // Share event logic
 const showShareModal = ref(false);
-
 const shareEvent = () => {
   showShareModal.value = true;
 };
-
 const closeShareModal = () => {
   showShareModal.value = false;
 };
-
 const handlePublishPost = (content: string) => {
-  console.log('Published post with event:', {
-    content,
-    eventId: eventDetails.value?.id
-  });
-  // Tu można dodać logikę zapisu do store
+  console.log('Published post with event:', { content, eventId: eventDetails.value?.id });
   closeShareModal();
 };
 </script>
 
 <template>
   <div class="flex min-h-screen bg-theme-bg font-sans text-theme-text pb-10">
-    <EventsSidebar  />
-    <div class="flex-1">
+    <EventsSidebar />
+    <div class="flex-1" v-if="eventDetails">
       <div class="h-[350px] relative flex justify-center items-center overflow-visible shadow-sm group">
-        <!-- Carousel dla wielu zdjęć z ImageWithGradient -->
+        <!-- Carousel -->
         <ImageWithGradient
           :image-url="currentImage || ''"
           :initial-width="700"
           :initial-height="350"
-          class="w-full h-full object-cover"
+          class="w-full h-full object-cover bg-theme-bg-secondary"
         />
-
-        <!-- Przycisk poprzednie zdjęcie -->
         <button
           v-if="hasMultipleImages"
           @click="previousImage"
@@ -243,8 +99,6 @@ const handlePublishPost = (content: string) => {
         >
           <ChevronLeftIcon :size="24" />
         </button>
-
-        <!-- Przycisk następne zdjęcie -->
         <button
           v-if="hasMultipleImages"
           @click="nextImage"
@@ -252,8 +106,7 @@ const handlePublishPost = (content: string) => {
         >
           <ChevronRightIcon :size="24" />
         </button>
-
-        <!-- Date Box - nachodzi na gradient -->
+        <!-- Date Box -->
         <div class="absolute bottom-12 left-15 transform translate-y-1/2 bg-theme-bg-secondary border border-theme-border rounded-lg shadow-lg w-20 h-20 flex flex-col items-center justify-center shrink-0 overflow-hidden text-center z-20">
           <div class="h-5 w-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center uppercase tracking-wide">
             {{ eventMonth }}
@@ -262,11 +115,9 @@ const handlePublishPost = (content: string) => {
             {{ eventDay }}
           </div>
         </div>
-
       </div>
 
       <div class="w-full mx-auto px-4 sm:px-0 relative">
-
         <div class="bg-theme-bg-secondary pb-4 pt-0 shadow-sm border-b border-theme-border -mt-4 relative z-10 px-15">
           <div class="flex flex-col md:flex-row gap-4 pt-6">
             <div class="grow">
@@ -280,8 +131,12 @@ const handlePublishPost = (content: string) => {
 
           <div class="flex flex-col md:flex-row justify-between items-center mt-6 border-t border-theme-border pt-4 gap-4">
             <div class="flex gap-6 text-sm font-semibold text-theme-text-secondary">
-              <button class="text-theme-primary border-b-2 border-theme-primary pb-4 -mb-4 px-1">Informacje</button>
-              <button class="hover:bg-theme-hover rounded px-2 py-1 transition">Dyskusja</button>
+              <RouterLink :to="{ name: 'event-about', params: { id: eventDetails.id } }"  class="pb-4 -mb-4 px-1 hover:bg-theme-hover rounded-t-sm transition-colors">
+                Informacje
+              </RouterLink>
+              <RouterLink :to="{ name: 'event-discussion', params: { id: eventDetails.id } }"  class="pb-4 -mb-4 px-1 hover:bg-theme-hover rounded-t-sm transition-colors">
+                Dyskusja
+              </RouterLink>
             </div>
             <div class="flex gap-2 w-full md:w-auto">
               <button class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-theme-bg-subtle hover:bg-theme-hover text-theme-text px-4 py-2 rounded-md font-semibold text-sm transition">
@@ -290,7 +145,7 @@ const handlePublishPost = (content: string) => {
               <button class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-theme-bg-subtle hover:bg-theme-hover text-theme-text px-4 py-2 rounded-md font-semibold text-sm transition">
                 <CheckCircleIcon :size="20" /> Wezmę udział
               </button>
-              <button class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-theme-bg-subtle hover:bg-theme-hover text-theme-text px-4 py-2 rounded-md font-semibold text-sm transition">
+               <button class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-theme-bg-subtle hover:bg-theme-hover text-theme-text px-4 py-2 rounded-md font-semibold text-sm transition">
                 <EmailIcon :size="20" /> Zaproś
               </button>
               <button @click="shareEvent" class="bg-theme-bg-subtle hover:bg-theme-hover text-theme-text px-3 py-2 rounded-md transition">
@@ -303,159 +158,20 @@ const handlePublishPost = (content: string) => {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-[1200px] mx-auto lg:grid-cols-5 gap-4 mt-4">
-
-          <div class="lg:col-span-3 space-y-4">
-            <div class="bg-theme-bg-secondary rounded-lg shadow-sm p-4">
-              <h2 class="text-xl font-bold mb-4">Szczegółowe informacje</h2>
-              <ul class="space-y-4 text-theme-text">
-                <li class="flex items-start gap-3">
-                  <AccountGroupIcon class="text-theme-text-secondary mt-1" />
-                  <span>{{ eventDetails?.responses || 0 }} użytkowników odpowiedziało</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <AccountGroupIcon class="text-theme-text-secondary mt-1" />
-                  <div>
-                    Wydarzenie <span class="font-semibold">{{ eventDetails?.hosts?.[0] || 'Organizator' }}</span><span v-if="eventDetails?.hosts?.[1]">, <span class="font-semibold">{{ eventDetails.hosts[1] }}</span></span><span v-if="eventDetails?.hosts?.[2]"> i <span class="font-semibold">{{ eventDetails.hosts[2] }}</span></span>
-                  </div>
-                </li>
-                <li class="flex items-start gap-3">
-                  <MapMarkerIcon class="text-theme-text-secondary mt-1" />
-                  <div>
-                    {{ eventDetails?.locationName || eventDetails?.location || 'Brak informacji' }}
-                    <div class="text-sm text-theme-text-secondary">{{ eventDetails?.address || '' }}</div>
-                  </div>
-                </li>
-                <li class="flex items-start gap-3">
-                  <EarthIcon class="text-theme-text-secondary mt-1" />
-                  <div>{{ eventDetails?.privacy === 'public' ? 'Publiczne · Każdy na Facebooku i poza nim' : 'Prywatne' }}</div>
-                </li>
-              </ul>
-              <div class="mt-6 text-sm text-theme-text leading-relaxed">
-                {{ truncatedDescription }}
-                <span
-                  v-if="(eventDetails?.description || '').length > 200"
-                  @click="isDescriptionExpanded = !isDescriptionExpanded"
-                  class="font-semibold text-theme-primary cursor-pointer hover:underline ml-1"
-                >
-                  {{ isDescriptionExpanded ? '... Ukryj' : '... Czytaj więcej' }}
-                </span>
-              </div>
-              <div class="mt-4">
-                <span class="inline-block bg-theme-bg-subtle hover:bg-theme-hover rounded-full px-3 py-1 text-sm font-semibold text-theme-text mr-2 mb-2 cursor-pointer">Gdańsk</span>
-              </div>
-            </div>
-
-            <div class="bg-theme-bg-secondary rounded-lg shadow-sm p-4">
-              <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Poznaj organizatorów</h2>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div v-for="org in organizers" :key="org.name" class="border border-theme-border rounded-lg p-4 flex flex-col items-center text-center">
-                  <img :src="org.logo" class="w-20 h-20 rounded-full mb-3 object-cover border border-theme-bg-subtle" />
-                  <h3 class="font-bold text-lg">{{ org.name }}</h3>
-                  <p class="text-xs text-theme-text-secondary mt-1">{{ org.role }} · {{ org.type }}</p>
-                  <div class="mt-4 w-full pt-4 border-t border-theme-bg-subtle">
-                     <button class="w-full bg-theme-bg-subtle hover:bg-theme-hover text-theme-text py-2 rounded font-semibold text-sm flex items-center justify-center gap-2 transition">
-                       <InformationIcon :size="18" /> Dowiedz się więcej
-                     </button>
-
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="h-[2000px]">sss</div>
-          </div>
-
-         <div
-      ref="rightSectionRef"
-      class="lg:col-span-2 space-y-4 sticky z-10 self-start"
-      :style="{ top: `${stickyTop}px` }"
-  >
-
-            <div class="bg-theme-bg-secondary rounded-lg shadow-sm ">
-
-
-               <div class="w-full h-[300px] rounded-lg overflow-hidden border border-theme-border relative isolate z-0">
-                  <div ref="mapContainerRef" class="w-full h-full bg-theme-bg-subtle"></div>
-               </div>
-
-               <div class="mt-3 p-4">
-                 <div class="font-semibold text-theme-text">{{ eventDetails?.locationName || eventDetails?.location || 'Brak lokalizacji' }}</div>
-                 <div class="text-sm text-theme-text-secondary">{{ eventDetails?.address || 'Brak adresu' }}</div>
-               </div>
-            </div>
-
-            <div class="bg-theme-bg-secondary rounded-lg shadow-sm p-4">
-              <h3 class="text-lg font-bold mb-4">Goście</h3>
-              <div class="flex justify-around text-center mb-4">
-                <div>
-                  <div class="text-xl font-bold text-theme-text">{{ eventDetails?.guestsGoing || 0 }}</div>
-                  <div class="text-xs text-theme-text-secondary">Wezmę udział</div>
-                </div>
-                <div>
-                  <div class="text-xl font-bold text-theme-text">{{ eventDetails?.guestsInterested || 0 }}</div>
-                  <div class="text-xs text-theme-text-secondary">Zainteresowani</div>
-                </div>
-              </div>
-              <hr class="border-theme-bg-subtle my-4" />
-              <h4 class="text-sm font-semibold mb-3">Wybierz się ze znajomymi</h4>
-              <ul class="space-y-3">
-                <li v-for="friend in friends" :key="friend.name" class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <img :src="friend.avatar" class="w-9 h-9 rounded-full bg-theme-bg-subtle" />
-                    <span class="text-sm font-medium text-theme-text">{{ friend.name }}</span>
-                  </div>
-                  <button class="bg-theme-bg-subtle hover:bg-theme-hover text-theme-text px-3 py-1.5 rounded text-sm font-semibold transition">
-                    Zaproś
-                  </button>
-                </li>
-              </ul>
-            </div>
-
-             <div class="bg-theme-bg-secondary rounded-lg shadow-sm p-4">
-               <h3 class="text-lg font-bold mb-4">Popularne wśród znajomych</h3>
-               <div class="flex gap-3">
-                  <div class="w-16 h-16 bg-theme-bg-subtle rounded-lg shrink-0 overflow-hidden">
-                      <img src="https://placehold.co/100x100/orange/white?text=K" class="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                     <div class="text-red-600 text-xs font-bold uppercase">Śr, 7 sty o 18:00</div>
-                     <div class="font-bold text-sm leading-tight mt-0.5">LUBLIN Warsztaty "Kuchenne duety"</div>
-                     <div class="text-xs text-theme-text-secondary mt-1">Restauracja Giuseppe</div>
-                     <div class="text-xs text-theme-text-secondary mt-1 flex items-center gap-1">
-                        <img src="https://i.pravatar.cc/150?u=5" class="w-4 h-4 rounded-full" />
-                        Wioleta jest zainteresowana
-                     </div>
-                  </div>
-               </div>
-               <div class="mt-3 flex gap-2">
-                  <button class="flex-1 bg-theme-bg-subtle hover:bg-theme-hover text-theme-text py-1.5 rounded text-sm font-semibold flex items-center justify-center gap-1 transition">
-                     <StarIcon :size="16" /> Zainteresowany(a)
-                  </button>
-                  <button class="bg-theme-bg-subtle hover:bg-theme-hover text-theme-text px-3 py-1.5 rounded transition">
-                     <ShareVariantIcon :size="16" />
-                  </button>
-               </div>
-            </div>
-
-          </div>
-        </div>
+        <!-- Router View for nested routes -->
+        <router-view :event-details="eventDetails" />
       </div>
     </div>
+    <div v-else class="flex-1 flex items-center justify-center">
+      <p>Nie znaleziono wydarzenia.</p>
+    </div>
 
-    <!-- Modal udostępniania eventu -->
+    <!-- Share Modal -->
     <Teleport to="body">
-      <div
-        v-if="showShareModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-9999 p-4"
-        @click.self="closeShareModal"
-      >
+      <div v-if="showShareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" @click.self="closeShareModal">
         <div class="bg-theme-bg-secondary rounded-lg shadow-xl max-w-[500px] w-full max-h-[90vh] overflow-auto">
           <CreatePost
             :shared-event-id="eventDetails?.id"
-            author-name="Bartosz Miazek"
-            author-avatar="https://i.pravatar.cc/150?u=current"
             @close="closeShareModal"
             @publish="handlePublishPost"
           />
@@ -465,18 +181,10 @@ const handlePublishPost = (content: string) => {
   </div>
 </template>
 
-<style>
-/* Fix dla mapy w kontenerach z zaokrąglonymi rogami */
-.leaflet-container {
-    z-index: 0;
-    font-family: inherit;
-}
-.leaflet-control-zoom{
-  display: none;
-}
-/* Opcjonalne zmniejszenie stopki licencji dla estetyki */
-.leaflet-control-attribution {
-  font-size: 8px;
-  background-color: rgba(255,255,255,0.7) !important;
+<style scoped>
+.router-link-exact-active{
+  color: #1877F2 !important;
+  border-bottom: 2px;
+  border-bottom-color: #1877F2 !important; /* Niebieska linia na dole */
 }
 </style>
