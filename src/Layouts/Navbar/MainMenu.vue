@@ -1,9 +1,9 @@
 <template>
-  <div class="max-h-[calc(100vh-4rem)] bg-theme-bg p-4 rounded-b-2xl shadow-2xl font-sans text-[#1c1e21] overflow-hidden flex flex-col">
+  <div class="max-h-[calc(100vh-4rem)] sm:w-[608px] w-full bg-theme-bg p-4 rounded-b-2xl shadow-2xl font-sans text-[#1c1e21] overflow-hidden flex flex-col">
     <HoverScrollbar max-height="calc(100vh - 100px)">
-      <div class="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-4">
+      <div class="w-full mx-auto flex flex-col sm:flex-row gap-4">
 
-        <div class="flex-1 min-w-0 bg-white dark:bg-[#242526] rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.1)] p-4">
+        <div class="w-full sm:w-3/5 min-w-0 bg-white dark:bg-[#242526] rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.1)] p-4">
           <h1 class="text-2xl font-bold mb-4 px-2 text-theme-text">Menu</h1>
 
           <div class="relative mb-6 px-2">
@@ -38,7 +38,7 @@
           </div>
         </div>
 
-        <div class="w-full lg:w-[360px] bg-white dark:bg-[#242526] rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.1)] p-4 lg:sticky lg:top-0 h-fit">
+        <div class="w-full sm:w-2/5 bg-white dark:bg-[#242526] rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.1)] p-4 sm:sticky lg:top-0 h-fit">
           <h2 class="text-xl font-bold mb-4 px-2 text-theme-text">Utwórz</h2>
 
           <div v-for="(group, idx) in createMenu" :key="idx" :class="{'border-t border-gray-200 dark:border-gray-700 mt-4 pt-2': idx > 0}">
@@ -85,7 +85,7 @@ const fullMenuData = [
   {
     title: 'Społecznościowe',
     items: [
-      { name: 'Wydarzenia', description: 'Organizuj oraz wyszukuj wydarzenia i inne aktywności online i w pobliżu.', icon: markRaw(CalendarStarIcon), iconColor: 'text-red-500',to:'/event' },
+      { name: 'Wydarzenia', description: 'Organizuj oraz wyszukuj wydarzenia i inne aktywności online i w pobliżu.', icon: markRaw(CalendarStarIcon), iconColor: 'text-red-500', to: '/event' },
       { name: 'Znajomi', description: 'Wyszukuj znajomych lub osoby, które możesz znać.', icon: markRaw(AccountGroupIcon), iconColor: 'text-blue-500' },
       { name: 'Grupy', description: 'Nawiąż kontakt z osobami, które podzielają Twoje zainteresowania.', icon: markRaw(AccountGroupIcon), iconColor: 'text-blue-600' },
       { name: 'Aktualności', description: 'Zobacz więcej niedawnych postów od znajomych, z grup, stron i nie tylko.', icon: markRaw(NewspaperVariantIcon), iconColor: 'text-blue-400' },
@@ -118,22 +118,21 @@ const fullMenuData = [
 
 const createMenu = [
   [
-    { name: 'Opublikuj', icon: markRaw(PencilIcon), to:"/" },
-    { name: 'Relacja', icon: markRaw(BookOpenVariantIcon), to:"/" },
-    { name: 'Rolka', icon: markRaw(PlayCircleIcon), to:"/create/reel" },
-    { name: 'Aktualizacja z życia', icon: markRaw(PlusBoxIcon), to:"/" },
+    { name: 'Opublikuj', icon: markRaw(PencilIcon), to: "/" },
+    { name: 'Relacja', icon: markRaw(BookOpenVariantIcon), to: "/" },
+    { name: 'Rolka', icon: markRaw(PlayCircleIcon), to: "/create/reel" },
+    { name: 'Aktualizacja z życia', icon: markRaw(PlusBoxIcon), to: "/" },
   ],
   [
-    { name: 'Strona', icon: markRaw(FlagIcon), to:"/" },
-    { name: 'Reklama', icon: markRaw(BullhornIcon), to:"/" },
-    { name: 'Grupa', icon: markRaw(AccountGroupIcon), to:"/" },
-    { name: 'Zdarzenie', icon: markRaw(PlusBoxIcon), to:"/" },
-    { name: 'Ogłoszenie w Marketplace', icon: markRaw(ShoppingIcon), to:"/" },
-    { name: 'Zbiórka pieniędzy', icon: markRaw(HeartIcon), to:"/" },
+    { name: 'Strona', icon: markRaw(FlagIcon), to: "/" },
+    { name: 'Reklama', icon: markRaw(BullhornIcon), to: "/" },
+    { name: 'Grupa', icon: markRaw(AccountGroupIcon), to: "/" },
+    { name: 'Zdarzenie', icon: markRaw(PlusBoxIcon), to: "/" },
+    { name: 'Ogłoszenie w Marketplace', icon: markRaw(ShoppingIcon), to: "/" },
+    { name: 'Zbiórka pieniędzy', icon: markRaw(HeartIcon), to: "/" },
   ]
 ];
 
-// Logika wyszukiwania
 const filteredMenu = computed(() => {
   if (!searchQuery.value) return fullMenuData;
 

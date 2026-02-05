@@ -14,79 +14,84 @@ import ProfileMenu from './ProfileMenu.vue'
 import NotificationMenu from '@/Layouts/Navbar/NotificationMenu.vue'
 import MessageMenu from './MessageMenu.vue'
 
-import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth'
-
 
 type ActiveMenuType = 'profile' | 'notifications' | 'message' | 'main' | null;
 
-const { isDark } = useTheme()
 const route = useRoute()
 const auth = useAuthStore()
-
 const hideMessageIcon = computed(() => route.meta?.hideMessageIcon === true)
 
-
 const activeMenu = ref<ActiveMenuType>(null)
-const menuTarget = ref(null)
+const navTarget = ref(null)
 
 const toggleMenu = (menuName: ActiveMenuType) => {
   activeMenu.value = activeMenu.value === menuName ? null : menuName
 }
 
-onClickOutside(menuTarget, () => {
+onClickOutside(navTarget, () => {
   activeMenu.value = null
 })
+
+// Stałe klasy dla przycisków, aby kod był czystszy
+const btnClass = "rounded-full p-2 mx-1 transition-colors flex items-center justify-center bg-[#E3E6EA] dark:bg-[#3b3d3f] hover:bg-gray-300 dark:hover:bg-gray-600 text-[#050505] dark:text-white"
+const activeBtnClass = "bg-[#E7F3FF] dark:bg-[#263951] text-[#1877F2] dark:text-[#1877F2]"
 </script>
 
 <template>
-   <div class="flex items-center justify-end w-[260px] relative">
+   <div ref="navTarget" class="flex items-center justify-end w-[260px] relative">
+
       <button
         @click="toggleMenu('main')"
         v-tooltip.bottom.no-arrow="'Menu'"
-        :class="activeMenu === 'main' ? 'bg-blue-100 dark:bg-blue-900' : 'bg-[#E3E6EA] dark:bg-[#3b3d3f]'"
-        class="rounded-full p-2 hover:bg-gray-300 dark:hover:bg-gray-600 mx-1"
+        :class="[btnClass, activeMenu === 'main' ? activeBtnClass : '']"
       >
-        <DotsGrid :size="23" :fillColor="activeMenu === 'main' ? '#1877F2' : (isDark ? '#fff' : '#050505')" />
+        <DotsGrid :size="23" />
       </button>
 
       <button
         v-if="!hideMessageIcon"
         @click="toggleMenu('message')"
         v-tooltip.bottom.no-arrow="'Wiadomości'"
-        :class="activeMenu === 'message' ? 'bg-blue-100 dark:bg-blue-900' : 'bg-[#E3E6EA] dark:bg-[#3b3d3f]'"
-        class="rounded-full p-2 hover:bg-gray-300 dark:hover:bg-gray-600 mx-1"
+        :class="[btnClass, activeMenu === 'message' ? activeBtnClass : '']"
       >
-        <FacebookMessenger :size="23" :fillColor="activeMenu === 'message' ? '#1877F2' : (isDark ? '#fff' : '#050505')" />
+        <FacebookMessenger :size="23" />
       </button>
 
       <button
         @click="toggleMenu('notifications')"
         v-tooltip.bottom.no-arrow="'Powiadomienia'"
-        :class="activeMenu === 'notifications' ? 'bg-blue-100 dark:bg-blue-900' : 'bg-[#E3E6EA] dark:bg-[#3b3d3f]'"
-        class="relative rounded-full p-2 hover:bg-gray-300 dark:hover:bg-gray-600 mx-1"
+        :class="[btnClass, activeMenu === 'notifications' ? activeBtnClass : '']"
+        class="relative"
       >
-        <Bell :size="23" :fillColor="activeMenu === 'notifications' ? '#1877F2' : (isDark ? '#fff' : '#050505')"/>
-        <div class="absolute -top-1 -right-1 bg-red-500 text-white text-[11px] font-bold w-[18px] h-[18px] rounded-full flex items-center justify-center border-2 border-white dark:border-[#242526]">1</div>
+        <Bell :size="23" />
+        <div class="absolute -top-2 -right-2 bg-red-500 text-white text-[13px] font-bold w-[22px] h-[22px] rounded-full flex items-center justify-center border-2 border-white dark:border-[#242526]">
+          1
+        </div>
       </button>
 
-      <div class="flex items-center relative">
+      <div class="flex items-center relative ml-1">
         <button @click="toggleMenu('profile')" v-tooltip.bottom.no-arrow="'Konto'" class="relative">
           <img
-            :class="activeMenu === 'profile' ? 'ring-2 ring-blue-500' : ''"
-            class="rounded-full ml-1 w-10 h-10 object-cover cursor-pointer"
+            :class="[
+              'rounded-full w-10 h-10 object-cover cursor-pointer transition-all',
+              activeMenu === 'profile' ? 'ring-2 ring-[#1877F2]' : ''
+            ]"
             :src="auth.currentUser?.avatar"
           />
           <div
-            :class="activeMenu === 'profile' ? 'bg-blue-100 dark:bg-blue-900' : 'bg-[#E3E6EA] dark:bg-[#3b3d3f]'"
-            class="absolute bottom-0 right-0 rounded-full p-px border-2 border-white dark:border-[#242526]"
+            :class="[
+              'absolute bottom-0 right-0 rounded-full p-px border-2 border-white dark:border-[#242526] flex items-center justify-center transition-colors',
+              btnClass,
+              activeMenu === 'profile' ? activeBtnClass : 'p-0 w-4 h-4'
+            ]"
           >
-            <ChevronDown :size="12" :fillColor="activeMenu === 'profile' ? '#1877F2' : (isDark ? '#fff' : '#050505')" />
+            <ChevronDown :size="12" />
           </div>
         </button>
       </div>
 
-      <div v-if="activeMenu" ref="menuTarget" class="fixed lg:absolute top-14 lg:top-12 left-[2vw] lg:left-auto right-[4vw] lg:right-0 w-[94vw] lg:w-auto z-50">
+      <div v-if="activeMenu" class="fixed sm:absolute top-14 sm:top-12 left-[2vw] sm:left-auto right-[4vw] sm:right-0 w-[94vw] sm:w-auto z-50">
         <MainMenu v-if="activeMenu === 'main'" />
         <ProfileMenu v-if="activeMenu === 'profile'" />
         <MessageMenu v-if="activeMenu === 'message'" />
@@ -94,3 +99,4 @@ onClickOutside(menuTarget, () => {
       </div>
     </div>
 </template>
+

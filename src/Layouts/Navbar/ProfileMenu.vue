@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full md:w-[360px] bg-theme-bg-secondary rounded-xl shadow-2xl overflow-hidden">
+  <div class="w-full md:w-[360px] bg-theme-bg-secondary p-2 rounded-xl shadow-2xl overflow-hidden">
 
     <div
       class="relative transition-[height] duration-300 ease-in-out"

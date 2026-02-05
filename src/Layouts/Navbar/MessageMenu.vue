@@ -1,5 +1,8 @@
 <template>
-  <div class="w-full md:w-[360px] mx-auto bg-theme-bg-secondary flex flex-col overflow-hidden min-h-0 rounded-b-2xl max-h-[calc(100vh-4rem)] shadow-2xl">
+  <div
+  class="w-full md:w-[360px] mx-auto bg-theme-bg-secondary flex flex-col overflow-hidden min-h-0 max-h-[calc(100vh-4rem)]"
+  :class="{ 'rounded-b-2xl shadow-2xl': !isEmbedded }"
+>
     <header class="p-4 flex justify-between items-center bg-theme-bg-secondary z-10 shrink-0">
       <div class="flex items-center space-x-2">
         <h1 class="text-2xl font-bold text-theme-text">{{ $t('header.title') }}</h1>
@@ -79,7 +82,7 @@
                         <div v-if="chat.unread" class="w-2 h-2 bg-blue-500  rounded-full shrink-0"></div>
 
                         <HandRightIcon v-if="chat.isPinch" class="h-5 w-5 text-theme-text-secondary" />
-                        <VDropdown :distance="30" @show="() => setDropdownOpen(chat.id, true)" @hide="() => setDropdownOpen(chat.id, false)">
+                        <VDropdown :distance="30" @show="() => setDropdownOpen(chat.id, true)" @hide="() => setDropdownOpen(chat.id, false)" @click.stop>
                             <div :class="['group-hover:flex hover:bg-theme-hover  absolute right-3 top-1/2 -translate-y-1/2 shadow-md border bg-theme-bg border-gray-300 items-center justify-center w-9 h-9 rounded-full', openDropdowns[chat.id] ? 'flex' : 'hidden']">
                                 <DotsHorizontalIcon class="cursor-pointer" />
                             </div>
@@ -101,6 +104,13 @@
 
 <script setup lang="ts">
 import { ref, type Ref, computed } from 'vue';
+
+defineProps({
+  isEmbedded: {
+    type: Boolean,
+    default: false,
+  },
+});
 
 // 1. IMPORT KOMPONENTÓW IKON
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';

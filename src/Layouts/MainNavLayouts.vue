@@ -58,9 +58,9 @@ const handleSearchSubmit = () => {
     >
       <div
         v-if="isSearchFocused"
-        class="absolute -top-2 -left-4 w-[360px] bg-theme-bg-secondary rounded-b-xl shadow-[0_12px_28px_0_rgba(0,0,0,0.2),0_2px_4px_0_rgba(0,0,0,0.1)] z-10 pt-[65px] min-h-[400px] border-t-0"
+        class="absolute -top-2 -left-4 w-[330px] bg-theme-bg-secondary rounded-b-xl shadow-[0_12px_28px_0_rgba(0,0,0,0.2),0_2px_4px_0_rgba(0,0,0,0.1)] z-10 pt-[65px] min-h-[400px] border-t-0"
       >
-          <div class="flex justify-between items-center px-4 py-2 mb-1 mx-2">
+          <div class="flex justify-between items-center px-2 py-2 mb-1 mx-2">
               <span class="text-[17px] font-semibold text-[#050505] dark:text-gray-200">Ostatnie</span>
               <button class="text-[15px] text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded transition">
                 Edytuj
@@ -92,14 +92,14 @@ const handleSearchSubmit = () => {
           >
             <Magnify
               class="p-1 cursor-pointer"
-              :class="isSearchFocused ? 'ml-1' : ''"
+
               :size="22"
               fillColor="#64676B"
               v-if="!isSearchFocused"
             />
             <input
-              :class="isSearchFocused ? 'block' : 'lg:block hidden'"
-              class="bg-transparent p-0  text-theme-text-secondary placeholder-[#64676B]  w-full pr-3"
+              :class="isSearchFocused ? 'block ml-3' : 'lg:block hidden'"
+              class="bg-transparent p-0 text-[14px] placeholder-theme-text-secondary placeholder-[#64676B]  w-full pr-3"
               placeholder="Szukaj na Facebooku"
               type="text"
               @focus="isSearchFocused = true"
