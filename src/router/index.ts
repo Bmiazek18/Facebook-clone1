@@ -17,7 +17,26 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+      children:[
+         {
+      path: '/photo/:postId/:imageIndex',
+      name: 'photo',
+      component: () => import('../views/GalleryView.vue'),
+      props: true,
+      meta: { showMainLayout: false },
     },
+      {
+      path: '/comment/:postId/:commentId',
+      name: 'comment',
+      component: () => import('../views/GalleryView.vue'),
+      props: true,
+      meta: { showMainLayout: false },
+    },
+      ]
+    },
+
+
+
     {
       path: '/post/:id',
       name: 'post',
@@ -28,12 +47,166 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: ProfileView,
+      redirect: { name: 'profile-posts' },
+      children: [
+        {
+          path: 'posts',
+          name: 'profile-posts',
+          component: () => import('@/components/profile/ProfilePostsTab.vue')
+        },
+        {
+          path: 'info',
+          name: 'profile-info',
+          component: () => import('@/components/profile/ProfileInfoTab.vue'),
+          redirect: { name: 'profile-info-overview' },
+          children: [
+            {
+              path: 'overview',
+              name: 'profile-info-overview',
+              component: () => import('@/components/profile/info-tab/OverviewSection.vue')
+            },
+            {
+              path: 'work_edu',
+              name: 'profile-info-work_edu',
+              component: () => import('@/components/profile/info-tab/WorkEducationSection.vue')
+            },
+            {
+              path: 'places',
+              name: 'profile-info-places',
+              component: () => import('@/components/profile/info-tab/PlacesSection.vue')
+            },
+            {
+              path: 'contact_basic',
+              name: 'profile-info-contact_basic',
+              component: () => import('@/components/profile/info-tab/OverviewSection.vue')
+            },
+            {
+              path: 'family',
+              name: 'profile-info-family',
+              component: () => import('@/components/profile/info-tab/FamilySection.vue')
+            },
+            {
+              path: 'details',
+              name: 'profile-info-details',
+              component: () => import('@/components/profile/info-tab/DetailsSection.vue')
+            },
+            {
+              path: 'events',
+              name: 'profile-info-events',
+              component: () => import('@/components/profile/info-tab/EventsSection.vue')
+            }
+          ]
+        },
+        {
+          path: 'friends',
+          name: 'profile-friends',
+          component: () => import('@/components/friends/FriendsSection.vue'),
+          props: { isFullView: true }
+        },
+        {
+          path: 'photos',
+          name: 'profile-photos',
+          component: () => import('@/components/profile/PlaceholderTab.vue'),
+          props: { tabName: 'Photos' }
+        },
+        {
+          path: 'videos',
+          name: 'profile-videos',
+          component: () => import('@/components/profile/PlaceholderTab.vue'),
+          props: { tabName: 'Videos' }
+        },
+        {
+          path: 'checkins',
+          name: 'profile-checkins',
+          component: () => import('@/components/profile/PlaceholderTab.vue'),
+          props: { tabName: 'Check-ins' }
+        },
+      ]
     },
     {
       path: '/profile/:userId',
       name: 'userProfile',
       component: ProfileView,
-      props: true
+      props: true,
+      redirect: to => {
+        return { name: 'userProfile-posts', params: { userId: to.params.userId } };
+      },
+      children: [
+        {
+          path: 'posts',
+          name: 'userProfile-posts',
+          component: () => import('@/components/profile/ProfilePostsTab.vue')
+        },
+        {
+          path: 'info',
+          name: 'userProfile-info',
+          component: () => import('@/components/profile/ProfileInfoTab.vue'),
+          redirect: to => {
+            return { name: 'userProfile-info-overview', params: { userId: to.params.userId } };
+          },
+          children: [
+            {
+              path: 'overview',
+              name: 'userProfile-info-overview',
+              component: () => import('@/components/profile/info-tab/OverviewSection.vue')
+            },
+            {
+              path: 'work_edu',
+              name: 'userProfile-info-work_edu',
+              component: () => import('@/components/profile/info-tab/WorkEducationSection.vue')
+            },
+            {
+              path: 'places',
+              name: 'userProfile-info-places',
+              component: () => import('@/components/profile/info-tab/PlacesSection.vue')
+            },
+            {
+              path: 'contact_basic',
+              name: 'userProfile-info-contact_basic',
+              component: () => import('@/components/profile/info-tab/OverviewSection.vue')
+            },
+            {
+              path: 'family',
+              name: 'userProfile-info-family',
+              component: () => import('@/components/profile/info-tab/FamilySection.vue')
+            },
+            {
+              path: 'details',
+              name: 'userProfile-info-details',
+              component: () => import('@/components/profile/info-tab/DetailsSection.vue')
+            },
+            {
+              path: 'events',
+              name: 'userProfile-info-events',
+              component: () => import('@/components/profile/info-tab/EventsSection.vue')
+            }
+          ]
+        },
+        {
+          path: 'friends',
+          name: 'userProfile-friends',
+          component: () => import('@/components/friends/FriendsSection.vue'),
+          props: { isFullView: true }
+        },
+        {
+          path: 'photos',
+          name: 'userProfile-photos',
+          component: () => import('@/components/profile/PlaceholderTab.vue'),
+          props: { tabName: 'Photos' }
+        },
+        {
+          path: 'videos',
+          name: 'userProfile-videos',
+          component: () => import('@/components/profile/PlaceholderTab.vue'),
+          props: { tabName: 'Videos' }
+        },
+        {
+          path: 'checkins',
+          name: 'userProfile-checkins',
+          component: () => import('@/components/profile/PlaceholderTab.vue'),
+          props: { tabName: 'Check-ins' }
+        },
+      ]
     },
      {
       path: '/login',
@@ -46,9 +219,26 @@ const router = createRouter({
       component: () => import('@/views/RegisterView.vue'),
     },
      {
-      path: '/live/produce/create-live',
-      name: 'createLive',
-      component: () => import('@/views/CreateLiveView.vue'),
+      path: '/live/produce',
+      name: 'createLiveLayout',
+      component: () => import('@/layouts/CreateLiveLayout.vue'),
+      children: [
+         {
+          path: '',
+          name: 'picker',
+          component: () => import('@/views/LiveProducer.vue'),
+        },
+        {
+          path: 'create-live',
+          name: 'createLive',
+          component: () => import('@/views/CreateLiveView.vue'),
+        },
+        {
+          path: 'dashboard',
+          name: 'liveDashboard',
+          component: () => import('@/views/LiveDashboard.vue'),
+        }
+      ]
     },
     {
       path: '/groups',
@@ -136,7 +326,6 @@ const router = createRouter({
     {
       path: '/reel/:id?',
       name: 'reel',
-      meta: { showMainLayout: false },
       component: () => import('@/views/ReelView.vue'),
       props: true
     },
@@ -169,7 +358,7 @@ const router = createRouter({
       path: '/live/produce',
       name: 'liveProduce',
       component: () => import('@/views/LiveProducer.vue'),
-      meta: { showMainLayout: false },
+
     },
     {
       path: '/story',
@@ -197,7 +386,24 @@ const router = createRouter({
       path: '/event/:id',
       name: 'event',
       component: () => import('@/views/EventView.vue'),
-      props: true
+      props: true,
+      redirect: to => {
+        return { name: 'event-about', params: { id: to.params.id } };
+      },
+      children: [
+        {
+          path: '',
+          name: 'event-about',
+          component: () => import('@/views/events/EventAboutView.vue'),
+          props: true
+        },
+        {
+          path: 'discussion',
+          name: 'event-discussion',
+          component: () => import('@/views/events/EventDiscussionView.vue'),
+          props: true
+        }
+      ]
     },
     {
       path: '/groups/:id',
@@ -242,20 +448,8 @@ const router = createRouter({
       component: () => import('@/views/LoginAsView.vue'),
     },
 
-    {
-      path: '/photo/:postId/:imageIndex',
-      name: 'photo',
-      component: () => import('../views/GalleryView.vue'),
-      props: true,
-      meta: { showMainLayout: false },
-    },
-     {
-      path: '/comment/:postId/:commentId',
-      name: 'comment',
-      component: () => import('../views/GalleryView.vue'),
-      props: true,
-      meta: { showMainLayout: false },
-    },
+
+
     {
       path: '/hashtag/:hashtag',
       name: 'hashtag',

@@ -4,7 +4,8 @@
 :root {
   --color-bg: #F1F2F5;
   --color-bg-secondary: #FFFFFF;
-  --color-text: #050505;
+  --color-bg-tertiary: #E4E6EB;
+  --color-text: #080809;;
   --color-text-secondary: #65676B;
   --color-border: #CED0D4;
   --color-hover: #E5E6E9;
@@ -14,12 +15,25 @@
   --color-primary-hover: #166FE5;
   --color-primary-subtle: #EBF5FF;
   --color-primary-subtle-hover: #DBEAFE;
+  --color-primary-mention-bg: rgba(29, 133, 252, 0.45);
+  --color-border-primary: #E2E5E9;
+  --shadow-color: rgba(0, 0, 0, 0.2);
+--color-tooltip-bg: rgba(36, 37, 38, 0.9);
+  --color-tooltip-text: #E4E6EB;
+  --color-tooltip-border: #3E4042;
+  --color-placeholder-text: #A0A3A8;
+  --toast-bg: #FFFFFF;
+  --toast-text-color: #1f2937;
+  --toast-progress-color: var(--color-primary);
+  --color-comment-bg: #F0F2F5;
+  --color-comment-input-bg: var(--color-bg-tertiary);
 }
 
 .dark {
   /* Dark mode overrides */
   --color-bg: #1C1E21;
   --color-bg-secondary: #252729;
+  --color-bg-tertiary: #3A3B3C;
   --color-text: #E4E6EB;
   --color-text-secondary: #b0b3b8;
   --color-border: #3A3D42;
@@ -30,17 +44,34 @@
   --color-primary-hover: #166FE5;
   --color-primary-subtle: #0E2B4B;
   --color-primary-subtle-hover: #173A64;
+  --color-border-primary: #46484B;;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+--color-tooltip-bg: rgba(207, 209, 211, 0.9);     /* Odpowiednik #CFD1D3 */
+  --color-tooltip-text: #050505;
+  --color-tooltip-border: #E4E6EB;
+  --color-placeholder-text: #B0B3B8;
+  --toast-bg: #252729;
+  --toast-text-color: #E4E6EB;
+  --color-comment-bg: #333334;
+  --color-comment-input-bg: var(--color-bg-tertiary);
 }
 @theme {
   --breakpoint-3xl: 120rem;
 }
 /* Semantic utility classes using CSS variables */
+.shadow-theme {
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
 .bg-theme-bg {
   background-color: var(--color-bg);
 }
 
 .bg-theme-bg-secondary {
   background-color: var(--color-bg-secondary);
+}
+
+.bg-theme-bg-tertiary {
+  background-color: var(--color-bg-tertiary);
 }
 
 .bg-theme-bg-subtle {
@@ -91,11 +122,26 @@
 .bg-theme-primary-subtle {
   background-color: var(--color-primary-subtle);
 }
+.bg-theme-primary-mention {
+  background-color: var(--color-primary-mention-bg);
+}
+.bg-theme-comment-bg {
+  background-color: var(--color-comment-bg);
+}
+.text-theme-placeholder {
+  color: var(--color-placeholder-text);
+}
+.bg-theme-comment-input-bg {
+  background-color: var(--color-comment-input-bg);
+}
+.border-theme-secondary {
+  border-color: var(--color-border-primary);
+}
 .hover\\:bg-theme-primary-subtle-hover:hover {
   background-color: var(--color-primary-subtle-hover);
 }
 .border-theme-primary {
-  border-color: var(--color-primary);
+  border-color: var(--color-border-primary);
 }
 
 .scrollbar-hidden::-webkit-scrollbar-thumb {
@@ -125,4 +171,106 @@
 .scrollbar-visible {
   scrollbar-width: thin;
   scrollbar-color: rgba(107, 114, 128, 0.5) transparent;
+}
+.v-popper--theme-tooltip .v-popper__inner {
+  background-color: var(--color-tooltip-bg) !important;
+  color: var(--color-tooltip-text) !important;
+  border: 1px solid var(--color-tooltip-border) !important;
+
+  /* Cień i zaokrąglenia ze screena */
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3) !important;
+  padding: 8px 14px !important;
+  border-radius: 12px !important; /* Na nowym SS dymek jest bardziej "obły" */
+
+  /* Typografia */
+  font-size: 13px !important;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* Usuwamy strzałkę (na Facebooku jej nie ma) */
+.v-popper--theme-tooltip .v-popper__arrow-container {
+  display: none !important;
+}
+
+.custom-offline-toast-container {
+    background-color: var(--toast-bg);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    padding: 16px;
+    color: var(--toast-text-color);
+}
+
+.custom-offline-toast-body {
+    padding: 0 !important;
+}
+
+.custom-offline-toast-container .close-button:hover {
+    background-color: var(--color-hover);
+}
+.Vue-Toastification__toast.custom-toast-container {
+  background-color: var(--toast-bg) !important;
+  color: var(--toast-text-color) !important;
+display: flex;
+
+    align-items: center;
+  /* Cień i ramka jak na Facebooku */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+
+  /* Usuwamy minimalną szerokość biblioteki, żeby pasowało do contentu */
+  min-width: auto !important;
+  width: auto !important;
+  max-width: 400px !important;
+
+  /* Margines od krawędzi ekranu */
+  margin-bottom: 10px !important;
+  margin-left: 10px !important;
+}
+
+/* Body toasta */
+.Vue-Toastification__toast-body.custom-toast-body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+/* Ukrywamy domyślny pasek postępu biblioteki (jeśli by się pojawił) */
+.Vue-Toastification__progress-bar {
+  display: none;
+}
+input:focus, textarea:focus {
+    outline: none;
+}
+
+/* Themed scrollbar for Webkit browsers */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-text-secondary);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-hover);
+}
+
+/* Themed scrollbar for Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-text-secondary) transparent;
+}
+html:hover {
+  scrollbar-color: var(--color-hover) transparent;
 }
