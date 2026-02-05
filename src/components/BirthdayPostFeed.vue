@@ -32,162 +32,117 @@ import BirthdayPost from './BirthdayPostItem.vue';
 import type { Post } from '@/types/Post';
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
 
-// Dane symulujące te ze zrzutu ekranu
+const availableUserIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+// Helper to generate a random subset of user IDs for reactions
+const getRandomUserIds = (maxUsers: number, includeCurrentUser = false): number[] => {
+    const ids = [...availableUserIds];
+    if (includeCurrentUser && !ids.includes(1)) {
+        ids.unshift(1); // Ensure current user is in the list if specified
+    }
+
+    // Shuffle and pick a random number of unique IDs
+    for (let i = ids.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [ids[i], ids[j]] = [ids[j], ids[i]];
+    }
+    const numToPick = Math.floor(Math.random() * maxUsers) + 1; // At least 1 reaction
+    return ids.slice(0, numToPick);
+};
+
+// Helper to assign random reactions
+const generateRandomReactions = (): Partial<Record<ReactionType, number[]>> => {
+    const reactionTypes: ReactionType[] = ['like', 'love', 'haha', 'wow', 'sad', 'angry'];
+    const reactions: Partial<Record<ReactionType, number[]>> = {};
+
+    // Ensure 'like' reaction is always present and often includes current user
+    reactions['like'] = getRandomUserIds(availableUserIds.length / 2, true);
+
+    // Add other random reactions
+    reactionTypes.forEach(type => {
+        if (type !== 'like' && Math.random() > 0.6) { // 40% chance to have other reactions
+            reactions[type] = getRandomUserIds(availableUserIds.length / 3);
+        }
+        if (reactions[type as ReactionType]) {
+            // Ensure all reaction arrays are unique and contain actual IDs
+            reactions[type as ReactionType] = Array.from(new Set(reactions[type as ReactionType]));
+        }
+    });
+
+    return reactions;
+};
+
+// Base timestamp for generating distinct past dates
+const baseTimestamp = new Date('2026-01-24T12:00:00.000Z').getTime(); // Today's date (Jan 24, 2026) at noon
 const posts = ref<Post[]>([
-  // POST 1: Prosty post bez komentarzy
   {
-    id: '1',
-    authorName: 'Andrzej Prokop',
-    authorAvatar: 'https://i.pravatar.cc/150?u=andrzej',
-    date: '24 lutego',
-    content: 'Wszystkiego najlepszego z okazji urodzin! 🎁🥳 Niech Ci się darzy w życiu prywatnym i zawodowym!',
-    isLiked: false,
-    reactionCount: 2,
-    commentCount: 0,
-    images: [],
-    authorId: 1,
-    likesCount: 2,
-    commentsCount: 0,
-    sharesCount: 0,
-    comments: [], // Brak komentarzy
-    timestamp: Date.now(),
-  },
-
-  // POST 2: Post Trenera (Głębokie zagnieżdżenie - test rekurencji)
-  {
-    id: '2',
-    authorName: 'Przemysław Wereszczyński',
-    authorAvatar: 'https://i.pravatar.cc/150?u=przemek',
-    date: '23 lutego',
-    content: 'Wszystkiego najlepszego, sukcesów na macie i poza nią! 😊',
-    isLiked: true,
-    likedType: 'super',
-    reactionCount: 15,
-    commentCount: 4,
-    images: [],
-    authorId: 2,
-    likesCount: 15,
-    commentsCount: 4,
-    sharesCount: 0,
-    comments: [
+    "id": "101",
+    "content": "Kolejny rok na liczniku! 🎂 Dziękuję wszystkim za pamięć i niesamowitą niespodziankę. To był genialny wieczór w gronie najlepszych ludzi! 🥂✨",
+    "authorId": 3,
+    "date": new Date(baseTimestamp - (2 * 60 * 60 * 1000)).toISOString(),
+    "timestamp": baseTimestamp - (2 * 60 * 60 * 1000),
+    "media": [
+            { "src": "https://picsum.photos/id/429/800/600", "altText": "Tort urodzinowy i zimne ognie" }
+        ],
+    "context": { "privacy": "public" },
+    "targetId": "1",
+    "targetType": "User",
+    "stats": { "comments": 3, "shares": 1 },
+    "reactions": generateRandomReactions(),
+    "comments": [
         {
-            id: 101,
-            authorName: 'Bartosz Miazek', // Główny komentarz
-            authorAvatar: 'https://i.pravatar.cc/150?u=me',
-            content: 'Dziękuję trenerze 😊',
-            date: '41 tyg.',
-            likesCount: 3,
-            replies: [
+            "id": 10,
+            "authorId": 2,
+            "content": "Wszystkiego najlepszego Bartosz! Sto lat! 🎁",
+            "date": new Date(baseTimestamp - (1 * 60 * 60 * 1000)).toISOString(),
+            "timestamp": baseTimestamp - (1 * 60 * 60 * 1000),
+            "likesCount": 12,
+            "replies": [
                 {
-                    id: 201,
-                    authorName: 'Przemysław Wereszczyński', // Odpowiedź trenera (Poziom 1)
-                    authorAvatar: 'https://i.pravatar.cc/150?u=przemek',
-                    content: 'Nie ma za co, widzimy się na treningu!',
-                    date: '41 tyg.',
-                    likesCount: 1,
-                    replies: [
-                        {
-                            id: 301,
-                            authorName: 'Bartosz Miazek', // Odpowiedź Bartosza (Poziom 2 - test linii bocznej)
-                            authorAvatar: 'https://i.pravatar.cc/150?u=me',
-                            content: 'Będę na pewno! 💪',
-                            date: '41 tyg.',
-                            likesCount: 0,
-                            replies: []
-                        }
-                    ]
+                    "id": 11,
+                    "authorId": 1,
+                    "content": "Dzięki wielkie Aniu! 🤗",
+                    "date": new Date(baseTimestamp - (30 * 60 * 1000)).toISOString(),
+                    "likesCount": 2,
+                    "timestamp": baseTimestamp - (30 * 60 * 1000)
                 }
             ]
         },
         {
-            id: 102,
-            authorName: 'Klub Sportowy "Olimp"',
-            authorAvatar: 'https://i.pravatar.cc/150?u=olimp',
-            content: 'Dołączamy się do życzeń! 🥇',
-            date: '40 tyg.',
-            likesCount: 5,
-            replies: []
+            "id": 12,
+            "authorId": 3,
+            "content": "Najlepszego! Musimy to powtórzyć w przyszły weekend! 🍻",
+            "date": new Date(baseTimestamp - (45 * 60 * 1000)).toISOString(),
+            "likesCount": 5,
+            "timestamp": baseTimestamp - (45 * 60 * 1000)
         }
     ],
-    timestamp: Date.now(),
-  },
-
-  // POST 3: Post z wieloma krótkimi komentarzami (Test listy)
-  {
-    id: '3',
-    authorName: 'Mateusz Sak',
-    authorAvatar: 'https://i.pravatar.cc/150?u=mateusz',
-    date: '23 lutego',
-    content: 'Wszystkiego najlepszego zdrówka 💪 Pamiętaj o regeneracji!',
-    isLiked: true,
-    likedType: 'like',
-    reactionCount: 8,
-    commentCount: 3,
-    images: [],
-    authorId: 3,
-    likesCount: 8,
-    commentsCount: 3,
-    sharesCount: 0,
-    comments: [
+    "detectedLanguage": "pl"
+  },{
+    "id": "104",
+    "content": "Wszystkiego najlepszego byczku! 🍻 Zdrowia, szczęścia i spełnienia tego Twojego marzenia o podróży dookoła świata. Pamiętaj, że zawsze możesz na mnie liczyć! Piona! 👊🎈",
+    "authorId": 3,
+    "date": new Date(baseTimestamp - (8 * 60 * 60 * 1000)).toISOString(),
+    "timestamp": baseTimestamp - (8 * 60 * 60 * 1000),
+    "media": [
+            { "src": "https://picsum.photos/id/129/800/600", "altText": "Dwóch kumpli na wspólnym zdjęciu" }
+        ],
+    "context": { "privacy": "public" },
+    "targetId": "1",
+    "targetType": "User",
+    "stats": { "comments": 1, "shares": 0 },
+    "reactions": generateRandomReactions(),
+    "comments": [
         {
-            id: 103,
-            authorName: 'Bartosz Miazek',
-            authorAvatar: 'https://i.pravatar.cc/150?u=me',
-            content: 'Dzięki wielkie byku 💪',
-            date: '41 tyg.',
-            likesCount: 1,
-            replies: []
-        },
-        {
-            id: 104,
-            authorName: 'Kamil Nowak',
-            authorAvatar: 'https://i.pravatar.cc/150?u=kamil',
-            content: 'Sto lat Bartek!',
-            date: '41 tyg.',
-            likesCount: 0,
-            replies: [
-                 {
-                    id: 205,
-                    authorName: 'Bartosz Miazek',
-                    authorAvatar: 'https://i.pravatar.cc/150?u=me',
-                    content: 'Dzięki Kamil!',
-                    date: '41 tyg.',
-                    likesCount: 0,
-                    replies: []
-                }
-            ]
+            "id": 40,
+            "authorId": 1,
+            "content": "Wielkie dzięki stary! Widzimy się wieczorem! 🔥",
+            "date": new Date(baseTimestamp - (7 * 60 * 60 * 1000)).toISOString(),
+            "timestamp": baseTimestamp - (7 * 60 * 60 * 1000),
+            "likesCount": 4
         }
     ],
-    timestamp: Date.now(),
-  },
-
-  // POST 4: Długi tekst i dużo reakcji (Test layoutu)
-  {
-    id: '4',
-    authorName: 'Anna Kowalska',
-    authorAvatar: 'https://i.pravatar.cc/150?u=anna',
-    date: '22 lutego',
-    content: 'Bartosz! Życzę Ci, aby każdy dzień przynosił nowe wyzwania, które będziesz pokonywał z uśmiechem. Dużo zdrowia, szczęścia, miłości i spełnienia marzeń, nawet tych najskrytszych! 🎂🥂 Nie zmieniaj się!',
-    isLiked: false,
-    reactionCount: 42,
-    commentCount: 1,
-    images: [],
-    authorId: 4,
-    likesCount: 42,
-    commentsCount: 1,
-    sharesCount: 0,
-    comments: [
-         {
-            id: 105,
-            authorName: 'Bartosz Miazek',
-            authorAvatar: 'https://i.pravatar.cc/150?u=me',
-            content: 'Ania, dziękuję za piękne słowa! 🥰',
-            date: '41 tyg.',
-            likesCount: 2,
-            replies: []
-        }
-    ],
-    timestamp: Date.now(),
+    "detectedLanguage": "pl"
   }
 ]);
 </script>
