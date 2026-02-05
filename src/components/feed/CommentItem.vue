@@ -1,44 +1,32 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import ThumbUp from 'vue-material-design-icons/ThumbUp.vue'
-import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
-import Heart from 'vue-material-design-icons/Heart.vue'
-import WebIcon from 'vue-material-design-icons/Web.vue'
-
-
+import { ref, computed, } from 'vue'
 import CommentReplyInput from '@/components/feed/CommentReplyInput.vue'
 import ReactionButton from '@/components/feed/ReactionButton.vue'
 import ProfilePopper from '@/components/profile/ProfilePopper.vue'
-// Removed incompatible usePostReactions
 import type { Comment } from '@/types/Post'
-import { useCommentsStore } from '@/stores/comments'
-import { usePostsStore } from '@/stores/posts'
 import { getUserById } from '@/data/users'
 import { processContent } from '@/utils/contentProcessor'
-import { Dropdown as VDropdown } from 'floating-vue'
-import { reactionIcons } from '@/composables/usePostReactions'
+import FormattedDate from '../common/FormattedDate.vue'
+import CommentContent from '@/components/feed/CommentContent.vue'
+import CommentLinkPreview from '@/components/feed/CommentLinkPreview.vue'
+import CommentReactions from '@/components/feed/CommentReactions.vue'
+import AuthorBadge from './post/AuthorBadge.vue'
+import { useRouter } from 'vue-router'
+import { useCommentReactions } from '@/composables/useCommentReactions'
 
 const props = defineProps<{
     comment: Comment
-    postAvatarSrc: string
+    postAutor: string
     depth: number,
     postId: string
 }>()
 
+const emit = defineEmits(['reply', 'open-link'])
 const router = useRouter()
-const commentsStore = useCommentsStore()
-const postsStore = usePostsStore()
 
 const author = computed(() => getUserById(props.comment.authorId));
 
-const userReaction = computed(() => props.comment.userReaction || null); // Assuming updated via store prop
-
-const handleReaction = (reaction: string | null) => {
-    const oldReaction = userReaction.value;
-    // Optimistic update should be handled by store/parent if possible, or just emit
-    postsStore.handleCommentReaction(props.postId, props.comment.id, reaction, oldReaction);
-};
+const { userReaction, handleReaction } = useCommentReactions(props.postId, props.comment.id);
 
 const totalLikes = computed(() => {
   if (!props.comment.reactions) return props.comment.likesCount;
@@ -46,11 +34,12 @@ const totalLikes = computed(() => {
 });
 
 
-const replyPlaceholder = "Napisz odpowiedź..."
+
 
 const showReplies = ref(false)
+const isReplying = ref(false)
 
-const showReplyInput = computed(() => commentsStore.activeReplyInput === props.comment.id)
+
 
 const hasReplies = computed(() => props.comment.replies && props.comment.replies.length > 0)
 
@@ -63,18 +52,15 @@ const startReply = () => {
         console.error("Cannot reply to a comment without an authorId");
         return;
     }
-    if (commentsStore.activeReplyInput === props.comment.id) {
-        commentsStore.clearReplyingTo()
-    } else {
-        commentsStore.setReplyingTo(
-            { id: props.comment.authorId, name: author.value?.name || 'Unknown' },
-            props.comment.id
-        )
-    }
+    isReplying.value = !isReplying.value
+    emit('reply', {
+        author: { id: props.comment.authorId, name: author.value?.name || 'Unknown' },
+        commentId: props.comment.id
+    });
 }
 
 const handleCommentSubmitted = () => {
-    commentsStore.clearReplyingTo()
+    isReplying.value = false
 }
 
 const viewCommentImage = ( commentId: number, postId: string) => {
@@ -95,48 +81,31 @@ const processedContent = computed(() => {
 
 const isRootComment = props.depth === 0
 
-const getReactionConfig = (type: string) => {
-  switch (type) {
-    case 'like':
-      return {
-        mode: 'icon',
-        component: ThumbUp,
-        wrapperClass: 'bg-[#1877F2]',
-        color: '#FFFFFF'
-      }
-    case 'love':
-      return {
-        mode: 'icon',
-        component: Heart,
-        wrapperClass: 'bg-[#F3425F]',
-        color: '#FFFFFF'
-      }
-    case 'haha':
-      return { mode: 'emoji', char: '😆', wrapperClass: 'bg-white dark:bg-[#242526]' }
-    case 'wow':
-      return { mode: 'emoji', char: '😮', wrapperClass: 'bg-white dark:bg-[#242526]' }
-    case 'sad':
-      return { mode: 'emoji', char: '😢', wrapperClass: 'bg-white dark:bg-[#242526]' }
-    case 'angry':
-      return { mode: 'emoji', char: '😡', wrapperClass: 'bg-white dark:bg-[#242526]' }
-    default:
-      return {
-        mode: 'icon',
-        component: ThumbUp,
-        wrapperClass: 'bg-[#1877F2]',
-        color: '#FFFFFF'
-      }
-  }
-}
 
+const isCommentActiveForReply = computed(() => {
+    return isReplying.value;
+});
+
+const commentWrapperClass = computed(() => {
+    return {
+        'w-fit p-1 rounded-xl': props.comment.content.length > 0,
+        'px-2': (props.comment.image || props.comment.gif),
+        'bg-[#E7F3FF]': isCommentActiveForReply.value,
+        'dark:bg-[rgba(24,119,242,0.31)]': isCommentActiveForReply.value,
+        'bg-theme-comment-bg w-fit px-2 rounded-xl': !isCommentActiveForReply.value && props.comment.content.length > 0
+    }
+});
 </script>
 <template>
+
+
     <div :class="{ 'mt-4': isRootComment, 'mt-2': !isRootComment }">
-        <div class="flex -ml-9 "
-            :style="{ marginLeft: isRootComment ? '0px' : `-36px` }">
+        <div class="flex "
+            :style="{ marginLeft: isRootComment ? '0px' : `-32px` }">
             <!-- Linia łącząca dla odpowiedzi -->
             <div v-if="!isRootComment" class="w-8 mr-2 relative flex-shrink-0">
-                <div class="absolute -ml-10 w-[21px] h-4 border-b-2 border-l-2 border-gray-300 right-0 rounded-bl-[10px]"></div>
+                <div class="absolute h-4 border-b-2 border-l-2 border-theme-secondary right-0 rounded-bl-[10px]"
+                     :class="props.depth > 1 ? 'w-[21px]' : 'w-[25px]'"></div>
             </div>
 
             <!-- Avatar -->
@@ -150,52 +119,21 @@ const getReactionConfig = (type: string) => {
                 </a>
 
                 <!-- Linia pionowa dla odpowiedzi -->
-                <div
-v-if="showReplies || showReplyInput || hasReplies"
-                    class="absolute top-10 left-1/2 -translate-x-1/2 w-0 border-l-2 border-gray-300"
+               <div
+v-if="(showReplies || isReplying || hasReplies) && props.depth <2"
+                    class="absolute top-10 left-1/2 -translate-x-1/2 w-0 border-l-2 border-theme-secondary"
 
-                    :style="{ height:  hasReplies && !showReplies ? 'calc(100% - 60px)' : 'calc(100% - 110px)' }"
+                    :style="{ height:  (hasReplies&& (isReplying||!showReplies)) && (showReplies || !isReplying) &&(!showReplies|| !isReplying) ? 'calc(100% - 60px)' : 'calc(100% - 110px)' }"
                 ></div>
             </div>
-
             <!-- Treść komentarza -->
             <div class="flex-grow ml-2">
-                <div
-                    :class="{
-                        'bg-gray-100 w-fit p-2 rounded-xl dark:bg-[#333333]': !(props.comment.image || props.comment.gif),
-                        'p-2': (props.comment.image || props.comment.gif)
-                    }"
-                >
-                    <ProfilePopper :name="author?.name || 'Unknown'">
-                        <span
-                            :class="[
-                                'text-theme-text hover:underline cursor-pointer block leading-4 mb-0.5',
-                                isRootComment ? 'font-extrabold text-[13px]' : 'font-semibold text-[12px]'
-                            ]"
-                        >
-                            {{ author?.name || 'Unknown' }}
-                        </span>
-                    </ProfilePopper>
-
-                    <p class="text-[15px] text-theme-text">
-                        <template v-for="(part, index) in processedContent" :key="index">
-                            <router-link
-                                v-if="part.type === 'mention'"
-                                :to="{ name: 'userProfile', params: { userId: part.userId } }"
-                                class="text-blue-500 hover:underline font-semibold"
-                            >
-                                {{ getUserById(parseInt(part.userId || ''))?.name }}
-                            </router-link>
-                            <router-link
-                                v-else-if="part.type === 'hashtag'"
-                                :to="{ name: 'hashtag', params: { hashtag: part.hashtag } }"
-                                class="text-blue-500 hover:underline"
-                            >
-                                {{ part.value }}
-                            </router-link>
-                            <span v-else>{{ part.value }}</span>
-                        </template>
-                    </p>
+                <div :class="commentWrapperClass">
+                    <div class="flex flex-col ">
+                        <AuthorBadge v-if="postAutor == author?.id"/>
+                        <ProfilePopper :userId="author?.id" mention class="font-semibold"/>
+                    </div>
+                    <CommentContent :content="processedContent" />
                 </div>
 
                 <!-- Obrazek lub GIF -->
@@ -210,134 +148,66 @@ v-if="showReplies || showReplyInput || hasReplies"
                     />
                 </div>
 
-                <!-- Link Preview -->
-                <div v-if="props.comment.linkPreview && !(props.comment.image || props.comment.gif)" class="mt-1">
-                    <a :href="props.comment.linkPreview.url" target="_blank" class="block bg-white rounded-lg overflow-hidden border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer no-underline max-w-sm">
-                        <div v-if="props.comment.linkPreview.image" class="w-full h-32 overflow-hidden bg-gray-200 relative border-b border-gray-300">
-                            <img :src="props.comment.linkPreview.image" class="w-full h-full object-cover" alt="Link preview" />
-                        </div>
-                        <div class="p-2">
-                            <div class="text-[10px] text-gray-500 uppercase font-semibold mb-0.5 flex items-center truncate">
-                                <WebIcon :size="10" class="mr-1" v-if="!props.comment.linkPreview.image" />
-                                {{ props.comment.linkPreview.domain }}
-                            </div>
-                            <div class="font-bold text-gray-900 text-[13px] leading-snug mb-0.5 line-clamp-1">
-                                {{ props.comment.linkPreview.title }}
-                            </div>
-                            <div class="text-gray-600 text-[11px] leading-snug line-clamp-1">
-                                {{ props.comment.linkPreview.description }}
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
+<CommentLinkPreview v-if="props.comment.linkPreview" :link-preview="props.comment.linkPreview"  />
                 <!-- Akcje komentarza -->
-                <div class="flex items-center space-x-2 text-xs font-semibold text-gray-500 mt-1">
-                    <ReactionButton @react="handleReaction" display="compact" :userReaction="userReaction" />
+                <div class="flex items-center space-x-2 mt-1 font-semibold text-[12px] text-theme-text-secondary">
+                  <FormattedDate :date="props.comment.date" short/>
+                    <ReactionButton @react="handleReaction" display="compact" :user-reaction="userReaction" />
                     <span
                         @click="startReply"
                         class="cursor-pointer hover:underline"
                     >
                         {{ $t('actions.reply') }}
                     </span>
-                    <span>{{ props.comment.date }}</span>
-
-
-
-                    <!-- Licznik reakcji -->
-                    <VDropdown v-if="totalLikes > 0" placement="top-start" :distance="5">
-                        <div class="flex items-center ml-1 cursor-pointer">
-                            <div
-                                class="rounded-full p-0.5 flex items-center justify-center w-[18px] h-[18px]"
-                                :class="getReactionConfig(userReaction || 'like').wrapperClass"
-                            >
-                                <component
-                                    v-if="getReactionConfig(userReaction || 'like').mode === 'icon'"
-                                    :is="getReactionConfig(userReaction || 'like').component"
-                                    :size="10"
-                                    :fillColor="getReactionConfig(userReaction || 'like').color"
-                                />
-                                <span v-else class="text-[10px]">{{ getReactionConfig(userReaction || 'like').char }}</span>
-                            </div>
-                            <span class="ml-1">{{ totalLikes }}</span>
-                        </div>
-                        <template #popper>
-                            <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-2">
-                                <template v-if="totalLikes < 5">
-                                    <div v-for="(userIds, reaction) in comment.reactions" :key="reaction">
-                                        <div v-if="userIds.length > 0" class="flex items-center gap-2 p-1">
-                                            <span class="text-lg">{{ reactionIcons[reaction]?.emoji }}</span>
-                                            <div class="text-sm">
-                                                <div v-for="userId in userIds" :key="userId">
-                                                    {{ getUserById(userId)?.name }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </template>
-                                <template v-else>
-                                    <div class="flex items-center gap-2">
-                                        <div v-for="(userIds, reaction) in comment.reactions" :key="reaction">
-                                            <div v-if="userIds.length > 0" class="flex items-center gap-1">
-                                                <img :src="reactionIcons[reaction]?.src" class="w-4 h-4" />
-                                                <span class="text-sm font-bold">{{ userIds.length }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-                    </VDropdown>
+                    <CommentReactions :comment="comment" :total-likes="totalLikes" :user-reaction="userReaction" />
                 </div>
 
                 <!-- Przycisk pokaż odpowiedzi -->
-                <div v-if="hasReplies && !showReplies" class="flex mt-2 items-center -ml-[36px]">
+                <div v-if="hasReplies && !showReplies && props.depth <=2" class="flex mt-2 items-center" :class="isRootComment ? '-ml-[36px]' : '-ml-[32px]'" >
                     <div class="w-8 mr-2 relative">
-                        <div class="absolute w-[21px] -mt-5 h-5 border-b-2 border-l-2 border-gray-300 right-0 rounded-bl-[10px]"></div>
+                        <div class="absolute w-[21px] -mt-5 h-5 border-b-2 border-l-2 border-theme-secondary right-0 rounded-bl-[10px]"></div>
                     </div>
                     <button
                         @click="showMoreReplies"
-                        class="flex items-center text-sm font-semibold text-blue-500 hover:text-blue-700 focus:outline-none"
+                        class="flex items-center text-[15px] font-semibold text-theme-text-secondary  focus:outline-none"
                     >
-                        <ChevronDown :size="18" class="mr-1 transition-transform" />
-                        <span>Pokaż {{ props.comment.replies?.length ?? 0 }} odpowiedzi</span>
+
+                        <span>Wyswietl wszystkie {{ props.comment.replies?.length ?? 0 }} odpowiedzi</span>
                     </button>
                 </div>
 
                 <!-- Input odpowiedzi gdy nie ma pokazanych odpowiedzi -->
-                <div v-if="showReplyInput && !showReplies" class="flex mt-2 ml-[-30px] items-start">
+                <div v-if="isReplying && !showReplies &&props.depth <2" class="flex mt-2  items-start" :class=" showReplies|| props.depth ==0? 'ml-[-30px]': 'ml-[-26px]'">
                     <div class="w-8 mr-2 relative">
-                        <div class="absolute w-[21px] h-5 border-b-2 border-l-2 border-gray-300 right-0 rounded-bl-[10px]"></div>
+                        <div class="absolute h-5 border-b-2 border-l-2 border-theme-secondary right-0 rounded-bl-[10px]"
+                             :class="props.depth > 1 ? 'w-[21px]' : 'w-[25px]'"></div>
                     </div>
                     <CommentReplyInput
                         @onCommentSubmitted="handleCommentSubmitted"
-                        :postAvatarSrc="postAvatarSrc"
-                        :placeholder="replyPlaceholder"
                         :postId="props.postId"
                         :parentId="props.comment.id"
                     />
                 </div>
 
                 <!-- Wyświetlanie odpowiedzi -->
-                <div v-if="showReplies && props.comment.replies && props.comment.replies.length > 0" class="mt-2">
+                <div v-if="(showReplies && props.comment.replies && props.comment.replies.length > 0)" class="mt-2">
                     <CommentItem
                         v-for="reply in props.comment.replies"
                         :key="reply.id"
                         :comment="reply"
-                        :postAvatarSrc="postAvatarSrc"
+                        @reply="$emit('reply', $event)"
                         :depth="props.depth + 1"
                         :postId="props.postId"
                     />
 
                     <!-- Input odpowiedzi po pokazaniu odpowiedzi -->
-                    <div class="flex mt-2 items-start" :style="{ marginLeft: `-${  33 + 1 * (props.depth > 1 ? 10 : 1) }px` }">
+                    <div class="flex mt-2 items-start" :class=" props.depth < 2? 'ml-[-30px]': 'ml-[-26px]'">
                         <div class="w-8 mr-2 relative">
-                            <div class="absolute w-[21px] h-5 border-b-2 border-l-2 border-gray-300 right-0 rounded-bl-[10px]"></div>
+                             <div class="absolute h-5 border-b-2 border-l-2 border-theme-secondary right-0 rounded-bl-[10px]"
+       :class="props.depth == 1  ? 'w-[21px]' : 'w-[25px]'"></div>
                         </div>
                         <CommentReplyInput
                             @onCommentSubmitted="handleCommentSubmitted"
-                            :postAvatarSrc="postAvatarSrc"
-                            :placeholder="replyPlaceholder"
                             :postId="props.postId"
                             :parentId="props.comment.id"
                         />
@@ -346,4 +216,4 @@ v-if="showReplies || showReplyInput || hasReplies"
             </div>
         </div>
     </div>
-</template>
+    </template>

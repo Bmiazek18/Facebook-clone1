@@ -1,125 +1,247 @@
 <script setup lang="ts">
-import { computed, type DefineComponent } from 'vue'
-import { useRouter } from 'vue-router'
-import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
-import Close from 'vue-material-design-icons/Close.vue'
-import ProfilePopper from '@/components/profile/ProfilePopper.vue'
-import { useTheme } from '@/composables/useTheme'
-import type { Post } from '@/types/Post'
-import LockIcon from 'vue-material-design-icons/Lock.vue'
-import EarthIcon from 'vue-material-design-icons/Earth.vue'
-import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue'
-import AccountMultipleMinusIcon from 'vue-material-design-icons/AccountMultipleMinus.vue'
-import AccountStarIcon from 'vue-material-design-icons/AccountStar.vue'
+import { computed, type DefineComponent } from 'vue';
+import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
+import Close from 'vue-material-design-icons/Close.vue';
+import ProfilePopper from '@/components/profile/ProfilePopper.vue';
+import type { Post } from '@/types/Post';
+
+import LockIcon from 'vue-material-design-icons/Lock.vue';
+import EarthIcon from 'vue-material-design-icons/Earth.vue';
+import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
+import AccountMultipleMinusIcon from 'vue-material-design-icons/AccountMultipleMinus.vue';
+import AccountStarIcon from 'vue-material-design-icons/AccountStar.vue';
+import Play from 'vue-material-design-icons/Play.vue';
 import { Dropdown as VDropdown } from 'floating-vue';
 import 'floating-vue/dist/style.css';
 import PostSettingPopper from './PostSettingPopper.vue';
+import FormattedDate from '@/components/common/FormattedDate.vue';
 import { getUserById } from '@/data/users';
+import { groups, type Group } from '@/data/groups';
+import UserAvatar from '@/components/common/UserAvatar.vue';
+
+const getGroupById = (id: string): Group | undefined => {
+  return groups.find(group => group.id === id)
+}
+
+import { getEventById, type Event } from '@/data/events';
 
 const props = defineProps<{
-  post: Post
-  isShared?: boolean
-}>()
+  post: Post;
+  isShared?: boolean;
+  group?: Group;
+  isAnonymous?: boolean;
+}>();
 
-const _emit = defineEmits<{
-  (e: 'menu'): void
-  (e: 'close'): void
+// Placeholder for anonymous user data
+const anonymousUser = {
+  name: 'Użytkownik anonimowy',
+  avatar: 'https://via.placeholder.com/150/000000/FFFFFF?text=Anon', // Generic placeholder
+  id: 0, // A dummy ID for anonymous user
+};
+
+const emit = defineEmits<{
+  (e: 'menu'): void;
+  (e: 'close'): void;
   (e: 'editPost', postId: number): void;
   (e: 'deletePost', postId: number): void;
   (e: 'hidePost', postId: number): void;
-}>()
+}>();
 
-const { isDark } = useTheme()
-const router = useRouter()
+// Dane statyczne mapy poza computed dla wydajności
+const PRIVACY_MAP = {
+  only_me: { label: 'Tylko ja', icon: LockIcon },
+  public: { label: 'Publiczne', icon: EarthIcon },
+  friends: { label: 'Znajomi', icon: AccountGroupIcon },
+  friends_except: { label: 'Znajomi z wyjątkiem...', icon: AccountMultipleMinusIcon },
+  specific_friends: { label: 'Konkretni znajomi', icon: AccountStarIcon },
+} as const;
 
 const author = computed(() => getUserById(props.post.authorId));
 
-const handleAvatarClick = () => {
-  if (props.post.authorId) {
-    router.push({ name: 'userProfile', params: { userId: props.post.authorId } })
+const targetUser = computed(() => {
+  if (props.post.targetId && props.post.targetType === 'User') {
+    return getUserById(Number(props.post.targetId))
   }
-}
+  return null
+})
+
+const targetGroup = computed(() => {
+  if (props.post.targetId && props.post.targetType === 'Group') {
+    return getGroupById(props.post.targetId)
+  }
+  return null
+})
+
+const targetEvent = computed(() => {
+  if (props.post.targetId && props.post.targetType === 'Event') {
+    return getEventById(props.post.targetId)
+  }
+  return null
+})
 
 const taggedUsers = computed(() => {
-    if (!props.post.context.taggedUsersIds) return [];
-    return props.post.context.taggedUsersIds.map(id => getUserById(id)).filter(u => u !== undefined);
+  if (!props.post.context.taggedUsersIds) return [];
+  return props.post.context.taggedUsersIds
+    .map((id) => getUserById(id))
+    .filter((u) => u !== undefined);
 });
 
 const privacyInfo = computed(() => {
-  type Info = { label: string; icon: DefineComponent | null };
-  const map: Record<string, Info> = {
-    only_me: { label: 'Tylko ja', icon: LockIcon },
-    public: { label: 'Publiczne', icon: EarthIcon },
-    friends: { label: 'Znajomi', icon: AccountGroupIcon },
-    friends_except: { label: 'Znajomi z wyjątkiem...', icon: AccountMultipleMinusIcon },
-    specific_friends: { label: 'Konkretni znajomi', icon: AccountStarIcon },
-  };
-  const privacy = props.post.context.privacy;
-  if (!privacy) return { label: 'Publiczne', icon: EarthIcon };
-  return map[privacy] || { label: privacy, icon: null };
+  const privacy = props.post.context.privacy || 'public';
+  return PRIVACY_MAP[privacy as keyof typeof PRIVACY_MAP] || PRIVACY_MAP.public;
 });
 </script>
 
 <template>
-  <div class="px-4 pt-3 pb-1">
+  <div class="px-4 pt-3 pb-1" v-memo="[post.id, post.context.privacy, isShared]">
     <div class="flex items-start">
-      <button @click="handleAvatarClick" class="mr-2.5 rounded-full hover:opacity-80 transition-opacity">
-        <img
-          class="rounded-full w-10 h-10 object-cover cursor-pointer"
-          :src="author?.avatar"
-          :alt="author?.name"
-        >
-      </button>
+
+      <template v-if="targetGroup">
+        <div class="relative w-10 h-10 mr-3 shrink-0">
+          <router-link :to="`/groups/${targetGroup.id}`">
+            <img
+              :src="targetGroup.image"
+              alt="Group"
+              class="w-full h-full object-cover rounded-[8px] border border-black/10 dark:border-white/10"
+            />
+          </router-link>
+          <div class="absolute -bottom-[8px] -right-[4px] z-10 rounded-full ring-2 ring-white dark:ring-[#242526]">
+            <UserAvatar v-if="props.post.isAnonymous" :user="anonymousUser" :size="24" />
+            <UserAvatar v-else-if="author" :user="author" :size="24" />
+          </div>
+        </div>
+      </template>
+
+      <UserAvatar
+        v-else-if="props.post.isAnonymous"
+        :user="anonymousUser"
+        :size="40"
+        class="mr-2.5 shrink-0"
+      />
+      <UserAvatar
+        v-else-if="author"
+        :user="author"
+        :size="40"
+        class="mr-2.5 shrink-0"
+      />
 
       <div class="flex-1 min-w-0 mt-0.5">
-        <div class="text-theme-text text-[15px] flex leading-tight">
-          <ProfilePopper :name="author?.name || 'Unknown'" :user-id="post.authorId" class="font-semibold hover:underline cursor-pointer" />
-          <template v-if="taggedUsers && taggedUsers.length">
-            <span class="font-normal text-gray-600"> z: </span>
-            <template v-for="(user, idx) in taggedUsers" :key="user.id">
-              <span v-if="idx > 0">, </span>
-              <ProfilePopper :name="user.name" :user-id="user.id" class="font-semibold hover:underline cursor-pointer" />
-            </template>
-          </template>
-          <template v-if="post.context.feeling">
-            <span class="font-normal text-gray-600 ml-1"> — czuje się <span class="font-semibold">{{ post.context.feeling.label }}</span> {{ post.context.feeling.emoji }}</span>
-          </template>
-          <template v-if="post.context.activity">
-            <span class="font-normal text-gray-600 ml-1"> — {{ post.context.activity.parent.slice(0, -3) }} <span class="font-semibold">{{ post.context.activity.item.label }}</span></span>
-          </template>
-          <template v-if="post.context.location">
-            <span class="font-normal text-gray-600"> jest w: </span>
-            <span class="font-semibold">{{ post.context.location.title }}</span>
-          </template>
-          <template v-if="post.context.createdEvent">
-            <span class="font-normal text-gray-600 ml-1">Dodał(a) nowe wydarzenie</span>
-          </template>
+        <div v-if="targetGroup">
+          <div class="text-theme-text text-[15px] font-bold leading-tight hover:underline cursor-pointer">
+            <router-link :to="`/groups/${targetGroup.id}`">{{ targetGroup.name }}</router-link>
+          </div>
+          <div class="text-[13px] flex items-center mt-0.5 text-meta">
+            <span class="hover:underline cursor-pointer font-medium">
+              <ProfilePopper v-if="props.post.isAnonymous" :name="anonymousUser.name" :user-id="anonymousUser.id" mention />
+              <ProfilePopper v-else :name="author?.name || 'Unknown'" :user-id="post.authorId" mention />
+            </span>
+            <span class="mx-1">·</span>
+            <FormattedDate :date="post.date" class="hover:underline" />
+            <span class="mx-1">·</span>
+            <component :is="privacyInfo.icon" :size="14" class="fill-meta" v-tooltip="privacyInfo.label" />
+          </div>
         </div>
-        <div class="flex items-center text-[13px] text-theme-text-secondary mt-0.5">
-          <span class="hover:underline cursor-pointer">{{ post.date || '17 grudnia' }}</span>
-          <span class="mx-1">·</span>
-          <component :is="privacyInfo.icon" :size="12" :fillColor="isDark ? '#E4E6EB' : '#65676B'" v-tooltip="privacyInfo.label" />
+
+        <div v-else>
+          <div class="flex flex-wrap items-baseline gap-1 text-theme-text text-[15px] leading-snug">
+            <span class="font-bold hover:underline cursor-pointer">
+              <ProfilePopper v-if="props.post.isAnonymous" :name="anonymousUser.name" :user-id="anonymousUser.id" />
+              <ProfilePopper v-else :name="author?.name || 'Unknown'" :user-id="post.authorId" />
+            </span>
+
+            <template v-if="targetUser">
+              <Play :size="15" class="fill-meta self-center" />
+              <span class="font-bold hover:underline cursor-pointer">
+                <ProfilePopper :name="targetUser.name" :user-id="targetUser.id" />
+              </span>
+            </template>
+
+            <template v-if="targetEvent">
+              <Play :size="15" class="fill-meta self-center" />
+              <router-link :to="`/events/${targetEvent.id}`" class="font-bold hover:underline cursor-pointer">
+                {{ targetEvent.name }}
+              </router-link>
+            </template>
+
+            <template v-if="taggedUsers.length">
+              <span class="text-meta">z</span>
+              <span class="font-bold hover:underline cursor-pointer">
+                <ProfilePopper :name="taggedUsers[0].name" :user-id="taggedUsers[0].id" />
+              </span>
+              <span v-if="taggedUsers.length > 1" class="text-meta"> i {{ taggedUsers.length - 1 }} innymi</span>
+            </template>
+
+            <template v-if="post.context.feeling">
+              <span class="text-meta">czuje się</span>
+              <span class="font-bold">{{ post.context.feeling.label }}</span>
+              <span v-if="post.context.feeling.emoji">{{ post.context.feeling.emoji }}</span>
+            </template>
+          </div>
+
+          <div class="flex items-center text-[13px] text-meta mt-0.5 font-medium">
+            <FormattedDate :date="post.date" class="hover:underline cursor-pointer" />
+            <span class="mx-1">·</span>
+            <component :is="privacyInfo.icon" :size="14" class="fill-meta" v-tooltip="privacyInfo.label" />
+          </div>
         </div>
       </div>
 
-      <div v-if="!isShared" class="flex items-center -mr-2">
+      <div v-if="!isShared" class="flex items-center -mr-2 ml-2">
         <VDropdown placement="bottom-end" :triggers="['click']">
-          <button @click="_emit('menu')" class="rounded-full p-2 hover:bg-theme-hover transition-colors">
-            <DotsHorizontal :size="20" :fillColor="isDark ? '#B0B3B8' : '#65676B'" />
+          <button @click="emit('menu')" class="post-header-btn">
+            <DotsHorizontal :size="20" />
           </button>
           <template #popper>
-            <PostSettingPopper
-              v-if="post.id"
-              :post-id="post.id"
-              :author-id="post.authorId ?? 0"
-
-            />
+            <PostSettingPopper v-if="post.id" :post-id="post.id" :author-id="post.authorId" />
           </template>
         </VDropdown>
-        <button @click="_emit('close')" class="rounded-full p-2 hover:bg-theme-hover transition-colors">
-          <Close :size="20" :fillColor="isDark ? '#B0B3B8' : '#65676B'" />
+        <button @click="emit('close')" class="post-header-btn">
+          <Close :size="20" />
         </button>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Kolor tekstu dla daty i separatorów */
+.text-meta {
+  color: #65676B;
+}
+.dark .text-meta {
+  color: #B0B3B8;
+}
+
+/* Kolor dla ikon (zastępuje fillColor w JS) */
+.fill-meta {
+  fill: #65676B;
+}
+.dark .fill-meta {
+  fill: #B0B3B8;
+}
+
+/* Przyciski (Dots/Close) */
+.post-header-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 8px;
+  transition: background-color 0.2s;
+  color: #65676B;
+}
+.dark .post-header-btn {
+  color: #B0B3B8;
+}
+.post-header-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.dark .post-header-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Wymuszenie koloru dla ikon Material Design */
+:deep(svg) {
+  fill: currentColor !important;
+}
+</style>

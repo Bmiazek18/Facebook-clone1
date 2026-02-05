@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { usePostsStore } from '@/stores/posts'
 import type { ReactionType } from '@/types/Post'
 
@@ -19,7 +19,7 @@ export function usePostReactions(postId?: string) {
   const userReaction = computed(() => {
     if (!post.value?.reactions) return null;
     const currentUserId = postsStore.currentUser.id;
-    
+
     for (const [type, userIds] of Object.entries(post.value.reactions)) {
         if (userIds && userIds.includes(currentUserId)) {
             return type as ReactionType;
@@ -37,17 +37,39 @@ export function usePostReactions(postId?: string) {
     return count;
   })
 
+  const topReactions = computed<ReactionType[]>(() => {
+    if (!post.value?.reactions || Object.keys(post.value.reactions).length === 0) return [];
+
+    const reactionsMap = new Map<ReactionType, number>();
+
+    for (const [type, userIds] of Object.entries(post.value.reactions)) {
+        if (userIds && userIds.length > 0) {
+            reactionsMap.set(type as ReactionType, userIds.length);
+        }
+    }
+
+    // Sort reactions by count in descending order
+    const sortedReactions = Array.from(reactionsMap.entries())
+        .sort(([, countA], [, countB]) => countB - countA)
+        .map(([type]) => type);
+
+    // Get top 3
+    return sortedReactions.slice(0, 3);
+  });
+
   const handleReaction = (type: ReactionType) => {
     if (!post.value || !postId) return;
 
-    // We need to update the store, which updates the post object
+
     postsStore.handlePostReaction(postId, type);
+
   }
 
   return {
     userReaction,
     likesCount,
     handleReaction,
-    reactionIcons
+    reactionIcons,
+    topReactions
   }
 }

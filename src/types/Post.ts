@@ -10,7 +10,7 @@ export interface PostLocation {
   searchbox_id?: string;
 }
 
-export interface LinkPreviewData {
+export interface LinkPreview {
   url: string;
   title: string;
   description: string;
@@ -22,7 +22,8 @@ export interface Comment {
   id: number;
   authorId: number;
   content: string;
-  date: string;
+  date?: string;
+  timestamp?: number;
   likesCount: number;
   // Nested replies structure remains specific to comments
   replies?: Comment[];
@@ -30,28 +31,25 @@ export interface Comment {
   gif?: string;
   userReaction?: string;
   reactions?: Partial<Record<ReactionType, number[]>>;
-  linkPreview?: LinkPreviewData;
+  linkPreview?: LinkPreview;
 }
 
 export interface PostStats {
+  reactions: number
   comments: number;
   shares: number;
 }
 
-// Grouping all media assets
 export interface PostMedia {
-  images?: {
-    src: string;
-    altText?: string;
-    tags?: ImageTagType[];
-  }[];
-  videoUrl?: string;
-  gif?: string;
+  src: string
+  altText?: string
+  tags?: ImageTagType[]
+  audioUrl?: string
 }
 
 
 export interface PostContext {
-  taggedUsersIds?: number[]; // Changed to IDs
+  taggedUsersIds?: number[];
   location?: PostLocation;
   privacy: string;
   feeling?: {
@@ -67,9 +65,10 @@ export interface PostContext {
     }
   } | null;
   createdEvent?: boolean;
+  detectedLanguage?: string;
 }
 
-export type SharedContentType = 'post' | 'reel' | 'event';
+export type SharedContentType = 'post' | 'reel' | 'event'|'marketplace';
 
 export interface SharedContent {
   type: SharedContentType;
@@ -82,16 +81,18 @@ export type ReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry';
 export interface Post {
   id: string;
   authorId: number;
+  groupId?: string;
+  targetId?: string;
+  targetType?: 'User' | 'Group' | 'Event';
   content: string;
   date: string;
   timestamp: number;
-  media: PostMedia;
+  media: PostMedia[];
   context: PostContext;
   reactions: Partial<Record<ReactionType, number[]>>;
   stats: PostStats;
   sharedContent?: SharedContent;
   comments?: Comment[];
-  selectedCardBgId?: number;
-  detectedLanguage?: string;
-  groupId?: string;
+  linkPreview?: LinkPreview;
+  isAnonymous?: boolean;
 }

@@ -104,28 +104,28 @@ const handleClick = (item: MenuItem) => {
 </script>
 
 <template>
-  <div class="bg-white w-full max-w-md rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] py-2 text-[#050505]">
+  <div class="bg-theme-bg-secondary w-full max-w-sm rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] py-1 text-theme-text">
 
     <div v-for="item in menuItems" :key="item.id">
       <button
         @click="handleClick(item)"
-        class="group flex items-start w-full px-4 py-2 hover:bg-gray-100 transition-colors duration-200 text-left"
+        class="group flex items-start w-full px-3 py-1.5 hover:bg-theme-hover transition-colors duration-200 text-left"
       >
-        <div class="mr-3 mt-0.5 text-[#1c1e21] shrink-0">
-          <component :is="item.icon" :size="24" />
+        <div class="mr-3 mt-0.5 text-theme-text shrink-0">
+          <component :is="item.icon" :size="20" />
         </div>
 
         <div class="flex flex-col">
-          <span class="text-[15px] font-medium leading-5 text-[#050505]">
+          <span class="text-[14px] font-medium leading-5 text-theme-text">
             {{ item.label }}
           </span>
-          <span v-if="item.description" class="text-[13px] text-[#65676b] leading-4 mt-0.5">
+          <span v-if="item.description" class="text-[13px] text-theme-text-secondary leading-4 mt-0.5">
             {{ item.description }}
           </span>
         </div>
       </button>
 
-      <div v-if="item.hasSeparator" class="h-px bg-gray-200 my-2 mx-4"></div>
+      <div v-if="item.hasSeparator" class="h-px bg-theme-border my-1 mx-3"></div>
     </div>
 
   </div>

@@ -2,10 +2,9 @@
 import { ref, computed } from 'vue'
 
 // Import ikon
-import LockIcon from 'vue-material-design-icons/Lock.vue'
+
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue'
-import ShareVariantIcon from 'vue-material-design-icons/ShareVariant.vue'
-import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue'
+
 import FacebookMessengerIcon from 'vue-material-design-icons/FacebookMessenger.vue'
 
 // Stan

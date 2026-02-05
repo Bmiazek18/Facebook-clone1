@@ -11,23 +11,30 @@ import ShareAsPostModal from '@/components/feed/ShareAsPostModal.vue'
 import PostHeader from './PostHeader.vue'
 import PostActions from './PostActions.vue'
 import PostContent from './PostContent.vue'
+import PostLinkPreview from './PostLinkPreview.vue'
 import PostReactions from './PostReactions.vue'
 import PostSharedContent from './PostSharedContent.vue'
 import PostMarketplaceCard from './PostMarketplaceCard.vue'
 import PostMediaDisplay from './PostMediaDisplay.vue'
+import MapPreview from '@/components/MapPreview.vue'
 import { useStoryShareStore } from '@/stores/storyShare'
 import { usePostsStore } from '@/stores/posts'
+import { usePostReactions } from '@/composables/usePostReactions'
+import { useGroupsStore } from '@/stores/groups';
 
 import type { Post } from '@/types/Post';
 import ShareAsMessageModal from '@/components/feed/ShareAsMessageModal.vue'
 import { getUserById } from '@/data/users';
 import ReactionPanel from '../ReactionPanel.vue';
 
-
 const props = defineProps<{
   post: Post
   isShared?: boolean
+  isGroup?:boolean
 }>()
+
+const groupsStore = useGroupsStore();
+const group = computed(() => props.post.groupId ? groupsStore.getGroupById(props.post.groupId) : undefined);
 
  defineEmits<{
   (e: 'delete', postId: string): void
@@ -36,6 +43,8 @@ const props = defineProps<{
 const router = useRouter()
 const storyShareStore = useStoryShareStore()
 const postsStore = usePostsStore()
+
+const { userReaction, likesCount,topReactions } = usePostReactions(String(props.post.id))
 
 const isModalOpen = ref(false)
 const isShareAsPostModalOpen = ref(false)
@@ -51,22 +60,7 @@ const toggleReactionModal = () => {
 };
 
 // Helper to count reactions from the map
-const reactionCount = computed(() => {
-    if (!props.post?.reactions) return 0;
-    let count = 0;
-    Object.values(props.post.reactions).forEach(ids => {
-        if (ids) count += ids.length;
-    });
-    return count;
-});
 
-// Helper to determine if liked by current user (mocked ID 1)
-const isLikedByCurrentUser = computed(() => {
-    if (!props.post?.reactions) return false;
-    // Check all reaction arrays for user ID 1
-    const currentUserId = 1; // Mocked
-    return Object.values(props.post.reactions).some(ids => ids && ids.includes(currentUserId));
-});
 
 const postData = computed<Post>(() => {
   return {
@@ -155,6 +149,7 @@ const originalPost = computed(() => {
   return undefined;
 });
 
+
 const postToShare = computed(() => {
   return originalPost.value || props.post;
 });
@@ -162,18 +157,24 @@ const postToShare = computed(() => {
 
 <template>
   <div class="w-full bg-theme-bg-secondary rounded-lg"
-       :class="{ 'border border-theme-border': isShared, 'my-4': !isShared , 'shadow-sm dark:shadow-lg': !props.post}">
+       :class="{ 'border border-theme-border': isShared,  'shadow-sm dark:shadow-lg': !props.post}">
+
+
 
     <template v-if="!isShared">
-    <PostHeader
-      :post="post"
-      :is-shared="isShared"
-      @edit-post="handleEditPost"
-      @hide-post="handleHidePost"
-    />
-
+          <PostHeader
+            :post="post"
+            :is-shared="isShared"
+            :group="isGroup ? undefined : group"
+            :is-anonymous="post.isAnonymous"
+            @edit-post="handleEditPost"
+            @hide-post="handleHidePost"
+          />
     <!-- Post content and translation -->
     <PostContent :post="post" />
+    <PostLinkPreview v-if="post.linkPreview" :link-preview="post.linkPreview" />
+
+    <MapPreview v-if="post.context.location && (!post.media || post.media.length === 0)" :selected-location="post.context.location" />
 
     <!-- Marketplace data section -->
     <PostMarketplaceCard
@@ -206,6 +207,7 @@ const postToShare = computed(() => {
 
     <!-- Post content - PO nagłówku -->
     <PostContent :post="post" />
+    <PostLinkPreview v-if="post.linkPreview" :link-preview="post.linkPreview" />
 
     <!-- Marketplace data section dla udostępnionych postów -->
     <PostMarketplaceCard
@@ -216,26 +218,35 @@ const postToShare = computed(() => {
     </template>
 
     <!-- Shared content (posts, reels, events) -->
-    <PostSharedContent :post="post" />
+    <template v-if="!isShared">
+      <PostSharedContent :post="post" />
+    </template>
 
-    <PostReactions v-if="!isShared"
-      :post-id="post.id"
-      :comments-count="post.stats.comments"
-      :shares-count="post.stats.shares"
-      @show-reaction-details="toggleReactionModal"
-    />
+    <template v-if="post">
+      <PostReactions v-if="!isShared"
+        :post-id="post.id"
+        :user-reaction="userReaction"
+        :likes-count="likesCount"
+        :top-reactions="topReactions"
+        :reactions="post.reactions"
+        :comments-count="post.stats.comments"
+        :shares-count="post.stats.shares"
+        @show-reaction-details="toggleReactionModal"
+      />
 
-    <PostActions v-if="!isShared"
-      @comment="toggleModal"
-      @share-as-post="shareAsMyPost"
-      @share-to-story="shareToStory"
-      @share-to-message="shareToMessage"
-    />
+      <PostActions v-if="!isShared"
+        :post-id="post.id"
+        @comment="toggleModal"
+        @share-as-post="shareAsMyPost"
+        @share-to-story="shareToStory"
+        @share-to-message="shareToMessage"
+      />
+    </template>
 
     <BaseModal v-if="isModalOpen" @close="toggleModal" :title="`Post ${getUserById(post.authorId)?.name}`">
       <PostModal v-if="props.post" :post="props.post" />
     </BaseModal>
-    
+
     <BaseModal v-if="isReactionModalOpen" @close="toggleReactionModal" title="Reakcje">
       <ReactionPanel :reactions="post.reactions" />
     </BaseModal>

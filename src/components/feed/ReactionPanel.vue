@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full">
+  <div class="w-[375px]">
 
     <div v-if="totalReactions > 0" class="flex overflow-x-auto whitespace-nowrap mb-4 border-b border-gray-200">
       <button
@@ -30,7 +30,7 @@
         Brak reakcji do wyświetlenia.
     </div>
 
-    <HoverScrollbar class="max-h-[300px]" v-if="totalReactions > 0">
+    <HoverScrollbar max-height="300px" v-if="totalReactions > 0">
       <div
         v-for="reaction in filteredReactions"
         :key="`${reaction.userId}-${reaction.emoji}`"

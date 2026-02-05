@@ -77,6 +77,39 @@ function handlePostReaction(postId: string, reaction: ReactionType | null) {
   post.reactions = nextReactions;
 }
 
+  function sharePost(originalPost: Post, comment: string) {
+    if (!originalPost) return
+
+    const newPost: Post = {
+      id: `post_${Date.now()}_${currentUser.id}`,
+      authorId: currentUser.id,
+      content: comment,
+      timestamp: Date.now(),
+      date: new Date().toISOString(),
+      reactions: {},
+      comments: [],
+      stats: {
+        comments: 0,
+        shares: 0,
+      },
+      sharedContent: {
+        type: 'post',
+        originalId: originalPost.id,
+      },
+      context: {
+        privacy: 'public',
+      },
+    }
+
+    // Opcjonalnie: zwiększ licznik udostępnień w oryginalnym poście
+    const postToUpdate = getPostById(originalPost.id)
+    if (postToUpdate && postToUpdate.stats) {
+      postToUpdate.stats.shares = (postToUpdate.stats.shares || 0) + 1
+    }
+
+    addPost(newPost)
+  }
+
   // --- Comment Actions ---
   function addComment(postId: string, comment: Comment, parentId: number | null) {
     const post = posts.value.find(p => p.id === postId);
@@ -133,5 +166,6 @@ function handlePostReaction(postId: string, reaction: ReactionType | null) {
     getPostById,
     handlePostReaction,
     handleCommentReaction,
+    sharePost,
   }
 })

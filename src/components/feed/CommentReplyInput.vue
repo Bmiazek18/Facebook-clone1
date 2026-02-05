@@ -6,7 +6,6 @@ import FileGifBox from 'vue-material-design-icons/FileGifBox.vue';
 import Send from 'vue-material-design-icons/Send.vue';
 import ChevronDown from 'vue-material-design-icons/ChevronDown.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
-import WebIcon from 'vue-material-design-icons/Web.vue';
 import GifSelector from '@/components/common/GifSelector.vue';
 import { useAuthStore } from '@/stores/auth';
 import { usePostsStore } from '@/stores/posts';
@@ -18,8 +17,6 @@ import axios from 'axios';
 import type { LinkPreviewData } from '@/types/Post';
 
 const props = defineProps<{
-    postAvatarSrc: string
-    placeholder?: string,
     postId: string,
     parentId?: number | null
 }>()
@@ -48,16 +45,17 @@ watch(taggedUser, (newUser) => {
     if (newUser && !postContent.value.includes(`[@${newUser.id}]`)) {
         postContent.value = `[@${newUser.id}] ` + postContent.value;
         nextTick(() => {
+             mentionInputRef.value?.renderContentEditable(); // Explicitly call renderContentEditable
              mentionInputRef.value?.moveCursorToEnd();
         });
     }
-});
+}, { immediate: true });
 
 watch(postContent, (newVal) => {
     if (linkCheckTimeout) clearTimeout(linkCheckTimeout);
     linkCheckTimeout = setTimeout(() => {
          const urlMatch = newVal.match(/(https?:\/\/[^\s]+)/g);
-         if (urlMatch && urlMatch.length > 0 && !linkPreview.value && !isPreviewDismissed.value) {
+         if (urlMatch && urlMatch.length > 0 && !isPreviewDismissed.value) {
             fetchLinkMetadata(urlMatch[0]);
          }
     }, 500);
@@ -67,7 +65,7 @@ const fetchLinkMetadata = async (url: string) => {
   if (isLoadingPreview.value) return;
   isLoadingPreview.value = true;
   try {
-    const { data } = await axios.post('http://127.0.0.1:8000', { url });
+    const { data } = await axios.post('http://127.0.0.1:8000/scrape-og', { url });
     console.log('Pobrane dane Open Graph (komentarz):', data);
 
     linkPreview.value = {
@@ -104,7 +102,7 @@ const selectGif = (gif: string) => {
     removeLinkPreview(); // Remove link preview if GIF is selected
 };
 
-const addEmoji = (emoji: any) => {
+const addEmoji = (emoji: { native: string }) => {
     mentionInputRef.value?.addEmoji(emoji);
 }
 
@@ -137,13 +135,12 @@ const submitComment = () => {
         const newComment = {
             id: Date.now(),
             authorId: authStore.currentUser.id,
-            authorName: authStore.currentUser.name,
-            authorAvatar: authStore.currentUser.avatar,
             content: postContent.value,
-            date: 'now',
+            date: new Date().toISOString(),
+            timestamp: Date.now(),
             likesCount: 0,
             reactions: {},
-            image: selectedImage.value,
+            image: selectedImage.value === null ? undefined : selectedImage.value,
             linkPreview: linkPreview.value || undefined,
             replies: [],
         };
@@ -163,7 +160,7 @@ const submitComment = () => {
         <div class="relative shrink-0 mr-1.5 group cursor-pointer">
             <img
                 class="w-8 h-8 rounded-full object-cover"
-                :src="props.postAvatarSrc"
+                :src="authStore.currentUser?.avatar"
                 alt="Avatar"
             >
             <div class="absolute -bottom-1 -right-1 bg-[#e4e6eb] rounded-full w-4 h-4 flex items-center justify-center border-[2px] border-white text-black">
@@ -171,54 +168,36 @@ const submitComment = () => {
             </div>
         </div>
 
-        <div class="grow bg-[#f0f2f5] rounded-[18px] px-3 py-2 relative group-focus-within:bg-gray-100 transition-colors">
+        <div class="grow rounded-[18px] px-3 py-2 relative bg-theme-comment-bg  transition-colors">
 
             <MentionInput
                 ref="mentionInputRef"
                 v-model="postContent"
-                :placeholder="props.placeholder || 'Napisz komentarz...'"
+                placeholder="Napisz komentarz..."
+                @focus="commentsStore.setReplyInputFocus()"
+                @blur="commentsStore.clearReplyInputFocus()"
             />
 
-            <!-- Loading state dla link preview -->
-            <div v-if="isLoadingPreview" class="mt-2 mb-2 bg-gray-100 rounded-lg p-2 border border-gray-200">
-                <div class="flex items-center gap-2">
-                    <div class="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-blue-600"></div>
-                    <span class="text-xs text-gray-600">Pobieranie podglądu...</span>
+
+
+
+            <div v-if="selectedImage" class="relative mt-3 mb-1 px-1 group inline-block">
+                <div class="relative inline-block">
+                    <img
+                        :src="selectedImage"
+                        class="rounded-xl border border-black/5 dark:border-white/10 max-h-[220px] w-[40%] w-auto object-cover shadow-sm bg-white dark:bg-gray-800"
+                        alt="Załączony obraz"
+                    />
+
+                    <button
+                        @click="removeImage"
+                        class="absolute top-2 right-2 w-7 h-7 flex items-center justify-center bg-white text-gray-700 hover:text-gray-900 rounded-full shadow-md border border-gray-100 transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 cursor-pointer z-10"
+                        title="Usuń obraz"
+                        type="button"
+                    >
+                        <CloseIcon :size="16" />
+                    </button>
                 </div>
-            </div>
-
-            <!-- Link Preview -->
-            <div v-if="linkPreview && !selectedImage && !isLoadingPreview" class="relative mt-2 mb-2 group">
-                <button
-                @click="removeLinkPreview"
-                class="absolute top-1 right-1 z-20 bg-gray-900 bg-opacity-60 hover:bg-opacity-80 rounded-full p-0.5 text-white transition-all opacity-0 group-hover:opacity-100"
-                >
-                <CloseIcon :size="14" />
-                </button>
-
-                <a :href="linkPreview.url" target="_blank" class="block bg-white rounded-lg overflow-hidden border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer no-underline">
-                   <div v-if="linkPreview.image" class="w-full h-32 overflow-hidden bg-gray-200 relative border-b border-gray-300">
-                        <img :src="linkPreview.image" class="w-full h-full object-cover" alt="Link preview" />
-                   </div>
-
-                   <div class="p-2">
-                        <div class="text-[10px] text-gray-500 uppercase font-semibold mb-0.5 flex items-center truncate">
-                            <WebIcon :size="10" class="mr-1" v-if="!linkPreview.image" />
-                            {{ linkPreview.domain }}
-                        </div>
-                        <div class="font-bold text-gray-900 text-[13px] leading-snug mb-0.5 line-clamp-1">
-                            {{ linkPreview.title }}
-                        </div>
-                        <div class="text-gray-600 text-[11px] leading-snug line-clamp-1">
-                            {{ linkPreview.description }}
-                        </div>
-                   </div>
-                </a>
-            </div>
-
-            <div v-if="selectedImage" class="relative mb-2 mt-2">
-                <img :src="selectedImage" class="rounded-lg max-h-40" />
-                <button @click="removeImage" class="absolute top-2 right-2 bg-gray-800 text-white rounded-full p-1 text-xs">X</button>
             </div>
 
             <div class="flex justify-between items-center mt-1 text-gray-500">

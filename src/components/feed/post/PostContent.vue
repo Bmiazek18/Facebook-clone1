@@ -12,7 +12,7 @@
          'pb-3': !isTranslated && !needsTranslation
        }"
   >
-    <template v-for="(part, index) in processedOriginalContent" :key="index">
+    <template v-for="(part, index) in contentToShow" :key="index">
       <router-link
         v-if="part.type === 'hashtag'"
         :to="{ name: 'hashtag', params: { hashtag: part.hashtag } }"
@@ -29,8 +29,20 @@
       >
         @{{ getUserById(parseInt(part.userId || ''))?.name }}
       </router-link>
+      <a
+        v-else-if="part.type === 'link'"
+        :href="part.url"
+        target="_blank"
+        class="text-blue-500 hover:underline"
+        :class="{ 'text-white': (post.selectedCardBgId ?? 0) > 0 }"
+      >
+        {{ part.value }}
+      </a>
       <span v-else :class="{ ' text-[30px]': (post.selectedCardBgId ?? 0) > 0 }">{{ part.value }}</span>
     </template>
+    <button v-if="showReadMore" @click="isExpanded = true" class="text-theme-text hover:underline font-semibold">
+      Czytaj więcej
+    </button>
   </div>
 
   <!-- Translation section -->
@@ -54,6 +66,14 @@
         >
           @{{ getUserById(parseInt(part.userId || ''))?.name }}
         </router-link>
+        <a
+          v-else-if="part.type === 'link'"
+          :href="part.url"
+          target="_blank"
+          class="text-blue-500 hover:underline"
+        >
+          {{ part.value }}
+        </a>
         <span v-else>{{ part.value }}</span>
       </template>
     </div>
@@ -127,6 +147,8 @@ const props = defineProps<{
   post: Post
 }>()
 
+const isExpanded = ref(false)
+
 // Translation state
 const isTranslated = ref(false)
 const translatedContent = ref<string>('')
@@ -168,6 +190,30 @@ const processedOriginalContent = computed(() => {
 
 const processedTranslatedContent = computed(() => {
   return processContent(translatedContent.value);
+})
+
+const showReadMore = computed(() => {
+  return props.post.content.length > 137 && !isExpanded.value
+})
+
+const contentToShow = computed(() => {
+  if (showReadMore.value) {
+    // Truncate the content
+    let truncated = props.post.content.substring(0, 200)
+    // We need to process the truncated content to get the parts
+    const processed = processContent(truncated)
+    // Add ellipsis at the end
+    if (processed.length > 0) {
+      const lastPart = processed[processed.length - 1]
+      if (lastPart.type === 'text') {
+        lastPart.value += '...'
+      } else {
+        processed.push({ type: 'text', value: '...' })
+      }
+    }
+    return processed
+  }
+  return processedOriginalContent.value
 })
 
 // Translation functions

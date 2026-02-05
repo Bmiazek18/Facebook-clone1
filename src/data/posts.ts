@@ -1,27 +1,15 @@
 import type { Post, ReactionType } from '@/types/Post';
-import { getUserById } from './users';
-
-// Helper to get reaction count (not used directly in data, but for conceptual understanding)
-const countReactions = (post: Post) => {
-    let count = 0;
-    if (post.reactions) {
-        Object.values(post.reactions).forEach(userIds => {
-            count += userIds ? userIds.length : 0;
-        });
-    }
-    return count;
-};
 
 // Available user IDs for reactions (from users.json)
 const availableUserIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 // Helper to generate a random subset of user IDs for reactions
 const getRandomUserIds = (maxUsers: number, includeCurrentUser = false): number[] => {
-    let ids = [...availableUserIds];
+    const ids = [...availableUserIds];
     if (includeCurrentUser && !ids.includes(1)) {
         ids.unshift(1); // Ensure current user is in the list if specified
     }
-    
+
     // Shuffle and pick a random number of unique IDs
     for (let i = ids.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -44,82 +32,137 @@ const generateRandomReactions = (): Partial<Record<ReactionType, number[]>> => {
         if (type !== 'like' && Math.random() > 0.6) { // 40% chance to have other reactions
             reactions[type] = getRandomUserIds(availableUserIds.length / 3);
         }
-    });
-    
-    // Ensure all reaction arrays are unique and contain actual IDs
-    for (const type in reactions) {
         if (reactions[type as ReactionType]) {
+            // Ensure all reaction arrays are unique and contain actual IDs
             reactions[type as ReactionType] = Array.from(new Set(reactions[type as ReactionType]));
         }
-    }
+    });
 
     return reactions;
 };
 
+// Base timestamp for generating distinct past dates
+const baseTimestamp = new Date('2026-01-24T12:00:00.000Z').getTime(); // Today's date (Jan 24, 2026) at noon
 
 export const posts: Post[] = [
   {
     id: '100',
     content: 'Hello everyone! I hope you are all having a wonderful day. The weather is absolutely beautiful today, and I decided to take a long walk in the park. It was so peaceful and relaxing. How are you spending your weekend? 🌞🌳',
     authorId: 100, // Assuming 100 is a valid user for testing international posts
-    date: '4 stycznia',
-    timestamp: Date.now(),
-    media: {
-        images: [
+    date: new Date(baseTimestamp - (1 * 24 * 60 * 60 * 1000)).toISOString(), // 1 day ago
+    timestamp: baseTimestamp - (1 * 24 * 60 * 60 * 1000),
+    media: [
             { src: 'https://picsum.photos/800/600?random=100', altText: 'Beautiful park view' },
-        ]
-    },
+        ],
     context: {
         privacy: 'public'
     },
-    stats: {
-        comments: 8,
-        shares: 2,
-    },
+    targetId: '2',
+    targetType: 'User',
+    stats: { comments: 2, shares: 0 },
     reactions: generateRandomReactions(),
-    comments: [],
+    comments: [
+        {
+            id: 1,
+            authorId: 2,
+            content: 'What a beautiful photo!',
+            date: new Date(baseTimestamp - (1 * 24 * 60 * 60 * 1000) - (5 * 60 * 1000)).toISOString(), // 1 day and 5 minutes ago
+            timestamp: baseTimestamp - (1 * 24 * 60 * 60 * 1000) - (5 * 60 * 1000),
+            likesCount: 5,
+            replies: [
+                {
+                    id: 2,
+                    authorId: 3,
+                    content: 'I agree! Looks amazing.',
+                    date: new Date(baseTimestamp - (1 * 24 * 60 * 60 * 1000) - (4 * 60 * 1000)).toISOString(), // 1 day and 4 minutes ago
+                    likesCount: 2,
+                    timestamp: baseTimestamp - (1 * 24 * 60 * 60 * 1000) - (4 * 60 * 1000),
+                    replies: [
+                        {
+                            id: 3,
+                            authorId: 1,
+                            content: 'Thanks everyone! [@2]',
+                            date: new Date(baseTimestamp - (1 * 24 * 60 * 60 * 1000) - (3 * 60 * 1000)).toISOString(), // 1 day and 3 minutes ago
+                            likesCount: 0,
+                            timestamp: baseTimestamp - (1 * 24 * 60 * 60 * 1000) - (3 * 60 * 1000),
+                        },
+                    ],
+                },
+                {
+                    id: 5,
+                    authorId: 5,
+                    content: 'Wow, where is this?',
+                    date: new Date(baseTimestamp - (1 * 24 * 60 * 60 * 1000) - (2 * 60 * 1000)).toISOString(), // 1 day and 2 minutes ago
+                    likesCount: 1,
+                    timestamp: baseTimestamp - (1 * 24 * 60 * 60 * 1000) - (2 * 60 * 1000),
+                    replies: [
+                        {
+                            id: 6,
+                            authorId: 100,
+                            content: 'It is a park near my home',
+                            date: new Date(baseTimestamp - (1 * 24 * 60 * 60 * 1000) - (1 * 60 * 1000)).toISOString(), // 1 day and 1 minute ago
+                            likesCount: 0,
+                            timestamp: baseTimestamp - (1 * 24 * 60 * 60 * 1000) - (1 * 60 * 1000),
+                        },
+                    ],
+                }
+            ],
+        },
+        {
+            id: 4,
+            authorId: 4,
+            content: 'Great shot!',
+            date: new Date(baseTimestamp - (1 * 24 * 60 * 60 * 1000)).toISOString(), // 1 day ago
+            likesCount: 1,
+            timestamp: baseTimestamp - (1 * 24 * 60 * 60 * 1000),
+        },
+    ],
     detectedLanguage: 'en',
+
   },
   {
     id: '101',
     content: 'Guten Morgen! Heute ist ein wunderschöner Tag. Ich freue mich sehr auf das Wochenende mit meiner Familie. Wir werden zusammen wandern gehen und die Natur genießen. Was habt ihr für Pläne? 🏔️🌲',
     authorId: 101, // Assuming 101 is a valid user for testing international posts
-    date: '4 stycznia',
-    timestamp: Date.now(),
-    media: {
-        images: [
+    date: new Date(baseTimestamp - (2 * 24 * 60 * 60 * 1000) - (3 * 60 * 1000)).toISOString(), // 2 days ago, slightly different time
+    timestamp: baseTimestamp - (2 * 24 * 60 * 60 * 1000) - (3 * 60 * 1000),
+    media: [
             { src: 'https://picsum.photos/800/600?random=101', altText: 'Mountain hiking view' },
             { src: 'https://picsum.photos/800/600?random=102', altText: 'Nature landscape' },
-        ]
-    },
+        ],
     context: { privacy: 'friends' },
+    targetId: '1',
+    targetType: 'Group',
     stats: { comments: 5, shares: 1 },
     reactions: generateRandomReactions(),
     comments: [],
     detectedLanguage: 'de',
+
   },
   {
     id: '102',
     content: 'Bonjour à tous! Quelle magnifique journée ensoleillée! Je viens de terminer un délicieux déjeuner au café près de la Seine. Paris est vraiment magique en cette saison. Profitez bien de votre journée! ☕🥐🗼',
     authorId: 102, // Assuming 102 is a valid user for testing international posts
-    date: '4 stycznia',
-    timestamp: Date.now(),
-    media: {},
+    date: new Date(baseTimestamp - (3 * 24 * 60 * 60 * 1000) - (7 * 60 * 1000)).toISOString(), // 3 days ago, slightly different time
+    timestamp: baseTimestamp - (3 * 24 * 60 * 60 * 1000) - (7 * 60 * 1000),
+    media: [],
     context: { privacy: 'public' },
     stats: { comments: 12, shares: 3 },
     reactions: generateRandomReactions(),
     comments: [],
     detectedLanguage: 'fr',
+
   },
   {
     id: '0',
     content: 'Niesamowity zachód słońca nad oceanem 🌅 #zachod',
     authorId: 1, // Bartosz Miazek
-    date: '17 grudnia',
-    timestamp: Date.now(),
-    media: {
-        videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-    },
+    date: new Date(baseTimestamp - (4 * 24 * 60 * 60 * 1000) - (12 * 60 * 1000)).toISOString(), // 4 days ago
+    timestamp: baseTimestamp - (4 * 24 * 60 * 60 * 1000) - (12 * 60 * 1000),
+    media: [
+        { src: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+         { src: 'https://picsum.photos/800/600?random=102', altText: 'Nature landscape' },
+    ],
     context: { privacy: 'public' },
     stats: { comments: 23, shares: 8 },
     reactions: generateRandomReactions(),
@@ -129,10 +172,9 @@ export const posts: Post[] = [
     id: '1',
     content: 'Piękny dzień na spacer! 🌞',
     authorId: 2, // Anna Kowalska
-    date: '16 grudnia',
-    timestamp: Date.now(),
-    media: {
-        images: [
+    date: new Date(baseTimestamp - (5 * 24 * 60 * 60 * 1000) - (20 * 60 * 1000)).toISOString(), // 5 days ago
+    timestamp: baseTimestamp - (5 * 24 * 60 * 60 * 1000) - (20 * 60 * 1000),
+    media: [
           {
             src: 'https://picsum.photos/800/600?random=1',
             altText: 'A beautiful day for a walk',
@@ -145,8 +187,7 @@ export const posts: Post[] = [
                   },
                 ]
           },
-        ]
-    },
+        ],
     context: { privacy: 'friends' },
     stats: { comments: 3, shares: 1 },
     reactions: generateRandomReactions(),
@@ -156,15 +197,15 @@ export const posts: Post[] = [
     id: '2',
     content: 'Weekendowy wypad z rodziną 👨‍👩‍👧‍👦',
     authorId: 3, // Jan Nowak
-    date: '15 grudnia',
-    timestamp: Date.now(),
-    media: {
-        images: [
+    date: new Date(baseTimestamp - (6 * 24 * 60 * 60 * 1000) - (25 * 60 * 1000)).toISOString(), // 6 days ago
+    timestamp: baseTimestamp - (6 * 24 * 60 * 60 * 1000) - (25 * 60 * 1000),
+    media: [
             { src: 'https://picsum.photos/800/600?random=2', altText: 'Family weekend trip' },
             { src: 'https://picsum.photos/800/600?random=3', altText: 'Family weekend trip' },
-        ]
-    },
+        ],
     context: { privacy: 'friends' },
+    targetId: '1',
+    targetType: 'Event',
     stats: { comments: 8, shares: 2 },
     reactions: generateRandomReactions(),
     comments: [],
@@ -173,15 +214,13 @@ export const posts: Post[] = [
     id: '3',
     content: 'Nowa kolekcja zdjęć z podróży ✈️',
     authorId: 3, // Jan Nowak
-    date: '15 grudnia',
-    timestamp: Date.now(),
-    media: {
-        images: [
+    date: new Date(baseTimestamp - (7 * 24 * 60 * 60 * 1000) - (30 * 60 * 1000)).toISOString(), // 7 days ago
+    timestamp: baseTimestamp - (7 * 24 * 60 * 60 * 1000) - (30 * 60 * 1000),
+    media: [
             { src: 'https://picsum.photos/800/800?random=4', altText: 'Travel photo' },
             { src: 'https://picsum.photos/800/600?random=5', altText: 'Travel photo' },
             { src: 'https://picsum.photos/800/600?random=6', altText: 'Travel photo' },
-        ]
-    },
+        ],
     context: { privacy: 'public' },
     stats: { comments: 15, shares: 5 },
     reactions: generateRandomReactions(),
@@ -191,16 +230,14 @@ export const posts: Post[] = [
     id: '4',
     content: 'Cztery pory roku w jednym poście 🍂🌸☀️❄️',
     authorId: 4, // Katarzyna Wiśniewska
-    date: '14 grudnia',
-    timestamp: Date.now(),
-    media: {
-        images: [
+    date: new Date(baseTimestamp - (8 * 24 * 60 * 60 * 1000) - (35 * 60 * 1000)).toISOString(), // 8 days ago
+    timestamp: baseTimestamp - (8 * 24 * 60 * 60 * 1000) - (35 * 60 * 1000),
+    media: [
             { src: 'https://picsum.photos/800/600?random=7', altText: 'Four seasons in one post' },
             { src: 'https://picsum.photos/800/600?random=8', altText: 'Four seasons in one post' },
             { src: 'https://picsum.photos/800/600?random=9', altText: 'Four seasons in one post' },
             { src: 'https://picsum.photos/800/600?random=10', altText: 'Four seasons in one post' },
-        ]
-    },
+        ],
     context: { privacy: 'public' },
     stats: { comments: 12, shares: 3 },
     reactions: generateRandomReactions(),
@@ -210,17 +247,15 @@ export const posts: Post[] = [
     id: '5',
     content: 'Album z imprezy urodzinowej 🎂🎉',
     authorId: 5, // Piotr Kowalczyk
-    date: '13 grudnia',
-    timestamp: Date.now(),
-    media: {
-        images: [
+    date: new Date(baseTimestamp - (9 * 24 * 60 * 60 * 1000) - (40 * 60 * 1000)).toISOString(), // 9 days ago
+    timestamp: baseTimestamp - (9 * 24 * 60 * 60 * 1000) - (40 * 60 * 1000),
+    media: [
             { src: 'https://picsum.photos/800/600?random=11', altText: 'Birthday party album' },
             { src: 'https://picsum.photos/800/600?random=12', altText: 'Birthday party album' },
             { src: 'https://picsum.photos/800/600?random=13', altText: 'Birthday party album' },
             { src: 'https://picsum.photos/800/600?random=14', altText: 'Birthday party album' },
             { src: 'https://picsum.photos/800/600?random=15', altText: 'Birthday party album' },
-        ]
-    },
+        ],
     context: { privacy: 'friends' },
     stats: { comments: 45, shares: 12 },
     reactions: generateRandomReactions(),
@@ -230,10 +265,9 @@ export const posts: Post[] = [
     id: '6',
     content: 'Cały album z wakacji w Grecji 🇬🇷🏖️',
     authorId: 6, // Maria Lewandowska
-    date: '12 grudnia',
-    timestamp: Date.now(),
-    media: {
-        images: [
+    date: new Date(baseTimestamp - (10 * 24 * 60 * 60 * 1000) - (45 * 60 * 1000)).toISOString(), // 10 days ago
+    timestamp: baseTimestamp - (10 * 24 * 60 * 60 * 1000) - (45 * 60 * 1000),
+    media: [
           { src: 'https://picsum.photos/800/600?random=16', altText: 'Greece vacation album' },
           { src: 'https://picsum.photos/800/600?random=17', altText: 'Greece vacation album' },
           { src: 'https://picsum.photos/800/600?random=18', altText: 'Greece vacation album' },
@@ -241,8 +275,7 @@ export const posts: Post[] = [
           { src: 'https://picsum.photos/800/600?random=20', altText: 'Greece vacation album' },
           { src: 'https://picsum.photos/800/600?random=21', altText: 'Greece vacation album' },
           { src: 'https://picsum.photos/800/600?random=22', altText: 'Greece vacation album' },
-        ]
-    },
+        ],
     context: { privacy: 'public' },
     stats: { comments: 89, shares: 34 },
     reactions: generateRandomReactions(),
@@ -252,11 +285,9 @@ export const posts: Post[] = [
     id: '7',
     content: 'Mega album - 10 najlepszych zdjęć tego roku! 📸',
     authorId: 7, // Tomasz Zieliński
-    date: '10 grudnia',
-    timestamp: Date.now(),
-    media: {
-        images: Array.from({length: 10}, (_, i) => ({ src: `https://picsum.photos/800/600?random=${23+i}`, altText: 'Top photo' }))
-    },
+    date: new Date(baseTimestamp - (11 * 24 * 60 * 60 * 1000) - (50 * 60 * 1000)).toISOString(), // 11 days ago
+    timestamp: baseTimestamp - (11 * 24 * 60 * 60 * 1000) - (50 * 60 * 1000),
+    media: Array.from({length: 10}, (_, i) => ({ src: `https://picsum.photos/800/600?random=${23+i}`, altText: 'Top photo' })),
     context: { privacy: 'public' },
     stats: { comments: 156, shares: 78 },
     reactions: generateRandomReactions(),
@@ -266,11 +297,9 @@ export const posts: Post[] = [
     id: '8',
     content: 'Kolejne piękne ujęcie 📷',
     authorId: 8, // Ewa Kamińska
-    date: '9 grudnia',
-    timestamp: Date.now(),
-    media: {
-        images: [{ src: 'https://picsum.photos/800/600?random=33', altText: 'Another beautiful shot' }]
-    },
+    date: new Date(baseTimestamp - (12 * 24 * 60 * 60 * 1000) - (55 * 60 * 1000)).toISOString(), // 12 days ago
+    timestamp: baseTimestamp - (12 * 24 * 60 * 60 * 1000) - (55 * 60 * 1000),
+    media: [{ src: 'https://picsum.photos/800/600?random=33', altText: 'Another beautiful shot' }],
     context: { privacy: 'friends' },
     stats: { comments: 6, shares: 1 },
     reactions: generateRandomReactions(),
@@ -280,14 +309,12 @@ export const posts: Post[] = [
     id: '9',
     content: 'Przed i po remoncie 🏠',
     authorId: 9, // Michał Wójcik
-    date: '8 grudnia',
-    timestamp: Date.now(),
-    media: {
-        images: [
+    date: new Date(baseTimestamp - (13 * 24 * 60 * 60 * 1000) - (60 * 60 * 1000)).toISOString(), // 13 days ago
+    timestamp: baseTimestamp - (13 * 24 * 60 * 60 * 1000) - (60 * 60 * 1000),
+    media: [
             { src: 'https://picsum.photos/800/600?random=34', altText: 'Before' },
             { src: 'https://picsum.photos/800/600?random=35', altText: 'After' },
-        ]
-    },
+        ],
     context: { privacy: 'friends' },
     stats: { comments: 23, shares: 4 },
     reactions: generateRandomReactions(),
@@ -297,17 +324,63 @@ export const posts: Post[] = [
     id: '10',
     content: 'Trzy wspaniałe momenty 💫',
     authorId: 10, // Aleksandra Dąbrowska
-    date: '7 grudnia',
-    timestamp: Date.now(),
-    media: {
-        images: [
+    date: new Date(baseTimestamp - (14 * 24 * 60 * 60 * 1000) - (65 * 60 * 1000)).toISOString(), // 14 days ago
+    timestamp: baseTimestamp - (14 * 24 * 60 * 60 * 1000) - (65 * 60 * 1000),
+    media: [
             { src: 'https://picsum.photos/800/800?random=36', altText: 'Moment 1' },
             { src: 'https://picsum.photos/800/600?random=37', altText: 'Moment 2' },
             { src: 'https://picsum.photos/800/600?random=38', altText: 'Moment 3' },
-        ]
-    },
+        ],
     context: { privacy: 'friends' },
     stats: { comments: 34, shares: 9 },
+    reactions: generateRandomReactions(),
+    comments: [],
+  },
+  {
+    id: '111', // Post for User 11
+    content: 'This is the first post by New User 1.',
+    authorId: 11,
+    date: new Date(baseTimestamp - (15 * 24 * 60 * 60 * 1000) - (70 * 60 * 1000)).toISOString(), // 15 days ago
+    timestamp: baseTimestamp - (15 * 24 * 60 * 60 * 1000) - (70 * 60 * 1000),
+    media: [{ src: 'https://picsum.photos/800/600?random=1111', altText: 'Random image for new user 1' }],
+    context: { privacy: 'public' },
+    stats: { comments: 0, shares: 0 },
+    reactions: generateRandomReactions(),
+    comments: [],
+  },
+  {
+    id: '121', // First post for User 12
+    content: 'Hello from New User 3 - Post 1!',
+    authorId: 12,
+    date: new Date(baseTimestamp - (16 * 24 * 60 * 60 * 1000) - (75 * 60 * 1000)).toISOString(), // 16 days ago
+    timestamp: baseTimestamp - (16 * 24 * 60 * 60 * 1000) - (75 * 60 * 1000),
+    media: [{ src: 'https://picsum.photos/800/600?random=1211', altText: 'Random image for new user 3 - 1' }],
+    context: { privacy: 'public' },
+    stats: { comments: 0, shares: 0 },
+    reactions: generateRandomReactions(),
+    comments: [],
+  },
+  {
+    id: '122', // Second post for User 12
+    content: 'New User 3 - Post 2: Enjoying the view!',
+    authorId: 12,
+    date: new Date(baseTimestamp - (17 * 24 * 60 * 60 * 1000) - (80 * 60 * 1000)).toISOString(), // 17 days ago
+    timestamp: baseTimestamp - (17 * 24 * 60 * 60 * 1000) - (80 * 60 * 1000),
+    media: [{ src: 'https://picsum.photos/800/600?random=1212', altText: 'Random image for new user 3 - 2' }],
+    context: { privacy: 'friends' },
+    stats: { comments: 1, shares: 0 },
+    reactions: generateRandomReactions(),
+    comments: [],
+  },
+  {
+    id: '123', // Third post for User 12
+    content: 'New User 3 - Post 3: What a day!',
+    authorId: 12,
+    date: new Date(baseTimestamp - (18 * 24 * 60 * 60 * 1000) - (85 * 60 * 1000)).toISOString(), // 18 days ago
+    timestamp: baseTimestamp - (18 * 24 * 60 * 60 * 1000) - (85 * 60 * 1000),
+    media: [{ src: 'https://picsum.photos/800/600?random=1213', altText: 'Random image for new user 3 - 3' }],
+    context: { privacy: 'public' },
+    stats: { comments: 2, shares: 1 },
     reactions: generateRandomReactions(),
     comments: [],
   },
@@ -322,8 +395,8 @@ export const getPostImage = (
   imageIndex: number,
 ): string | undefined => {
   const post = getPostById(postId)
-  if (post && post.media && post.media.images && post.media.images[imageIndex]) {
-    return post.media.images[imageIndex].src
+  if (post && post.media && post.media[imageIndex]) {
+    return post.media[imageIndex].src
   }
   return undefined
 }
