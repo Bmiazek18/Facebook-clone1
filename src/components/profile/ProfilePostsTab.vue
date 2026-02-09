@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
-import CreateBox from '@/components/createPost/CreateBox.vue';
+import { ref, computed } from 'vue';
+import CreateBox from '@/components/create/createPost/CreateBox.vue';
 import ProfileFriendsMini from '@/components/profile/ProfileFriendsMini.vue';
 import PostItem from '@/components/feed/post/PostItem.vue';
 import PostFilter from '@/components/feed/PostFilter.vue';
@@ -12,7 +12,6 @@ import BirthdayPostFeed from '@/components/BirthdayPostFeed.vue';
 import HomeOutline from 'vue-material-design-icons/HomeOutline.vue';
 import CakeVariant from 'vue-material-design-icons/CakeVariant.vue';
 import HeartOutline from 'vue-material-design-icons/HeartOutline.vue';
-import SchoolOutline from 'vue-material-design-icons/SchoolOutline.vue';
 import { useStickySidebar } from '@/composables/useStickySidebar';
 
 defineProps({

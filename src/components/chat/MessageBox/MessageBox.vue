@@ -2,9 +2,9 @@
 import { ref, onUnmounted, computed, nextTick, onMounted, watch, provide } from 'vue';
 import { storeToRefs } from 'pinia';
 import MultiMediaLightbox from './MediaLightbox.vue';
-import MessageBoxHeader from '@/components/messenger/MessageBoxHeader.vue';
-import MessageBoxFooter from '@/components/messenger/MessageBoxFooter/MessageBoxFooter.vue';
-import MessageItem from '@/components/messenger/MessageItem.vue';
+import MessageBoxHeader from '@/components/chat/MessageBoxHeader.vue';
+import MessageBoxFooter from '@/components/chat/MessageBoxFooter/MessageBoxFooter.vue';
+import MessageItem from '@/components/chat/MessageItem.vue';
 import { useConversationsStore } from '@/stores/conversations';
 import { useAudioPlayer } from '@/composables/useAudioPlayer';
 import { useMessageGrouper } from '@/composables/useMessageGrouper';
@@ -13,7 +13,7 @@ import { useLightbox } from '@/composables/useLightbox';
 // IMPORT ANIMACJI
 import { useFlipAnimation } from '@/composables/useFlipAnimation';
 
-import type { Theme } from '@/stores/messengerTheme';
+import type { Theme } from '@/stores/chatTheme';
 import type { Message, ImageMessage, VideoMessage } from '@/types/Message';
 
 const emit = defineEmits(['open-modal', 'back-to-list', 'show-info']);

@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import ImageWithGradient from '@/components/media/ImageWithGradient.vue';
 import EventsSidebar from '@/components/events/EventsSidebar.vue';
-import CreatePost from '@/components/createPost/CreateModal.vue';
+import CreatePost from '@/components/create/createPost/CreateModal.vue';
 
 // Import Icons (Material Design)
 import StarIcon from 'vue-material-design-icons/Star.vue';

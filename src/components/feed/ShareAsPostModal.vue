@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BaseModal from '@/components/common/BaseModal.vue';
-import CreatePost from '@/components/createPost/CreateModal.vue';
+import CreatePost from '@/components/create/createPost/CreateModal.vue';
 import type { Post } from '@/types/Post';
 import { useI18n } from 'vue-i18n';
 import { getUserById } from '@/data/users';

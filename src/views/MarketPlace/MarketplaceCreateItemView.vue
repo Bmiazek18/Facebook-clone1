@@ -14,9 +14,9 @@ import SellerModal from '@/components/marketplace/SellerModal.vue';
 import CustomInput from '@/components/common/CustomInput.vue';
 import CustomTextarea from '@/components/common/CustomTextarea.vue';
 import CustomDropdown from '@/components/common/CustomDropdown.vue';
-import MediaLightbox from '@/components/messenger/MessageBox/MediaLightbox.vue';
+import MediaLightbox from '@/components/chat/MessageBox/MediaLightbox.vue';
 import { useAuthStore } from '@/stores/auth';
-import AppCloseHeader from '@/Layouts/AppCloseHeader.vue';
+import AppCloseHeader from '@/layouts/AppCloseHeader.vue';
 
 // --- TYPY ---
 

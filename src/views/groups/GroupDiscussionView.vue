@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed,ref } from 'vue';
 import { useRoute } from 'vue-router';
-import CreateBox from '@/components/createPost/CreateBox.vue';
+import CreateBox from '@/components/create/createPost/CreateBox.vue';
 import PostItem from '@/components/feed/post/PostItem.vue';
 import { usePostsStore } from '@/stores/posts';
 import { useI18n } from 'vue-i18n';

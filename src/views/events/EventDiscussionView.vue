@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, defineProps,ref } from 'vue';
 import { usePostsStore } from '@/stores/posts';
-import CreateBox from '@/components/createPost/CreateBox.vue';
+import CreateBox from '@/components/create/createPost/CreateBox.vue';
 import PostItem from '@/components/feed/post/PostItem.vue';
 import type { Event as EventType } from '@/data/events';
 import { useStickySidebar } from '@/composables/useStickySidebar';

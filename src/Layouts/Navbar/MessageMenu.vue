@@ -117,7 +117,7 @@ import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
 import ArrowExpandIcon from 'vue-material-design-icons/ArrowExpand.vue';
 import PencilOutlineIcon from 'vue-material-design-icons/PencilOutline.vue';
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
-import ContexMenu from '@/components/common/ContextMenu.vue';
+import ContexMenu from '@/components/chat/ContextMenu.vue';
 import { useRouter, useRoute } from 'vue-router';
 
 

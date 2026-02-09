@@ -28,10 +28,10 @@
 import { computed, type Component } from 'vue';
 import { useSlideTransition } from '@/composables/useSlideTransition';
 
-import MainMenu from '@/components/profile/menu/MainMenu.vue';
-import SubMenuDisplay from '@/components/profile/menu/SubMenu.vue';
-import LanguageSelector from '@/components/profile/menu/LanguageSelector.vue';
-import SettingsMenu from '@/components/profile/menu/SettingsMenu.vue';
+import MainMenu from '@/layouts/Navbar/menu/MainMenu.vue';
+import SubMenuDisplay from '@/layouts/Navbar/menu/SubMenu.vue';
+import LanguageSelector from '@/layouts/Navbar/menu/LanguageSelector.vue';
+import SettingsMenu from '@/layouts/Navbar/menu/SettingsMenu.vue';
 
 const viewComponents: Record<string, Component> = {
   main: MainMenu,

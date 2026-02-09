@@ -17,7 +17,7 @@
 <script setup lang="ts">
 
 
-import MainNavLayout from './Layouts/MainNavLayouts.vue'
+import MainNavLayout from './layouts/MainNavLayouts.vue'
 import { useRoute } from 'vue-router'
 import { computed,onMounted, onUnmounted } from 'vue'
 
@@ -26,7 +26,7 @@ import { useChatStore } from './stores/chat'
 const chatStore = useChatStore()
 import ProfileIcon from './components/profile/ProfileIcon.vue'
 import { useTheme } from './composables/useTheme'
-import MessageBox from '@/components/messenger/MessageBox/MessageBox.vue'
+import MessageBox from '@/components/chat/MessageBox/MessageBox.vue'
 
 useTheme()
 

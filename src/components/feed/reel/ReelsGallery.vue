@@ -79,7 +79,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useCarousel } from '../composables/useCarousel';
+import { useCarousel } from '../../../composables/useCarousel';
 import { useRouter } from 'vue-router';
 import { useReelsStore } from '@/stores/reels';
 import { useTheme } from '@/composables/useTheme';

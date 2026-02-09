@@ -1,4 +1,5 @@
 <template>
+  <div class="min-w-[360px] relative transform translate-x-0">
   <aside class="w-[360px] flex flex-col bg-theme-bg-secondary border-r border-theme-border top-[56px] fixed h-[calc(100vh-56px)] z-20">
     <HoverScrollbar class="flex-1">
       <div class="p-3">
@@ -76,6 +77,8 @@
       </div>
     </HoverScrollbar>
   </aside>
+  </div>
+
 </template>
 
 <script setup lang="ts">

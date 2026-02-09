@@ -304,10 +304,10 @@ import CloseIcon from 'vue-material-design-icons/Close.vue';
 import ImageIcon from 'vue-material-design-icons/Image.vue';
 
 // --- Sub-components ---
-import TextEditor from '@/components/createReel/TextEditor.vue'
-import ImageEditor from '@/components/createReel/ImageEditor.vue';
-import PipVideoEditor from '@/components/createReel/PipVideoEditor.vue';
-import TimelineTrack from '@/components/createReel/TimelineTrack.vue';
+import TextEditor from '@/components/create/createReel/TextEditor.vue'
+import ImageEditor from '@/components/create/createReel/ImageEditor.vue';
+import PipVideoEditor from '@/components/create/createReel/PipVideoEditor.vue';
+import TimelineTrack from '@/components/create/createReel/TimelineTrack.vue';
 
 // --- Composables ---
 import { useVideoExport } from '@/composables/useVideoExport';

@@ -11,7 +11,7 @@ import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
 
 import MainMenu from './MainMenu.vue'
 import ProfileMenu from './ProfileMenu.vue'
-import NotificationMenu from '@/Layouts/Navbar/NotificationMenu.vue'
+import NotificationMenu from '@/layouts/Navbar/NotificationMenu.vue'
 import MessageMenu from './MessageMenu.vue'
 
 import { useAuthStore } from '@/stores/auth'

@@ -7,7 +7,7 @@ import Close from 'vue-material-design-icons/Close.vue';
 // Dodajemy import ikony Facebooka
 import Facebook from 'vue-material-design-icons/Facebook.vue';
 import { useRouter } from 'vue-router';
-import AppCloseHeader from '@/Layouts/AppCloseHeader.vue';
+import AppCloseHeader from '@/layouts/AppCloseHeader.vue';
 
 const auth = useAuthStore()
 const router = useRouter();

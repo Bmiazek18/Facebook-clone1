@@ -2,10 +2,10 @@
 import { ref, computed, onUnmounted } from 'vue';
 import { useConversationsStore } from '@/stores/conversations'; // Added
 import { storeToRefs } from 'pinia';
-import { useMessengerThemeStore } from '@/stores/messengerTheme';
+import { useChatThemeStore } from '@/stores/chatTheme';
 
 const convStore = useConversationsStore();
-const { selectedTheme: currentTheme } = storeToRefs(useMessengerThemeStore());
+const { selectedTheme: currentTheme } = storeToRefs(useChatThemeStore());
 
 // --- FLOATING VUE ---
 import 'floating-vue/dist/style.css';

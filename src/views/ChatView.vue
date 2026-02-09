@@ -3,9 +3,9 @@ import '@/assets/animations/slideTransition.css';
 import { ref, watch, computed, nextTick } from 'vue';
 import { useBreakpoints } from '@vueuse/core';
 
-import MessageMenu from '@/Layouts/Navbar/MessageMenu.vue';
-import MessageBox from '@/components/messenger/MessageBox/MessageBox.vue';
-import ChatInfoPanel from '@/components/messenger/ChatInfoPanel.vue';
+import MessageMenu from '@/layouts/Navbar/MessageMenu.vue';
+import MessageBox from '@/components/chat/MessageBox/MessageBox.vue';
+import ChatInfoPanel from '@/components/chat/ChatInfoPanel.vue';
 import { useConversationsStore } from '@/stores/conversations';
 import { useRoute } from 'vue-router';
 // chatSettings moved into conversations store (convStore.settings)

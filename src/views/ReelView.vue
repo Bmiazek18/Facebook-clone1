@@ -49,8 +49,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useReelsStore } from '@/stores/reels';
-import ReelItem from './ReelItem.vue';
-import ReelInfoPanel from '@/components/reel/ReelInfoPanel.vue';
+import ReelItem from '../components/feed/reel/ReelItem.vue';
+import ReelInfoPanel from '@/components/feed/reel/ReelInfoPanel.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import StoryShareModal from '@/components/feed/stories/StoryShareModal.vue';
 import ChevronUpIcon from 'vue-material-design-icons/ChevronUp.vue';

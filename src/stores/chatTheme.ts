@@ -10,7 +10,7 @@ export interface Theme {
   sentBubbleColor: string;
 }
 
-export const useMessengerThemeStore = defineStore('messengerTheme', {
+export const useChatThemeStore = defineStore('chatTheme', {
   state: () => ({
     themes: [
       {
@@ -138,4 +138,4 @@ export const useMessengerThemeStore = defineStore('messengerTheme', {
   },
 })
 
-export default useMessengerThemeStore
+export default useChatThemeStore

@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue';
 import CustomInput from '@/components/common/CustomInput.vue';
 import CustomDropdown from '@/components/common/CustomDropdown.vue';
-import AppCloseHeader from '@/Layouts/AppCloseHeader.vue';
+import AppCloseHeader from '@/layouts/AppCloseHeader.vue';
 import { useAuthStore } from '@/stores/auth';
 
 // --- IKONY ---

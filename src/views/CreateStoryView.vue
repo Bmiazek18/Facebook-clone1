@@ -2,12 +2,12 @@
   import { ref, onMounted } from 'vue';
   import { useStoryShareStore } from '@/stores/storyShare';
   import type { PostData, ReelData } from '@/types/StoryElement';
-  import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
+  import NavbarRight from '@/layouts/Navbar/NavbarRight.vue';
 
   // Sub-views rendered conditionally
-  import StoryPicker from '@/components/createStory/StoryPicker.vue';
-  import StoryImageEditor from '@/components/createStory/StoryImageEditor.vue';
-  import StoryTextEditor from '@/components/createStory/StoryTextEditor.vue';
+  import StoryPicker from '@/components/create/createStory/StoryPicker.vue';
+  import StoryImageEditor from '@/components/create/createStory/StoryImageEditor.vue';
+  import StoryTextEditor from '@/components/create/createStory/StoryTextEditor.vue';
 
   type StoryMode = 'picker' | 'image' | 'text';
 

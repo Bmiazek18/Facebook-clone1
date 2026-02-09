@@ -13,11 +13,11 @@ import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
 import Speedometer from 'vue-material-design-icons/Speedometer.vue';
 import CarShiftPattern from 'vue-material-design-icons/CarShiftPattern.vue'; // Jako skrzynia biegów
 import Palette from 'vue-material-design-icons/Palette.vue';
-import MultiMediaLightbox from '@/components/messenger/MessageBox/MediaLightbox.vue';
+import MultiMediaLightbox from '@/components/chat/MessageBox/MediaLightbox.vue';
 import StoryShareModal from '@/components/feed/stories/StoryShareModal.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import SellerModal from '@/components/marketplace/SellerModal.vue';
-import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
+import NavbarRight from '@/layouts/Navbar/NavbarRight.vue';
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
 
 const route = useRoute();

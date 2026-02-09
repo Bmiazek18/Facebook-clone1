@@ -233,8 +233,8 @@ import AlertOctagonIcon from 'vue-material-design-icons/AlertOctagon.vue';
 import LogoutIcon from 'vue-material-design-icons/Logout.vue';
 
 // Nowa ikona powrotu
-import ChatMediaPanel from '@/components/messenger/ChatMediaPanel.vue';
-import MessageSearch from '@/components/messenger/MessageSearch.vue';
+import ChatMediaPanel from '@/components/chat/ChatMediaPanel.vue';
+import MessageSearch from '@/components/chat/MessageSearch.vue';
 import { useConversationsStore } from '@/stores/conversations';
 import { ChatType, type GroupMember } from '@/data/rawChats'; // Import ChatType and GroupMember
 import EditNicknamesModal from '@/components/profile/EditNicknamesModal.vue'; // Import EditNicknamesModal
@@ -281,7 +281,7 @@ watch(() => props.chatId, (newId) => {
 });
 
 import BaseModal from '@/components/common/BaseModal.vue';
-import MessangerTheme from '@/components/messenger/MessangerTheme.vue';
+import MessangerTheme from '@/components/chat/MessangerTheme.vue';
 import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue';
 
 const showInfoPanel = ref(true);

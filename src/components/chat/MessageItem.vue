@@ -8,14 +8,14 @@ import VideoIcon from 'vue-material-design-icons/Video.vue';
 import LinkVariantIcon from 'vue-material-design-icons/LinkVariant.vue';
 import { useAuthStore } from '@/stores/auth';
 
-import MessegePool from '@/components/messenger/MessagePool.vue';
+import MessegePool from '@/components/chat/MessagePool.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import PlayerVideo from '@/components/media/PlayerVideo.vue';
 import ReactionPanel from '@/components/feed/ReactionPanel.vue';
-import MessageReplyContext from '@/components/messenger/MessageReplyContext.vue';
-import MessageMediaGallery from '@/components/messenger/MessageMediaGallery.vue';
-import MessageFileAttachment from '@/components/messenger/MessageFileAttachment.vue';
-import MessageReactions from '@/components/messenger/MessageReactions.vue';
+import MessageReplyContext from '@/components/chat/MessageReplyContext.vue';
+import MessageMediaGallery from '@/components/chat/MessageMediaGallery.vue';
+import MessageFileAttachment from '@/components/chat/MessageFileAttachment.vue';
+import MessageReactions from '@/components/chat/MessageReactions.vue';
 import { formatTimeAgo } from '@/utils/timeFormatter';
 
 

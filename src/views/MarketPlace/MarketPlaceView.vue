@@ -41,7 +41,7 @@ const listings = ref<Listing>([
 </script>
 
 <template>
-  <div class="max-w-[1900px] mx-auto px-4 py-8">
+  <div class="max-w-[1900px] flex flex-col mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-zinc-800 pb-4">
       <h2 class="text-xl font-bold text-gray-900 dark:text-white">Propozycje na dziś</h2>
 
@@ -53,7 +53,7 @@ const listings = ref<Listing>([
       </a>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xxl:grid-cols-7 gap-x-4 gap-y-6">
+    <div class="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-5  xxl:grid-cols-7 gap-x-4 gap-y-6">
       <RouterLink
         v-for="item in listings"
         :key="item.id"

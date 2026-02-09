@@ -4,14 +4,14 @@ import rawChats from '@/data/rawChats'
 import initialMessages from '@/data/messages'
 import { type ChatMessage, type LinkMessage } from '@/types/Message'
 import chatSettings from '@/data/chatSettings'
-import { useMessengerThemeStore, type Theme } from '@/stores/messengerTheme'
+import { useChatThemeStore, type Theme } from '@/stores/chatTheme'
 
 export const useConversationsStore = defineStore('conversations', () => {
   const chats = ref(structuredClone(rawChats))
   const messages = ref(structuredClone(initialMessages) as ChatMessage[])
   const settings = ref(structuredClone(chatSettings))
 
-  const themeStore = useMessengerThemeStore()
+  const themeStore = useChatThemeStore()
   const { selectedThemeId, selectedEmoji, themes, selectedTheme } = storeToRefs(themeStore)
 
   function getMessagesByChatId(chatId: number) {
