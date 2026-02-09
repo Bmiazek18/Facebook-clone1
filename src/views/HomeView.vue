@@ -2,7 +2,7 @@
 import CreateBox from '@/components/createPost/CreateBox.vue'
 import PostItem from '@/components/feed/post/PostItem.vue'
 import PeopleYouMayKnow from '@/components/friends/PeopleYouMayKnow.vue'
-import StoriesList from '@/components/stories/StoriesList.vue'
+import StoriesList from '@/components/feed/stories/list/StoriesList.vue'
 import LeftSidebar from '@/components/home/LeftSidebar.vue'
 import RightSidebar from '@/components/home/RightSidebar.vue'
 import { ref, watch, computed } from 'vue'
