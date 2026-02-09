@@ -7,12 +7,12 @@ import { formatTimeAgo } from '@/utils/timeFormatter' // Używamy istniejącego 
 
 // Importy komponentów UI
 import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue'
-import StorySidebar from '@/components/stories/StorySidebar.vue'
-import StoryMediaRenderer from '@/components/stories/StoryMediaRenderer.vue'
-import StoryOverlays from '@/components/stories/StoryOverlays.vue'
-import StoryFooter from '@/components/stories/StoryFooter.vue'
-import StoryViewersModal from '@/components/stories/StoryViewersModal.vue'
-import StoryTextElementRenderer from '@/components/stories/StoryTextElementRenderer.vue'
+import StorySidebar from '@/components/feed/stories/StorySidebar.vue'
+import StoryMediaRenderer from '@/components/feed/stories/StoryMediaRenderer.vue'
+import StoryOverlays from '@/components/feed/stories/StoryOverlays.vue'
+import StoryFooter from '@/components/feed/stories/StoryFooter.vue'
+import StoryViewersModal from '@/components/feed/stories/StoryViewersModal.vue'
+import StoryTextElementRenderer from '@/components/feed/stories/StoryTextElementRenderer.vue'
 
 // Ikony nawigacyjne, które faktycznie należą do tego widoku
 import ChevronLeft from 'vue-material-design-icons/ChevronLeft.vue'

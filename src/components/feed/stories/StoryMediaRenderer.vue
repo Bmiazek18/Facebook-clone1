@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineProps } from 'vue';
-import StoryBirthdaySlide from '@/components/stories/StoryBirthdaySlide.vue';
+import StoryBirthdaySlide from '@/components/feed/stories/StoryBirthdaySlide.vue';
 import type { Story } from '@/types/Story';
 
 const props = defineProps({

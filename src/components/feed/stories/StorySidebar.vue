@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import ActiveStoriesList from '@/components/stories/ActiveStoriesList.vue';
+import ActiveStoriesList from '@/components/feed/stories/list/ActiveStoriesList.vue';
 import AppCloseHeader from '@/Layouts/AppCloseHeader.vue';
 
 const { t } = useI18n();
