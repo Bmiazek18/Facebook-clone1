@@ -38,16 +38,14 @@ const notifications = ref([
 </script>
 
 <template>
-  <div class="max-w-4xl mt-14 mx-auto">
+  <div class="max-w-2xl mt-14 mx-auto">
 
-        <div class="bg-theme-bg-secondary rounded-t-lg shadow-sm border-b border-theme-border p-4 flex justify-between items-center">
+        <div class="bg-theme-bg-secondary rounded-t-lg shadow-sm p-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold">Powiadomienia</h1>
-            <button class="p-2 hover:bg-theme-hover rounded-full">
-                <DotsHorizontal class="text-theme-text-secondary" />
-            </button>
+
         </div>
 
-        <div class="bg-theme-bg-secondary rounded-b-lg shadow-sm border-x border-b border-theme-border">
+        <div class="bg-theme-bg-secondary rounded-b-lg shadow-sm  ">
 
             <div class="p-4">
                 <h2 class="text-[17px] font-semibold text-theme-text mb-3">Wcześniejsze</h2>

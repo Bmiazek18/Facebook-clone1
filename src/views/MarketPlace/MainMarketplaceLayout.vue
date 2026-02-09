@@ -28,12 +28,12 @@ const handleApply = (radius: number) => {
 
 <template>
   <div class="flex min-h-screen bg-theme-bg font-sans text-theme-text">
-    <MarketplaceLeftSidebar 
-      :selectedRadius="selectedRadius" 
-      @open-location="openLocationModal" 
+    <MarketplaceLeftSidebar
+      :selectedRadius="selectedRadius"
+      @open-location="openLocationModal"
     />
 
-    <main class="ml-90 w-full p-6">
+    <main class=" w-full p-6">
       <router-view />
     </main>
   </div>

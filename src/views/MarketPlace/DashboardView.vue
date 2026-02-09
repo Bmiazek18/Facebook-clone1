@@ -1,17 +1,22 @@
 <script setup lang="ts">
-// Import ikon z vue-material-design-icons
-// sidebar moved to MarketplaceSidebar.vue
+import { ref } from 'vue';
 import Star from 'vue-material-design-icons/Star.vue';
 import Pencil from 'vue-material-design-icons/Pencil.vue';
 import EyeOutline from 'vue-material-design-icons/EyeOutline.vue'; // Oko
 import BookmarkOutline from 'vue-material-design-icons/BookmarkOutline.vue'; // Zapisane
 import ShareVariant from 'vue-material-design-icons/ShareVariant.vue'; // Udostępnienie
 import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'; // Obserwujący
-import ChevronDown from 'vue-material-design-icons/ChevronDown.vue';
+import CustomDropdown from '@/components/common/CustomDropdown.vue';
+
+const timeOptions = [
+  { id: 'last_7_days', title: 'Ostatnie 7 dni', description: 'Statystyki z ostatnich 7 dni' },
+  { id: 'last_30_days', title: 'Ostatnie 30 dni', description: 'Statystyki z ostatnich 30 dni' },
+  { id: 'all_time', title: 'Cały czas', description: 'Statystyki z całego okresu' },
+];
+
+const selectedTimeOption = ref(timeOptions[0].id);
 
 // Dane do menu bocznego
-
-// Dane do sekcji "Twoje ogłoszenia"
 const listingStats = [
   { label: 'Wymagane działanie', value: 0 },
   { label: 'Aktywne i oczekujące', value: 0 },
@@ -77,9 +82,12 @@ const marketStats = [
     <section class="bg-theme-bg-secondary rounded-lg shadow-sm border border-theme-border p-4">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-bold">Statystyki dotyczące Marketplace</h2>
-        <button class="bg-theme-bg-tertiary hover:bg-theme-hover text-theme-text px-3 py-1.5 rounded text-sm font-medium flex items-center">
-          Ostatnie 7 dni <ChevronDown class="ml-1" />
-        </button>
+        <CustomDropdown
+          v-model="selectedTimeOption"
+          :options="timeOptions"
+
+
+        />
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">

@@ -17,7 +17,7 @@ import MultiMediaLightbox from '@/components/messenger/MessageBox/MediaLightbox.
 import StoryShareModal from '@/components/stories/StoryShareModal.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import SellerModal from '@/components/marketplace/SellerModal.vue';
-import NavbarRight from '@/layouts/Navbar/NavbarRight.vue';
+import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
 
 const route = useRoute();
