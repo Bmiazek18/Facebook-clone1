@@ -43,17 +43,17 @@ const visibleShortcuts = computed(() => showMoreShortcuts.value ? shortcuts : sh
 </script>
 
 <template>
-  <div class="fixed flex flex-col h-[calc(100vh-56px)] max-w-[360px] pr-2 sticky top-[56px]">
+  <div class="fixed flex flex-col h-[calc(100vh-56px)] max-w-[360px] pr-2 sticky top-[56px] bg-theme-bg">
 
     <div class="flex-1 overflow-y-auto custom-scrollbar">
 
-      <a class="flex items-center justify-start w-full cursor-pointer hover:bg-[#3A3B3C] p-2 rounded-lg transition-colors mb-2">
+      <a class="flex items-center justify-start w-full cursor-pointer hover:bg-theme-hover p-2 rounded-lg transition-colors mb-2">
         <img
-          class="rounded-full w-[36px] h-[36px] object-cover border border-gray-700"
+          class="rounded-full w-[36px] h-[36px] object-cover border border-theme-border"
           :src="auth.currentUser?.avatar || 'https://placehold.co/40'"
           alt="Avatar"
         />
-        <div class="text-[15px] text-white font-medium pl-3">
+        <div class="text-[15px] text-theme-text font-medium pl-3">
           {{ auth.currentUser?.name || 'Bartosz Miazek' }}
         </div>
       </a>
@@ -63,39 +63,39 @@ const visibleShortcuts = computed(() => showMoreShortcuts.value ? shortcuts : sh
           v-for="item in visibleMenuItems"
           :key="item.label"
           :to="item.path"
-          class="flex items-center w-full hover:bg-[#3A3B3C] rounded-lg p-2 transition-colors group"
+          class="flex items-center w-full hover:bg-theme-hover rounded-lg p-2 transition-colors group"
         >
           <div v-if="item.isGradient" class="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500">
-             <component :is="item.icon" :size="24" fillColor="white" />
+             <component :is="item.icon" :size="24" class="text-theme-text" />
           </div>
           <div v-else class="flex items-center justify-center w-9 h-9">
             <component :is="item.icon" :size="28" :fillColor="item.color" />
           </div>
-          <span class="text-[15px] text-white font-medium pl-3 truncate">
+          <span class="text-[15px] text-theme-text font-medium pl-3 truncate">
             {{ item.label }}
           </span>
         </RouterLink>
 
         <button
           @click="showMoreMenu = !showMoreMenu"
-          class="flex items-center w-full hover:bg-[#3A3B3C] rounded-lg p-2 transition-colors"
+          class="flex items-center w-full hover:bg-theme-hover rounded-lg p-2 transition-colors"
         >
-          <div class="flex items-center justify-center w-9 h-9 rounded-full bg-[#303031]">
-            <component :is="showMoreMenu ? ChevronUp : ChevronDown" :size="24" fillColor="#E4E6EB" />
+          <div class="flex items-center justify-center w-9 h-9 rounded-full bg-theme-bg-tertiary">
+            <component :is="showMoreMenu ? ChevronUp : ChevronDown" :size="24" class="text-theme-text" />
           </div>
-          <span class="text-[15px] text-white font-medium pl-3">
+          <span class="text-[15px] text-theme-text font-medium pl-3">
             {{ showMoreMenu ? 'Zobacz mniej' : 'Zobacz więcej' }}
           </span>
         </button>
       </div>
 
-      <div class="border-b border-[#3E4042] my-4 mx-2"></div>
+      <div class="border-b border-theme-border my-4 mx-2"></div>
 
       <div class="px-2 pb-4"> <div class="flex justify-between items-center mb-2 group">
-          <h3 class="text-[17px] font-semibold text-[#B0B3B8] group-hover:text-white transition-colors">
+          <h3 class="text-[17px] font-semibold text-theme-text-secondary group-hover:text-theme-text transition-colors">
             Twoje skróty
           </h3>
-          <button class="text-blue-500 text-[15px] opacity-0 group-hover:opacity-100 hover:underline transition-opacity px-2 py-1 rounded">
+          <button class="text-theme-primary text-[15px] opacity-0 group-hover:opacity-100 hover:underline transition-opacity px-2 py-1 rounded">
             Edytuj
           </button>
         </div>
@@ -105,10 +105,10 @@ const visibleShortcuts = computed(() => showMoreShortcuts.value ? shortcuts : sh
             v-for="shortcut in visibleShortcuts"
             :key="shortcut.label"
             href="#"
-            class="flex items-center w-full hover:bg-[#3A3B3C] rounded-lg p-2 transition-colors"
+            class="flex items-center w-full hover:bg-theme-hover rounded-lg p-2 transition-colors"
           >
             <img :src="shortcut.img" class="w-9 h-9 rounded-lg object-cover" alt="Shortcut" />
-            <span class="text-[15px] text-white font-medium pl-3 truncate line-clamp-2 leading-tight">
+            <span class="text-[15px] text-theme-text font-medium pl-3 truncate line-clamp-2 leading-tight">
               {{ shortcut.label }}
             </span>
           </a>
@@ -116,19 +116,19 @@ const visibleShortcuts = computed(() => showMoreShortcuts.value ? shortcuts : sh
           <button
             v-if="shortcuts.length > 5"
             @click="showMoreShortcuts = !showMoreShortcuts"
-            class="flex items-center w-full hover:bg-[#3A3B3C] rounded-lg p-2 transition-colors"
+            class="flex items-center w-full hover:bg-theme-hover rounded-lg p-2 transition-colors"
           >
-            <div class="flex items-center justify-center w-9 h-9 rounded-full bg-[#303031]">
-              <component :is="showMoreShortcuts ? ChevronUp : ChevronDown" :size="24" fillColor="#E4E6EB" />
+            <div class="flex items-center justify-center w-9 h-9 rounded-full bg-theme-bg-tertiary">
+              <component :is="showMoreShortcuts ? ChevronUp : ChevronDown" :size="24" class="text-theme-text" />
             </div>
-            <span class="text-[15px] text-white font-medium pl-3">
+            <span class="text-[15px] text-theme-text font-medium pl-3">
               {{ showMoreShortcuts ? 'Zobacz mniej' : 'Zobacz więcej' }}
             </span>
           </button>
         </div>
       </div>
     </div>
-    <div class="mt-auto py-4 text-[13px] text-[#B0B3B8] ">
+    <div class="mt-auto py-4 text-[13px] text-theme-text-secondary ">
       <p>Prywatność · Regulamin · Reklama · Wybór reklam · Pliki cookie · Meta © 2026</p>
     </div>
 
@@ -143,7 +143,7 @@ const visibleShortcuts = computed(() => showMoreShortcuts.value ? shortcuts : sh
   background: transparent;
 }
 .custom-scrollbar:hover::-webkit-scrollbar-thumb {
-  background: #4E4F50; /* Ciemniejszy kolor paska dla lepszej widoczności */
+  background: var(--color-hover-strong); /* Ciemniejszy kolor paska dla lepszej widoczności */
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {

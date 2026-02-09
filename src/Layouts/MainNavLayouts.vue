@@ -112,26 +112,27 @@ const handleSearchSubmit = () => {
       </div>
     </div>
 
-    <div id="NavCenter" class="hidden md:flex items-center justify-center w-8/12 max-w-[700px]">
-      <RouterLink to="/" class="flex items-center justify-center h-12 w-full mx-1" :class="route.path === '/' ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'">
+    <div id="NavCenter" class="hidden md:flex items-center justify-center w-8/12 max-w-[700px] h-full">
+
+      <RouterLink to="/" class="flex items-center justify-center w-full mx-1" :class="route.path === '/' ? 'h-full border-b-[3px] border-b-blue-500' : 'h-12 hover:bg-theme-hover rounded-lg'">
         <Home :size="27" :fillColor="route.path === '/' ? '#1A73E3' : '#64676B'" />
       </RouterLink>
 
-      <RouterLink to="/reel" class="flex items-center justify-center h-12 w-full mx-1" :class="route.path === '/reel' ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'">
+      <RouterLink to="/reel" class="flex items-center justify-center w-full mx-1" :class="route.path === '/reel' ? 'h-full border-b-[3px] border-b-blue-500' : 'h-12 hover:bg-theme-hover rounded-lg'">
         <TelevisionPlay :size="27" :fillColor="route.path === '/reel' ? '#1A73E3' : '#64676B'" />
       </RouterLink>
 
-      <RouterLink to="/marketplace" class="flex items-center justify-center h-12 w-full mx-1" :class="route.path.includes('marketplace') ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'">
+      <RouterLink to="/marketplace" class="flex items-center justify-center w-full mx-1" :class="route.path.includes('marketplace') ? 'h-full border-b-[3px] border-b-blue-500' : 'h-12 hover:bg-theme-hover rounded-lg'">
         <StorefrontOutline :size="27" :fillColor="route.path.includes('marketplace') ? '#1A73E3' : '#64676B'" />
       </RouterLink>
 
-      <RouterLink to="/groups" class="flex items-center justify-center h-12 w-full mx-1" :class="route.path === '/groups' ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'">
+      <RouterLink to="/groups" class="flex items-center justify-center w-full mx-1" :class="route.path === '/groups' ? 'h-full border-b-[3px] border-b-blue-500' : 'h-12 hover:bg-theme-hover rounded-lg'">
         <span class="rounded-full border-2 p-1" :class="route.path === '/groups' ? 'border-blue-500' : 'dark:border-gray-400 border-[#64676B]'">
           <AccountGroup :size="22" :fillColor="route.path === '/groups' ? '#1A73E3' : '#64676B'" />
         </span>
       </RouterLink>
 
-      <RouterLink to="/gaming" class="flex items-center justify-center h-12 w-full mx-1" :class="route.path === '/gaming' ? 'border-b-[3px] border-b-blue-500' : 'hover:bg-theme-hover rounded-lg'">
+      <RouterLink to="/gaming" class="flex items-center justify-center w-full mx-1" :class="route.path === '/gaming' ? 'h-full border-b-[3px] border-b-blue-500' : 'h-12 hover:bg-theme-hover rounded-lg'">
         <ControllerClassicOutline :size="32" :fillColor="route.path === '/gaming' ? '#1A73E3' : '#64676B'" />
       </RouterLink>
     </div>

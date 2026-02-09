@@ -188,6 +188,11 @@
   line-height: 1.4;
   white-space: nowrap;
 }
+.v-popper--theme-dark .v-popper__inner {
+  background-color: rgba(207, 209, 211, 0.9) !important;
+  color: #050505 !important;
+  border: 1px solid #E4E6EB !important;
+}
 
 /* Usuwamy strzałkę (na Facebooku jej nie ma) */
 .v-popper--theme-tooltip .v-popper__arrow-container {
