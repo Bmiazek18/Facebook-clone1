@@ -1,13 +1,13 @@
 <template>
-  <div class="py-4 pl-4 bg-theme-bg-secondary rounded-none lg:rounded-lg shadow-md max-w-4xl mx-0 lg:mx-auto">
+  <div class="py-4 m-4 pl-4 bg-theme-bg-secondary rounded-none lg:rounded-lg shadow-md max-w-4xl mx-0 lg:mx-auto">
 
     <div class="flex justify-between items-center mb-4">
       <div class="flex items-center text-theme-text">
         <AccountGroupIcon :size="24" class="mr-2" fillColor="var(--color-text-secondary)" />
-        <h2 class="text-xl font-bold">{{ $t('home.peopleYouMayKnow') }}</h2>
+        <h2 class="text-[15px] font-semibold">{{ $t('home.peopleYouMayKnow') }}</h2>
       </div>
       <button class="text-theme-text-secondary hover:text-theme-text">
-        <DotsVerticalIcon :size="24" />
+        <DotsHorizontalIcon :size="24" />
       </button>
     </div>
 
@@ -17,19 +17,20 @@
         v-if="!isStart"
         @click="scrollLeft"
         class="absolute top-1/2 left-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg border border-theme-border hover:bg-theme-hover transition duration-150 z-10"
-        style="margin-left: 104px;" >
+        style="margin-left: 24px;" >
         <ChevronLeftIcon :size="24" fillColor="var(--color-text-secondary)" />
       </button>
 
       <div
         ref="carouselRef"
-        class="flex overflow-x-scroll pb-2 h-72 scrollbar-hide"
+        class="flex overflow-x-scroll pb-2 h-72 scrollbar-hide overflow-y-hidden"
 
       >
         <Card
           v-for="person in people"
           :key="person.id"
           :person="person"
+          type
           class="max-w-[180px]  shrink-0 mr-3"
           @remove="removeCard"
         />
@@ -47,7 +48,7 @@
         v-if="!isEnd"
         @click="scrollRight"
         class="absolute top-1/2 right-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg border border-theme-border hover:bg-theme-hover transition duration-150 z-10"
-        style="margin-right: 104px;" >
+        style="margin-right: 24px;" >
         <ChevronRightIcon :size="24" fillColor="var(--color-text-secondary)" />
       </button>
 
@@ -72,7 +73,7 @@ useI18n()
 
 // --- IMPORT IKON (bez zmian) ---
 import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
-import DotsVerticalIcon from 'vue-material-design-icons/DotsVertical.vue';
+import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
 import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
 import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue';
 import PlusCircleIcon from 'vue-material-design-icons/PlusCircle.vue';

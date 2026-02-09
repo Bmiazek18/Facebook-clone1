@@ -16,10 +16,10 @@ defineProps<{
 
 <template>
 
-    <div class="bg-theme-bg-secondary p-4 rounded-lg shadow-lg border border-theme-border">
+    <div class="bg-theme-bg-secondary p-4 mt-4 rounded-lg shadow-lg border border-theme-border">
 
         <div class="flex justify-between items-center mb-4 pb-3">
-            <h2 :class="{'text-2xl font-extrabold': isFullView, 'text-xl font-extrabold': !isFullView, 'text-theme-text': true}">Znajomi</h2>
+            <h2 :class="{'text-xl font-semibold': isFullView, 'text-xl ': !isFullView, 'text-theme-text': true}">Znajomi</h2>
 
             <div v-if="isFullView" class="relative w-48">
                 <input
@@ -36,7 +36,7 @@ defineProps<{
 
 
         <div class="flex space-x-6 mb-4 text-theme-text-secondary border-b border-theme-border overflow-x-auto whitespace-nowrap">
-            <span class="font-bold border-b-4 border-b-theme-primary pb-3 text-theme-primary cursor-pointer text-[15px]">Wszyscy znajomi</span>
+            <span class=" border-b-3 border-b-theme-primary pb-3 text-theme-primary cursor-pointer text-[15px]">Wszyscy znajomi</span>
             <span class="hover:border-b-4 hover:border-b-theme-border pb-3 cursor-pointer text-[15px]">Urodziny</span>
             <span class="hover:border-b-4 hover:border-b-theme-border pb-3 cursor-pointer text-[15px]">Szkoła średnia</span>
             <span class="hover:border-b-4 hover:border-b-theme-border pb-3 cursor-pointer text-[15px]">Aktualne miejsce zamieszkania</span>

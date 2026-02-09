@@ -20,8 +20,8 @@ defineProps<{
                 justify-between
                 p-3
                 bg-theme-bg-secondary
-                border border-theme-border
-
+                shadow-sm
+h-full
                 rounded-lg
 
                 transition-shadow duration-200
@@ -31,7 +31,7 @@ defineProps<{
             <div class="flex items-center">
                 <img
                     :src="`https://picsum.photos/id/${friend.imageId}/100/100`"
-                    class="w-16 h-16 rounded-lg mr-3 object-cover border border-theme-border"
+                    class="w-19 h-19 rounded-lg mr-3 object-cover border border-theme-border"
                     :alt="`Zdjęcie ${friend.name}`"
                 >
                 <div>
@@ -42,7 +42,7 @@ defineProps<{
 
             <div class="flex items-center space-x-2">
                 <button v-if="friend.isFriend"
-                    class="w-8 h-8 flex items-center justify-center hover:bg-theme-hover rounded-full text-theme-text-secondary"
+                    class="w-8 h-8 flex items-center justify-center hover:bg-theme-hover rounded-full text-theme-text"
                 >
                     <DotsHorizontal :size="20"/>
                 </button>

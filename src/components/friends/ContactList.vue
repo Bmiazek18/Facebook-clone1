@@ -1,10 +1,10 @@
 <template>
-  <div class="mt-2">
+  <div >
     <div
       v-for="contact in contacts"
       :key="contact.id"
       @click="openChatBox(contact.id)"
-      class="flex items-center justify-between p-2 hover:bg-theme-bg-subtle rounded-lg transition duration-150 ease-in-out cursor-pointer mx-2"
+      class="flex items-center justify-between p-2 hover:bg-theme-bg-hover rounded-lg transition duration-150 ease-in-out cursor-pointer mx-2"
     >
       <div class="flex items-center space-x-3 w-full overflow-hidden">
         <div class="relative shrink-0">
