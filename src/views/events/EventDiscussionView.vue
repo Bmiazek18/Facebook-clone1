@@ -24,7 +24,7 @@ const eventPosts = computed(() => {
 </script>
 
 <template>
-  <div class="grid grid-cols-1 max-w-[1200px] mx-auto lg:grid-cols-5 gap-4 mt-4">
+  <div class="grid grid-cols-1 max-w-[1200px] mx-auto lg:grid-cols-5 gap-4 ">
     <div class="lg:col-span-3 space-y-4">
       <CreateBox :event-target="eventDetails" />
       <div v-if="eventPosts.length > 0" class="space-y-4">

@@ -34,6 +34,7 @@
         </a>
       </nav>
 
+
       <router-link to="/add-group" class="mt-4 w-full bg-theme-primary-subtle hover:bg-theme-primary-subtle-hover text-theme-primary font-semibold py-2 rounded-lg flex items-center justify-center gap-2 transition text-[15px]">
         <plus-icon :size="20" /> Utwórz nową grupę
       </router-link>

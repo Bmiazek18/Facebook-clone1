@@ -19,7 +19,7 @@ defineProps<{
 
 const groupPosts = computed(() => {
     const groupId = route.params.id as string;
-    return postsStore.posts.filter(post => post.groupId === groupId);
+    return postsStore.posts.filter(post => post.targetType === 'Group'&& post.targetId === groupId);
 });
 
 const handleDeletePost = (postId: string) => {
@@ -34,7 +34,8 @@ const rightSectionRef = ref<HTMLDivElement | null>(null);
 <template>
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
     <div class="lg:col-span-7 space-y-4">
-        <CreateBox class="rounded-lg shadow-sm bg-theme-bg-secondary border border-theme-border" />
+
+        <CreateBox class="rounded-lg shadow-sm bg-theme-bg-secondary border border-theme-border" :target-id="route.params.id" target-type="Group" />
         <CommentFilter/>
         <PostItem
             v-for="post in groupPosts"
@@ -50,7 +51,7 @@ const rightSectionRef = ref<HTMLDivElement | null>(null);
     </div>
     <div
       ref="rightSectionRef"
-      class="lg:col-span-5 space-y-4 sticky self-start"
+      class="lg:col-span-5 space-y-4 mt-4 sticky self-start"
       :style="{ top: `${stickyTop}px` }"
     >
       <GroupInfoSidebar :group-details="groupDetails" />

@@ -36,7 +36,7 @@ const truncatedDescription = computed(() => {
     <ul class="space-y-4">
       <li class="flex items-start gap-3">
         <div class="mt-1"><InformationIcon class="text-theme-text-secondary" :size="20" /></div>
-        <div class="text-[15px] leading-snug text-theme-text">
+        <div class="text-[15px] text-theme-text">
           {{ truncatedDescription }}
           <span
             v-if="(groupDetails?.description || '').length > 200"
