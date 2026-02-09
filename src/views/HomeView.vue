@@ -129,7 +129,7 @@ const handleCancelLeave = () => {
     </div>
 
     <div
-      ref="scrollContainer"
+
       v-bind="containerProps"
       class="flex-1 h-screen overflow-y-auto"
     >
