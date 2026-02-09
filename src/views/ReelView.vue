@@ -33,7 +33,7 @@
       <button @click="goToReel('up')" :disabled="activeIndex <= 0" class="w-10 h-10 md:w-12 md:h-12 bg-[#3a3b3c] hover:bg-[#4e4f50] rounded-full flex items-center justify-center text-white disabled:opacity-30 border border-gray-700">
         <ChevronUpIcon :size="28" />
       </button>
-      <button @click="goToReel('down')" :disabled="activeIndex >= reels.length - 1" class="w-10 h-10 md:w-12 md:h-12 bg-[#3a3b3c] hover:bg-[#4e4f50] rounded-full flex items-center justify-center text-white disabled:opacity-30 border border-gray-700">
+      <button @click="goToReel('down')" :disabled="!reels || activeIndex >= reels.length - 1" class="w-10 h-10 md:w-12 md:h-12 bg-[#3a3b3c] hover:bg-[#4e4f50] rounded-full flex items-center justify-center text-white disabled:opacity-30 border border-gray-700">
         <ChevronDownIcon :size="28" />
       </button>
     </div>

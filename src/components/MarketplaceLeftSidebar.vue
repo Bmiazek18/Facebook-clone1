@@ -1,37 +1,39 @@
 <script setup lang="ts">
-import { defineEmits, defineProps } from 'vue';
-import Magnify from 'vue-material-design-icons/Magnify.vue';
-import Cog from 'vue-material-design-icons/Cog.vue';
+import { defineEmits, defineProps, ref, computed } from 'vue';
+import Sidebar from '@/components/common/Sidebar.vue';
+import Plus from 'vue-material-design-icons/Plus.vue';
 import Storefront from 'vue-material-design-icons/Storefront.vue';
 import Bell from 'vue-material-design-icons/Bell.vue';
 import TagOutline from 'vue-material-design-icons/TagOutline.vue';
 import MapMarker from 'vue-material-design-icons/MapMarker.vue';
 import Shopping from 'vue-material-design-icons/Shopping.vue';
 
+// Icon imports for categories
+import Car from 'vue-material-design-icons/Car.vue';
+import HomeCity from 'vue-material-design-icons/HomeCity.vue';
+import Paw from 'vue-material-design-icons/Paw.vue';
+import HomeVariant from 'vue-material-design-icons/HomeVariant.vue';
+import HammerWrench from 'vue-material-design-icons/HammerWrench.vue';
+import Run from 'vue-material-design-icons/Run.vue';
+import Heart from 'vue-material-design-icons/Heart.vue';
+import Home from 'vue-material-design-icons/Home.vue';
+import Cellphone from 'vue-material-design-icons/Cellphone.vue';
+import Brush from 'vue-material-design-icons/Brush.vue';
+import TshirtCrew from 'vue-material-design-icons/TshirtCrew.vue';
+import Shovel from 'vue-material-design-icons/Shovel.vue';
+import TagTextOutline from 'vue-material-design-icons/TagTextOutline.vue';
+import MovieOpen from 'vue-material-design-icons/MovieOpen.vue';
+import GamepadVariant from 'vue-material-design-icons/GamepadVariant.vue';
+
 const props = defineProps({
   selectedRadius: { type: Number, default: 402 }
 });
 const emit = defineEmits(['open-location']);
 
-import Car from 'vue-material-design-icons/Car.vue'; // Pojazdy
-import HomeCity from 'vue-material-design-icons/HomeCity.vue'; // Wynajem nieruchomości
-import Paw from 'vue-material-design-icons/Paw.vue'; // Art. dla zwierząt
-import HomeVariant from 'vue-material-design-icons/HomeVariant.vue'; // Art. domowe
-import HammerWrench from 'vue-material-design-icons/HammerWrench.vue'; // Art. remontowe
-import Run from 'vue-material-design-icons/Run.vue'; // Art. sportowe
-import Heart from 'vue-material-design-icons/Heart.vue'; // Dla rodziny
-import Home from 'vue-material-design-icons/Home.vue'; // Domy na sprzedaż
-import Cellphone from 'vue-material-design-icons/Cellphone.vue'; // Elektronika
-import Brush from 'vue-material-design-icons/Brush.vue'; // Hobby
+const openLocation = () => emit('open-location');
 
-import TshirtCrew from 'vue-material-design-icons/TshirtCrew.vue'; // Odzież
-import Shovel from 'vue-material-design-icons/Shovel.vue'; // Ogród
-import TagTextOutline from 'vue-material-design-icons/TagTextOutline.vue'; // Ogłoszenia drobne
-import MovieOpen from 'vue-material-design-icons/MovieOpen.vue'; // Rozrywka
-import GamepadVariant from 'vue-material-design-icons/GamepadVariant.vue'; // Zabawki i gry
-
-// Pełna lista kategorii zgodna ze zrzutem ekranu
-const categories = [
+// Full list of categories matching the screenshot, defined as a ref
+const categories = ref([
   { name: 'Pojazdy', icon: Car },
   { name: 'Wynajem nieruchomości', icon: HomeCity },
   { name: 'Artykuły biurowe', icon: TagOutline },
@@ -44,74 +46,32 @@ const categories = [
   { name: 'Domy na sprzedaż', icon: Home },
   { name: 'Elektronika', icon: Cellphone },
   { name: 'Hobby', icon: Brush },
-
   { name: 'Odzież', icon: TshirtCrew },
   { name: 'Ogród i otoczenie', icon: Shovel },
   { name: 'Ogłoszenia drobne', icon: TagTextOutline },
   { name: 'Rozrywka', icon: MovieOpen },
   { name: 'Zabawki i gry', icon: GamepadVariant },
-];
+]);
 
-const openLocation = () => emit('open-location');
+// Sidebar items based on existing router-link elements
+const sidebarItems = computed(() => [
+  { icon: Storefront, text: 'Przeglądaj wszystkie', route: '/marketplace' },
+  { icon: Bell, text: 'Powiadomienia', route: '/marketplace/notifications' },
+  { icon: Shopping, text: 'Kupno', route: '/marketplace' },
+  { icon: TagOutline, text: 'Sprzedaż', route: '/marketplace/you/dashboard' },
+]);
 </script>
 
 <template>
-  <aside class="w-[360px] bg-theme-bg-secondary h-screen fixed left-0 top-0 overflow-y-auto border-r border-theme-border shadow-sm z-10 flex flex-col">
-
-      <div class="p-4 flex justify-between items-center sticky top-0 bg-theme-bg-secondary z-20">
-        <h1 class="text-2xl font-bold text-theme-text">Marketplace</h1>
-        <button class="p-2 bg-theme-bg-secondary rounded-full hover:bg-theme-hover transition">
-          <Cog :size="20" class="text-theme-text" />
-        </button>
-      </div>
-
-      <div class="px-4 pb-2">
-        <div class="relative bg-theme-bg rounded-full h-10 flex items-center px-3">
-          <Magnify :size="20" class="text-theme-text-secondary mr-2" />
-          <input
-            type="text"
-            placeholder="Wyszukaj w Marketplace"
-            class="bg-transparent border-none outline-none text-sm w-full placeholder:text-theme-text-secondary text-theme-text-secondary"
-          >
-        </div>
-      </div>
-
-      <nav class="px-2 mt-2 space-y-1">
-        <router-link to="/marketplace" class="flex items-center px-2 py-2 bg-theme-bg-tertiary text-theme-primary rounded-lg group">
-          <div class="p-2 bg-theme-primary text-white rounded-full mr-3">
-            <Storefront :size="20" />
-          </div>
-          <span class="font-medium text-[15px]">Przeglądaj wszystkie</span>
-        </router-link>
-
-        <router-link to="/marketplace/notifications" class="flex items-center px-2 py-2 hover:bg-theme-hover rounded-lg transition cursor-pointer">
-          <div class="p-2 bg-theme-bg rounded-full mr-3">
-            <Bell :size="20" class="text-theme-text" />
-          </div>
-          <span class="font-medium text-[15px] text-theme-text">Powiadomienia</span>
-        </router-link>
-
-        <router-link to="/marketplace" class="flex items-center px-2 py-2 hover:bg-theme-hover rounded-lg transition cursor-pointer">
-            <div class="p-2 bg-theme-bg rounded-full mr-3">
-            <Shopping :size="20" class="text-theme-text" />
-          </div>
-          <span class="font-medium text-[15px] text-theme-text">Kupno</span>
-        </router-link>
-
-        <router-link to="/marketplace/you/dashboard" class="flex items-center px-2 py-2 hover:bg-theme-hover rounded-lg transition cursor-pointer">
-          <div class="p-2 bg-theme-bg rounded-full mr-3">
-            <TagOutline :size="20" class="text-theme-text" />
-          </div>
-          <span class="font-medium text-[15px] text-theme-text">Sprzedaż</span>
-        </router-link>
-      </nav>
-
-      <div class="px-4 py-3 border-b border-theme-border">
-        <RouterLink to="/marketplace/create/item" class="w-full bg-theme-bg-tertiary text-theme-primary font-semibold py-2 rounded-lg hover:bg-theme-hover transition text-sm flex justify-center items-center">
-          <span class="mr-1 text-lg">+</span> Utwórz nowe ogłoszenie
-        </RouterLink>
-      </div>
-
+  <Sidebar
+    title="Marketplace"
+    searchPlaceholder="Wyszukaj w Marketplace"
+    :showSettings="true"
+    :showSearch="true"
+    :items="sidebarItems"
+    :createButton="{ icon: Plus, text: 'Utwórz nowe ogłoszenie', route: '/marketplace/create/item' }"
+  >
+    <template #pre-list>
       <div class="px-4 py-4 border-b border-theme-border">
         <h3 class="font-semibold text-[17px] mb-2 text-theme-text">Lokalizacja</h3>
         <button @click="openLocation" class="text-blue-600 text-sm hover:underline flex items-center">
@@ -119,8 +79,9 @@ const openLocation = () => emit('open-location');
           Łęczyca gmina - W promieniu {{ props.selectedRadius }} km
         </button>
       </div>
+    </template>
 
-
+    <template #list-items>
       <div class="px-2 py-4">
         <h3 class="font-semibold text-[17px] px-2 mb-2 text-theme-text">Kategorie</h3>
         <ul class="space-y-1">
@@ -134,7 +95,8 @@ const openLocation = () => emit('open-location');
           </li>
         </ul>
       </div>
-    </aside>
+    </template>
+  </Sidebar>
 </template>
 
 <style scoped>

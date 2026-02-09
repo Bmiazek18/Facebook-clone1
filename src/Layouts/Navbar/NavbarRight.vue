@@ -43,7 +43,7 @@ const activeBtnClass = "bg-[#E7F3FF] dark:bg-[#263951] text-[#1877F2] dark:text-
 
       <button
         @click="toggleMenu('main')"
-        v-tooltip.bottom.no-arrow="'Menu'"
+        v-tooltip.bottom.no-arrow="{ content: 'Menu', triggers: ['hover'] }"
         :class="[btnClass, activeMenu === 'main' ? activeBtnClass : '']"
       >
         <DotsGrid :size="23" />
@@ -52,7 +52,7 @@ const activeBtnClass = "bg-[#E7F3FF] dark:bg-[#263951] text-[#1877F2] dark:text-
       <button
         v-if="!hideMessageIcon"
         @click="toggleMenu('message')"
-        v-tooltip.bottom.no-arrow="'Wiadomości'"
+        v-tooltip.bottom.no-arrow="{ content: 'Wiadomości', triggers: ['hover'] }"
         :class="[btnClass, activeMenu === 'message' ? activeBtnClass : '']"
       >
         <FacebookMessenger :size="23" />
@@ -60,18 +60,18 @@ const activeBtnClass = "bg-[#E7F3FF] dark:bg-[#263951] text-[#1877F2] dark:text-
 
       <button
         @click="toggleMenu('notifications')"
-        v-tooltip.bottom.no-arrow="'Powiadomienia'"
+        v-tooltip.bottom.no-arrow="{ content: 'Powiadomienia', triggers: ['hover'] }"
         :class="[btnClass, activeMenu === 'notifications' ? activeBtnClass : '']"
         class="relative"
       >
         <Bell :size="23" />
-        <div class="absolute -top-2 -right-2 bg-red-500 text-white text-[13px] font-bold w-[22px] h-[22px] rounded-full flex items-center justify-center border-2 border-white dark:border-[#242526]">
+        <div class="absolute -top-1 -right-1 bg-red-600 text-white text-[12px] font-semibold w-[18px] h-[18px] rounded-full flex items-center justify-center ">
           1
         </div>
       </button>
 
       <div class="flex items-center relative ml-1">
-        <button @click="toggleMenu('profile')" v-tooltip.bottom.no-arrow="'Konto'" class="relative">
+        <button @click="toggleMenu('profile')" v-tooltip.bottom.no-arrow="{ content: 'Konto', triggers: ['hover'] }" class="relative">
           <img
             :class="[
               'rounded-full w-10 h-10 object-cover cursor-pointer transition-all',
@@ -81,9 +81,9 @@ const activeBtnClass = "bg-[#E7F3FF] dark:bg-[#263951] text-[#1877F2] dark:text-
           />
           <div
             :class="[
-              'absolute bottom-0 right-0 rounded-full p-px border-2 border-white dark:border-[#242526] flex items-center justify-center transition-colors',
+              'absolute bottom-0 -right-1 rounded-full p-px border-[2px] border-white dark:border-[#242526] flex items-center justify-center transition-colors',
               btnClass,
-              activeMenu === 'profile' ? activeBtnClass : 'p-0 w-4 h-4'
+              activeMenu === 'profile' ? activeBtnClass : 'p-0 w-3 h-3'
             ]"
           >
             <ChevronDown :size="12" />
