@@ -8,12 +8,13 @@ import { useStoriesStore } from '@/stores/stories';
 import { useAuthStore } from '@/stores/auth';
 
 // --- IMPORT KOMPONENTÓW ---
-import MusicModal, { type MusicTrack } from '@/components/MusicModal.vue';
+import MusicModal, { type MusicTrack } from './MusicModal.vue';
 import LinkStickerModal from '@/components/LinkStickerModal.vue';
 import StorySidebar from './StorySidebar/StorySidebar.vue';
-import ImageToolbar from '@/components/media/ImageToolbar.vue';
+import ImageToolbar from './ImageToolbar.vue';
 import MusicToolbar from './MusicToolbar.vue';
 import StoryElement from './StoryElement.vue';
+import TextToolbar from './TextToolbar.vue';
 // --- IKONY ---
 import VolumeHigh from 'vue-material-design-icons/VolumeHigh.vue';
 import VolumeOff from 'vue-material-design-icons/VolumeOff.vue';
@@ -100,13 +101,7 @@ const setBackgroundGradientFromImage = (imageUrl: string) => {
 };
 
 const storyElements = ref<StoryElementType[]>([
-  {
-    id: 'el_init_text',
-    type: 'text',
-    content: 'Przesuwaj mnie!',
-    x: 80, y: 100, width: 180, height: 40, rotation: 0, scale: 1,
-    styles: { color: '#ffffff', fontSize: '24px', fontWeight: 'bold' }
-  }
+
 ]);
 
 const backgroundRef = ref<HTMLElement | null>(null);
@@ -115,18 +110,14 @@ const bgDimensions = reactive({ width: CANVAS_WIDTH, height: CANVAS_HEIGHT });
 
 const {
   activeDragId,
-  activeResizeId,
-  croppingId,
   editingId,
   activeGuides,
   selectedElementId,
   startDrag,
-  startResize,
-
+  startRotate,
   enableEdit,
   disableEdit,
   onBackgroundClick,
-  toggleCrop,
   rotateElement90
 } = useStoryElementInteraction(storyElements, bgDimensions);
 
@@ -148,13 +139,9 @@ const handleExportStory = async () => {
   if (!storyContainerRef.value) return;
 
   try {
-    // Deselect any selected elements to remove their borders/controls
     selectedElementId.value = null;
 
-    // Wait a frame for UI to update
-    await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Render story to image
     const imageUrl = await renderStoryToImage(storyContainerRef.value, storyElements.value, false);
 
     // Get current user info
@@ -176,20 +163,31 @@ const handleExportStory = async () => {
       if (postElement) {
         sharedPostInfoForExport = {
           postId: props.initialPost.id,
-          x: (postElement.x / CANVAS_WIDTH) * 100,
-          y: (postElement.y / CANVAS_HEIGHT) * 100,
-          width: (postElement.width ? postElement.width / CANVAS_WIDTH : 0) * 100, // Handle optional width
-          height: (postElement.height ? postElement.height / CANVAS_HEIGHT : 0) * 100, // Handle optional height
+          x: (postElement.x / bgDimensions.width) * 100,
+          y: (postElement.y / bgDimensions.height) * 100,
+          width: (postElement.width ? postElement.width / bgDimensions.width : 0) * 100, // Handle optional width
+          height: (postElement.height ? postElement.height / bgDimensions.height : 0) * 100, // Handle optional height
         };
       }
     }
 
+    let sharedLinkInfoForExport: StoryItem['sharedLinkInfo'] | null = null;
+    const linkElement = storyElements.value.find(el => el.type === 'link');
+
+    if (linkElement && linkElement.type === 'link') {
+      sharedLinkInfoForExport = {
+        url: linkElement.linkUrl,
+        x: (linkElement.x / bgDimensions.width) * 100,
+        y: (linkElement.y / bgDimensions.height) * 100,
+        width: (linkElement.width / bgDimensions.width) * 100,
+        height: (linkElement.height / bgDimensions.height) * 100,
+      };
+    }
+
     console.log('sharedPostInfoForExport', sharedPostInfoForExport);
     // Add story to store
-    const newStory = storiesStore.addStory(
+  storiesStore.addStory(
       currentUser.id.toString(),
-      currentUser.name,
-      currentUser.avatar || 'https://i.pravatar.cc/150?img=1',
       {
         type: props.initialImage ? 'image' : 'text',
         imageUrl: imageUrl, // Używamy wyrenderowanego obrazu
@@ -197,12 +195,11 @@ const handleExportStory = async () => {
         backgroundColor: background.type === 'image' ? undefined : background.value,
         backgroundGradient: background.type === 'gradient' ? background.value : undefined,
         elements: storyElements.value,
-        sharedPostInfo: sharedPostInfoForExport // Pass the dynamically calculated shared post info
+        sharedPostInfo: sharedPostInfoForExport, // Pass the dynamically calculated shared post info
+        sharedLinkInfo: sharedLinkInfoForExport,
       }
     );
 
-    console.log('Story dodane:', newStory);
-    alert('Story zostało dodane! ✅');
     router.push('/');
 
   } catch (error) {
@@ -256,8 +253,8 @@ onMounted(() => {
 
 
     // Set gradient background based on post image if available
-    if (props.initialPost.imageUrl) {
-      setBackgroundGradientFromImage(props.initialPost.imageUrl);
+    if (props.initialPost.media && props.initialPost.media.length > 0 && props.initialPost.media[0].src) {
+      setBackgroundGradientFromImage(props.initialPost.media[0].src);
     }
   }
   // Load initial reel if provided (from share button)
@@ -290,7 +287,7 @@ onMounted(() => {
     tempImg.src = imgUrl;
     tempImg.onload = () => {
       const aspectRatio = tempImg.width / tempImg.height;
-      const targetWidth = bgDimensions.width * 0.9; // 90% of canvas width
+      const targetWidth = bgDimensions.width;
       const targetHeight = targetWidth / aspectRatio;
 
       storyElements.value.push({
@@ -335,7 +332,10 @@ onUnmounted(() => {
 const isMusicModalOpen = ref(false);
 
 
-provide('croppingId', croppingId);
+const isAnyElementActive = computed(() => {
+  return selectedElementId.value !== null
+});
+
 
 const toggleMusicModal = () => isMusicModalOpen.value = !isMusicModalOpen.value;
 
@@ -385,18 +385,34 @@ const updateMusicStyle = (style: 'large' | 'small' | 'text' | 'icon') => {
 
 
 const handleStartDrag = (event: MouseEvent, element: StoryElementType) => startDrag(event, element);
-const handleStartResize = (event: MouseEvent, element: StoryElementType) => startResize(event, element);
-
 
 const addTextElement = () => {
-  const newId = `el_${Date.now()}`;
+  const newId = `el_text_${Date.now()}`;
+  const newWidth = 250;
+  const newHeight = 50;
+
   storyElements.value.push({
-    id: newId, type: 'text', content: 'Nowy Tekst',
-    x: 100, y: 300, width: 150, height: 40, rotation: 0, scale: 1,
-    styles: { color: '#ffffff', fontSize: '24px', fontWeight: 'bold' }
+    id: newId,
+    type: 'text',
+    content: 'Zacznij pisać...',
+    x: (bgDimensions.width - newWidth) / 2, // Center horizontally
+    y: (bgDimensions.height - newHeight) / 2, // Center vertically
+    width: newWidth,
+    height: newHeight,
+    rotation: 0,
+    scale: 1,
+    styles: {
+      color: '#ffffff',
+      fontSize: '28px',
+      fontWeight: 'bold',
+      textAlign: 'center',
+    }
   });
   selectedElementId.value = newId;
+  enableEdit(newId);
 };
+
+
 
 const removeElement = (id: string) => {
   const element = storyElements.value.find((el: StoryElementType) => el.id === id);
@@ -410,9 +426,14 @@ const removeElement = (id: string) => {
 };
 
 const updateElementContent = (id: string, value: string) => {
+  if (value === '') {
+    removeElement(id);
+    return;
+  }
   const target = storyElements.value.find((el: StoryElementType) => el.id === id);
   if (target) target.content = value;
 };
+
 
 const removeMusicAndOpenModal = () => {
   if (selectedElementId.value) {
@@ -491,8 +512,8 @@ const goBack = () => {
           </div>
         </div>
 
-        <div class="flex-1 bg-theme-bg rounded-lg flex items-center justify-center overflow-hidden relative shadow-inner border border-theme-border" @mousedown.self="onBackgroundClick">
-          <div ref="storyContainerRef" class="relative aspect-9/16 h-[calc(100%-68px)] bg-black shadow-2xl rounded-md border border-theme-border" style="overflow: visible;">
+        <div class="flex-1 bg-[#18191A] rounded-lg flex flex-col items-center justify-center overflow-hidden relative shadow-inner border border-theme-border" @mousedown="onBackgroundClick">
+          <div ref="storyContainerRef" class="relative aspect-9/16 h-[calc(100%-68px)] bg-[#18191A] shadow-2xl rounded-md border border-white" :style="{ overflow: isAnyElementActive ? 'visible' : 'hidden' }">
             <div class="absolute inset-0 w-full h-full pointer-events-none rounded-md overflow-hidden" :style="{ background: background.value }" ref="backgroundRef"></div>
 
             <!-- GUIDE LINES -->
@@ -512,8 +533,8 @@ const goBack = () => {
                 selected: selectedElementId === element.id,
               }"
               :on-start-drag="handleStartDrag"
-              :on-start-resize="handleStartResize"
-              :on-toggle-crop="toggleCrop"
+
+              :on-start-rotate="startRotate"
               :on-enable-edit="enableEdit"
               :on-disable-edit="disableEdit"
               :on-remove="removeElement"
@@ -526,7 +547,12 @@ const goBack = () => {
             v-if="selectedElement && selectedElement.type === 'image' && !selectedElement.musicTitle && croppingId !== selectedElement.id"
             v-model:scale="selectedElement.scale"
             @rotate="rotateElement90"
+            @mousedown.stop
           />
+
+          <p v-else class="text-white text-[17px] z-[333] flex items-center justify-center h-[40px]">
+            Wybierz zdjęcie, aby przyciąć je i obrócić
+          </p>
         </div>
 
         <MusicToolbar
@@ -537,8 +563,13 @@ const goBack = () => {
           :cover-url="selectedElement.content"
           @update:style="updateMusicStyle"
           @remove="removeMusicAndOpenModal()"
+          @mousedown.stop
         />
-
+   <TextToolbar
+            v-else-if="editingId && selectedElement?.type == 'text' "
+            :currentColor="selectedElement.styles.color"
+            @mousedown.stop
+          />
         <MusicModal
           :is-open="isMusicModalOpen"
           @close="isMusicModalOpen = false"

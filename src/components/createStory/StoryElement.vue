@@ -21,7 +21,8 @@ const props = defineProps<{
   }
   isViewing?: boolean
   onStartDrag: (e: MouseEvent, element: StoryElement) => void
-  onStartResize: (e: MouseEvent, element: StoryElement) => void
+
+  onStartRotate: (e: MouseEvent, element: StoryElement) => void
   onToggleCrop: (id: string) => void
   onEnableEdit: (id: string) => void
   onDisableEdit: () => void
@@ -45,6 +46,12 @@ const handleRemove = () => props.onRemove?.(props.element.id)
 const handleUpdateContent = (id: string, value: string) => {
   emit('update-content', id, value)
 }
+
+const handleStartRotate = (e: MouseEvent) => {
+
+    props.onStartRotate(e, props.element);
+
+};
 </script>
 
 <template>
@@ -52,7 +59,7 @@ const handleUpdateContent = (id: string, value: string) => {
     class="absolute group transition-transform duration-75"
     :class="{ 'z-50': state.active, 'cursor-move': !isViewing, 'pointer-events-none': isViewing && element.type !== 'post' }"
     :style="{ top: `${element.y}px`, left: `${element.x}px` }"
-    @mousedown="handleStartDrag"
+    @mousedown.stop="handleStartDrag"
   >
     <div
       class="relative transition-transform duration-75 origin-center"
@@ -68,10 +75,16 @@ const handleUpdateContent = (id: string, value: string) => {
         data-story-control
         v-if="!state.editing && !state.cropping && !isViewing"
         @click.stop="handleRemove"
-        class="absolute -top-3 -right-3 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-600 z-50 transition-opacity shadow-md"
+        class="absolute -top-3 -left-3 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-600 z-50 transition-opacity shadow-md"
       >
         <Close :size="14" />
       </button>
+
+      <div
+        v-if="state.selected && !state.editing && !isViewing && element.type !== 'post'"
+        class="absolute -bottom-2 -right-2 w-4 h-4 bg-blue-500 rounded-full cursor-se-resize"
+        @mousedown.stop="handleStartRotate"
+      ></div>
 
       <StoryMusicElement
         v-if="element.type === 'image' && element.musicTitle"
@@ -81,10 +94,6 @@ const handleUpdateContent = (id: string, value: string) => {
       <StoryImageElement
         v-else-if="element.type === 'image'"
         :element="element"
-        :is-cropping="state.cropping"
-        :is-selected="state.selected"
-        :on-start-resize="onStartResize"
-        :on-toggle-crop="onToggleCrop"
       />
 
       <StoryLinkElement

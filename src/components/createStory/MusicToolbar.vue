@@ -3,6 +3,7 @@ import ViewAgenda from 'vue-material-design-icons/ViewAgenda.vue'; // Duży wido
 import ViewList from 'vue-material-design-icons/ViewList.vue';     // Mały widok
 import TextBox from 'vue-material-design-icons/TextBox.vue';       // Tekst
 import MusicNote from 'vue-material-design-icons/MusicNote.vue';   // Ikona
+import Close from 'vue-material-design-icons/Close.vue';           // Ikona zamknięcia
 
 defineProps<{
   trackTitle?: string;
@@ -14,11 +15,15 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'update:style', style: 'large' | 'small' | 'text' | 'icon'): void;
   (e: 'remove'): void;
+  (e: 'close'): void;
 }>();
 </script>
 
 <template>
   <div class="absolute -right-[115px] top-15 mt-20 bg-white rounded-2xl shadow-2xl p-4 w-[320px] z-900 animate-pop">
+    <button @click="emit('close')" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition">
+      <Close :size="20" />
+    </button>
     <div class="flex items-start justify-between mb-4 border-b border-gray-100 pb-3">
         <div class="flex items-center gap-3">
             <img v-if="coverUrl" :src="coverUrl" class="w-10 h-10 rounded-md object-cover border border-gray-200" />

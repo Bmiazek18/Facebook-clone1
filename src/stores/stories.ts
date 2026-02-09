@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import type { UserStories, StoryItem } from '@/types/Story';
 import type { StoryElement } from '@/types/StoryElement';
 import storiesData from '@/data/stories.json';
+import { getUserById } from '@/data/users';
 
 export const useStoriesStore = defineStore('stories', () => {
   // State
@@ -16,17 +17,32 @@ export const useStoriesStore = defineStore('stories', () => {
 
   // Load default stories from JSON
   const loadDefaultStories = () => {
-    // Update timestamps to be current (for demo purposes)
+    // To make the demo data feel current, we'll find the newest story in the JSON
+    // and shift all story creation times so that the newest one appears as "now".
+    // This preserves the relative time differences between stories from the JSON file.
+    const allCreationTimes = (storiesData as any[])
+      .flatMap(user => user.stories.map(story => story.createdAt));
+    const maxCreatedAt = Math.max(...allCreationTimes);
     const now = Date.now();
-    const updatedStories = (storiesData as UserStories[]).map(userStory => ({
-      ...userStory,
-      stories: userStory.stories.map(story => ({
-        ...story,
-        createdAt: now - Math.random() * 3600000, // Random time within last hour
-        expiresAt: now + 24 * 60 * 60 * 1000 - Math.random() * 3600000 // Expires within next 23-24h
-      }))
-    }));
-    userStories.value = updatedStories as UserStories[];
+    const offset = now - maxCreatedAt;
+
+    const storiesWithUsers = (storiesData as any[]).map(userStory => {
+      const user = getUserById(Number(userStory.userId));
+      return {
+        ...userStory,
+        userName: user ? user.name : 'Unknown User',
+        userAvatar: user ? user.avatar : '',
+        stories: userStory.stories.map((story: StoryItem) => {
+          const newCreatedAt = story.createdAt + offset;
+          return {
+            ...story,
+            createdAt: newCreatedAt,
+            expiresAt: newCreatedAt + 24 * 60 * 60 * 1000, // Expires 24h after creation
+          };
+        })
+      };
+    });
+    userStories.value = storiesWithUsers as UserStories[];
   };
 
   // Save stories to localStorage (disabled - not used anymore)
@@ -129,8 +145,6 @@ export const useStoriesStore = defineStore('stories', () => {
   // Add new story
   const addStory = (
     userId: string,
-    userName: string,
-    userAvatar: string,
     storyData: {
       type: 'image' | 'text' | 'video';
       imageUrl?: string;
@@ -171,10 +185,11 @@ export const useStoriesStore = defineStore('stories', () => {
       existingUserStories.hasUnviewedStories = true;
     } else {
       // Create new user stories entry
+      const user = getUserById(Number(userId));
       userStories.value.push({
         userId,
-        userName,
-        userAvatar,
+        userName: user ? user.name : 'Unknown User',
+        userAvatar: user ? user.avatar : '',
         stories: [newStory],
         hasUnviewedStories: true
       });

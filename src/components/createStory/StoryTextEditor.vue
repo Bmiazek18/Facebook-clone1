@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useStoryExport } from '@/composables/useStoryExport';
 import type { StoryElement as StoryElementType, TextElement } from '@/types/StoryElement';
+import { Dropdown as VDropdown } from 'floating-vue';
+import { useContentEditable } from '@/composables/useContentEditable';
 
 
 // --- IMPORT KOMPONENTÓW ---
@@ -64,6 +66,17 @@ const selectedBackgroundId = ref<number>(1);
 const selectedFont = ref<FontStyle>(fontStyles[0]!);
 const isMusicModalOpen = ref(false);
 
+const {
+    onContentInput: useContentEditableOnContentInput,
+    matchingUsers,
+    showUserDropdown,
+    selectUser,
+    renderContentEditable,
+    addEmoji,
+    moveCursorToEnd
+} = useContentEditable(contentEditableDivRef, textContent);
+
+
 const storyElements = computed((): StoryElementType[] => [
     {
         id: 'el_text_main',
@@ -80,9 +93,8 @@ const storyElements = computed((): StoryElementType[] => [
 ]);
 
 onMounted(() => {
-    if (contentEditableDivRef.value) {
-        contentEditableDivRef.value.innerText = textContent.value;
-    }
+    // Initial render of contenteditable div
+    renderContentEditable();
 });
 
 
@@ -104,8 +116,6 @@ const exportStory = async () => {
         const dataUrl = await renderStoryToImage(storyContainerRef.value, storyElements.value, false);
          storiesStore.addStory(
       currentUser.id.toString(),
-      currentUser.name,
-      currentUser.avatar || 'https://i.pravatar.cc/150?img=1',
       {
         type: 'text',
         imageUrl: dataUrl, // Używamy wyrenderowanego obrazu
@@ -130,9 +140,21 @@ const currentBackground = computed(() => {
 // --- FUNKCJE ---
 
 const onContentInput = () => {
-    if (contentEditableDivRef.value) {
-        textContent.value = contentEditableDivRef.value.innerText;
-    }
+    // Use the onContentInput from useContentEditable
+    useContentEditableOnContentInput();
+};
+
+const onKeydown = (e: KeyboardEvent) => {
+  // If useContentEditable had a keydown handler to expose, we'd call it here.
+  // For now, we can leave it empty or emit if the parent needed to know.
+};
+
+const onFocus = (e: FocusEvent) => {
+  // If useContentEditable had a focus handler to expose, we'd call it here.
+};
+
+const onBlur = (e: FocusEvent) => {
+  // If useContentEditable had a blur handler to expose, we'd call it here.
 };
 
 const handleBack = () => {
@@ -159,7 +181,10 @@ defineExpose({
   textContent,
   currentBackground,
   selectedFont,
+  addEmoji, // Expose addEmoji
+  moveCursorToEnd, // Expose moveCursorToEnd
 });
+
 </script>
 
 <template>
@@ -205,15 +230,42 @@ defineExpose({
             :class="currentBackground?.class"
           >
             <div class="z-10 w-full px-4 grid place-items-center">
-              <div
-                ref="contentEditableDivRef"
-                contenteditable="true"
-                class="w-full bg-transparent text-white text-center outline-none px-2 py-0 placeholder-white/50"
-                :class="[selectedFont.class, 'text-4xl leading-normal']"
-                placeholder="Pisz tutaj..."
-                spellcheck="false"
-                @input="onContentInput"
-              ></div>
+              <VDropdown
+                :shown="showUserDropdown"
+                placement="bottom-start"
+                :triggers="[]"
+                :auto-hide="true"
+                class="w-full"
+                popper-class="v-popper--theme-menu"
+              >
+                <div
+                  ref="contentEditableDivRef"
+                  contenteditable="true"
+                  class="w-full bg-transparent text-white text-center outline-none px-2 py-0 placeholder-white/50"
+                  :class="[selectedFont.class, 'text-4xl leading-normal']"
+                  placeholder="Pisz tutaj..."
+                  spellcheck="false"
+                  @input="onContentInput"
+                  @keydown="onKeydown"
+                  @focus="$emit('focus', $event)"
+                  @blur="$emit('blur', $event)"
+                ></div>
+                <template #popper>
+                  <div class="user-dropdown-content w-64 max-h-60 overflow-y-auto pointer-events-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg">
+                    <ul>
+                      <li
+                        v-for="user in matchingUsers"
+                        :key="user.id"
+                        class="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                        @mousedown.prevent="selectUser(user)"
+                      >
+                        <img :src="user.avatar" class="w-8 h-8 rounded-full object-cover">
+                        <span class="font-medium text-sm text-gray-900 dark:text-gray-100">{{ user.name }}</span>
+                      </li>
+                    </ul>
+                  </div>
+                </template>
+              </VDropdown>
             </div>
 
             <div class="absolute bottom-6 right-4 text-white opacity-80 cursor-pointer hover:opacity-100 hover:scale-110 transition drop-shadow-md">

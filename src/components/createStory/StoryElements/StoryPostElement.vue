@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Earth from 'vue-material-design-icons/Earth.vue'
 import type { PostElement } from '@/types/StoryElement'
+import PostMediaDisplay from '@/components/feed/post/PostMediaDisplay.vue';
  defineProps<{
   element: PostElement
 }>()
@@ -9,7 +10,7 @@ import type { PostElement } from '@/types/StoryElement'
 <template>
   <div
     v-if="element.postData"
-    class="bg-white rounded-xl overflow-hidden  pointer-events-none select-none w-fit max-w-sm"
+    class="bg-white rounded-xl overflow-hidden  pointer-events-none select-none w-fit max-w-md h-full "
   >
     <div class="p-3 flex items-center gap-2">
       <img :src="element.postData.author.avatar" class="w-8 h-8 rounded-full object-cover" />
@@ -22,13 +23,9 @@ import type { PostElement } from '@/types/StoryElement'
       </div>
     </div>
 
-    <p class="px-3 pb-2 text-sm text-gray-800 line-clamp-3">{{ element.postData.content }}</p>
+    <p class="px-3 pb-2 text-sm text-gray-800 ">{{ element.postData.content }}</p>
 
-    <img
-      v-if="element.postData.imageUrl"
-      :src="element.postData.imageUrl"
-      class="w-full h-32 object-cover"
-    />
+    <PostMediaDisplay :post="element.postData"/>
 
     <div class="p-2 bg-gray-50 text-center">
       <span class="text-xs text-blue-600 font-medium">Dotknij, aby wyświetlić post</span>

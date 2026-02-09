@@ -4,6 +4,13 @@ export type ElementType = 'text' | 'image' | 'link' | 'post' | 'reel'
 import type { ImageTagType } from './ImageTag';
 
 // --- Shared Data Types ---
+
+export interface PostMedia {
+  src: string
+  altText?: string
+  tags?: ImageTagType[]
+  audioUrl?: string
+}
 export interface PostData {
   id: string;
   author: {
@@ -12,12 +19,7 @@ export interface PostData {
     id: number;
   };
   content: string;
-  imageUrl?: string;
-  images?: {
-    src: string;
-    altText?: string;
-    tags?: ImageTagType[];
-  }[];
+  media: PostMedia[];
   videoUrl?: string;
   timestamp: number;
 }

@@ -2,6 +2,7 @@
   import { ref, onMounted } from 'vue';
   import { useStoryShareStore } from '@/stores/storyShare';
   import type { PostData, ReelData } from '@/types/StoryElement';
+  import NavbarRight from '@/Layouts/Navbar/NavbarRight.vue';
 
   // Sub-views rendered conditionally
   import StoryPicker from '@/components/createStory/StoryPicker.vue';
@@ -57,6 +58,9 @@
 
   <template>
     <div class="h-screen w-full">
+      <div class="absolute top-0 right-0 p-4 gap-3 z-30 hidden md:flex">
+          <NavbarRight />
+      </div>
       <StoryPicker
         v-if="mode === 'picker'"
         @select-image="onSelectImage"

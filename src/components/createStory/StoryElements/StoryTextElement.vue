@@ -30,7 +30,8 @@ const vFocus = {
     class="text-center min-w-[50px] whitespace-pre-wrap leading-tight drop-shadow-lg p-2 border-2 border-transparent group-hover:border-white/40 rounded-lg"
     :style="element.styles"
   >
-    {{ element.content }}
+    <span v-if="element.content">{{ element.content }}</span>
+    <span v-else class="opacity-50">Zacznij pisać...</span>
   </div>
 
   <!-- Edit Mode -->

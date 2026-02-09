@@ -1,39 +1,45 @@
 <template>
     <div class="flex flex-col mt-2 pb-4">
-        <div @click="emit('add-text')" class="flex items-center gap-4 px-4 py-3 hover:bg-theme-hover cursor-pointer transition active:scale-95">
-            <div class="bg-theme-bg-secondary p-2.5 rounded-full border border-theme-border">
-                <FormatFont :size="24" class="text-theme-text-secondary" />
+
+        <div @click="emit('add-text')" class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer transition-colors active:scale-95">
+            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center shrink-0">
+                <FormatFont :size="24" class="text-black" />
             </div>
-            <span class="font-medium text-theme-text-secondary text-sm">Dodaj tekst</span>
+            <span class="font-semibold text-gray-900 text-[15px]">Dodaj tekst</span>
         </div>
 
-        <div @click="emit('toggle-music')" class="flex items-center gap-4 px-4 py-3 hover:bg-theme-hover cursor-pointer transition" :class="{'bg-blue-50 border-l-4 border-blue-500': isMusicModalOpen}">
-            <div class="bg-theme-bg-secondary p-2.5 rounded-full border border-theme-border">
-                <MusicNote :size="24" class="text-theme-text-secondary" />
+        <div @click="emit('toggle-music')" class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer transition-colors active:scale-95">
+            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center shrink-0">
+                <MusicNote :size="24" class="text-black" />
             </div>
-            <span class="font-medium text-theme-text-secondary text-sm">Dodaj muzykę</span>
+            <span class="font-semibold text-gray-900 text-[15px]">Dodaj muzykę</span>
         </div>
 
-        <!-- Link Sticker -->
-        <div @click="emit('add-link')" class="flex items-center gap-4 px-4 py-3 hover:bg-theme-hover cursor-pointer transition active:scale-95">
-            <div class="bg-linear-to-r from-blue-500 to-purple-500 p-2.5 rounded-full">
-                <Link :size="24" class="text-white" />
+        <div @click="emit('add-link')" class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer transition-colors active:scale-95">
+            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center shrink-0">
+                <Link :size="24" class="text-black" />
             </div>
-            <span class="font-medium text-theme-text-secondary text-sm">Dodaj naklejkę z linkiem</span>
+            <span class="font-semibold text-gray-900 text-[15px]">Dodaj link</span>
         </div>
 
-
-
-        <div @click="toggleAltTextSection" class="flex items-center justify-between px-4 py-3 hover:bg-theme-hover cursor-pointer transition" :class="{'bg-theme-hover': isAltTextExpanded}">
-            <div class="flex items-center gap-4">
-                <div class="bg-theme-bg-secondary p-2.5 rounded-full border border-theme-border">
-                    <AlphaABox :size="24" class="text-theme-text-secondary" />
+        <div class="flex flex-col">
+            <div @click="toggleAltTextSection" class="flex items-center justify-between px-4 py-2 hover:bg-gray-100 cursor-pointer transition-colors active:scale-95">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center shrink-0">
+                        <AlphaABox :size="24" class="text-black" />
+                    </div>
+                    <span class="font-semibold text-gray-900 text-[15px]">Tekst alternatywny</span>
                 </div>
-                <span class="font-medium text-theme-text-secondary text-sm">Tekst alternatywny</span>
+                </div>
+
+            <div v-if="isAltTextExpanded" class="px-4 py-2 animate-fade-in-down">
+                <AltTextEditor
+                    :alt-text="currentAltText"
+                    @update:altText="(text: string) => currentAltText = text"
+                />
             </div>
         </div>
 
-        <AltTextEditor v-if="isAltTextExpanded" :alt-text="currentAltText" @update:altText="(text: string) => currentAltText = text" />
     </div>
 </template>
 
@@ -42,7 +48,6 @@ import { ref } from 'vue';
 import FormatFont from 'vue-material-design-icons/FormatFont.vue';
 import MusicNote from 'vue-material-design-icons/MusicNote.vue';
 import Link from 'vue-material-design-icons/Link.vue';
-
 import AlphaABox from 'vue-material-design-icons/AlphaABox.vue';
 import AltTextEditor from '@/components/media/AltTextEditor.vue';
 
@@ -62,10 +67,23 @@ const isAltTextExpanded = ref(false);
 const currentAltText = ref('');
 
 const toggleAltTextSection = () => {
+    // Logika otwierania
     if (!props.isImageSelected) {
+        // Możesz tutaj dodać toast zamiast alertu dla lepszego UX
         alert("Wybierz zdjęcie, aby edytować tekst alternatywny.");
         return;
     }
     isAltTextExpanded.value = !isAltTextExpanded.value;
 };
 </script>
+
+<style scoped>
+/* Opcjonalna animacja dla rozwijania alt textu */
+.animate-fade-in-down {
+  animation: fadeInDown 0.2s ease-out;
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
