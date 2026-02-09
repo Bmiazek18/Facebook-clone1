@@ -1,48 +1,15 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import reelsData from '@/data/reels.json';
-
-// Updated interface: removed nested user object, added authorId and isFollowing
-export interface Reel {
-  id: string;
-  videoSrc: string;
-  poster: string;
-  likes: string;
-  comments: string;
-  shares: string;
-  caption: string;
-  hashtags: string;
-  music: string;
-  authorId: number;
-  isLiked: boolean;
-  isFollowing?: boolean; // Interaction state
-}
-
-interface ReelFromJson {
-  id: number;
-  author: string;
-  authorId: number;
-  videoSrc: string;
-  poster: string;
-  caption: string;
-  likes: number;
-  commentsCount: number;
-  sharesCount: number;
-  hashtags: string;
-  music: string;
-}
+import type { Reel } from '@/types/Reel';
 
 export const useReelsStore = defineStore('reels', () => {
-  // Initialize with isFollowing default to false if not present, though we might want to fetch this
-  const reels = ref<Reel[]>(reelsData.map((r: ReelFromJson) => ({
-    ...r,
-    id: String(r.id),
-    likes: String(r.likes),
-    comments: String(r.commentsCount),
-    shares: String(r.sharesCount),
-    isFollowing: false,
-    isLiked: false,
-  })));
+  // The data from reels.json is now mostly compatible with the Reel type.
+  // We just need to add the `isFollowing` property.
+  const reels = ref<Reel[]>(reelsData.map(reel => ({
+    ...reel,
+    isFollowing: false, // Set a default value
+  } as Reel)));
 
   // Get reel by ID
   const getReelById = (id: string) => {

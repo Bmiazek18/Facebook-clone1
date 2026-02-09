@@ -6,11 +6,36 @@
     "likes": "224",
     "commentsCount": 1,
     "sharesCount": 0,
-    "caption": "Cieszę się, że jestem jedną z nich",
-    "hashtags": "#dc #siłownia #treningnasiłowni #trenerpersonalny #fyp #ćwiczenia",
+    "caption": "Cieszę się, że jestem jedną z nich #test",
     "music": "RAYE - WHERE IS MY HUSBAND!",
     "authorId": 2,
-    "isLiked": false
+    "isLiked": false,
+    "comments": [
+      {
+        "id": 1,
+        "authorId": 3,
+        "content": "Wow, niesamowite! 🔥",
+        "likesCount": 15,
+        "replies": [],
+        "date": "2024-02-01T10:00:00Z"
+      },
+      {
+        "id": 2,
+        "authorId": 4,
+        "content": "Świetna robota! 💪",
+        "likesCount": 8,
+        "replies": [
+          {
+            "id": 3,
+            "authorId": 2,
+            "content": "Dzięki! ❤️",
+            "likesCount": 2,
+            "date": "2024-02-01T10:05:00Z"
+          }
+        ],
+        "date": "2024-02-01T10:02:00Z"
+      }
+    ]
   },
   {
     "id": "reel-2",
@@ -20,7 +45,6 @@
     "commentsCount": 45,
     "sharesCount": 12,
     "caption": "Nowy trening na dziś! 💪",
-    "hashtags": "#fitness #workout #gym #motivation",
     "music": "Eye of the Tiger - Survivor",
     "authorId": 3,
     "isLiked": true
@@ -33,7 +57,6 @@
     "commentsCount": 23,
     "sharesCount": 8,
     "caption": "Wieczorny spacer z widokiem 🌅",
-    "hashtags": "#nature #sunset #relax #weekend",
     "music": "Sunset Lover - Petit Biscuit",
     "authorId": 4,
     "isLiked": false
@@ -46,7 +69,6 @@
     "commentsCount": 128,
     "sharesCount": 67,
     "caption": "Przepis na idealne śniadanie 🍳",
-    "hashtags": "#food #cooking #breakfast #recipe",
     "music": "Good Morning - Kanye West",
     "authorId": 5,
     "isLiked": false

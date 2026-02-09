@@ -1,13 +1,27 @@
+import type { Comment } from './Post';
+
 export interface Reel {
-  id: number;
-  author: string;
+
+  id: string;
+
   authorId: number;
+
   videoSrc: string;
+
   poster: string;
+
   caption: string;
-  likes: number;
+
+  likes: string;
+
+  isLiked: boolean;
+
   commentsCount: number;
+
   sharesCount: number;
-  hashtags: string;
+
   music: string;
+
+  comments?: Comment[];
+
 }

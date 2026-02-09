@@ -1,7 +1,7 @@
 <template>
-  <div class="py-4 pl-4 bg-theme-bg-secondary rounded-none lg:rounded-lg shadow-md max-w-4xl mx-0 lg:mx-auto border border-theme-border">
+  <div class="w-full min-h-[420px] py-4 my-4 pl-4 bg-theme-bg-secondary rounded-none lg:rounded-lg shadow-md border border-theme-border flex flex-col box-border">
 
-    <div class="flex justify-between items-center mb-4 pr-4">
+    <div class="flex justify-between items-center mb-4 pr-4 shrink-0">
       <div class="flex items-center text-gray-800">
         <div class="bg-red-500 p-1.5 rounded-md mr-2 text-white">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
@@ -15,25 +15,25 @@
       </button>
     </div>
 
-    <div class="relative group/container">
+    <div class="relative group/container grow flex flex-col justify-center">
 
       <button
         v-if="!isStart"
-        @click="scrollLeft"
-        class="absolute top-1/2 left-4 transform -translate-y-1/2 p-3 bg-theme-bg-secondary rounded-full shadow-lg border border-theme-border hover:bg-theme-bg-hover transition duration-150 z-20 flex"
+        @click.stop="scrollLeft"
+        class="absolute top-1/2 left-4 transform -translate-y-1/2 p-3 bg-theme-bg-secondary rounded-full shadow-lg border border-theme-border hover:bg-theme-bg-hover transition duration-150 z-20 flex cursor-pointer"
       >
         <ChevronLeftIcon :size="24" :fillColor="chevronFillColor" />
       </button>
 
       <div
         ref="carouselRef"
-        class="flex overflow-x-scroll pb-4 scrollbar-hide snap-x snap-mandatory"
+        class="flex overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory"
         style="scroll-behavior: smooth;"
       >
         <div
           v-for="reel in reels"
           :key="reel.id"
-          class="shrink-0 mr-3 relative w-[180px] aspect-9/16 rounded-xl overflow-hidden cursor-pointer group snap-start shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] bg-black"
+          class="shrink-0 mr-3 relative w-[180px] aspect-[9/16] rounded-xl overflow-hidden cursor-pointer group snap-start shadow-md hover:shadow-lg transition-all duration-300 bg-black"
           @click="openReel(reel.id)"
         >
           <video
@@ -42,16 +42,19 @@
             muted
             loop
             playsinline
-            preload="metadata"
+            preload="none"
+            :poster="reel.thumbnailUrl"
             @mouseenter="handleMouseEnter"
             @mouseleave="handleMouseLeave"
           ></video>
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+             </div>
         </div>
 
         <div
           v-if="reels.length > 0"
-          class="flex flex-col items-center justify-center cursor-pointer w-[180px] aspect-9/16 border border-theme-border rounded-xl shadow-sm hover:bg-theme-bg-hover transition duration-200 bg-theme-bg-tertiary shrink-0 snap-start"
-          @click="openReel(reels[0]!.id)"
+          class="flex flex-col items-center justify-center cursor-pointer w-[180px] aspect-[9/16] border border-theme-border rounded-xl shadow-sm hover:bg-theme-bg-hover transition duration-200 bg-theme-bg-tertiary shrink-0 snap-start"
+          @click="openReel(reels[0]?.id)"
         >
           <div class="bg-theme-bg-secondary p-3 rounded-full shadow-sm mb-3">
              <ArrowRightIcon :size="24" :fillColor="chevronFillColor" />
@@ -59,13 +62,13 @@
           <span class="text-theme-text font-semibold text-sm">Zobacz wszystkie</span>
         </div>
 
-        <div class="shrink-0" style="width: 1rem;"></div>
+        <div class="shrink-0 w-4"></div>
       </div>
 
       <button
         v-if="!isEnd"
-        @click="scrollRight"
-        class="absolute top-1/2 right-4 transform -translate-y-1/2 p-3 bg-theme-bg-secondary rounded-full shadow-lg border border-theme-border hover:bg-theme-bg-hover transition duration-150 z-20 flex"
+        @click.stop="scrollRight"
+        class="absolute top-1/2 right-4 transform -translate-y-1/2 p-3 bg-theme-bg-secondary rounded-full shadow-lg border border-theme-border hover:bg-theme-bg-hover transition duration-150 z-20 flex cursor-pointer"
       >
         <ChevronRightIcon :size="24" :fillColor="chevronFillColor" />
       </button>
@@ -75,6 +78,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useCarousel } from '../composables/useCarousel';
 import { useRouter } from 'vue-router';
 import { useReelsStore } from '@/stores/reels';
@@ -101,19 +105,16 @@ const {
   scrollRight,
 } = useCarousel(3);
 
-// Pobierz reels ze store
 const reels = reelsStore.reels;
 
 const handleMouseEnter = async (event: Event) => {
   const videoElement = event.target as HTMLVideoElement;
-
   try {
+    // Resetuj czas i odtwarzaj
     videoElement.currentTime = 0;
-
     await videoElement.play();
-  } catch {
-    // Obsługa błędu (np. brak zgody użytkownika na autoplay)
-    console.warn('Nie można odtworzyć wideo automatycznie.');
+  } catch (e) {
+    // Ignoruj błędy autoplay (częste w przeglądarkach)
   }
 };
 

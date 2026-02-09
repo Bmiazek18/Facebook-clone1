@@ -1,17 +1,14 @@
 <template>
-  <div class="w-full lg:max-w-122.5 flex flex-col lg:min-w-92.5 bg-white border-t lg:border-t-0 lg:border-l border-gray-200 h-full">
-    <!-- Navbar Right -->
-    <div class="w-full h-16.25 flex justify-end py-2 px-5 border-b border-gray-200">
+  <div class="w-full h-[calc(100vh-56px)] lg:max-w-122.5 flex flex-col lg:min-w-92.5 bg-white border-t lg:border-t-0 lg:border-l border-gray-200 h-full">
 
-    </div>
 
-    <div class="flex-1 flex flex-row-reverse overflow-hidden">
+    <div class="flex-1  flex flex-row-reverse overflow-hidden">
       <div class="hidden md:block w-22.5 border-l border-gray-200"></div>
 
       <div class="w-full">
         <HoverScrollbar class="grow overflow-y-auto">
           <!-- User info -->
-          <div class="px-4 pt-4 pb-2 border-b border-gray-200">
+          <div class="px-4 pt-4 pb-2">
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-2.5">
                 <img
@@ -24,9 +21,9 @@
                     {{ reelUser?.name }}
                   </div>
                   <div v-if="reel.music" class=" pb-3 flex items-center gap-2 text-[13px] text-gray-600">
-            <MusicNote :size="16" />
-            <span>{{ reel.music }}</span>
-          </div>
+                    <MusicNote :size="16" />
+                    <span>{{ reel.music }}</span>
+                  </div>
                 </div>
               </div>
               <button
@@ -46,6 +43,35 @@
             </div>
           </div>
 
+          <div class="px-4 pb-3 text-[15px] border-b border-gray-200 text-gray-800 whitespace-pre-wrap leading-relaxed">
+            <template v-for="(part, index) in processedCaption" :key="index">
+              <span v-if="part.type === 'text'">{{ part.value }}</span>
+              <RouterLink
+                v-else-if="part.type === 'hashtag'"
+                :to="{ name: 'hashtag', params: { hashtag: part.hashtag } }"
+                class="text-blue-500 hover:underline"
+              >
+                {{ part.value }}
+              </RouterLink>
+              <RouterLink
+                v-else-if="part.type === 'mention'"
+                :to="{ name: 'userProfile', params: { userId: part.userId } }"
+                class="text-blue-500 hover:underline"
+              >
+                {{ part.value }}
+              </RouterLink>
+              <a
+                v-else-if="part.type === 'link'"
+                :href="part.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-blue-500 hover:underline"
+              >
+                {{ part.value }}
+              </a>
+            </template>
+          </div>
+
 
 
 
@@ -56,57 +82,94 @@
           </div>
 
           <!-- Comments section -->
-          <div class="pt-1 px-4 pb-20">
-            <div v-if="!hasComments" class="text-center py-8 text-gray-500">
-              <p class="text-sm">Brak komentarzy</p>
-              <p class="text-xs mt-1">Bądź pierwszą osobą, która skomentuje</p>
-            </div>
-            <!-- Future: Add CommentItem components here -->
+          <div class="pt-1 px-4 pb-4">
+
+           <EmptyState v-if="!hasComments"/>
+            <CommentItem
+            v-else
+              v-for="comment in reel.comments"
+              :key="comment.id"
+              :comment="comment"
+              :post-avatar-src="reelUser?.avatar"
+              :depth="0"
+              :post-id="reel.id"
+              @react="handleCommentReaction"
+              @reply="handleCommentReply"
+              @open-link="handleOpenLinkModal"
+            />
           </div>
         </HoverScrollbar>
 
-        <!-- Comment input -->
-        <div class="p-4 border-t border-gray-200 flex items-center bg-white sticky bottom-0 z-10">
-          <img
-            class="rounded-full w-8 h-8 object-cover border border-gray-200 mr-2"
-            src="https://i.pravatar.cc/150?u=current-user"
-            alt="Your avatar"
-          >
-          <div class="flex-1 relative">
-            <input
-              v-model="commentInput"
-              type="text"
-              placeholder="Napisz komentarz..."
-              class="w-full bg-gray-100 rounded-full px-4 py-2 text-sm outline-none focus:bg-gray-200 transition-colors"
-              @keyup.enter="submitComment"
-            >
-          </div>
-        </div>
+        <div  class="p-4 border-t border-theme-border flex items-center bg-theme-bg-secondary sticky bottom-13 z-10">
+                    <CommentReplyInput
+                        :post-id="reel.id"
+                    />
+                </div>
       </div>
     </div>
+    <BaseModal title="Informacje o tej zawartości"  @close="closeLinkModal" v-if="isLinkModalVisible">
+        <LinkModal :targetUrl="linkModalData" />
+    </BaseModal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { RouterLink } from 'vue-router';
+import { processContent, type ProcessedContent } from '@/utils/contentProcessor';
 import type { Reel } from '@/stores/reels';
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
 import MusicNote from 'vue-material-design-icons/MusicNote.vue';
+import ThumbUp from 'vue-material-design-icons/ThumbUp.vue';
+import CommentTextMultiple from 'vue-material-design-icons/CommentTextMultiple.vue';
+import Share from 'vue-material-design-icons/Share.vue';
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
-import CommentFilter from '@/components/feed/CommentFilter.vue';
+import CommentFilter from '@/components/profile/CommentFilter.vue';
 import { getUserById } from '@/data/users';
 import { useReelsStore } from '@/stores/reels';
+import { usePostsStore } from '@/stores/posts';
+import { useCommentsStore } from '@/stores/comments';
+import CommentItem from '@/components/feed/CommentItem.vue';
+import CommentReplyInput from '../feed/CommentReplyInput.vue';
+import { useLinkModal } from '@/composables/useLinkModal';
+import BaseModal from '@/components/common/BaseModal.vue';
+import LinkModal from '@/components/feed/LinkModal.vue';
+import EmptyState from '../common/EmptyState.vue';
 
-defineProps<{
+const props = defineProps<{
   reel: Reel;
 }>();
 
+
 const reelsStore = useReelsStore();
+const postsStore = usePostsStore();
+const commentsStore = useCommentsStore();
+const { isLinkModalVisible, linkModalData, showLinkModal, closeLinkModal } = useLinkModal();
+
+const handleCommentReaction = (event: { commentId: string; reaction: string | null; oldReaction: string | null }) => {
+    postsStore.handleCommentReaction(props.reel.id, event.commentId, event.reaction, event.oldReaction)
+}
+
+const handleCommentReply = (event: { author: { id: number, name: string }, commentId: string }) => {
+    if (commentsStore.activeReplyInput === event.commentId) {
+        commentsStore.clearReplyingTo()
+    } else {
+        commentsStore.setReplyingTo(event.author, event.commentId)
+    }
+}
+
+const handleOpenLinkModal = (url: string) => {
+    showLinkModal(url)
+}
 
 const commentInput = ref('');
-const hasComments = computed(() => false); // Future: Check if reel has comments
+const hasComments = computed(() => props.reel.comments && props.reel.comments.length > 0);
 
 const reelUser = computed(() => getUserById(props.reel.authorId));
+
+const processedCaption = computed(() => {
+  return processContent(props.reel.caption);
+});
 
 const handleFollowToggle = () => {
   if (reelUser.value) {
@@ -122,4 +185,3 @@ const submitComment = () => {
   }
 };
 </script>
-
