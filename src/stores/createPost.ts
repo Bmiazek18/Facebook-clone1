@@ -22,6 +22,11 @@ interface Activity {
   }
 }
 
+interface Poll {
+  question: string;
+  options: { text: string }[];
+}
+
 export const useCreatePostStore = defineStore('createPost', () => {
   // --- STATE (Stan) ---
   const taggedUsers = ref<User[]>([]);
@@ -29,15 +34,26 @@ export const useCreatePostStore = defineStore('createPost', () => {
   const selectedGif = ref<string | null>(null);
   const selectedPrivacy = ref<string>('friends');
   const imageToEdit = ref<SelectedImage | null>(null);
+  const imageIndexToEdit = ref<number | null>(null);
   const videoToEdit = ref<string | null>(null);
+  const postVideoUrl = ref<string | null>(null);
   const postContent = ref<string>('');
-  const selectedImage = ref<SelectedImage | null>(null);
+  const selectedImages = ref<SelectedImage[]>([]);
   const selectedCardBgId = ref<number>(0);
   const initialView = ref<string | null>(null);
   const selectedFeeling = ref<Feeling | null>(null);
   const selectedActivity = ref<Activity | null>(null);
+  const targetId = ref<string | null>(null)
+  const targetType = ref<'User' | 'Group' | null>(null)
+  const isAnonymous = ref<boolean>(false); // Add isAnonymous state
+  const poll = ref<Poll | null>(null);
+
 
   // --- ACTIONS (Akcje) ---
+  function setTarget (id: string | null, type: 'User' | 'Group' | null) {
+    targetId.value = id
+    targetType.value = type
+  }
   function setTaggedUsers(users: User[]) {
     taggedUsers.value = users;
   }
@@ -58,8 +74,9 @@ export const useCreatePostStore = defineStore('createPost', () => {
     selectedPrivacy.value = privacy;
   }
 
-  function setImageToEdit(url: SelectedImage | null) {
-    imageToEdit.value = url;
+  function setImageToEdit(image: SelectedImage | null, index: number | null = null) {
+    imageToEdit.value = image;
+    imageIndexToEdit.value = index;
   }
 
   function setVideoToEdit(url: string | null) {
@@ -70,23 +87,21 @@ export const useCreatePostStore = defineStore('createPost', () => {
     postContent.value = content;
   }
 
-  function setSelectedImage(image: string | SelectedImage | null) {
-    if (typeof image === 'string') {
-      selectedImage.value = { url: image, altText: '', tags: [] };
-    } else if (image === null) {
-      selectedImage.value = null;
-    } else {
-      selectedImage.value = image;
-    }
+  function addSelectedImage(image: SelectedImage) {
+    selectedImages.value.push(image);
+  }
+
+  function removeSelectedImage(index: number) {
+    selectedImages.value.splice(index, 1);
   }
 
   function setSelectedCardBgId(id: number) {
     selectedCardBgId.value = id;
   }
 
-  function setAltText(text: string) {
-    if (selectedImage.value) {
-      selectedImage.value.altText = text;
+  function updateImageAltText(index: number, altText: string) {
+    if (selectedImages.value[index]) {
+      selectedImages.value[index].altText = altText;
     }
   }
 
@@ -101,6 +116,17 @@ export const useCreatePostStore = defineStore('createPost', () => {
   function setSelectedActivity(activity: Activity | null) {
     selectedActivity.value = activity;
   }
+  function setPostVideoUrl(video){
+postVideoUrl.value = video
+  }
+
+  function setIsAnonymous(value: boolean) { // Add setIsAnonymous action
+    isAnonymous.value = value;
+  }
+
+  function setPoll(newPoll: Poll | null) {
+    poll.value = newPoll;
+  }
 
   // Funkcja resetująca stan (oprócz privacy)
   function reset() {
@@ -109,11 +135,18 @@ export const useCreatePostStore = defineStore('createPost', () => {
     selectedGif.value = null;
     imageToEdit.value = null;
     videoToEdit.value = null;
+    postVideoUrl.value = null;
     postContent.value = '';
-    selectedImage.value = null;
+    selectedImages.value = [];
+initialView.value = null;
     selectedCardBgId.value = 0; // Reset do wartości domyślnej
     selectedFeeling.value = null;
     selectedActivity.value = null;
+    targetId.value = null
+    targetType.value = null
+    isAnonymous.value = false; // Reset isAnonymous
+    poll.value = null;
+
     // Nie resetujemy privacy, ponieważ jest ładowane z localStorage
   }
   const hasUnsavedChanges = computed(() => {
@@ -124,7 +157,7 @@ export const useCreatePostStore = defineStore('createPost', () => {
         imageToEdit.value !== null ||
         videoToEdit.value !== null ||
         postContent.value !== '' ||
-        (selectedImage.value !== null && (selectedImage.value.url !== '' || selectedImage.value.altText !== '' || (selectedImage.value.tags && selectedImage.value.tags.length > 0))) ||
+        selectedImages.value.length > 0 ||
         selectedFeeling.value !== null ||
         selectedActivity.value !== null
       );
@@ -136,14 +169,21 @@ export const useCreatePostStore = defineStore('createPost', () => {
     selectedGif,
     selectedPrivacy,
     imageToEdit,
+    imageIndexToEdit,
     videoToEdit,
+    postVideoUrl,
     postContent,
-    selectedImage,
+    selectedImages,
     selectedCardBgId,
     initialView,
     selectedFeeling,
     selectedActivity,
+    targetId,
+    targetType,
     hasUnsavedChanges,
+    isAnonymous, // Expose isAnonymous
+    poll,
+    setTarget,
     setTaggedUsers,
     addTaggedUser,
     setLocation,
@@ -152,12 +192,16 @@ export const useCreatePostStore = defineStore('createPost', () => {
     setImageToEdit,
     setVideoToEdit,
     setPostContent,
-    setSelectedImage,
+    setPostVideoUrl,
+    addSelectedImage,
+    removeSelectedImage,
+    updateImageAltText,
     setSelectedCardBgId,
-    setAltText,
     setInitialView,
     setSelectedFeeling,
     setSelectedActivity,
+    setIsAnonymous, // Expose setIsAnonymous
+    setPoll,
     reset,
   };
 });

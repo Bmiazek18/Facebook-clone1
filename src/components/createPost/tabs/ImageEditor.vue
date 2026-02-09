@@ -17,7 +17,7 @@ import 'cropperjs/dist/cropper.css';
 import { useStoryElementInteraction } from '@/composables/useStoryElementInteraction';
 import StoryElement from '@/components/createStory/StoryElement.vue';
 import ImageTag from '@/components/media/ImageTag.vue';
-import EditorSidebar from './item/EditorSidebar.vue';
+import EditorSidebar from '../item/EditorSidebar.vue';
 import type { StoryElement as StoryElementType } from '@/types/StoryElement';
 import type { ImageTagType } from '@/types/ImageTag';
 
@@ -55,7 +55,7 @@ const emit = defineEmits<{
 
 // --- STATE ---
 const createPostStore = useCreatePostStore();
-const { imageToEdit } = storeToRefs(createPostStore); // Get imageToEdit from store
+const { imageToEdit, taggedUsers } = storeToRefs(createPostStore); // Get imageToEdit from store
 const imageRotation = ref(0);
 const taggingMode = ref(false);
 const tags = ref<ImageTagType[]>(createPostStore.selectedImage?.tags || []);
@@ -266,19 +266,13 @@ const handleCropCancel = () => {
 };
 
 const handleDone = () => {
-  if (imageUrl.value) {
-    createPostStore.setSelectedImage({
-      url: imageUrl.value,
-      altText: altText.value,
-      tags: tags.value,
-    });
+
     emit('done', imageUrl.value);
-  }
+
 };
 
 const handleCancel = () => console.log('Anuluj');
 
-// --- LOGIKA OBROTU ---
 // --- LOGIKA OBROTU ---
 const rotateImage = () => {
   if (isCroppingMode.value && cropperRef.value) {
@@ -401,6 +395,9 @@ const selectUser = (user: User) => {
     newTag.value.user = user;
     searchQuery.value = user.name;
     createTag();
+    if (!taggedUsers.value.some(taggedUser => taggedUser.id === user.id)) {
+        createPostStore.addTaggedUser(user);
+    }
   }
 };
 
@@ -472,7 +469,7 @@ const updateElementContent = (id: string, value: string) => {
 </script>
 
 <template>
-  <div class="fixed inset-0 flex flex-col lg:flex-row z-50 h-full w-screen bg-black overflow-hidden font-sans">
+  <div class="fixed inset-0 flex flex-col h-[700px]  lg:flex-row z-50 h-full w-screen bg-black overflow-hidden font-sans">
 
     <!-- Sidebar - ukryty na mobile, po lewej na desktop -->
     <EditorSidebar
@@ -593,7 +590,7 @@ const updateElementContent = (id: string, value: string) => {
               >
                 <ImageTag
                   :tag="tag"
-                  :image-rotation="imageRotation"
+
                 />
               </div>
             </template>

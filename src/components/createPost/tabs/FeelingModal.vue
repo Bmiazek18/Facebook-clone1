@@ -150,14 +150,9 @@ const selectFeeling = (feeling: Feeling) => {
 </script>
 
 <template>
-  <div class="flex flex-col h-[600px] bg-white font-sans overflow-hidden">
+  <div class="flex flex-col  bg-white font-sans overflow-hidden">
 
-      <div class="flex items-center p-3 border-b border-gray-100 relative">
-        <button @click="emit('back')" class="p-2 rounded-full hover:bg-gray-100 absolute left-2 text-gray-600">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-        </button>
-        <h2 class="text-lg font-bold text-center w-full text-gray-900">Co robisz?</h2>
-      </div>
+
 
       <div class="border-b border-gray-200">
         <div class="flex">

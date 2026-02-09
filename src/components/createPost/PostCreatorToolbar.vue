@@ -14,7 +14,7 @@
   :size="24"
   class="text-[#1877f2] cursor-pointer hover:bg-gray-100 p-0.5 rounded transition"
   @click="emit('openTagUsers')"
-  :title="$t('post.tagFriends')"
+  v-tooltip="$t('post.tagFriends')"
 />
 
 <emoticon-icon
@@ -28,7 +28,7 @@
   :size="24"
   class="text-[#f3425f] cursor-pointer hover:bg-gray-100 p-0.5 rounded transition"
   @click="emit('openLocation')"
-  :title="$t('post.location')"
+  v-tooltip="$t('post.location')"
 />
 
 <div
@@ -57,10 +57,10 @@ import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
 import { storeToRefs } from 'pinia';
 
 const createPostStore = useCreatePostStore();
-const { selectedCardBgId, selectedGif, selectedImage, videoToEdit } = storeToRefs(createPostStore);
+const { selectedCardBgId, selectedGif,  videoToEdit } = storeToRefs(createPostStore);
 
 const isMediaDisabled = computed(() => {
-  return selectedCardBgId.value !== 0 || !!selectedGif.value || !!selectedImage.value || !!videoToEdit.value;
+  return selectedCardBgId.value !== 0 || !!selectedGif.value  || !!videoToEdit.value;
 });
 
 const emit = defineEmits<{

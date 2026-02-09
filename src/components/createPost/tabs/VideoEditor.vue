@@ -165,12 +165,11 @@ const transcode = async () => {
     await ffmpeg.writeFile('input.mp4', await fetchFile(videoToEdit.value));
 
     message.value = 'Przycinanie wideo...';
-
-    await ffmpeg.exec([
-      '-i', 'input.mp4',
+await ffmpeg.exec([
       '-ss', range.start.toString(),
+      '-i', 'input.mp4',
       '-t', (range.end - range.start).toString(),
-      '-c', 'copy', // Szybkie kopiowanie bez rekompresji
+      '-c', 'copy',
       'output.mp4'
     ]);
 
