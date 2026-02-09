@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, inject } from 'vue'
 import type { User } from '@/data/users'
 import EditForm from './EditForm.vue'
 import ItemMenu from './ItemMenu.vue'
@@ -13,6 +13,7 @@ defineProps<{ profileUser: User }>()
 
 // Stan: Przechowuje nazwę aktualnie otwartej sekcji
 const activeSection = ref<string | null>(null)
+const isOwner = inject('isOwner')
 
 // Dane formularza
 const form = reactive({
@@ -55,7 +56,7 @@ const remove = (section: string, index: number) => {
             </div>
           </div>
 
-          <div class="flex items-center space-x-2 text-gray-500">
+          <div v-if="isOwner" class="flex items-center space-x-2 text-gray-500">
             <Earth class="text-lg"/>
             <ItemMenu
               editText="Edytuj wydarzenie"
@@ -82,7 +83,7 @@ const remove = (section: string, index: number) => {
         />
 
         <button
-          v-else
+          v-else-if="isOwner"
           @click="open('lifeEvent')"
           class="flex items-center text-blue-600 hover:underline font-medium"
         >

@@ -1,126 +1,123 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted} from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import CreateBox from '@/components/createPost/CreateBox.vue';
 import ProfileFriendsMini from '@/components/profile/ProfileFriendsMini.vue';
 import PostItem from '@/components/feed/post/PostItem.vue';
-import BirthdayPostFeed from './BirthdayPostFeed.vue';
-import { usePostsStore } from '@/stores/posts';
 import PostFilter from '@/components/feed/PostFilter.vue';
+import { usePostsStore } from '@/stores/posts';
+import { useRoute } from 'vue-router';
+import BirthdayPostFeed from '@/components/BirthdayPostFeed.vue';
+
+// Ikony do sekcji Intro
+import HomeOutline from 'vue-material-design-icons/HomeOutline.vue';
+import CakeVariant from 'vue-material-design-icons/CakeVariant.vue';
+import HeartOutline from 'vue-material-design-icons/HeartOutline.vue';
+import SchoolOutline from 'vue-material-design-icons/SchoolOutline.vue';
+import { useStickySidebar } from '@/composables/useStickySidebar';
+
+defineProps({
+    friendsList: {
+        type: Array,
+        required: true,
+    },
+    miniPhotosList: {
+        type: Array,
+        required: true,
+    },
+    userName: {
+        type: String,
+        required: true,
+    },
+    userImage: {
+        type: String,
+        required: true,
+    },
+});
+
+const route = useRoute();
 const postsStore = usePostsStore();
+const activeView = ref('list');
 
-const props = defineProps<{
-    friendsList: any[];
-    miniPhotosList: number[];
-    userName: string;
-    userImage: string;
-}>();
-
-const handleDeletePost = (postId: string) => {
-    postsStore.removePost(postId);
-};
-
-// --- LOGIKA "FACEBOOK DUAL STICKY" ---
+const HEADER_OFFSET = 110;
+const BOTTOM_OFFSET = 16;
 const leftSectionRef = ref<HTMLElement | null>(null);
-const stickyTop = ref(0); // Dynamiczna wartość CSS 'top'
+const { stickyTop } = useStickySidebar(leftSectionRef, HEADER_OFFSET, BOTTOM_OFFSET);
 
-// Konfiguracja marginesów
-const HEADER_OFFSET = 110; // Wysokość nawigacji + zakładek (ok. 50px + 60px)
-const BOTTOM_OFFSET = 16;  // Margines od dołu ekranu
+const targetId = computed(() => route.params.userId as string);
 
-let lastScrollY = window.scrollY;
+const groupedPostsByMonth = computed(() => {
+    const userPosts = postsStore.posts.filter(p => p.authorId === parseInt(targetId.value) || (p.targetType === 'User' && p.targetId === targetId.value));
+    const grouped = userPosts.reduce((acc, post) => {
+        const date = new Date(post.date);
+        const monthYear = date.toLocaleString('pl-PL', { month: 'long', year: 'numeric' });
+        if (!acc[monthYear]) {
+            acc[monthYear] = [];
+        }
+        acc[monthYear].push(post);
+        return acc;
+    }, {} as Record<string, typeof userPosts>);
+    return grouped;
+});
 
-const updateStickyPosition = () => {
-    if (!leftSectionRef.value) return;
-
-    const currentScrollY = window.scrollY;
-    const direction = currentScrollY > lastScrollY ? 'down' : 'up';
-    const scrollDiff = currentScrollY - lastScrollY;
-
-    const viewportHeight = window.innerHeight;
-    const sidebarHeight = leftSectionRef.value.offsetHeight;
-
-    // 1. Jeśli sidebar jest KRÓTSZY niż okno -> Zawsze kleimy do góry
-    if (sidebarHeight + HEADER_OFFSET + BOTTOM_OFFSET < viewportHeight) {
-        stickyTop.value = HEADER_OFFSET;
-        lastScrollY = currentScrollY;
-        return;
-    }
-
-    // 2. Jeśli sidebar jest DŁUŻSZY niż okno -> Obliczamy "pływający" top
-    let newTop = stickyTop.value - scrollDiff;
-
-    // Ograniczenie Górne (Sticky Top): Nie może być niżej niż nagłówek
-    const maxTop = HEADER_OFFSET;
-
-    // Ograniczenie Dolne (Sticky Bottom): Nie może uciec za bardzo do góry
-    // Wartość ujemna, która sprawia, że dół sidebaru styka się z dołem ekranu
-    const minTop = viewportHeight - sidebarHeight - BOTTOM_OFFSET;
-
-    // Aplikujemy ograniczenia (Clamping)
-    if (newTop > maxTop) {
-        newTop = maxTop;
-    } else if (newTop < minTop) {
-        newTop = minTop;
-    }
-
-    stickyTop.value = newTop;
-    lastScrollY = currentScrollY;
+const handleViewChanged = (view: string) => {
+    activeView.value = view;
 };
 
-// Obserwator zmian wysokości (np. gdy załadują się obrazki)
-let resizeObserver: ResizeObserver | null = null;
-
-onMounted(() => {
-    // Inicjalizacja pozycji
-    stickyTop.value = HEADER_OFFSET;
-    lastScrollY = window.scrollY;
-
-    window.addEventListener('scroll', updateStickyPosition, { passive: true });
-    window.addEventListener('resize', updateStickyPosition);
-
-    if (leftSectionRef.value) {
-        resizeObserver = new ResizeObserver(() => {
-            updateStickyPosition();
-        });
-        resizeObserver.observe(leftSectionRef.value);
-    }
-});
-
-onUnmounted(() => {
-    window.removeEventListener('scroll', updateStickyPosition);
-    window.removeEventListener('resize', updateStickyPosition);
-    if (resizeObserver) resizeObserver.disconnect();
-});
+const handleDeletePost = (postId: number) => {
+    postsStore.deletePost(postId);
+};
 </script>
 
 <template>
-    <div class="flex flex-col md:flex-row w-full justify-between items-start relative">
+    <div class="flex flex-col md:flex-row w-full justify-between items-start relative max-w-[1250px] mx-auto px-4">
 
         <div
             id="LeftSection"
             ref="leftSectionRef"
-            class="w-full md:w-5/12 mt-4 mr-4 md:sticky md:z-10 self-start"
+            class="w-full md:w-[40%] mt-4 md:sticky md:z-10 self-start"
             :style="{ top: `${stickyTop}px` }"
         >
-            <div class="bg-theme-bg-secondary p-3 rounded-lg shadow-lg">
-                <div class="font-extrabold pb-2 text-theme-text text-xl">Intro</div>
-                <div class="space-y-4 pb-2">
-                    <button class="w-full bg-gray-200 hover:bg-gray-300 rounded-lg p-2 font-bold transition-colors">Dodaj bio</button>
-                    <button class="w-full bg-gray-200 hover:bg-gray-300 rounded-lg p-2 font-bold transition-colors">Edytuj szczegóły</button>
-                    <button class="w-full bg-gray-200 hover:bg-gray-300 rounded-lg p-2 font-bold transition-colors">Dodaj hobby</button>
-                    <button class="w-full bg-gray-200 hover:bg-gray-300 rounded-lg p-2 font-bold transition-colors">Dodaj polecane</button>
+            <div class="bg-theme-bg-secondary p-4 rounded-lg shadow-md border border-theme-border">
+                <div class="font-extrabold pb-4 text-theme-text text-xl">Informacje osobiste</div>
+
+                <div class="space-y-4 mb-4">
+                    <div class="flex items-center gap-3 text-theme-text">
+                        <HomeOutline :size="24" class="text-gray-500" />
+                        <span>Pochodzi z: <span class="font-bold">Międzyrzec Podlaski</span></span>
+                    </div>
+                    <div class="flex items-center gap-3 text-theme-text">
+                        <CakeVariant :size="24" class="text-gray-500" />
+                        <span>25 lutego 1993</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-theme-text">
+                        <HeartOutline :size="24" class="text-gray-500" />
+                        <span>Wolny(a)</span>
+                    </div>
                 </div>
+
+                <div class="pt-4 border-t border-theme-border">
+                    <div class="font-bold text-lg mb-3 text-theme-text text-xl">Wykształcenie</div>
+                    <div class="flex items-center gap-3 mb-1">
+                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center border overflow-hidden">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Logo_AWF_Warszawa.png/600px-Logo_AWF_Warszawa.png" alt="AWF Logo" class="object-contain w-8 h-8">
+                        </div>
+                        <span class="font-bold text-theme-text">AWF Biała Podlaska</span>
+                    </div>
+                    <button class="text-gray-500 text-sm hover:underline ml-13">Zobacz więcej informacji o edukacji</button>
+                </div>
+
+
             </div>
 
-            <div class="bg-theme-bg-secondary p-3 mt-4 rounded-lg shadow-lg">
-                <div class="flex justify-between items-center mb-2">
+            <div class="bg-theme-bg-secondary p-4 mt-4 rounded-lg shadow-md border border-theme-border">
+                <div class="flex justify-between items-center mb-4">
                     <div class="font-extrabold text-theme-text text-xl">Zdjęcia</div>
                     <a class="text-blue-500 font-semibold text-[15px] hover:underline cursor-pointer">Zobacz wszystkie</a>
                 </div>
-                <div class="grid grid-cols-3 gap-1">
+                <div class="grid grid-cols-3 gap-2">
                     <img v-for="id in miniPhotosList" :key="id"
-                        :src="`https://picsum.photos/id/${id}/150/150`"
-                        class="w-full h-24 md:h-28 object-cover rounded-lg aspect-square cursor-pointer hover:opacity-90 transition-opacity"
+                        :src="`https://picsum.photos/id/${id}/200/200`"
+                        class="w-full h-28 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                         alt="Zdjęcie"
                     >
                 </div>
@@ -129,24 +126,54 @@ onUnmounted(() => {
             <ProfileFriendsMini :friends-list="friendsList" />
 
             <div class="mt-4 text-[13px] text-gray-500 px-2 pb-4">
-                Prywatność · Regulamin · Reklama · Pliki cookie · Meta © 2024
+                Prywatność · Regulamin · Reklama · Pliki cookie · Meta © 2026
             </div>
         </div>
 
-        <div id="ContentSection" class="w-full md:w-7/12 mt-4 min-h-screen pb-20">
+        <div id="ContentSection" class="w-full md:w-[58%] mt-4 min-h-screen pb-20">
             <CreateBox
-                :image="userImage"
-                :placeholder="`Co słychać, ${userName.split(' ')[0]}?`"
-                :author-name="userName"
-                :author-avatar="userImage"
+                :target-id="targetId"
+                target-type="User"
             />
-            <PostFilter />
-            <PostItem
-                v-for="post in postsStore.posts.filter(p => p.authorId === 1)"
-                :key="post.id"
-                :post="post"
-                @delete="handleDeletePost"
-            />
+            <PostFilter @view-changed="handleViewChanged" />
+
+            <template v-if="activeView === 'list'">
+                <PostItem
+                    v-for="post in postsStore.posts.filter(p => p.authorId === parseInt(targetId)|| (p.targetType ===('User') && p.targetId === targetId))"
+                    :key="post.id"
+                    class="mt-4"
+                    :post="post"
+                    @delete="handleDeletePost"
+                />
+                <BirthdayPostFeed/>
+            </template>
+
+            <template v-else-if="activeView === 'grid'">
+                <div class="space-y-6 mt-4">
+                    <div v-for="(postsInMonth, monthYear) in groupedPostsByMonth" :key="monthYear"
+                         class="bg-theme-bg-secondary p-4 rounded-lg shadow-lg">
+                        <h3 class="text-theme-text text-xl font-bold mb-4">{{ monthYear }}</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div v-for="post in postsInMonth" :key="post.id"
+                                 class="bg-theme-bg-secondary rounded-xl overflow-hidden flex flex-col h-full border border-theme-border hover:brightness-110 transition-all cursor-pointer relative group">
+                                <div class="p-3 text-theme-text text-sm line-clamp-2 min-h-[3rem]">
+                                    {{ post.content }}
+                                </div>
+                                <div class="aspect-square w-full overflow-hidden bg-black">
+                                    <img v-if="post.media && post.media.length > 0" :src="post.media[0].src" class="w-full h-full object-cover" />
+                                    <div v-else class="w-full h-full flex items-center justify-center bg-zinc-800 text-gray-500">
+                                         Brak zdjęcia
+                                    </div>
+                                </div>
+                                <div class="p-3 mt-auto flex items-center gap-2">
+                                    <img :src="userImage" class="w-8 h-8 rounded-full" />
+                                    <span class="text-[10px] text-gray-500">{{ new Date(post.date).toLocaleDateString('pl-PL') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
 </template>

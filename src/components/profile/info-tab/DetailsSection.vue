@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, inject } from 'vue'
 import type { User } from '@/data/users'
 import EditForm from './EditForm.vue'
 import ItemMenu from './ItemMenu.vue'
@@ -17,6 +17,7 @@ const props = defineProps<{ profileUser: User }>()
 const activeSection = ref<string | null>(null)
 const editingIndex = ref<number | null>(null) // Indeks elementu edytowanego
 const form = reactive({ bio: '', pronunciation: '', otherName: '', quote: '' })
+const isOwner = inject('isOwner')
 
 const close = () => { activeSection.value = null; editingIndex.value = null }
 
@@ -57,13 +58,13 @@ const remove = (s: string, idx?: number) => { console.log(`Usunięto ${s}`) }
             <AccountDetails class="text-2xl text-gray-400 mt-1 mr-3"/>
             <p class="whitespace-pre-wrap">{{ profileUser.bioDetails }}</p>
          </div>
-         <div class="flex items-center space-x-2 text-gray-500 ml-4">
+         <div v-if="isOwner" class="flex items-center space-x-2 text-gray-500 ml-4">
             <Earth class="text-lg"/>
             <ItemMenu editText="Edytuj biogram" removeText="Usuń" @edit="editBio" @remove="remove('bio')"/>
          </div>
       </div>
 
-      <button v-if="!profileUser.bioDetails && activeSection !== 'bio'" @click="editBio" class="flex items-center text-blue-600 hover:underline font-medium">
+      <button v-if="isOwner && !profileUser.bioDetails && activeSection !== 'bio'" @click="editBio" class="flex items-center text-blue-600 hover:underline font-medium">
          <PlusCircleOutline class="mr-3 text-2xl" /> Podaj szczegółowe informacje na swój temat
       </button>
     </div>
@@ -80,10 +81,10 @@ const remove = (s: string, idx?: number) => { console.log(`Usunięto ${s}`) }
             <div class="mr-3 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center"><VolumeHigh class="text-xl text-gray-500"/></div>
             <span>{{ profileUser.namePronounciation }}</span>
          </div>
-         <div class="flex items-center space-x-2 text-gray-500"><Earth class="text-lg"/><ItemMenu editText="Edytuj wymowę" removeText="Usuń" @edit="editPron" @remove="remove('pron')"/></div>
+         <div v-if="isOwner" class="flex items-center space-x-2 text-gray-500"><Earth class="text-lg"/><ItemMenu editText="Edytuj wymowę" removeText="Usuń" @edit="editPron" @remove="remove('pron')"/></div>
       </div>
 
-       <button v-if="!profileUser.namePronounciation && activeSection !== 'pron'" @click="editPron" class="flex items-center text-blue-600 hover:underline font-medium">
+       <button v-if="isOwner && !profileUser.namePronounciation && activeSection !== 'pron'" @click="editPron" class="flex items-center text-blue-600 hover:underline font-medium">
           <PlusCircleOutline class="mr-3 text-2xl" /> Dodaj wymowę imienia i nazwiska
        </button>
     </div>
@@ -99,7 +100,7 @@ const remove = (s: string, idx?: number) => { console.log(`Usunięto ${s}`) }
 
              <div v-else class="flex justify-between items-center">
                 <div class="flex items-center text-gray-900"><AccountBadge class="text-2xl text-gray-400 mr-3"/><span class="text-lg">{{ name }}</span></div>
-                <div class="flex items-center space-x-2 text-gray-500"><Earth class="text-lg"/><ItemMenu editText="Edytuj nazwę" removeText="Usuń" @edit="editOtherName(idx)" @remove="remove('other', idx)"/></div>
+                <div v-if="isOwner" class="flex items-center space-x-2 text-gray-500"><Earth class="text-lg"/><ItemMenu editText="Edytuj nazwę" removeText="Usuń" @edit="editOtherName(idx)" @remove="remove('other', idx)"/></div>
              </div>
           </div>
        </div>
@@ -107,7 +108,7 @@ const remove = (s: string, idx?: number) => { console.log(`Usunięto ${s}`) }
        <div v-if="activeSection === 'other_add'" class="mt-2">
           <EditForm label="Nazwa" v-model="form.otherName" @cancel="close" @save="save('other')"/>
        </div>
-       <button v-else @click="addOtherName" class="flex items-center text-blue-600 hover:underline font-medium">
+       <button v-else-if="isOwner" @click="addOtherName" class="flex items-center text-blue-600 hover:underline font-medium">
           <PlusCircleOutline class="mr-3 text-2xl" /> Dodaj pseudonim, nazwisko rodowe...
        </button>
     </div>
@@ -123,7 +124,7 @@ const remove = (s: string, idx?: number) => { console.log(`Usunięto ${s}`) }
 
            <div v-else class="flex justify-between items-start">
               <div class="flex items-start text-gray-900"><FormatQuoteClose class="text-2xl text-gray-400 mt-1 mr-3"/><span class="italic">{{ q }}</span></div>
-              <div class="flex items-center space-x-2 text-gray-500 ml-4"><Earth class="text-lg"/><ItemMenu editText="Edytuj cytat" removeText="Usuń" @edit="editQuote(i)" @remove="remove('quote', i)"/></div>
+              <div v-if="isOwner" class="flex items-center space-x-2 text-gray-500 ml-4"><Earth class="text-lg"/><ItemMenu editText="Edytuj cytat" removeText="Usuń" @edit="editQuote(i)" @remove="remove('quote', i)"/></div>
            </div>
         </div>
       </div>
@@ -131,7 +132,7 @@ const remove = (s: string, idx?: number) => { console.log(`Usunięto ${s}`) }
       <div v-if="activeSection === 'quote_add'" class="mt-2">
          <EditForm label="Cytat" v-model="form.quote" @cancel="close" @save="save('quote')" />
       </div>
-      <button v-else @click="addQuote" class="flex items-center text-blue-600 hover:underline font-medium">
+      <button v-else-if="isOwner" @click="addQuote" class="flex items-center text-blue-600 hover:underline font-medium">
          <PlusCircleOutline class="mr-3 text-2xl" /> Dodaj ulubione cytaty
       </button>
     </div>

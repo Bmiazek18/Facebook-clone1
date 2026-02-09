@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, onMounted, onUnmounted, computed, provide } from 'vue';
+import { useRoute, useRouter } from 'vue-router'; // Import useRouter
+import { useI18n } from 'vue-i18n'; // Import useI18n
 
 // --- IMPORTY KOMPONENTÓW ---
-import ProfilePostsTab from '@/components/profile/ProfilePostsTab.vue';
-import ProfileInfoTab from '@/components/profile/ProfileInfoTab.vue';
-import FriendsSection from '@/components/friends/FriendsSection.vue';
 import ImageWithGradient from '@/components/media/ImageWithGradient.vue';
-
+// Dodaj te importy w sekcji ikon
+import MapMarker from 'vue-material-design-icons/MapMarker.vue';
+import Domain from 'vue-material-design-icons/Domain.vue'; // lub School.vue
 // --- IMPORTY IKON (Vue Material Design Icons) ---
 import Camera from 'vue-material-design-icons/Camera.vue';
 import Pencil from 'vue-material-design-icons/Pencil.vue';
@@ -21,43 +21,50 @@ import { getUserById } from '@/data/users';
 import type { User } from '@/data/users';
 import BaseModal from '@/components/common/BaseModal.vue';
 import EditProfileImgModal from '@/components/profile/EditProfileImgModal.vue';
+import UserAvatar from '@/components/common/UserAvatar.vue';
+import { useAuthStore } from '@/stores/auth';
 
 const route = useRoute();
+const router = useRouter();
+const { t } = useI18n(); // Initialize useI18n and get the t function // Initialize useRouter
 
 // --- KONFIGURACJA ZAKŁADEK ---
-const activeTab = ref('posts');
 const tabs = [
-    { key: 'posts', label: 'Posty' },
-    { key: 'info', label: 'Informacje' },
-    { key: 'friends', label: 'Znajomi' },
-    { key: 'photos', label: 'Zdjęcia' },
-    { key: 'videos', label: 'Filmy' },
-    { key: 'checkins', label: 'Miejsca' },
-    { key: 'sport', label: 'Sport' },
-    { key: 'more', label: 'Więcej', hasDropdown: true },
+    { key: 'posts', label: 'profile.tabs.posts' },
+    { key: 'info', label: 'profile.tabs.info' },
+    { key: 'friends', label: 'profile.tabs.friends' },
+    { key: 'photos', label: 'profile.tabs.photos' },
+    { key: 'videos', label: 'profile.tabs.videos' },
+
+    { key: 'more', label: 'profile.tabs.more', hasDropdown: true },
 ];
 
+const activeTab = computed(() => {
+    const currentRouteName = route.name as string;
+    if (currentRouteName.includes('profile-info') || currentRouteName.includes('userProfile-info')) {
+        return 'info';
+    }
+    if (currentRouteName.includes('profile-')) {
+        return currentRouteName.split('profile-')[1];
+    } else if (currentRouteName.includes('userProfile-')) {
+        return currentRouteName.split('userProfile-')[1];
+    }
+    return 'posts'; // Default to 'posts' if no specific tab route is matched
+});
+
 function setActiveTab(tabKey: string) {
-    activeTab.value = tabKey;
+    const userId = route.params.userId;
+    let routeName;
+    if (userId) {
+        routeName = `userProfile-${tabKey}`;
+    } else {
+        routeName = `profile-${tabKey}`;
+    }
+    router.push({ name: routeName, params: { userId: userId as string } });
 }
 
 // --- DANE UŻYTKOWNIKA ---
-const currentUser: User = {
-    id: 1,
-    name: 'Bartosz Miazek',
-    avatar: 'https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg',
-    bio: 'Developer & Tech Enthusiast',
-    location: 'Białystok, Polska',
-    website: 'https://bartoszmiazek.com',
-    joinDate: '2020-05-15',
-    followersCount: 1250,
-    followingCount: 342,
-    friendsCount: 541,
-    postsCount: 124,
-    cover: 'https://picsum.photos/1200/300?random=101',
-    status: 'online'
-};
-
+const auth = useAuthStore();
 const userIdParam = computed(() => {
     const id = route.params.userId;
     return id ? parseInt(id as string, 10) : null;
@@ -65,13 +72,21 @@ const userIdParam = computed(() => {
 
 const profileUser = computed(() => {
     if (userIdParam.value) {
-        return getUserById(userIdParam.value) || currentUser;
+        return getUserById(userIdParam.value);
     }
-    return currentUser;
+    return auth.currentUser;
 });
 
 // Czy to profil zalogowanego użytkownika?
-const isOwner = computed(() => profileUser.value.id === currentUser.id);
+const isOwner = computed(() => {
+    if (!profileUser.value || !auth.currentUser) {
+        return false;
+    }
+    return profileUser.value.id === auth.currentUser.id;
+});
+
+provide('isOwner', isOwner);
+provide('profileUser', profileUser);
 
 // --- STICKY HEADER LOGIC ---
 const tabsContainerRef = ref<HTMLElement | null>(null);
@@ -86,7 +101,9 @@ const handleScroll = () => {
 };
 
 onMounted(() => {
-    document.title = `${profileUser.value.name} | Facebook`;
+    if (profileUser.value) {
+        document.title = `${profileUser.value.name} | Facebook`;
+    }
     window.addEventListener('scroll', handleScroll);
 });
 
@@ -112,85 +129,121 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109];
 </script>
 
 <template>
-    <div class="w-full min-h-screen pb-20 bg-[#F0F2F5]">
+    <div v-if="profileUser" class="w-full min-h-screen pb-20 bg-theme-bg mt-[56px]">
 
         <div
             v-if="isTabsFixed"
-            class="fixed top-[50px] left-0 right-0 h-[60px] bg-white shadow-sm border-b border-gray-300 z-30 animate-slide-down flex items-center"
+            class="fixed top-[50px] left-0 right-0 h-[70px] bg-theme-bg-secondary  shadow-theme-shadow border-b border-theme-border z-30 animate-slide-down flex items-center"
         >
-            <div class="max-w-[1095px] flex items-center justify-between w-full mx-auto px-4 lg:px-0">
-                <div class="flex items-center space-x-3">
-                    <img class="rounded-full w-[40px] h-[40px] border border-gray-200 object-cover" :src="profileUser.avatar" alt="Avatar">
-                    <div class="text-[17px] text-[#050505] font-bold leading-5">
+            <div class="max-w-[1200px] flex items-center justify-between w-full mx-auto   lg:px-0">
+                <div  class="flex items-center space-x-3">
+                    <UserAvatar :user="profileUser" :size="40" class="border border-theme-border" />
+                    <div class="text-[17px] text-theme-text  leading-5">
                         {{ profileUser.name }}
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <button class="w-9 h-9 flex items-center justify-center bg-[#E4E6EB] hover:bg-[#D8DADF] rounded-full transition-colors">
-                        <DotsHorizontal :size="20" fillColor="#050505"/>
+                    <button class="w-9 h-9 flex items-center justify-center bg-theme-bg hover:bg-theme-bg-hover rounded-sm transition-colors">
+                        <DotsHorizontal :size="20" fillColor="currentColor" class="text-theme-text"/>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="w-full bg-white shadow-sm">  <ImageWithGradient :image-url="profileUser.cover" class="rounded-b-xl" />
+        <div class="w-full bg-theme-bg-secondary shadow-theme-shadow">
+          <template v-if="profileUser.cover">
+    <ImageWithGradient
+        :image-url="profileUser.cover"
+        class="rounded-b-xl "
+    />
+</template>
+
+<div
+    v-else
+    class="w-full h-[200px] md:h-[350px] bg-gradient-to-b from-gray-200 to-gray-300 rounded-b-xl relative shadow-inner"
+>
+    <button
+        v-if="isOwner"
+
+        class="absolute bottom-4 right-4 bg-white hover:bg-gray-50 text-black px-4 py-2 rounded-md font-semibold text-[15px] shadow-sm flex items-center transition-colors cursor-pointer"
+    >
+        <Camera :size="20" class="mr-2"/>
+        {{ $t('profile.addCoverPhoto') || 'Dodaj zdjęcie w tle' }}
+    </button>
+</div>
             <div class="max-w-[1250px] mx-auto relative">
 
 
 
-                <div id="ProfileInfo" class="px-4 lg:px-[32px]  relative">
+                <div id="ProfileInfo" class="px-4 lg:px-[32px] ">
 
-                    <div class="flex flex-col lg:flex-row items-center lg:items-end justify-between relative z-10">
+                    <div class="flex flex-col lg:flex-row items-center lg:items-end relative ">
 
-                        <div class="relative -mt-[86px] lg:mr-4">
-                            <div class="relative group">
-                                <img
-                                    class="rounded-full w-[168px] h-[168px] border-[4px] border-white bg-white object-cover shadow-sm"
-                                    :src="profileUser.avatar"
-                                    alt="Avatar"
-                                >
-                                <button @click="openImagePicker" class="absolute bottom-2 right-2 bg-[#E4E6EB] hover:bg-[#D8DADF] p-2 rounded-full cursor-pointer transition-colors border-2 border-white">
-                                    <Camera :size="20" fillColor="#050505"/>
+                        <div class="relative z-10 flex-shrink-0">
+                            <div class="relative group p-1 bg-theme-bg-secondary rounded-full">
+                                <UserAvatar
+                                    :user="profileUser"
+                                    :size="168"
+                                    class="border-[4px] border-theme-bg-secondary bg-theme-bg-secondary shadow-sm relative block"
+                                />
+
+
+                                <button v-if="isOwner" @click="openImagePicker" class="absolute bottom-4 right-4 bg-gray-200 hover:bg-gray-300 text-black p-2 rounded-full cursor-pointer transition-colors ">
+                                    <Camera :size="22" fillColor="currentColor" class="text-theme-text"/>
                                 </button>
                             </div>
                         </div>
 
-                        <div class="flex flex-col items-center lg:items-start -mt-3 lg:mt-0 lg:mb-4 flex-1">
-                            <h1 class="text-[32px] text-[#050505] font-bold leading-tight text-center lg:text-left">
+                        <div class="flex-1 flex flex-col items-center lg:items-start mt-2 lg:mt-0 lg:ml-6 lg:mb-4 min-w-0">
+                            <h1 class="text-[32px] font-bold text-theme-text leading-tight text-center lg:text-left mb-1">
                                 {{ profileUser.name }}
                             </h1>
-                            <div class="text-[15px] font-semibold text-gray-500 mt-1">
-                                {{ profileUser.friendsCount }} znajomi
+
+                            <div class="flex items-center text-[15px] font-semibold text-theme-text mb-2">
+                                <span class="hover:underline cursor-pointer">{{ profileUser.friendsCount }} znajomi</span>
+                                <template v-if="profileUser.mutualFriendsCount && !isOwner">
+                                  <span class="mx-1.5">•</span>
+                                  <span class="hover:underline cursor-pointer">{{ profileUser.mutualFriendsCount }} wspólnych znajomych</span>
+                                </template>
                             </div>
 
-                            <div class="flex items-center justify-center lg:justify-start mt-2 cursor-pointer">
-                                <img v-for="i in 7" :key="i"
-                                    class="rounded-full -ml-2 first:ml-0 w-[32px] h-[32px] border-2 border-white object-cover relative z-0"
-                                    :src="`https://picsum.photos/id/${140 + i}/100/100`"
+                            <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-[15px] text-theme-text font-medium mb-3" v-if="profileUser.location || profileUser.school">
+                                <div class="flex items-center gap-1.5" v-if="profileUser.location">
+                                    <MapMarker :size="18" class="text-theme-text-secondary opacity-70" />
+                                    <span>{{ profileUser.location.split(',')[0] }}</span> </div>
+                                <div class="flex items-center gap-1.5" v-if="profileUser.school">
+                                    <Domain :size="18" class="text-theme-text-secondary opacity-70" />
+                                    <span>{{ profileUser.school }}</span> </div>
+                            </div>
+
+                            <div v-if="!isOwner" class="flex items-center -space-x-2 mt-1">
+                                <img v-for="i in 8" :key="i"
+                                    class="w-[32px] h-[32px] rounded-full  object-cover cursor-pointer  relative"
+                                    :src="`https://picsum.photos/id/${150 + i}/100/100`"
+                                    :alt="`Friend ${i}`"
                                 >
                             </div>
                         </div>
 
-                        <div class="flex flex-col sm:flex-row items-center gap-3 mt-4 lg:mt-0 lg:mb-6 lg:self-end">
-                            <template v-if="isOwner">
-                                <button class="flex items-center px-3 py-[7px] bg-[#1877F2] hover:bg-[#166fe5] text-white rounded-md font-semibold text-[15px] transition-colors">
-                                    <Plus :size="20" class="mr-1.5" fillColor="#FFFFFF"/>
-                                    Dodaj do relacji
-                                </button>
-                                <button class="flex items-center px-3 py-[7px] bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] rounded-md font-semibold text-[15px] transition-colors">
-                                    <Pencil :size="18" class="mr-1.5" fillColor="#050505"/>
-                                    Edytuj profil
-                                </button>
-                                <button class="flex items-center justify-center w-[36px] h-[36px] bg-[#E4E6EB] hover:bg-[#D8DADF] rounded-md transition-colors">
-                                    <ChevronDown :size="24" fillColor="#050505"/>
+                        <div class="flex flex-col sm:flex-row items-center gap-3 mt-6 lg:mt-0 lg:mb-8 lg:self-end flex-shrink-0">
+                            <button v-if="isOwner" @click="router.push('/stories/create')" class="flex items-center px-4 py-[8px] bg-theme-primary hover:bg-theme-primary-hover text-white rounded-[6px] font-semibold text-[15px] transition-colors">
+                                <Plus :size="20" class="mr-1.5" fillColor="#FFFFFF"/>
+                                {{ $t('profile.addToStory') }}
+                            </button>
+                            <button v-if="isOwner" @click="router.push({ name: 'profile-info' })" class="flex items-center px-4 py-[8px] bg-theme-bg hover:bg-theme-bg-hover text-theme-text rounded-[6px] font-semibold text-[15px] transition-colors">
+                                <Pencil :size="18" class="mr-1.5 text-theme-text" fillColor="currentColor" />
+                                {{ $t('profile.editProfile') }}
+                            </button>
+
+                            <template v-else>
+                                <button class="flex items-center px-3 py-[7px] bg-theme-primary text-white rounded-md font-semibold">
+                                    <Message :size="20" class="mr-1.5" /> {{ $t('profile.sendMessage') }}
                                 </button>
                             </template>
 
-                            <template v-else>
-                                <button class="flex items-center px-3 py-[7px] bg-[#1877F2] text-white rounded-md font-semibold">
-                                    <Message :size="20" class="mr-1.5" /> Wyślij wiadomość
-                                </button>
-                            </template>
+                             <button class="flex items-center justify-center w-[36px] h-[36px] bg-theme-bg hover:bg-theme-bg-hover rounded-[6px] transition-colors">
+                                <ChevronDown :size="24" fillColor="currentColor" class="text-theme-text"/>
+                            </button>
                         </div>
 
                     </div>
@@ -208,7 +261,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109];
                                 class="text-[15px] font-semibold"
                                 :class="activeTab === tab.key ? 'text-[#1877F2]' : 'text-gray-600'"
                             >
-                                {{ tab.label }}
+                                {{ t(tab.label) }}
                                 <ChevronDown v-if="tab.hasDropdown" :size="16" class="inline-block ml-1 opacity-70"/>
                             </span>
 
@@ -218,36 +271,15 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109];
                             ></div>
                         </button>
                     </div>
-                </div>
+                    </div>
             </div>
         </div>
 
         <div class="max-w-[1250px] mx-auto md:px-0 px-2 ">
-            <div class="grid grid-cols-1 gap-4">
-
-                <ProfilePostsTab
-                    v-if="activeTab === 'posts'"
-                    :friends-list="friendsList"
-                    :mini-photos-list="miniPhotosList"
-                    :user-name="profileUser.name"
-                    :user-image="profileUser.avatar"
-                />
-
-                <ProfileInfoTab v-if="activeTab === 'info'" />
-
-                <div v-if="activeTab === 'friends'" class="bg-white rounded-lg shadow-sm p-4">
-                    <FriendsSection :friends-list="friendsList" :is-full-view="true" />
-                </div>
-
-                <div v-if="!['posts', 'info', 'friends'].includes(activeTab)" class="bg-white p-8 rounded-lg shadow-sm text-center text-gray-500">
-                    <h3 class="font-bold text-xl mb-2">Sekcja: {{ activeTab }}</h3>
-                    <p>Ta część interfejsu jest jeszcze w budowie.</p>
-                </div>
-
-            </div>
+            <router-view :friends-list="friendsList" :mini-photos-list="miniPhotosList" :user-name="profileUser.name" :user-image="profileUser.avatar" />
         </div>
     </div>
-    <BaseModal v-if="isPickerOpen" @close="()=>!isPickerOpen" :title="'Wybierz zdjecie profileowe'"> <EditProfileImgModal /></BaseModal>
+    <BaseModal v-if="isPickerOpen" @close="()=>!isPickerOpen" :title="$t('profile.editProfileImage')"> <EditProfileImgModal /></BaseModal>
 </template>
 
 <style scoped>

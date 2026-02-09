@@ -5,7 +5,7 @@ import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
 import ItemMenu from './ItemMenu.vue' // Zakładam, że masz ten komponent z poprzednich kroków
 
 defineProps<{
-  hasData: any
+  hasData: boolean
   isEditing: boolean
   addLabel: string
   editText?: string

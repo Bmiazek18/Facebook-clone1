@@ -3,7 +3,7 @@
     {
       "id": 1,
       "name": "Bartosz Miazek",
-      "avatar": "https://scontent-waw2-1.xx.fbcdn.net/v/t39.30808-1/295055057_582985040112298_215415809791370036_n.jpg",
+      "avatar": "https://i.pravatar.cc/150?img=12",
       "bio": "Developer & Tech Enthusiast",
       "location": "Białystok, Polska",
       "website": "https://bartoszmiazek.com",
@@ -18,6 +18,7 @@
       "company": "Tech Corp",
       "education": "Informatyka",
       "school": "Politechnika Białostocka",
+      "highSchool": "IV LO im. Jana Pawła II w Łukowie",
       "mutualFriendsCount": 45,
       "phone": "+48 123 456 789",
       "email": "bartosz@example.com",
@@ -33,6 +34,9 @@
         { "date": "2020-05-15", "event": "Dołączył do Facebooka" },
         { "date": "2021-06-20", "event": "Promocja na Senior Frontend Developer" },
         { "date": "2022-12-01", "event": "Ukończył certyfikację React" }
+      ],
+      "socialLinks": [
+        { "name": "LinkedIn", "url": "https://www.linkedin.com/in/bartosz-miazek" }
       ]
     },
     {
@@ -214,6 +218,91 @@
       "education": "Kuchnia Molekularna",
       "school": "Szkoła Kulinarna Warszawa",
       "mutualFriendsCount": 91
+    },
+    {
+      "id": 11,
+      "name": "Nowy Użytkownik 1",
+      "avatar": "https://randomuser.me/api/portraits/men/11.jpg",
+      "bio": "New user with one post.",
+      "location": "Gdynia, Polska",
+      "website": "https://nowyuser1.com",
+      "joinDate": "2023-01-01",
+      "followersCount": 10,
+      "followingCount": 5,
+      "friendsCount": 15,
+      "postsCount": 1,
+      "cover": "https://picsum.photos/1200/300?random=111",
+      "status": "online",
+      "job": "Tester",
+      "company": "Test Company",
+      "education": "IT",
+      "school": "University of Testing",
+      "mutualFriendsCount": 2
+    },
+    {
+      "id": 12,
+      "name": "Nowy Użytkownik 3",
+      "avatar": "https://randomuser.me/api/portraits/women/12.jpg",
+      "bio": "New user with three posts.",
+      "location": "Sopot, Polska",
+      "website": "https://nowyuser3.com",
+      "joinDate": "2023-02-01",
+      "followersCount": 30,
+      "followingCount": 10,
+      "friendsCount": 25,
+      "postsCount": 3,
+      "cover": "https://picsum.photos/1200/300?random=112",
+      "status": "offline",
+      "job": "QA Specialist",
+      "company": "Quality Assurance Inc.",
+      "education": "Computer Science",
+      "school": "Sopot Technical University",
+      "mutualFriendsCount": 5
+    },
+    {
+      "id": 100,
+      "name": "Użytkownik Testowy EN",
+      "avatar": "https://randomuser.me/api/portraits/men/13.jpg",
+      "bio": "Test user for English posts.",
+      "location": "London, UK",
+      "website": "https://testuseren.com",
+      "joinDate": "2023-01-01",
+      "followersCount": 5,
+      "followingCount": 2,
+      "friendsCount": 8,
+      "postsCount": 1,
+      "cover": "https://picsum.photos/1200/300?random=1001",
+      "status": "online"
+    },
+    {
+      "id": 101,
+      "name": "Testbenutzer DE",
+      "avatar": "https://randomuser.me/api/portraits/women/14.jpg",
+      "bio": "Test user for German posts.",
+      "location": "Berlin, Germany",
+      "website": "https://testuserde.com",
+      "joinDate": "2023-01-02",
+      "followersCount": 7,
+      "followingCount": 3,
+      "friendsCount": 10,
+      "postsCount": 1,
+      "cover": "https://picsum.photos/1200/300?random=1002",
+      "status": "offline"
+    },
+    {
+      "id": 102,
+      "name": "Utilisateur Test FR",
+      "avatar": "https://randomuser.me/api/portraits/men/15.jpg",
+      "bio": "Test user for French posts.",
+      "location": "Paris, France",
+      "website": "https://testuserfr.com",
+      "joinDate": "2023-01-03",
+      "followersCount": 6,
+      "followingCount": 4,
+      "friendsCount": 9,
+      "postsCount": 1,
+      "cover": "https://picsum.photos/1200/300?random=1003",
+      "status": "online"
     }
   ]
 }

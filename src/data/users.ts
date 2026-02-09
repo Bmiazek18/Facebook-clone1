@@ -17,6 +17,7 @@ export interface User {
   company?: string
   education?: string
   school?: string
+  highSchool?: string
   mutualFriendsCount?: number
   phone?: string
   email?: string
@@ -34,6 +35,8 @@ export interface User {
   otherNames?: string[]
   favoriteQuotes?: string[]
   lifeEvents?: { date: string; event: string }[]
+  socialLinks?: { name: string; url: string }[]
+  photos?: string[]
 }
 
 import usersData from './users.json'

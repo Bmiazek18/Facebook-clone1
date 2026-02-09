@@ -1,13 +1,13 @@
 <template>
   <div>
-    <div class="shadow-[0_4px_12px_rgba(0,0,0,0.25)] p-3 mt-2 mx-3 rounded-lg bg-theme-bg-secondary">
+    <div class="shadow-theme p-3 mt-2 mx-3 rounded-lg bg-theme-bg-secondary">
       <RouterLink
         :to="profileLink"
-        class="flex pt-2 items-center space-x-3 pb-3 border-b border-theme-border hover:bg-gray-100 cursor-pointer"
+        class="flex pt-2 items-center space-x-3 pb-3 border-b border-theme-border hover:bg-theme-hover cursor-pointer"
       >
         <img
           :src="currentUser?.avatar || 'https://i.pravatar.cc/150?img=1'"
-          class="h-10 w-10 bg-gray-300 rounded-full shrink-0"
+          class="h-10 w-10 bg-theme-bg-tertiary rounded-full shrink-0"
           :alt="currentUser?.name || 'avatar'"
         />
         <span class="font-semibold text-theme-text font-[15px] truncate">
@@ -16,7 +16,7 @@
       </RouterLink>
 
       <button
-        class="w-full mt-3 py-2 px-3 flex items-center justify-center bg-gray-100 hover:bg-theme-hover rounded-lg text-sm font-medium text-gray-800 text-theme-text transition duration-150"
+        class="w-full mt-3 py-2 px-3 flex items-center justify-center bg-theme-bg-tertiary hover:bg-theme-hover rounded-lg text-sm font-medium text-theme-text transition duration-150"
       >
         <AccountSearchIcon class="mr-2 h-5 w-5 text-gray-600 text-theme-text-secondary" />
         {{ $t('profile_menu.viewAllProfiles') }}
@@ -31,14 +31,14 @@
           @click="handleMenuClick(item)"
           class="w-full flex items-center p-2 rounded-lg hover:bg-theme-hover transition duration-150"
         >
-          <span class="h-9 w-9 bg-theme-bg bg-theme-hover rounded-full flex items-center justify-center mr-3 shrink-0">
+          <span class="h-9 w-9 bg-theme-bg-tertiary rounded-full flex items-center justify-center mr-3 shrink-0">
             <component :is="item.iconComponent" class="text-xl text-theme-text" />
           </span>
 
           <span class="text-theme-text font-[15px] ">{{ $t(item.labelKey) }}</span>
 
           <span class="ml-auto flex items-center">
-            <ChevronRightIcon v-if="item.hasSubMenu" size="30" />
+            <ChevronRightIcon v-if="item.hasSubMenu" size="30" class="text-theme-text" />
           </span>
         </button>
       </li>

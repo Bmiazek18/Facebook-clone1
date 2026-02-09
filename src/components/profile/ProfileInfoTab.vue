@@ -1,46 +1,75 @@
 <script setup lang="ts">
-  import { ref, computed } from 'vue'
-  import { useRoute } from 'vue-router'
+  import { ref, computed, inject } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { useI18n } from 'vue-i18n'
   import FriendsSection from '@/components/friends/FriendsSection.vue'
-  import OverviewSection from './info-tab/OverviewSection.vue'
-  import WorkEducationSection from './info-tab/WorkEducationSection.vue'
-  import PlacesSection from './info-tab/PlacesSection.vue'
-  
-  import FamilySection from './info-tab/FamilySection.vue'
-  import DetailsSection from './info-tab/DetailsSection.vue'
-  import EventsSection from './info-tab/EventsSection.vue'
-  import { getUserById } from '@/data/users'
 
   const route = useRoute()
+  const router = useRouter()
+  const { t } = useI18n()
+  const profileUser: any = inject('profileUser');
 
-  // 1. Pobranie ID z URL
-  const userIdParam = computed(() => {
-    const id = route.params.userId
-    return id ? parseInt(id as string, 10) : null
-  })
+  const hasWorkOrEducation = computed(() => {
+    if (!profileUser.value) return false;
+    return profileUser.value.job || profileUser.value.company || profileUser.value.school || profileUser.value.education || profileUser.value.highSchool;
+  });
 
-  // 2. Pobranie użytkownika (bez fallbacku do hardcoded default user)
-  const profileUser = computed(() => {
-    if (userIdParam.value) {
-      return getUserById(userIdParam.value)
+  const hasPlaces = computed(() => {
+    if (!profileUser.value) return false;
+    return profileUser.value.location || profileUser.value.hometown;
+  });
+
+  const hasContactBasic = computed(() => {
+    if (!profileUser.value) return false;
+    return profileUser.value.phone || profileUser.value.website || profileUser.value.email;
+  });
+
+  const hasFamily = computed(() => {
+    if (!profileUser.value) return false;
+    return profileUser.value.relationshipStatus || (profileUser.value.familyMembers && profileUser.value.familyMembers.length > 0);
+  });
+
+  const hasDetails = computed(() => {
+    if (!profileUser.value) return false;
+    return profileUser.value.bioDetails || profileUser.value.namePronounciation || (profileUser.value.otherNames && profileUser.value.otherNames.length > 0) || (profileUser.value.favoriteQuotes && profileUser.value.favoriteQuotes.length > 0);
+  });
+
+  const hasEvents = computed(() => {
+    if (!profileUser.value) return false;
+    return profileUser.value.lifeEvents && profileUser.value.lifeEvents.length > 0;
+  });
+
+  const activeTab = computed(() => {
+    const currentRouteName = route.name as string;
+    if (currentRouteName.includes('profile-info-')) {
+        return currentRouteName.split('profile-info-')[1];
+    } else if (currentRouteName.includes('userProfile-info-')) {
+        return currentRouteName.split('userProfile-info-')[1];
     }
-    return null
-  })
+    return 'overview';
+  });
 
-  // 3. Obsługa zakładek (nawigacja po lewej stronie)
-  const activeTab = ref('overview')
+  const menuItems = computed(() => [
+    { id: 'overview', label: 'profile.info.overview', visible: true },
+    { id: 'work_edu', label: 'profile.info.work_edu', visible: hasWorkOrEducation.value },
+    { id: 'places', label: 'profile.info.places', visible: hasPlaces.value },
+    { id: 'contact_basic', label: 'profile.info.contact_basic', visible: hasContactBasic.value },
+    { id: 'family', label: 'profile.info.family', visible: hasFamily.value },
+    { id: 'details', label: 'profile.info.details', visible: hasDetails.value },
+    { id: 'events', label: 'profile.info.events', visible: hasEvents.value },
+  ].filter(item => item.visible));
 
-  const menuItems = [
-    { id: 'overview', label: 'Przegląd' },
-    { id: 'work_edu', label: 'Praca i wykształcenie' },
-    { id: 'places', label: 'Wcześniejsze miejsca zamieszkania' },
-    { id: 'contact_basic', label: 'Dane kontaktowe i podstawowe informacje' },
-    { id: 'family', label: 'Rodzina i związki' },
-    { id: 'details', label: 'Informacje szczegółowe' }, // Skrócona nazwa dla czytelności
-    { id: 'events', label: 'Wydarzenia z życia' },
-  ]
+  function setActiveTab(tabKey: string) {
+    const userId = route.params.userId;
+    let routeName;
+    if (userId) {
+        routeName = `userProfile-info-${tabKey}`;
+    } else {
+        routeName = `profile-info-${tabKey}`;
+    }
+    router.push({ name: routeName, params: { userId: userId as string } });
+  }
 
-  // Lista znajomych (pozostawiona bez zmian)
   const friendsList = ref([
     { name: 'Natalia Wójcik', mutual: 71, isFriend: true, imageId: 35 },
     { name: 'Kacper Szymański', mutual: 10, isFriend: false, imageId: 36 },
@@ -70,30 +99,24 @@
         <div v-if="profileUser" class="flex bg-theme-bg-secondary p-4 rounded-lg shadow-lg min-h-[400px]">
 
             <div class="w-1/3 md:w-1/4 border-r border-gray-200 pr-4">
-                <h2 class="text-xl font-bold mb-4 text-theme-text ml-2">Informacje</h2>
+                <h2 class="text-xl font-semibold mb-4 text-theme-text ml-2">Informacje</h2>
                 <ul class="space-y-1 text-theme-text-secondary">
                     <li
                         v-for="item in menuItems"
                         :key="item.id"
-                        @click="activeTab = item.id"
+                        @click="setActiveTab(item.id)"
                         class="p-2 rounded-lg cursor-pointer transition-colors"
                         :class="activeTab === item.id
-                            ? 'bg-blue-50 text-blue-600 font-bold'
+                            ? 'bg-blue-50 text-blue-600 '
                             : 'hover:bg-gray-100'"
                     >
-                        {{ item.id === 'details' ? `Informacje szczegółowe o użytkowniku ${profileUser.name.split(' ')[0]}` : item.label }}
+                        {{ item.id === 'details' ? t('profile.info.details_about', { name: profileUser.name.split(' ')[0] }) : t(item.label) }}
                     </li>
                 </ul>
             </div>
 
             <div class="w-2/3 md:w-3/4 pl-6 text-theme-text-secondary">
-                <OverviewSection v-if="activeTab === 'overview'" :profile-user="profileUser" />
-                <WorkEducationSection v-else-if="activeTab === 'work_edu'" :profile-user="profileUser" />
-                <PlacesSection v-else-if="activeTab === 'places'" :profile-user="profileUser" />
-                <OverviewSection v-else-if="activeTab === 'contact_basic'" :profile-user="profileUser" />
-                <FamilySection v-else-if="activeTab === 'family'" :profile-user="profileUser" />
-                <DetailsSection v-else-if="activeTab === 'details'" :profile-user="profileUser" />
-                <EventsSection v-else-if="activeTab === 'events'" :profile-user="profileUser" />
+                <router-view :profile-user="profileUser" />
             </div>
         </div>
 

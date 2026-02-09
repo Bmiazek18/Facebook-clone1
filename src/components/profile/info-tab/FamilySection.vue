@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, inject } from 'vue'
 import type { User } from '@/data/users'
 import ItemMenu from './ItemMenu.vue'
 import PlusCircleOutline from 'vue-material-design-icons/PlusCircleOutline.vue'
 import Heart from 'vue-material-design-icons/Heart.vue'
 import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
 import Earth from 'vue-material-design-icons/Earth.vue'
-import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
-import AccountCircle from 'vue-material-design-icons/AccountCircle.vue'
 
 defineProps<{ profileUser: User }>()
 const allUsers = [{ id: 1, name: 'Anna Nowak', avatar: '' }, { id: 2, name: 'Piotr Kowalski', avatar: '' }]
@@ -16,11 +14,17 @@ const editingIndex = ref<number | null>(null)
 const showDropdown = ref(false)
 const form = reactive({ status: 'Wolny', familyName: '', relation: 'Brat' })
 const filteredUsers = computed(() => form.familyName ? allUsers.filter(u => u.name.toLowerCase().includes(form.familyName.toLowerCase())) : [])
+const isOwner = inject('isOwner')
 const close = () => { activeSection.value = null; editingIndex.value = null; showDropdown.value = false }
 const save = () => close()
 const selectUser = (name: string) => { form.familyName = name; showDropdown.value = false }
 
-const editFamily = (idx: number, member: any) => {
+interface FamilyMember {
+  name: string;
+  relationship: string;
+}
+
+const editFamily = (idx: number, member: FamilyMember) => {
     form.familyName = member.name; form.relation = member.relationship
     editingIndex.value = idx; activeSection.value = 'fam_edit'
 }
@@ -43,10 +47,10 @@ const openRel = () => activeSection.value = 'rel'
 
       <div v-else-if="profileUser.relationshipStatus" class="flex justify-between items-center mb-4">
          <div class="flex items-center text-gray-900"><div class="mr-3 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center"><Heart class="text-xl"/></div><div><strong>{{ profileUser.relationshipStatus }}</strong></div></div>
-         <div class="flex items-center space-x-2 text-gray-500"><Earth class="text-lg"/><ItemMenu editText="Edytuj" removeText="Usuń" @edit="openRel" @remove="close"/></div>
+         <div v-if="isOwner" class="flex items-center space-x-2 text-gray-500"><Earth class="text-lg"/><ItemMenu editText="Edytuj" removeText="Usuń" @edit="openRel" @remove="close"/></div>
       </div>
 
-      <button v-if="!profileUser.relationshipStatus && activeSection !== 'rel'" @click="openRel" class="flex items-center text-blue-600 hover:underline font-medium"><PlusCircleOutline class="mr-3 text-2xl" /> Dodaj status związku</button>
+      <button v-if="isOwner && !profileUser.relationshipStatus && activeSection !== 'rel'" @click="openRel" class="flex items-center text-blue-600 hover:underline font-medium"><PlusCircleOutline class="mr-3 text-2xl" /> Dodaj status związku</button>
     </div>
 
     <div>
@@ -64,7 +68,7 @@ const openRel = () => activeSection.value = 'rel'
                 <div class="mr-3 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center"><AccountGroup class="text-xl"/></div>
                 <div><div class="font-bold text-lg">{{ member.name }}</div><div class="text-sm text-gray-500">{{ member.relationship }}</div></div>
             </div>
-            <div class="flex items-center space-x-2 text-gray-500"><Earth class="text-lg"/><ItemMenu editText="Edytuj" removeText="Usuń" @edit="editFamily(idx, member)" @remove="close"/></div>
+            <div v-if="isOwner" class="flex items-center space-x-2 text-gray-500"><Earth class="text-lg"/><ItemMenu editText="Edytuj" removeText="Usuń" @edit="editFamily(idx, member)" @remove="close"/></div>
          </div>
       </div>
 
@@ -76,7 +80,7 @@ const openRel = () => activeSection.value = 'rel'
          <div class="bg-gray-200 rounded-lg px-3 py-2 mb-4"><select v-model="form.relation" class="w-full bg-transparent outline-none"><option>Brat</option><option>Siostra</option></select></div>
          <div class="flex justify-end space-x-2"><button @click="close" class="px-3 py-1 bg-gray-200 rounded">Anuluj</button><button @click="save" class="px-3 py-1 bg-blue-600 text-white rounded">Zapisz</button></div>
       </div>
-      <button v-else @click="addFamily" class="flex items-center text-blue-600 hover:underline font-medium"><PlusCircleOutline class="mr-3 text-2xl" /> Dodaj członka rodziny</button>
+      <button v-else-if="isOwner" @click="addFamily" class="flex items-center text-blue-600 hover:underline font-medium"><PlusCircleOutline class="mr-3 text-2xl" /> Dodaj członka rodziny</button>
     </div>
   </div>
 </template>
