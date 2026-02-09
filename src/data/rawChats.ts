@@ -23,6 +23,7 @@ export interface Chat {
   unread: boolean;
   isActive: boolean;
   isPinch?: boolean;
+  isMeta?: boolean;
   type: ChatType; // Use ChatType enum
   groupMembers?: GroupMember[]; // Optional for group chats
   extraAvatars?: string[];

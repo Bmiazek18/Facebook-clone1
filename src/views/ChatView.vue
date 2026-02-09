@@ -1,53 +1,9 @@
-<template>
-  <div class="flex h-[calc(100vh-64px)] w-full bg-white overflow-hidden font-sans text-gray-900">
-
-    <!-- MessageMenu - na mobile widoczne tylko gdy showMobileChat = false -->
-    <div :class="chatId && showMobileChat ? 'hidden md:block' : 'block'" class="w-full md:w-auto">
-      <MessageMenu />
-    </div>
-
-    <!-- MessageBox i ChatInfoPanel - na mobile widoczne tylko gdy showMobileChat = true -->
-    <div
-      v-if="chatId"
-      :class="showMobileChat ? 'flex' : 'hidden md:flex'"
-      class="flex-1 overflow-hidden bg-gray-200 relative p-3 gap-3"
-    >
-
-      <!-- MessageBox - ukryty na mobile gdy showMobileInfo = true -->
-      <div
-        v-if="!showMobileInfo"
-        class="flex-1 flex flex-col min-w-0 relative bg-white rounded-xl shadow-sm"
-      >
-        <MessageBox
-          ref="messageBoxRef"
-          :boxId="chatId"
-          mode="full"
-          @open-modal="openModal"
-          @back-to-list="showMobileChat = false"
-          @show-info="showMobileInfo = true"
-        />
-      </div>
-
-      <!-- ChatInfoPanel - zawsze na desktop, na mobile tylko gdy showMobileInfo = true -->
-      <ChatInfoPanel
-        v-if="showMobileInfo"
-        ref="chatInfoPanelRef"
-        :chat-id="chatId"
-        @go-to-message="onSearchGoTo"
-        @back="showMobileInfo = false"
-      />
-
-
-
-    </div>
-  </div>
-  </template>
-
 <script setup lang="ts">
 import '@/assets/animations/slideTransition.css';
 import { ref, watch, computed, nextTick } from 'vue';
+import { useBreakpoints } from '@vueuse/core';
 
-import MessageMenu from '@/layouts/Navbar/MessageMenu.vue';
+import MessageMenu from '@/Layouts/Navbar/MessageMenu.vue';
 import MessageBox from '@/components/messenger/MessageBox/MessageBox.vue';
 import ChatInfoPanel from '@/components/messenger/ChatInfoPanel.vue';
 import { useConversationsStore } from '@/stores/conversations';
@@ -64,13 +20,19 @@ const convStore = useConversationsStore();
 // Stan dla mobile - pokazuj MessageBox gdy użytkownik kliknie w czat
 const showMobileChat = ref(false);
 // Stan dla mobile - pokazuj ChatInfoPanel na pełnym ekranie
-const showMobileInfo = ref(false);
+const showMobileInfo = ref(true);
+
+const breakpoints = useBreakpoints({
+  tablet: 768,
+});
+const isMobile = breakpoints.smaller('tablet');
+
 
 // Gdy chatId się zmieni na mobile, pokazuj MessageBox
 watch(chatId, (newId) => {
   if (newId) {
     showMobileChat.value = true;
-    showMobileInfo.value = false; // Reset info panel przy zmianie czatu
+    showMobileInfo.value = true; // Reset info panel przy zmianie czatu
   }
 
   const s = convStore.settings.find(x => x.chatId === Number(newId));
@@ -110,6 +72,52 @@ function onSearchGoTo(payload: { id: number; chatId?: string | number }) {
   });
 }
 </script>
+
+<template>
+  <div class="flex h-[calc(100vh-64px)] mt-[54px] w-full bg-theme-bg-secondary overflow-hidden font-sans text-theme-text">
+
+    <!-- MessageMenu - na mobile widoczne tylko gdy showMobileChat = false -->
+    <div :class="chatId && showMobileChat ? 'hidden md:block' : 'block'" class="w-full md:w-auto">
+      <MessageMenu :is-embedded="true" />
+    </div>
+
+    <!-- MessageBox i ChatInfoPanel - na mobile widoczne tylko gdy showMobileChat = true -->
+    <div
+      v-if="chatId"
+      :class="showMobileChat ? 'flex' : 'hidden md:flex'"
+      class="flex-1 overflow-hidden bg-theme-bg relative p-3 gap-3"
+    >
+
+      <!-- MessageBox -->
+      <div
+        v-if="!isMobile || !showMobileInfo"
+        class="flex-1 flex flex-col min-w-0 relative bg-theme-bg rounded-xl shadow-sm"
+      >
+        <MessageBox
+          ref="messageBoxRef"
+          :boxId="chatId"
+          mode="full"
+          :hide-header-icons="true"
+          @open-modal="openModal"
+          @back-to-list="showMobileChat = false"
+          @show-info="showMobileInfo = !showMobileInfo"
+        />
+      </div>
+
+      <!-- ChatInfoPanel -->
+      <ChatInfoPanel
+        v-if="showMobileInfo"
+        ref="chatInfoPanelRef"
+        :chat-id="chatId"
+        @go-to-message="onSearchGoTo"
+        @back="showMobileInfo = false"
+      />
+
+
+
+    </div>
+  </div>
+  </template>
 
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar {

@@ -97,7 +97,7 @@ watch(() => props.startIndex, (newIndex) => {
 <template>
   <component :is="fullscreen ? 'Teleport' : 'div'" :to="fullscreen ? 'body' : undefined">
     <div
-      class="flex flex-col bg-black"
+      class="flex flex-col overflow-hidden bg-black"
       :class="[
         fullscreen ? 'fixed inset-0 z-99999 items-center justify-between' : 'relative w-full h-full items-center justify-center'
       ]"
@@ -127,6 +127,7 @@ watch(() => props.startIndex, (newIndex) => {
       <div class="flex flex-col items-center justify-center grow w-full relative z-10">
         <div class="flex items-center justify-center w-full grow relative group">
           <button
+             v-if="media.length >1"
             @click="prev"
             class="absolute left-4 p-2 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70 z-20 transition-opacity"
             :class="fullscreen ? '' : 'opacity-0 group-hover:opacity-100'"
@@ -150,6 +151,7 @@ watch(() => props.startIndex, (newIndex) => {
           </template>
 
           <button
+          v-if="media.length >1"
             @click="next"
             class="absolute right-4 p-2 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70 z-20 transition-opacity"
             :class="fullscreen ? '' : 'opacity-0 group-hover:opacity-100'"
@@ -200,10 +202,10 @@ watch(() => props.startIndex, (newIndex) => {
 
 <style scoped>
 .blur-background {
-  background-size: 125%;
+  background-size: 275%;
   background-position: center;
   background-repeat: no-repeat;
-  filter: blur(20px) saturate(50%);
-  -webkit-filter: blur(20px) saturate(50%);
+  filter: blur(25px)  brightness(0.7);
+  -webkit-filter: blur(25px) brightness(0.7);
 }
 </style>

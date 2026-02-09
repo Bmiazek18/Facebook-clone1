@@ -20,9 +20,11 @@ const emit = defineEmits(['open-modal', 'back-to-list', 'show-info']);
 const props = withDefaults(defineProps<{
   boxId?: string | number;
   mode?: 'card' | 'full';
-  messages?: Message[]
+  messages?: Message[],
+  hideHeaderIcons?: boolean;
 }>(), {
-  mode: 'card'
+  mode: 'card',
+  hideHeaderIcons: false
 });
 
 const convStore = useConversationsStore();
@@ -66,11 +68,11 @@ const visibleMessagesCount = ref(messagesPerPage);
 let scrollHandler: ((event: Event) => void) | null = null;
 
 // Debounce function for scroll handler
-const debounce = (func: (...args: any[]) => void, wait: number) => {
+const debounce = (func: () => void, wait: number) => {
   let timeout: number;
-  return (...args: any[]) => {
+  return () => {
     clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
+    timeout = setTimeout(() => func.apply(this), wait);
   };
 };
 
@@ -109,10 +111,10 @@ watch(lastRead, () => {
 // ==========================================
 // 4. SYMULACJA CIĄGŁA (Skrypt testowy)
 // ==========================================
-let simulationInterval: any = null;
+let simulationInterval: number | null = null;
 const TEST_USER_ID = 'ghost_tester';
 
-onMounted(() => {
+onMounted(async () => {
   // Immediate scroll to bottom
   scrollToBottom();
 
@@ -133,7 +135,21 @@ onMounted(() => {
 
     scrollHandler = debounce(handleScroll, 150);
     container.addEventListener('scroll', scrollHandler);
-  }  // Opóźniony start symulacji
+  }
+
+  // Pre-load messages if the container is not scrollable
+  await nextTick();
+  if (chatContainer.value) {
+    while (
+      chatContainer.value.scrollHeight <= chatContainer.value.clientHeight &&
+      hasMoreToLoad.value
+    ) {
+      await loadOlderMessages();
+      await nextTick(); // Wait for DOM update
+    }
+  }
+
+  // Opóźniony start symulacji
   setTimeout(() => {
     console.log(`🚀 [Box ${props.boxId}] Start symulacji Cursor-based...`);
     let currentIndex = 0;
@@ -169,9 +185,7 @@ onUnmounted(() => {
     container.removeEventListener('scroll', scrollHandler);
   }
 
-  messagesList.value.forEach((msg: Message) => {
-    if ('audioUrl' in msg && msg.audioUrl?.startsWith('blob:')) URL.revokeObjectURL(msg.audioUrl);
-  });
+
 });
 
 // --- Reszta standardowej logiki ---
@@ -329,12 +343,7 @@ const handleAddMessage = (msg: Message) => {
 
 const handleAddReaction = (messageId: number, emoji: string) => {
     if (props.boxId) {
-       const msgs = convStore.getMessagesByChatId(Number(props.boxId));
-       const target = msgs.find(m => m.id === messageId);
-       if (target) {
-         if(!target.reactions) target.reactions = [];
-         target.reactions.push(emoji);
-       }
+       convStore.addReaction(Number(props.boxId), messageId, emoji);
     } else {
        const target = localMessages.value.find(m => m.id === messageId);
        if(target) {
@@ -351,11 +360,8 @@ onMounted(() => {
   });
 });
 
-onUnmounted(() => {
-  messagesList.value.forEach((msg: Message) => {
-    if ('audioUrl' in msg && msg.audioUrl?.startsWith('blob:')) URL.revokeObjectURL(msg.audioUrl);
-  });
-});
+
+
 
 const headerTitle = computed(() => {
   if (!props.boxId) return 'Czat';
@@ -364,6 +370,11 @@ const headerTitle = computed(() => {
 });
 
 const isFull = computed(() => props.mode === 'full');
+
+const lastMessageId = computed(() => {
+  const allMsgs = allMessagesList.value;
+  return allMsgs.length > 0 ? allMsgs[allMsgs.length - 1].id : null;
+});
 
 defineExpose({ scrollToMessage });
 </script>
@@ -380,7 +391,7 @@ defineExpose({ scrollToMessage });
     <div
       :class="[
         isFull ? 'w-full h-full rounded-none shadow-none' : 'w-full max-w-[328px] h-[455px] rounded-xl shadow-2xl',
-        'bg-white flex flex-col relative transition-all duration-300'
+        'bg-theme-bg-secondary flex flex-col relative transition-all duration-300'
       ]"
     >
 
@@ -388,6 +399,7 @@ defineExpose({ scrollToMessage });
         :title="headerTitle"
         :users="[headerTitle]"
         :boxId="props.boxId ?? 1"
+        :hideIcons="props.hideHeaderIcons"
         @back="emit('back-to-list')"
         @show-info="emit('show-info')"
       />
@@ -400,7 +412,7 @@ defineExpose({ scrollToMessage });
 
       <main
         ref="chatContainer"
-        class="relative flex flex-col-reverse grow overflow-y-auto custom-scrollbar bg-gray-50 transition-all duration-300 min-h-0"
+        class="relative flex flex-col-reverse grow overflow-y-auto custom-scrollbar bg-theme-bg duration-300 min-h-0"
         :style="boxTheme?.backgroundImage ? { backgroundImage: `url(${boxTheme.backgroundImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}"
       >
         <div v-if="boxTheme?.gradientClass" :class="['absolute inset-0 pointer-events-none opacity-30', boxTheme.gradientClass]"></div>
@@ -408,7 +420,7 @@ defineExpose({ scrollToMessage });
         <!-- Messages container -->
         <div class="px-4 pb-4 space-y-4">
           <div v-for="(message, index) in messagesList" :key="message.id" :id="`msg-${props.boxId ?? '0'}-${message.id}`" class="relative z-10 mb-1">
-            <div v-if="getDisplayTime(index)" class="text-[11px] font-medium text-gray-400 text-center my-3 select-none uppercase tracking-wide opacity-80">
+            <div v-if="getDisplayTime(index)" class="text-[11px] font-medium text-theme-text-secondary text-center my-3 select-none uppercase tracking-wide opacity-80">
               {{ getDisplayTime(index) }}
             </div>
 
@@ -416,9 +428,11 @@ defineExpose({ scrollToMessage });
               :message="message"
               :index="index"
               :audioStates="audioStates"
+              :currentTheme="boxTheme"
               :positionInGroup="getMessagePositionInGroup(index)"
               :boxId="props.boxId"
               :last-read-map="lastRead"
+              :isLatest="message.id === lastMessageId"
               @open-lightbox="openLightbox"
               @reply="replyTarget = $event"
               @toggle-audio-playback="toggleAudioPlayback"
@@ -430,8 +444,8 @@ defineExpose({ scrollToMessage });
 
         <!-- Loading indicator for older messages -->
         <div v-if="isLoadingOlder" class="px-4 py-3 text-center">
-          <div class="flex items-center justify-center space-x-2 text-gray-500">
-            <div class="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+          <div class="flex items-center justify-center space-x-2 text-theme-text-secondary">
+            <div class="w-4 h-4 border-2 border-theme-border border-t-theme-primary rounded-full animate-spin"></div>
             <span class="text-sm">Ładowanie starszych wiadomości...</span>
           </div>
         </div>
@@ -464,24 +478,24 @@ defineExpose({ scrollToMessage });
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(var(--theme-bg-rgb), 0.05);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
+  background-color: var(--theme-text-secondary);
   border-radius: 3px;
   transition: background-color 0.2s ease;
 }
 
 .custom-scrollbar:hover::-webkit-scrollbar-thumb {
-  background-color: #94a3b8;
+  background-color: var(--theme-text);
 }
 
 /* Firefox scrollbar styling */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 rgba(0, 0, 0, 0.05);
+  scrollbar-color: var(--theme-text-secondary) rgba(var(--theme-bg-rgb), 0.05);
 }
 
 /* Force scroll container height */

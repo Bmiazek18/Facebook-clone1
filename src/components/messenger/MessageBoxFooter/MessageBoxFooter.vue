@@ -1,14 +1,20 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted } from 'vue';
+import { useConversationsStore } from '@/stores/conversations'; // Added
+import { storeToRefs } from 'pinia';
+import { useMessengerThemeStore } from '@/stores/messengerTheme';
+
+const convStore = useConversationsStore();
+const { selectedTheme: currentTheme } = storeToRefs(useMessengerThemeStore());
 
 // --- FLOATING VUE ---
-import { Dropdown as VDropdown } from 'floating-vue';
 import 'floating-vue/dist/style.css';
 
 // --- IKONY ---
 import ImageOutlineIcon from 'vue-material-design-icons/ImageOutline.vue';
 import StickerEmojiIcon from 'vue-material-design-icons/StickerEmoji.vue';
 import EmoticonHappyOutlineIcon from 'vue-material-design-icons/EmoticonHappyOutline.vue';
+import SendIcon from 'vue-material-design-icons/Send.vue';
 
 
 // --- KOMPONENTY ---
@@ -26,18 +32,13 @@ const emit = defineEmits<{
   'clearReply': []
 }>()
 
-const props = defineProps<{reply: Message | null; boxId?: string | number}>();
+const props = defineProps<{reply: Message | null; boxId?: string | number;}>();
 
 const fileInput = ref<HTMLInputElement | null>(null);
-const selectedImageUrl = ref<string | null>(null);
+const selectedImageUrls = ref<string[]>([]);
 const selectedGifUrl = ref<string | null>(null);
 
 
-
-
-// connect selected emoji/icon to the shared messenger theme store
-import { useConversationsStore } from '@/stores/conversations'
-const convStore = useConversationsStore();
 
 const localSelectedEmoji = computed(() => {
   try {
@@ -54,10 +55,10 @@ const localSelectedEmoji = computed(() => {
 
 
 
-const addMessage = (content: string, sizeState: 'default' | 'small' | 'medium' | 'large' = 'default', imageUrl?: string | null, gifUrl?: string | null, isAudio?: boolean, audioUrl?: string, duration?: number) => {
+const addMessage = (content: string, sizeState: 'default' | 'small' | 'medium' | 'large' = 'default', imageUrls?: string[] | null, gifUrl?: string | null, isAudio?: boolean, audioUrl?: string, duration?: number) => {
   const finalContent = content.trim();
 
-  if (finalContent !== '' || imageUrl || gifUrl || isAudio) {
+  if (finalContent !== '' || (imageUrls && imageUrls.length > 0) || gifUrl || isAudio) {
     const now = new Date();
 
     let newMsg: Message;
@@ -73,7 +74,7 @@ const addMessage = (content: string, sizeState: 'default' | 'small' | 'medium' |
         audioUrl: audioUrl,
         duration: duration,
       };
-    } else if (gifUrl && imageUrl) {
+    } else if (gifUrl) {
       newMsg = {
         id: Date.now(),
         sender: 'me',
@@ -81,9 +82,9 @@ const addMessage = (content: string, sizeState: 'default' | 'small' | 'medium' |
         content: finalContent,
         time: now.getTime(),
         iconSizeState: sizeState,
-        imageUrl: imageUrl,
+        imageUrl: gifUrl,
       };
-    } else if (imageUrl) {
+    } else if (imageUrls && imageUrls.length > 0) {
       newMsg = {
         id: Date.now(),
         sender: 'me',
@@ -91,7 +92,8 @@ const addMessage = (content: string, sizeState: 'default' | 'small' | 'medium' |
         content: finalContent,
         time: now.getTime(),
         iconSizeState: sizeState,
-        imageUrl: imageUrl,
+        imageUrl: imageUrls[0], // for preview
+        mediaUrls: imageUrls,
       };
     } else {
       newMsg = {
@@ -109,14 +111,22 @@ const addMessage = (content: string, sizeState: 'default' | 'small' | 'medium' |
 };
 
 const newMessage = ref('');
+const isVoiceRecording = ref(false);
 
+
+const removeImage = (index: number) => {
+  URL.revokeObjectURL(selectedImageUrls.value[index]);
+  selectedImageUrls.value.splice(index, 1);
+};
+
+const clearGifSelection = () => {
+  selectedGifUrl.value = null;
+};
 
 // Media Selection
 const clearMediaSelection = () => {
-  if (selectedImageUrl.value) {
-    URL.revokeObjectURL(selectedImageUrl.value);
-  }
-  selectedImageUrl.value = null;
+  selectedImageUrls.value.forEach(url => URL.revokeObjectURL(url));
+  selectedImageUrls.value = [];
   selectedGifUrl.value = null;
   newMessage.value = '';
 };
@@ -127,20 +137,23 @@ const selectImage = () => {
 
 const handleImageUpload = (event: Event) => {
   const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
+  const files = target.files;
 
-  if (file && file.type.startsWith('image/')) {
+  if (files) {
     selectedGifUrl.value = null;
-    selectedImageUrl.value = URL.createObjectURL(file);
-    newMessage.value = file.name;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.type.startsWith('image/')) {
+        selectedImageUrls.value.push(URL.createObjectURL(file));
+      }
+    }
   }
 };
 
 const handleGifSelect = (gifUrl: string) => {
-  if (selectedImageUrl.value) URL.revokeObjectURL(selectedImageUrl.value);
-  selectedImageUrl.value = null;
-  selectedGifUrl.value = gifUrl;
-  newMessage.value = 'Wysłano GIF';
+  selectedImageUrls.value.forEach(url => URL.revokeObjectURL(url));
+  selectedImageUrls.value = [];
+  addMessage('Wysłano GIF', 'default', null, gifUrl);
 };
 
 
@@ -172,42 +185,54 @@ const showEmoji = (e: { native: string }) => {
 };
 
 const handleSendLike = (sizeState: 'default' | 'small' | 'medium' | 'large') => {
-    if (newMessage.value.trim().length === 0 && !selectedGifUrl.value && !selectedImageUrl.value) {
+    if (newMessage.value.trim().length === 0 && !selectedGifUrl.value && !selectedImageUrls.value.length) {
         addMessage(localSelectedEmoji.value, sizeState);
     }
 }
 
 
 const sendMessage = (content: string, sizeState: 'default' | 'small' | 'medium' | 'large' = 'default') => {
-  const isSendingMedia = selectedImageUrl.value || selectedGifUrl.value;
-  const finalContent = selectedGifUrl.value ? 'GIF' : content.trim();
+  const finalContent = content.trim();
 
-  if (finalContent !== '' || isSendingMedia) {
-    addMessage(finalContent, sizeState, selectedImageUrl.value, selectedGifUrl.value);
+  if (finalContent !== '' || selectedImageUrls.value.length > 0 || selectedGifUrl.value) {
+    if (selectedImageUrls.value.length > 0) {
+      addMessage(finalContent, sizeState, selectedImageUrls.value);
+    } else if (selectedGifUrl.value) {
+      addMessage(finalContent, sizeState, null, selectedGifUrl.value);
+    } else {
+      addMessage(finalContent, sizeState);
+    }
+
     newMessage.value = '';
 
-    selectedImageUrl.value = null;
+     selectedImageUrls.value = [];
+    selectedImageUrls.value = [];
     selectedGifUrl.value = null;
   }
 };
 
 onUnmounted(() => {
-  if (selectedImageUrl.value) URL.revokeObjectURL(selectedImageUrl.value);
-  if (selectedGifUrl.value) URL.revokeObjectURL(selectedGifUrl.value);
+  selectedImageUrls.value.forEach(url => URL.revokeObjectURL(url));
+  if (selectedGifUrl.value) {
+    // Sprawdzenie, czy to nie jest zwykły URL
+    if (selectedGifUrl.value.startsWith('blob:')) {
+      URL.revokeObjectURL(selectedGifUrl.value);
+    }
+  }
 });
 </script>
 
 <template>
-  <footer class="p-2 border-t border-gray-200 bg-white shrink-0">
-    <MediaPreview :imageUrl="selectedImageUrl" :gifUrl="selectedGifUrl" @clear-media="clearMediaSelection" />
+  <footer class="p-2 border-t border-theme-border bg-theme-bg-secondary shrink-0">
+    <MediaPreview :imageUrls="selectedImageUrls" :gifUrl="selectedGifUrl" @clear-media="removeImage" @clear-gif="clearGifSelection" />
 
     <transition name="reply">
       <div v-if="props.reply" class="reply-preview">
         <div class="flex justify-between items-center mb-1">
-          <span class="reply-sender">{{ props.reply.sender === 'me' ? $t('ui.you') : props.reply.sender }}</span>
-          <button @click="$emit('clearReply')" class="text-gray-400 hover:text-gray-600 text-xs">✕</button>
+          <span class="reply-sender text-theme-text">{{ props.reply.sender === 'me' ? $t('ui.you') : props.reply.sender }}</span>
+          <button @click="$emit('clearReply')" class="text-theme-text-secondary hover:text-theme-text text-xs">✕</button>
         </div>
-        <span class="reply-content truncate">
+        <span class="reply-content truncate text-theme-text">
           <template v-if="props.reply.type === 'text'">
             {{ props.reply.content }}
           </template>
@@ -225,22 +250,33 @@ onUnmounted(() => {
     </transition>
 
     <div class="flex items-center space-x-1">
-        <VoiceRecorder @audio-recorded="handleAudioRecorded" />
-        <div class="flex space-x-1 text-gray-500 shrink-0">
+      <div :class="{ 'w-full': isVoiceRecording }">
+        <VoiceRecorder
+          :theme-color="currentTheme.sentBubbleColor"
+          @audio-recorded="handleAudioRecorded"
+          @recording-start="isVoiceRecording = true"
+          @recording-stop="isVoiceRecording = false"
+        />
+      </div>
+
+      <template v-if="!isVoiceRecording">
+        <div class="flex space-x-1 shrink-0">
         <ImageOutlineIcon
           :size="24"
-          class="hover:text-purple-600 cursor-pointer"
+          class="cursor-pointer text-blue-500"
+
+          :style="{ color: currentTheme?.sentBubbleColor }"
           @click="selectImage"
         />
-        <StickerEmojiIcon :size="24" class="hover:text-purple-600 cursor-pointer" />
-        <GifBox v-if="false" @gif-selected="handleGifSelect" />
-        <span class="font-bold text-xs border p-1 rounded cursor-pointer text-gray-500 hover:text-purple-600 self-center">GIF</span>
+        <StickerEmojiIcon :size="24" class="cursor-pointer" :style="{ fill: currentTheme?.sentBubbleColor }" :fillColor="currentTheme.sentBubbleColor" />
+        <GifBox :size="24" :theme-color="currentTheme.sentBubbleColor" @gif-selected="handleGifSelect" />
         <input
           type="file"
           ref="fileInput"
           @change="handleImageUpload"
           accept="image/*"
           class="hidden"
+          multiple
         />
       </div>
 
@@ -251,7 +287,7 @@ onUnmounted(() => {
           @keyup.enter="sendMessage(newMessage, 'default')"
           type="text"
           placeholder="Aa"
-          class="grow w-full p-2 pr-10 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm transition duration-150 ease-in-out"
+          class="grow w-full p-2 pr-10 border border-theme-border rounded-full focus:outline-none focus:ring-1 focus:ring-theme-primary text-sm transition duration-150 ease-in-out bg-theme-bg text-theme-text"
           style="padding-top: 8px; padding-bottom: 8px;"
         />
 
@@ -265,7 +301,8 @@ onUnmounted(() => {
         >
           <EmoticonHappyOutlineIcon
             :size="24"
-            class="text-gray-500 hover:text-purple-600 cursor-pointer"
+            class="cursor-pointer"
+            :fillColor="currentTheme.sentBubbleColor"
           />
 
           <template #popper>
@@ -276,7 +313,9 @@ onUnmounted(() => {
         </VDropdown>
       </div>
 
-      <LikeButton :emoji="localSelectedEmoji" @send-like="handleSendLike" />
+      <LikeButton v-if="!isVoiceRecording && !newMessage.length && !selectedImageUrls.length && !selectedGifUrl" :emoji="localSelectedEmoji" @send-like="handleSendLike" />
+      <SendIcon v-if="!isVoiceRecording && (newMessage.length || selectedImageUrls.length || selectedGifUrl)" :size="24" class="cursor-pointer" :fillColor="currentTheme.sentBubbleColor" @click="sendMessage(newMessage, 'default')" />
+    </template>
     </div>
   </footer>
 </template>
@@ -338,7 +377,7 @@ onUnmounted(() => {
 
 .reply-content {
   font-size: 0.875rem;
-  color: #374151; /* gray-700 */
+  color: var(--theme-text);
   display: -webkit-box;
   -webkit-line-clamp: 2; /* ograniczenie do 2 linii */
   line-clamp: 2;
@@ -352,7 +391,7 @@ onUnmounted(() => {
 .reply-sender {
   font-weight: 600;
   font-size: 0.75rem;
-  color: #6b7280; /* gray-500 */
+  color: var(--theme-text-secondary);
 }
 
 /* Stylizacja kontenera popovera */

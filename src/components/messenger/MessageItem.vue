@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue'; // Dodano 'inject'
+import { ref, computed, inject, onMounted, onUnmounted } from 'vue';
 import PlayIcon from 'vue-material-design-icons/Play.vue';
 import PauseIcon from 'vue-material-design-icons/Pause.vue';
 import PhoneMissedIcon from 'vue-material-design-icons/PhoneMissed.vue';
 import PhoneIcon from 'vue-material-design-icons/Phone.vue';
 import VideoIcon from 'vue-material-design-icons/Video.vue';
 import LinkVariantIcon from 'vue-material-design-icons/LinkVariant.vue';
+import { useAuthStore } from '@/stores/auth';
 
 import MessegePool from '@/components/messenger/MessagePool.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
@@ -15,11 +16,9 @@ import MessageReplyContext from '@/components/messenger/MessageReplyContext.vue'
 import MessageMediaGallery from '@/components/messenger/MessageMediaGallery.vue';
 import MessageFileAttachment from '@/components/messenger/MessageFileAttachment.vue';
 import MessageReactions from '@/components/messenger/MessageReactions.vue';
+import { formatTimeAgo } from '@/utils/timeFormatter';
 
-// UWAGA: Usunięto bezpośredni import useFlipAnimation, teraz używamy inject
-// import { useFlipAnimation } from '@/composables/useFlipAnimation';
 
-// Types
 import type { Message, ImageMessage, GifMessage, AudioMessage, FileMessage, VideoMessage, AudioState, LinkMessage } from '@/types/Message';
 
 interface Theme {
@@ -39,6 +38,7 @@ const props = defineProps<{
 
   // Mapa odczytania przekazywana z rodzica
   lastReadMap: Record<string, number>;
+  isLatest: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -65,14 +65,21 @@ const onAvatarLeave = flipContext?.onAvatarLeave || ((el, done) => done());
 const MAX_VISIBLE_AVATARS = 3;
 const getUserAvatar = (id: string) => `https://ui-avatars.com/api/?name=${id}&background=random&color=fff&size=64`;
 
+const authStore = useAuthStore();
+const myUserId = `user_${authStore.currentUserId}`;
+
 const displayReadBy = computed(() => {
   if (!props.lastReadMap) return { visible: [], hiddenCount: 0 };
 
   // Filtrujemy mapę: szukamy userów, których cursor wskazuje na TĘ wiadomość
   // UŻYWAMY '==' ABY IGNOROWAĆ RÓŻNICĘ STRING vs NUMBER
-  const readersHere = Object.entries(props.lastReadMap)
-    .filter(([userId, msgId]) => msgId == props.message.id)
+  let readersHere = Object.entries(props.lastReadMap)
+    .filter(([, msgId]) => msgId == props.message.id)
     .map(([userId]) => userId);
+
+  if (isMe.value) {
+    readersHere = readersHere.filter(userId => userId !== myUserId);
+  }
 
   if (readersHere.length === 0) return { visible: [], hiddenCount: 0 };
 
@@ -83,6 +90,30 @@ const displayReadBy = computed(() => {
   const hiddenCount = shouldTruncate ? total - MAX_VISIBLE_AVATARS : 0;
 
   return { visible, hiddenCount };
+});
+
+const currentTime = ref(Date.now());
+let intervalId: ReturnType<typeof setInterval> | null = null;
+
+onMounted(() => {
+  intervalId = setInterval(() => {
+    currentTime.value = Date.now();
+  }, 60 * 1000); // Update every minute
+});
+
+onUnmounted(() => {
+  if (intervalId) {
+    clearInterval(intervalId);
+  }
+});
+
+const displayTimeAgo = computed(() => {
+    // We need to access currentTime.value here to make this computed property reactive
+    // and trigger re-evaluation when currentTime updates.
+    if (props.isLatest && isMe.value && (props.positionInGroup === 'single' || props.positionInGroup === 'last')) {
+        return formatTimeAgo(props.message.time);
+    }
+    return null;
 });
 
 // --- HELPERY TYPÓW ---
@@ -161,7 +192,7 @@ function extractDomain(url: string): string {
   try {
     const hostname = new URL(url).hostname;
     return hostname.startsWith('www.') ? hostname.substring(4) : hostname;
-  } catch (error) {
+  } catch {
     return url;
   }
 }
@@ -207,7 +238,7 @@ const toggleAudio = (msg: Message) => emit('toggle-audio-playback', msg);
 
   <div
     v-else
-    class="relative flex flex-col group transition-all duration-200"
+    class="relative flex flex-col group duration-200"
     :class="{
       'items-start': !isMe,
       'items-end': isMe,
@@ -311,7 +342,7 @@ const toggleAudio = (msg: Message) => emit('toggle-audio-playback', msg);
             <audio
                 :src="message.audioUrl"
                 class="hidden"
-                :id="`audio-${message.id}`"
+                :id="`audio-${boxId ?? '0'}-${message.id}`"
                 preload="metadata"
             ></audio>
 
@@ -452,9 +483,10 @@ const toggleAudio = (msg: Message) => emit('toggle-audio-playback', msg);
         />
         </div>
     </div>
-
-  <div class="h-4 mt-1 mr-1 flex justify-end w-full relative min-h-[16px]">
-
+<div v-show="(displayReadBy.visible.length > 0 || displayReadBy.hiddenCount > 0) || positionInGroup =='single' || positionInGroup=='last'" class="h-4 mt-1 mr-1 flex justify-end w-full relative min-h-[16px]">
+             <div v-if="!(displayReadBy.visible.length > 0 || displayReadBy.hiddenCount > 0)">
+       {{ displayTimeAgo }}
+    </div>
         <TransitionGroup
           tag="div"
           class="flex justify-end items-center overflow-visible p-1"

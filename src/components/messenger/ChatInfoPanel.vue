@@ -1,86 +1,84 @@
 <template>
-    <div v-if="showInfoPanel" class="w-full md:w-80 min-w-[450px] overflow-auto flex flex-col bg-white h-full rounded-xl shadow-sm ">
+    <div v-if="showInfoPanel" class="w-full md:w-80 min-w-[450px] overflow-hidden flex flex-col bg-theme-bg-secondary h-full rounded-xl shadow-sm ">
 
-        <!-- Header z przyciskiem wstecz na mobile -->
-        <div class="lg:hidden flex items-center p-3 border-b border-gray-200 bg-white">
-            <button @click="emit('back')" class="hover:bg-gray-100 rounded-full p-2 mr-2">
-                <ArrowLeftIcon :size="24" class="text-gray-600" />
+        <div class="lg:hidden flex items-center p-3 border-b border-theme-border bg-theme-bg">
+            <button @click="emit('back')" class="hover:bg-theme-bg-hover rounded-full p-2 mr-2">
+                <ArrowLeftIcon :size="24" class="text-theme-text" />
             </button>
-            <h1 class="text-lg font-semibold text-gray-900">Informacje o czacie</h1>
+            <h1 class="text-lg font-semibold text-theme-text">Informacje o czacie</h1>
         </div>
 
-        <div ref="wrapperRef" class="transition-wrapper bg-white h-full overflow-auto" style="overflow: auto;">
+        <div ref="wrapperRef" class="transition-wrapper bg-theme-bg-secondary h-full overflow-hidden relative">
         <transition :name="transitionName" mode="out-in" @after-enter="updateHeight">
-            <div :key="panelView">
+            <div :key="panelView" class="h-full w-full">
             <div v-if="panelView === 'home'" data-view class="h-full flex flex-col overflow-y-auto custom-scrollbar">
 
         <div class="pt-8 pb-4 flex flex-col items-center">
-        <div class="relative mb-3 hover:opacity-90 cursor-pointer transition">
-            <img :src="chatMeta.avatarUrl || 'https://i.pravatar.cc/150?img=12'" class="w-20 h-20 rounded-full object-cover shadow-sm" alt="Group Avatar">
-        </div>
-        <h2 class="text-lg font-bold text-gray-900 hover:underline cursor-pointer tracking-tight">{{ chatMeta.otherUserNickname || chatMeta.name }}</h2>
+            <div class="relative mb-3 hover:opacity-90 cursor-pointer transition">
+                <img :src="chatMeta.avatarUrl || 'https://i.pravatar.cc/150?img=12'" class="w-20 h-20 rounded-full object-cover shadow-sm" alt="Group Avatar">
+            </div>
+            <h2 class="text-lg font-bold text-theme-text hover:underline cursor-pointer tracking-tight">{{ chatMeta.otherUserNickname || chatMeta.name }}</h2>
             <div class="flex mt-4 space-x-12 w-full justify-center px-4">
             <div class="flex flex-col items-center cursor-pointer group">
-                <div class="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition mb-2">
-                <BellIcon :size="20" class="text-black" />
+                <div class="w-9 h-9 bg-theme-bg-subtle rounded-full flex items-center justify-center group-hover:bg-theme-bg-hover transition mb-2">
+                <BellIcon :size="20" class="text-theme-text" />
                 </div>
-                <span class="text-[12px] leading-tight font-medium text-gray-900 text-center">Wyciszono</span>
+                <span class="text-[12px] leading-tight font-medium text-theme-text text-center">Wyciszono</span>
             </div>
             <div class="flex flex-col items-center cursor-pointer group" @click.stop="openSearchPanel">
-                <div class="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition mb-2">
-                <MagnifyIcon :size="20" class="text-black" />
+                <div class="w-9 h-9 bg-theme-bg-subtle rounded-full flex items-center justify-center group-hover:bg-theme-bg-hover transition mb-2">
+                <MagnifyIcon :size="20" class="text-theme-text" />
                 </div>
-                <span class="text-[12px] leading-tight font-medium text-gray-900 text-center">Szukaj<br>&nbsp;</span>
+                <span class="text-[12px] leading-tight font-medium text-theme-text text-center">Szukaj<br>&nbsp;</span>
             </div>
             </div>
         </div>
 
         <div class="mt-2">
-            <button @click="toggleSection('chatInfo')" class="w-full px-4 py-3 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors outline-none">
-            <span class="font-semibold text-[14px] text-gray-900">Informacje o czacie</span>
-            <ChevronUpIcon :size="20" class="text-gray-900 transition-transform duration-300" :class="{'rotate-180': !accordionState.chatInfo}" />
+            <button @click="toggleSection('chatInfo')" class="w-full px-4 py-3 flex justify-between items-center hover:bg-theme-bg-hover cursor-pointer transition-colors outline-none">
+            <span class="font-semibold text-[14px] text-theme-text">Informacje o czacie</span>
+            <ChevronUpIcon :size="20" class="text-theme-text transition-transform duration-300" :class="{'rotate-180': !accordionState.chatInfo}" />
             </button>
             <div class="grid transition-[grid-template-rows,opacity] duration-300" :class="accordionState.chatInfo ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'">
-            <div class="overflow-hidden">
-                <div class="px-4 py-2 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2 mb-2">
-                    <PinIcon :size="20" class="text-black mr-3" />
-                    <span class="text-[14px] font-medium text-gray-900">Wyświetl przypięte wiadomości</span>
+            <div class="overflow-hidden min-h-0">
+                <div class="px-4 py-2 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2 mb-2">
+                    <PinIcon :size="20" class="text-theme-text mr-3" />
+                    <span class="text-[14px] font-medium text-theme-text">Wyświetl przypięte wiadomości</span>
                 </div>
             </div>
             </div>
         </div>
 
         <div class="mt-1">
-            <button @click="toggleSection('customizeChat')" class="w-full px-4 py-3 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors outline-none">
-            <span class="font-semibold text-[14px] text-gray-900">Dostosuj czat</span>
-                <ChevronUpIcon :size="20" class="text-gray-900 transition-transform duration-300" :class="{'rotate-180': !accordionState.customizeChat}" />
+            <button @click="toggleSection('customizeChat')" class="w-full px-4 py-3 flex justify-between items-center hover:bg-theme-bg-hover cursor-pointer transition-colors outline-none">
+            <span class="font-semibold text-[14px] text-theme-text">Dostosuj czat</span>
+                <ChevronUpIcon :size="20" class="text-theme-text transition-transform duration-300" :class="{'rotate-180': !accordionState.customizeChat}" />
             </button>
             <div class="grid transition-[grid-template-rows,opacity] duration-300" :class="accordionState.customizeChat ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'">
-            <div class="overflow-hidden">
-                <div class="flex flex-col space-y-0.5 pb-2 mb-2">
-                    <div @click="openRenameModal" class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
-                        <PencilIcon :size="20" class="text-black mr-3" />
-                        <span class="text-[14px] font-medium text-gray-900">Zmień nazwę czatu</span>
+            <div class="overflow-hidden min-h-0"> <div class="flex flex-col space-y-0.5 pb-2 mb-2">
+                    <div @click="openRenameModal" class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
+                        <PencilIcon :size="20" class="text-theme-text mr-3" />
+                        <span class="text-[14px] font-medium text-theme-text">Zmień nazwę czatu</span>
                     </div>
-                    <div class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
-                        <ImageIcon :size="20" class="text-black mr-3" />
-                        <span class="text-[14px] font-medium text-gray-900">Zmień zdjęcie</span>
+                    <div class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
+                        <ImageIcon :size="20" class="text-theme-text mr-3" />
+                        <span class="text-[14px] font-medium text-theme-text">Zmień zdjęcie</span>
                     </div>
-            <div class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2"
-                @click="openThemeModal">
-                <div class="w-5 h-5 mr-3 rounded-full bg-gradient-to-br from-red-400 to-pink-600 relative flex items-center justify-center">
-                <div class="w-2 h-2 bg-black/20 rounded-full"></div>
-                </div>
-                <span class="text-[14px] font-medium text-gray-900">Zmień motyw</span>
-            </div>
-            <div class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2"
-                @click="openEmojiModal">
-                <PawIcon :size="20" class="text-[#5F4B3C] mr-3" />
-                <span class="text-[14px] font-medium text-gray-900">Zmień ikonę emoji</span>
-            </div>
-                    <div  @click="openEditNicknamesModal" class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
-                        <FormatLetterCaseIcon :size="20" class="text-black mr-3" />
-                        <span class="text-[14px] font-medium text-gray-900">Edytuj nicki uczestników</span>
+                    <div class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2"
+                        @click="openThemeModal">
+                        <div class="w-5 h-5 mr-3 rounded-full bg-gradient-to-br from-red-400 to-pink-600 relative flex items-center justify-center">
+                        <div class="w-2 h-2 bg-black/20 rounded-full"></div>
+                        </div>
+                        <span class="text-[14px] font-medium text-theme-text">Zmień motyw</span>
+                    </div>
+                    <div class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2"
+                        @click="openEmojiModal">
+                        <PawIcon :size="20" class="text-[#5F4B3C] mr-3" />
+                        <span class="text-[14px] font-medium text-theme-text">Zmień ikonę emoji</span>
+                    </div>
+                    <div  @click="openEditNicknamesModal" class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
+                        <FormatLetterCaseIcon :size="20" class="text-theme-text mr-3" />
+                        <span class="text-[14px] font-medium text-theme-text">Edytuj nicki uczestników</span>
                     </div>
                 </div>
             </div>
@@ -88,27 +86,23 @@
         </div>
 
         <div class="mt-1">
-            <button @click="toggleSection('multimedia')" class="w-full px-4 py-3 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors outline-none">
-            <span class="font-semibold text-[14px] text-gray-900">Multimedia, pliki i linki</span>
-                <ChevronUpIcon :size="20" class="text-gray-900 transition-transform duration-300" :class="{'rotate-180': !accordionState.multimedia}" />
+            <button @click="toggleSection('multimedia')" class="w-full px-4 py-3 flex justify-between items-center hover:bg-theme-bg-hover cursor-pointer transition-colors outline-none">
+            <span class="font-semibold text-[14px] text-theme-text">Multimedia, pliki i linki</span>
+                <ChevronUpIcon :size="20" class="text-theme-text transition-transform duration-300" :class="{'rotate-180': !accordionState.multimedia}" />
             </button>
             <div class="grid transition-[grid-template-rows,opacity] duration-300" :class="accordionState.multimedia ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'">
-            <div class="overflow-hidden">
-                <div class="flex flex-col space-y-0.5 pb-2 mb-2">
-                    <div
-                    @click="panelView = 'media'"
-                    class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2"
-                    >
-                        <ImageMultipleIcon :size="20" class="text-black mr-3" />
-                        <span class="text-[14px] font-medium text-gray-900">Multimedia</span>
+            <div class="overflow-hidden min-h-0"> <div class="flex flex-col space-y-0.5 pb-2 mb-2">
+                    <div @click="panelView = 'media'" class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
+                        <ImageMultipleIcon :size="20" class="text-theme-text mr-3" />
+                        <span class="text-[14px] font-medium text-theme-text">Multimedia</span>
                     </div>
-                    <div class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
-                        <FileDocumentIcon :size="20" class="text-black mr-3" />
-                        <span class="text-[14px] font-medium text-gray-900">Pliki</span>
+                     <div class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
+                        <FileDocumentIcon :size="20" class="text-theme-text mr-3" />
+                        <span class="text-[14px] font-medium text-theme-text">Pliki</span>
                     </div>
-                    <div class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
-                        <LinkVariantIcon :size="20" class="text-black mr-3" />
-                        <span class="text-[14px] font-medium text-gray-900">Linki</span>
+                    <div class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
+                        <LinkVariantIcon :size="20" class="text-theme-text mr-3" />
+                        <span class="text-[14px] font-medium text-theme-text">Linki</span>
                     </div>
                 </div>
             </div>
@@ -116,37 +110,36 @@
         </div>
 
         <div class="mt-1">
-            <button @click="toggleSection('privacy')" class="w-full px-4 py-3 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors outline-none">
-            <span class="font-semibold text-[14px] text-gray-900">Prywatność i pomoc</span>
-                <ChevronUpIcon :size="20" class="text-gray-900 transition-transform duration-300" :class="{'rotate-180': !accordionState.privacy}" />
+            <button @click="toggleSection('privacy')" class="w-full px-4 py-3 flex justify-between items-center hover:bg-theme-bg-hover cursor-pointer transition-colors outline-none">
+            <span class="font-semibold text-[14px] text-theme-text">Prywatność i pomoc</span>
+                <ChevronUpIcon :size="20" class="text-theme-text transition-transform duration-300" :class="{'rotate-180': !accordionState.privacy}" />
             </button>
             <div class="grid transition-[grid-template-rows,opacity] duration-300" :class="accordionState.privacy ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'">
-            <div class="overflow-hidden">
-                <div class="flex flex-col space-y-0.5 pb-2 mb-2">
-                    <div class="px-4 py-2 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
-                        <BellIcon :size="20" class="text-black mr-3" />
+            <div class="overflow-hidden min-h-0"> <div class="flex flex-col space-y-0.5 pb-2 mb-2">
+                     <div class="px-4 py-2 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
+                        <BellIcon :size="20" class="text-theme-text mr-3" />
                         <div class="flex flex-col">
-                        <span class="text-[14px] font-medium text-gray-900">Wznów powiadomienia</span>
-                        <span class="text-[12px] text-gray-500">Wyłączone na czas nieokreślony</span>
+                        <span class="text-[14px] font-medium text-theme-text">Wznów powiadomienia</span>
+                        <span class="text-[12px] text-theme-text-muted">Wyłączone na czas nieokreślony</span>
                         </div>
                     </div>
-                    <div class="px-4 py-2 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
-                        <EyeIcon :size="20" class="text-black mr-3" />
+                    <div class="px-4 py-2 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
+                        <EyeIcon :size="20" class="text-theme-text mr-3" />
                         <div class="flex flex-col">
-                        <span class="text-[14px] font-medium text-gray-900">Potwierdzenia odczytu</span>
-                        <span class="text-[12px] text-gray-500">Wł.</span>
+                        <span class="text-[14px] font-medium text-theme-text">Potwierdzenia odczytu</span>
+                        <span class="text-[12px] text-theme-text-muted">Wł.</span>
                         </div>
                     </div>
-                    <div class="px-4 py-2 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
-                        <AlertOctagonIcon :size="20" class="text-black mr-3" />
+                    <div class="px-4 py-2 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
+                        <AlertOctagonIcon :size="20" class="text-theme-text mr-3" />
                         <div class="flex flex-col">
-                        <span class="text-[14px] font-medium text-gray-900">Zgłoś</span>
-                        <span class="text-[12px] text-gray-500">Przekaż opinię i zgłoś konwersację</span>
+                        <span class="text-[14px] font-medium text-theme-text">Zgłoś</span>
+                        <span class="text-[12px] text-theme-text-muted">Przekaż opinię i zgłoś konwersację</span>
                         </div>
                     </div>
-                    <div class="px-4 py-2.5 flex items-center hover:bg-gray-100 cursor-pointer transition rounded-md mx-2">
-                        <LogoutIcon :size="20" class="text-black mr-3" />
-                        <span class="text-[14px] font-medium text-gray-900">Opuść grupę</span>
+                    <div class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
+                        <LogoutIcon :size="20" class="text-theme-text mr-3" />
+                        <span class="text-[14px] font-medium text-theme-text">Opuść grupę</span>
                     </div>
                 </div>
             </div>
@@ -154,29 +147,28 @@
         </div>
 
         <div v-if="chatMeta.type === ChatType.Group" class="mt-1 pb-10">
-            <button @click="toggleSection('chatMembers')" class="w-full px-4 py-3 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors outline-none">
-            <span class="font-semibold text-[14px] text-gray-900">Uczestnicy czatu</span>
-                <ChevronUpIcon :size="20" class="text-gray-900 transition-transform duration-300" :class="{'rotate-180': !accordionState.chatMembers}" />
+            <button @click="toggleSection('chatMembers')" class="w-full px-4 py-3 flex justify-between items-center hover:bg-theme-bg-hover cursor-pointer transition-colors outline-none">
+            <span class="font-semibold text-[14px] text-theme-text">Uczestnicy czatu</span>
+                <ChevronUpIcon :size="20" class="text-theme-text transition-transform duration-300" :class="{'rotate-180': !accordionState.chatMembers}" />
             </button>
             <div class="grid transition-[grid-template-rows,opacity] duration-300" :class="accordionState.chatMembers ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'">
-                <div class="overflow-hidden">
-                <div class="flex flex-col space-y-1 mt-1 mb-2">
-                    <div v-for="(member, i) in chatMeta.groupMembers" :key="i" class="px-3 py-2 flex items-center hover:bg-gray-100 cursor-pointer rounded-md mx-2 group">
+                <div class="overflow-hidden min-h-0"> <div class="flex flex-col space-y-1 mt-1 mb-2">
+                     <div v-for="(member, i) in chatMeta.groupMembers" :key="i" class="px-3 py-2 flex items-center hover:bg-theme-bg-hover cursor-pointer rounded-md mx-2 group">
                         <img :src="'https://i.pravatar.cc/150?img=' + member.id" class="w-9 h-9 rounded-full mr-3 object-cover">
                         <div class="flex-1 min-w-0">
-                            <h4 class="text-[14px] font-medium text-gray-900">
+                            <h4 class="text-[14px] font-medium text-theme-text">
                                 {{ member.nickname || member.name }}
-                                <span v-if="member.nickname" class="text-[12px] text-gray-500 truncate"> ({{ member.name }})</span>
+                                <span v-if="member.nickname" class="text-[12px] text-theme-text-muted truncate"> ({{ member.name }})</span>
                             </h4>
-                            <p v-if="member.addedByUserId" class="text-[12px] text-gray-500 truncate">
+                            <p v-if="member.addedByUserId" class="text-[12px] text-theme-text-muted truncate">
                               Dodany przez: {{ getUserById(member.addedByUserId)?.name || 'Nieznany Użytkownik' }}
                             </p>
                         </div>
-                        <div class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition">
-                            <DotsHorizontalIcon :size="20" class="text-gray-600" />
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-theme-bg-hover transition">
+                            <DotsHorizontalIcon :size="20" class="text-theme-text-muted" />
                         </div>
                     </div>
-                    </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -184,24 +176,23 @@
 
             <ChatMediaPanel v-else-if="panelView === 'media'" data-view @close="panelView = 'home'" />
             <MessageSearch v-else-if="panelView === 'search'" data-view :boxId="chatId" @close="panelView = 'home'" @go-to-message="onSearchGoTo" />
-        </div>
+            </div>
         </transition>
     </div>
     </div>
     <BaseModal v-if="showRenameModal" title="Zmień nazwę czatu" @close="closeRenameModal">
-      <div class="px-4 py-3">
-        <label class="block text-sm font-medium text-gray-700 mb-2">Nazwa czatu</label>
-        <input v-model="renameInput" type="text" class="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500" />
-        <div class="mt-3 flex justify-end space-x-2">
-          <button @click="closeRenameModal" class="px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200">Anuluj</button>
-          <button @click="saveRename" class="px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Zapisz</button>
+        <div class="px-4 py-3">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Nazwa czatu</label>
+          <input v-model="renameInput" type="text" class="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+          <div class="mt-3 flex justify-end space-x-2">
+            <button @click="closeRenameModal" class="px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200">Anuluj</button>
+            <button @click="saveRename" class="px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Zapisz</button>
+          </div>
         </div>
-      </div>
     </BaseModal>
     <BaseModal v-if="showThemeModal" title="Wybierz motyw czatu" @close="closeThemeModalAndSave">
       <MessangerTheme @apply="closeThemeModalAndSave" />
     </BaseModal>
-    <!-- Emoji Modal -->
     <BaseModal v-if="showEmojiModal" title="Wybierz ikonę emoji" @close="closeEmojiModal">
       <div class="flex items-center justify-between px-4 pt-2 pb-3 border-b border-100">
         <div class="text-2xl">{{ convStore.selectedEmoji || '👍' }}</div>
@@ -366,6 +357,7 @@ const closeThemeModalAndSave = () => {
       convStore.messages.push({
         chatId: props.chatId,
         type: 'action',
+        time: new Date(),
         subType: 'CHANGE_THEME',
         payload: theme.title,
       });

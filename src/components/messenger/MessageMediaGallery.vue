@@ -13,8 +13,18 @@ const emit = defineEmits<{
   <div class="mb-2 overflow-visible">
 
 
+    <div v-if="mediaUrls.length === 1" class="mb-1">
+    <img
+        :src="mediaUrls[0]"
+        class="max-w-full h-auto rounded-xl shadow-sm cursor-pointer hover:opacity-95 transition-opacity"
+        @click="emit('openLightbox', mediaUrls[0] ?? '')"
+        alt="Attachment"
+        loading="lazy"
+    />
+    </div>
+
     <div
-      v-if="mediaUrls.length >= 2 && mediaUrls.length <= 3"
+      v-else-if="mediaUrls.length >= 2 && mediaUrls.length <= 3"
       class="relative w-[180px] cursor-pointer"
       :class="mediaUrls.length === 3 ? 'h-[260px]' : 'h-[200px]'"
 

@@ -1,76 +1,103 @@
 <template>
-    <div v-if="isRecording" class="flex items-center space-x-2 w-full">
-        <button @click="cancelVoiceRecording" class="p-2 rounded-full bg-purple-600 text-white shrink-0 hover:bg-purple-700 transition">
-            <CloseIcon :size="24" />
-        </button>
+  <div class="w-full flex items-center justify-between gap-2">
 
-        <div class="grow h-10 flex items-center bg-purple-600 rounded-full px-2 py-1 space-x-2 relative shadow-lg">
-            <button @click="pauseRecording" class="w-8 h-8 rounded-full bg-white text-purple-600 flex items-center justify-center shrink-0">
-            <StopIcon :size="20" class="text-purple-600" />
-            </button>
-            <div class="grow h-full flex items-center justify-center">
-            <div class="w-full h-1 bg-purple-700 opacity-60 rounded-full relative">
-                <div class="absolute inset-y-0 flex items-center space-x-1 left-2">
-                <div class="w-1 h-2 bg-white rounded-full opacity-50 animate-wave delay-1"></div>
-                <div class="w-1 h-3 bg-white rounded-full opacity-80 animate-wave delay-2"></div>
-                <div class="w-1 h-4 bg-white rounded-full opacity-100 animate-wave delay-3"></div>
-                </div>
-            </div>
-            </div>
-            <span class="text-white text-sm font-semibold w-10 text-right shrink-0">{{ formatDuration(recordingDuration) }}</span>
-        </div>
-
-        <button disabled class="w-12 h-12 rounded-full bg-gray-300 text-gray-500 border-2 border-gray-400 flex items-center justify-center shrink-0">
-            <SendIcon :size="24" />
-        </button>
+    <div v-if="isRecording || isPaused" class="shrink-0">
+      <button
+        @click="cancelVoiceRecording"
+        class="w-12 h-12 rounded-full flex items-center justify-center text-white transition hover:opacity-90 shadow-md"
+        :class="props.themeColor"
+      >
+        <CloseIcon :size="24" />
+      </button>
     </div>
 
-    <div v-else-if="isPaused" class="flex items-center space-x-2 w-full">
-        <button @click="cancelVoiceRecording" class="p-2 rounded-full bg-purple-600 text-white shrink-0 hover:bg-purple-700 transition">
-            <CloseIcon :size="24" />
+    <div
+      v-if="isRecording || isPaused"
+      class="grow h-12 rounded-full flex items-center px-2 relative overflow-hidden shadow-md"
+      :class="props.themeColor"
+    >
+      <div
+        class="absolute inset-y-0 left-0 bg-black/20 pointer-events-none"
+        :style="{ width: `${currentProgress}%` }"
+      ></div>
+
+      <div class="relative z-10 flex items-center justify-between w-full pl-1 pr-3">
+
+        <button
+          @click="togglePauseResume"
+          class="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0 hover:scale-105 transition-transform cursor-pointer text-gray-800"
+        >
+          <StopIcon v-if="isRecording" :size="20" />
+          <PlayIcon v-else :size="24" class="ml-0.5" />
         </button>
 
-        <div class="grow h-10 flex items-center bg-purple-600 rounded-full px-2 py-1 space-x-2 relative shadow-lg">
-            <button @click="startVoiceRecording" class="w-8 h-8 rounded-full bg-white text-purple-600 flex items-center justify-center shrink-0">
-            <PlayIcon :size="20" class="text-purple-600" />
-            </button>
-            <div class="grow flex items-center"></div>
-            <span class="text-white text-sm font-semibold w-10 text-right shrink-0">{{ formatDuration(recordingDuration) }}</span>
-        </div>
+        <span class="text-white text-sm font-semibold tabular-nums tracking-wide">
+          {{ formatDuration(recordingDuration) }}
+        </span>
+      </div>
+    </div>
 
-        <button @click="sendRecordedAudio" class="w-12 h-12 rounded-full bg-white text-blue-500 border-2 border-blue-500 flex items-center justify-center shrink-0 hover:bg-gray-50 transition">
-            <SendIcon :size="24" />
-        </button>
+    <div class="shrink-0">
+      <button
+        v-if="!isRecording && !isPaused"
+        @click="startNewRecording"
+        class="w-12 h-12 rounded-full flex items-center justify-center transition hover:bg-gray-100"
+        :class="textColorClass"
+      >
+        <MicrophoneIcon :size="28" />
+      </button>
+
+      <button
+        v-else
+        @click="finishAndSend"
+        class="w-12 h-12 rounded-full flex items-center justify-center text-white transition hover:opacity-90 shadow-md"
+        :class="props.themeColor"
+      >
+        <SendIcon :size="24" class="ml-1" />
+      </button>
     </div>
-    <div v-else class="flex items-center space-x-1">
-        <MicrophoneIcon @click="startVoiceRecording" :size="24" class="text-blue-500 hover:text-blue-700 cursor-pointer" />
-    </div>
+
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue';
+import { ref, onUnmounted, computed } from 'vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 import MicrophoneIcon from 'vue-material-design-icons/Microphone.vue';
 import StopIcon from 'vue-material-design-icons/Stop.vue';
 import SendIcon from 'vue-material-design-icons/Send.vue';
 import PlayIcon from 'vue-material-design-icons/Play.vue';
 
-const emit = defineEmits<{
-  'audio-recorded': [payload: { audioUrl: string, duration: number }];
+const props = defineProps<{
+  themeColor: string;
 }>();
 
-const isRecording = ref(false);
-const isPaused = ref(false);
+const textColorClass = computed(() => {
+  return props.themeColor.replace('bg-', 'text-');
+});
+
+const emit = defineEmits<{
+  'audio-recorded': [payload: { audioUrl: string, duration: number }];
+  'recording-start': [];
+  'recording-stop': [];
+}>();
+
+// Stan
+const isRecording = ref(false); // Czy mikrofon aktywnie zbiera dźwięk
+const isPaused = ref(false);    // Czy nagrywanie jest wstrzymane (ale plik otwarty)
+
 const recordingDuration = ref(0);
+const currentProgress = ref(0);
+
+// Timery
+const recordingTimer = ref<ReturnType<typeof setInterval> | null>(null);
+const progressTimer = ref<ReturnType<typeof setInterval> | null>(null);
 
 // Media Recorder
 const mediaRecorder = ref<MediaRecorder | null>(null);
 const audioChunks = ref<Blob[]>([]);
-const recordingTimer = ref<ReturnType<typeof setInterval> | null>(null);
 const isRecordingInitialized = ref(false);
 let mediaStream: MediaStream | null = null;
-const recordedBlob = ref<Blob | null>(null);
-const audioUrlPreview = ref<string | null>(null);
 
 const formatDuration = (totalSeconds: number): string => {
   const minutes = Math.floor(totalSeconds / 60);
@@ -78,32 +105,17 @@ const formatDuration = (totalSeconds: number): string => {
   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 };
 
-const resetRecordingState = () => {
-  if (recordingTimer.value) clearInterval(recordingTimer.value);
-  isRecording.value = false;
-  isPaused.value = false;
-  recordingDuration.value = 0;
-  audioChunks.value = [];
-  recordedBlob.value = null;
-  audioUrlPreview.value = null;
-};
+// --- LOGIKA STEROWANIA ---
 
-const startVoiceRecording = async () => {
-  if (isPaused.value) {
-    mediaRecorder.value?.resume();
-    isPaused.value = false;
-    isRecording.value = true;
-    recordingTimer.value = setInterval(() => {
-      recordingDuration.value++;
-    }, 1000);
-    return;
-  }
-
+// 1. Start nowego nagrania
+const startNewRecording = async () => {
   if (isRecording.value) return;
 
   try {
     if (!isRecordingInitialized.value) {
       mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Używamy mimeType 'audio/webm' (wspierane przez Chrome/Firefox).
+      // Safari może wymagać 'audio/mp4' w nowszych wersjach, ale webm jest bezpiecznym domysłem dla logicznych komponentów Vue.
       mediaRecorder.value = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' });
 
       mediaRecorder.value.ondataavailable = event => {
@@ -115,103 +127,121 @@ const startVoiceRecording = async () => {
     }
 
     audioChunks.value = [];
-    recordedBlob.value = null;
-    if (audioUrlPreview.value) URL.revokeObjectURL(audioUrlPreview.value);
-    audioUrlPreview.value = null;
 
+    // Start nagrywania
     mediaRecorder.value?.start();
     isRecording.value = true;
-    recordingDuration.value = 0;
+    isPaused.value = false;
 
-    recordingTimer.value = setInterval(() => {
-      recordingDuration.value++;
-    }, 1000);
+    recordingDuration.value = 0;
+    currentProgress.value = 0;
+
+    emit('recording-start');
+    startTimers();
+
   } catch (error) {
     console.error('Błąd dostępu do mikrofonu:', error);
-    alert('Nie można uzyskać dostępu do mikrofonu. Upewnij się, że zezwoliłeś na użycie mikrofonu.');
+    alert('Brak dostępu do mikrofonu.');
   }
 };
 
-const pauseRecording = () => {
-  if (!isRecording.value || !mediaRecorder.value) return;
+// 2. Pauza / Wznowienie (Kliknięcie w środkowy przycisk)
+const togglePauseResume = () => {
+  if (!mediaRecorder.value) return;
 
-  mediaRecorder.value.stop();
-
-  if (recordingTimer.value) {
-    clearInterval(recordingTimer.value);
-    recordingTimer.value = null;
+  if (isRecording.value) {
+    // AKCJA: PAUZA
+    mediaRecorder.value.pause(); // Kluczowa zmiana: .pause() zamiast .stop()
+    isRecording.value = false;
+    isPaused.value = true;
+    stopTimers();
+  } else if (isPaused.value) {
+    // AKCJA: WZNÓW (RÉSUMÉ)
+    mediaRecorder.value.resume(); // Kluczowa zmiana: .resume() działa tylko po .pause()
+    isRecording.value = true;
+    isPaused.value = false;
+    startTimers();
   }
+};
 
-  isRecording.value = false;
-  isPaused.value = true;
+// 3. Zakończ i Wyślij
+const finishAndSend = () => {
+  if (!mediaRecorder.value) return;
 
+  // Definicja co zrobić po zatrzymaniu
   mediaRecorder.value.onstop = () => {
+    stopTimers();
     if (audioChunks.value.length === 0) {
-      resetRecordingState();
+      fullReset();
+      emit('recording-stop');
       return;
     }
 
     const blob = new Blob(audioChunks.value, { type: 'audio/webm' });
-    recordedBlob.value = blob;
-    audioUrlPreview.value = URL.createObjectURL(blob);
+    const audioUrl = URL.createObjectURL(blob);
+    const durationSeconds = Math.floor(recordingDuration.value);
 
-    audioChunks.value = [];
+    emit('audio-recorded', { audioUrl, duration: durationSeconds });
+    fullReset();
+    emit('recording-stop');
   };
+
+  // Niezależnie czy nagrywamy, czy jest pauza - wywołujemy .stop() by sfinalizować plik
+  mediaRecorder.value.stop();
+  isRecording.value = false;
+  isPaused.value = false;
 };
 
-const sendRecordedAudio = () => {
-  if (!recordedBlob.value || !audioUrlPreview.value) return;
+// 4. Anuluj
+const cancelVoiceRecording = () => {
+  if (mediaRecorder.value && mediaRecorder.value.state !== 'inactive') {
+    mediaRecorder.value.stop();
+    // Nadpisujemy onstop, żeby nie wysłało się przypadkiem
+    mediaRecorder.value.onstop = null;
+  }
+  fullReset();
+  emit('recording-stop');
+};
 
-  const durationSeconds = Math.floor(recordingDuration.value);
-  emit('audio-recorded', { audioUrl: audioUrlPreview.value, duration: durationSeconds });
+// --- TIMERY I HLEPERY ---
 
+const startTimers = () => {
+  stopTimers(); // Dobrej praktyki: czyścimy stare przed startem nowych
+
+  // Timer sekundowy
+  recordingTimer.value = setInterval(() => {
+    recordingDuration.value++;
+  }, 1000);
+
+  // Timer paska postępu (płynny)
+  progressTimer.value = setInterval(() => {
+    // Pasek wypełnia się przez 60 sekund
+    const increment = 100 / (60 * 20);
+    currentProgress.value += increment;
+    if (currentProgress.value >= 100) currentProgress.value = 0;
+  }, 50);
+};
+
+const stopTimers = () => {
+  if (recordingTimer.value) clearInterval(recordingTimer.value);
+  if (progressTimer.value) clearInterval(progressTimer.value);
+  recordingTimer.value = null;
+  progressTimer.value = null;
+};
+
+const fullReset = () => {
+  stopTimers();
   isRecording.value = false;
   isPaused.value = false;
   recordingDuration.value = 0;
+  currentProgress.value = 0;
   audioChunks.value = [];
-  recordedBlob.value = null;
-  audioUrlPreview.value = null;
-
-  if (recordingTimer.value) clearInterval(recordingTimer.value);
-};
-
-const cancelVoiceRecording = () => {
-  if (mediaRecorder.value) {
-    mediaRecorder.value.stop();
-    mediaRecorder.value.onstop = () => {};
-  }
-
-  if (audioUrlPreview.value) {
-    URL.revokeObjectURL(audioUrlPreview.value);
-  }
-
-  resetRecordingState();
 };
 
 onUnmounted(() => {
-  if (audioUrlPreview.value) URL.revokeObjectURL(audioUrlPreview.value);
-  resetRecordingState();
+  fullReset();
   if (mediaStream) {
     mediaStream.getTracks().forEach(track => track.stop());
   }
 });
-
 </script>
-
-<style scoped>
-@keyframes wave {
-  0%, 100% {
-    transform: scaleY(0.5);
-  }
-  50% {
-    transform: scaleY(1.5);
-  }
-}
-
-.animate-wave {
-  animation: wave 1.2s ease-in-out infinite;
-}
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
-</style>

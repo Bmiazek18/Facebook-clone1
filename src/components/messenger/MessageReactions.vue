@@ -25,6 +25,7 @@ const toggleReactions = () => (showReactions.value = !showReactions.value);
 </script>
 
 <template>
+  <div class="relative">
   <div class="flex flex-row items-center gap-2 mx-2 opacity-0 group-hover:opacity-100 transition-opacity">
     <button
       @click.stop="toggleReactions"
@@ -54,5 +55,6 @@ const toggleReactions = () => (showReactions.value = !showReactions.value);
     >
       {{ emoji }}
     </span>
+  </div>
   </div>
 </template>

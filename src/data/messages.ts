@@ -132,7 +132,7 @@ const messages: ChatMessage[] = [
     time: createTimestamp(0),
     reactions: ['👍']
   },
-  // additional bulk messages for chat 1 to reach ~30 messages
+  // additional messages for chat 1
   {
     id: 1011,
     chatId: 1,
