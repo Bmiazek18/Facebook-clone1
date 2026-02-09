@@ -54,7 +54,7 @@
 
       <div class="flex items-center gap-3 text-theme-text-secondary">
         <span class="hover:underline cursor-pointer">{{ t('post.commentsCount', { count: commentsCount }) }}</span>
-        <span class="hover:underline cursor-pointer">{{ t('post.sharesCount', { count: sharesCount }) }}</span>
+        <span class="hover:underline cursor-pointer">{{ t(props.hasPoll ? 'poll.totalVotes' : 'post.sharesCount', { count: sharesCount }) }}</span>
       </div>
     </div>
   </div>
@@ -76,6 +76,7 @@ const props = defineProps<{
   likesCount: number
   topReactions: string[] // Add topReactions prop
   reactions: Partial<Record<ReactionType, number[]>> // New prop
+  hasPoll?: boolean // New prop
 }>()
 
 const { t } = useI18n()

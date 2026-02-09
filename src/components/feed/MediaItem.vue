@@ -15,6 +15,7 @@
       'aspect-square': media.tags === undefined,
     }"
   >
+
     <img
       class="w-full h-full object-cover cursor-pointer"
       :src="media.src"
@@ -46,6 +47,7 @@ const props = defineProps<{
   postId: number
   index: number
 }>()
+
 
 const isVideo = (src: string) => {
   return src.toLowerCase().endsWith('.mp4') || src.toLowerCase().endsWith('.webm')

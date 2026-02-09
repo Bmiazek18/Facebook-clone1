@@ -5,7 +5,14 @@
     @mouseleave="handleMouseLeave"
     :class="display === 'full' ? 'w-full' : 'w-fit'"
   >
+    <div v-if="hasDarkBackground"
+         class="p-2 md:p-3 bg-[#3a3b3c] hover:bg-[#4e4f50] rounded-full transition-colors cursor-pointer"
+         @click="toggleReaction('like')"
+    >
+      <ThumbUpOutline :size="iconSize" :fillColor="isLiked ? '#1877f2' : 'white'" />
+    </div>
     <button
+      v-else
       :class="[
         'flex items-center justify-center gap-2 rounded transition-colors cursor-pointer text-theme-text-secondary font-semibold w-full',
         {
@@ -22,7 +29,7 @@
           <span :class="getReactionTextColor(userReaction)">{{ getReactionLabel(userReaction) }}</span>
         </template>
         <template v-else>
-          <ThumbUpOutline :size="20" class="text-gray-500 dark:text-gray-400" />
+          <ThumbUpOutline :size="iconSize" class="text-gray-500 dark:text-gray-400" />
           <span class="text-theme-text-secondary" >{{ $t('actions.like') }}</span>
         </template>
       </template>
@@ -40,8 +47,9 @@
 
 
     <div
-      class="absolute left-0 flex gap-1 px-2 py-1.5 rounded-full shadow-xl bg-theme-bg-secondary border border-gray-200 dark:border-gray-700 transition-all duration-200 z-50"
+      class="absolute left-0 flex gap-1 px-2 py-1.5 rounded-full shadow-xl   transition-all duration-200 z-50"
       :class="[
+        hasDarkBackground ? 'bg-[#252729]' : 'bg-theme-bg-secondary ',
         display === 'full' ? 'bottom-10' : 'bottom-6',
         isVisible ? 'opacity-100 pointer-events-auto translate-y-0' : 'opacity-0 pointer-events-none translate-y-2'
       ]"
@@ -87,6 +95,22 @@ const props = defineProps({
   userReaction: {
     type: String as () => ReactionType | null,
     default: null
+  },
+  hasDarkBackground: {
+    type: Boolean,
+    default: false
+  },
+  iconSize: {
+    type: Number,
+    default: 20
+  },
+  isLiked: {
+    type: Boolean,
+    default: false
+  },
+  alwaysDarkPopup: {
+    type: Boolean,
+    default: false
   }
 })
 

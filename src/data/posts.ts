@@ -46,6 +46,28 @@ const baseTimestamp = new Date('2026-01-24T12:00:00.000Z').getTime(); // Today's
 
 export const posts: Post[] = [
   {
+    id: 'group_poll_1',
+    content: 'Ankieta dotycząca kolejnego spotkania zespołu!',
+    authorId: 1,
+    targetId: '1',
+    targetType: 'Group',
+    date: new Date(baseTimestamp - (0.5 * 60 * 1000)).toISOString(), // Very recent
+    timestamp: baseTimestamp - (0.5 * 60 * 1000),
+    media: [],
+    context: { privacy: 'group' },
+    stats: { comments: 0, shares: 0 },
+    reactions: {},
+    comments: [],
+    poll: {
+      question: 'Kiedy preferujesz nasze następne spotkanie projektowe?',
+      options: [
+        { id: 'opt1', text: 'Poniedziałek (10:00 - 12:00)', votes: ['1', '3', '5'] },
+        { id: 'opt2', text: 'Wtorek (14:00 - 16:00)', votes: ['2', '4'] },
+        { id: 'opt3', text: 'Środa (9:00 - 11:00)', votes: [ '6'] },
+      ],
+    },
+  },
+  {
     id: '100',
     content: 'Hello everyone! I hope you are all having a wonderful day. The weather is absolutely beautiful today, and I decided to take a long walk in the park. It was so peaceful and relaxing. How are you spending your weekend? 🌞🌳',
     authorId: 100, // Assuming 100 is a valid user for testing international posts

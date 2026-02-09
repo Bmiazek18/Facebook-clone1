@@ -199,7 +199,7 @@ const showReadMore = computed(() => {
 const contentToShow = computed(() => {
   if (showReadMore.value) {
     // Truncate the content
-    let truncated = props.post.content.substring(0, 200)
+    const truncated = props.post.content.substring(0, 200)
     // We need to process the truncated content to get the parts
     const processed = processContent(truncated)
     // Add ellipsis at the end

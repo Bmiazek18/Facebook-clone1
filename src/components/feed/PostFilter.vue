@@ -31,12 +31,12 @@ const toggleFilterModal = () => {
             <h2 class="text-[20px] font-bold text-theme-text">Posty</h2>
 
             <div class="flex items-center space-x-2">
-                <button class="flex items-center px-3 py-1.5 bg-theme-bg-third hover:bg-theme-hover rounded-md transition-colors text-theme-text font-semibold text-[15px]"
+                <button class="flex items-center px-3 py-1.5 bg-theme-bg-tertiary hover:bg-theme-hover rounded-md transition-colors text-theme-text font-semibold text-[15px]"
                     @click="toggleFilterModal">
                     <Tune :size="20" class="mr-1.5" />
                     Filtry
                 </button>
-                <button class="flex items-center px-3 py-1.5 bg-theme-bg-third hover:bg-theme-hover rounded-md transition-colors text-theme-text font-semibold text-[15px]">
+                <button class="flex items-center px-3 py-1.5 bg-theme-bg-tertiary hover:bg-theme-hover rounded-md transition-colors text-theme-text font-semibold text-[15px]">
 
                     Zarządzaj postami
                 </button>

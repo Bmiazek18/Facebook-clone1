@@ -47,6 +47,14 @@ export interface PostMedia {
   audioUrl?: string
 }
 
+export interface Poll {
+  question: string;
+  options: {
+    id: string; // Unique ID for each option
+    text: string;
+    votes: string[]; // Array of user IDs who voted for this option
+  }[];
+}
 
 export interface PostContext {
   taggedUsersIds?: number[];
@@ -95,4 +103,5 @@ export interface Post {
   comments?: Comment[];
   linkPreview?: LinkPreview;
   isAnonymous?: boolean;
+  poll?: Poll;
 }
