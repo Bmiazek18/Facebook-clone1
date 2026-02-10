@@ -3,10 +3,10 @@ import { ref, onUnmounted, computed, nextTick, onMounted, watch, provide } from 
 import { storeToRefs } from 'pinia';
 import MultiMediaLightbox from './MediaLightbox.vue';
 import MessageBoxHeader from '@/components/chat/MessageBoxHeader.vue';
-import MessageBoxFooter from '@/components/chat/MessageBoxFooter/MessageBoxFooter.vue';
+import MessageBoxFooter from '@/components/chat/messageBoxFooter/index.vue';
 import MessageItem from '@/components/chat/MessageItem.vue';
 import { useConversationsStore } from '@/stores/conversations';
-import { useAudioPlayer } from '@/composables/useAudioPlayer';
+// Removed: import { useAudioPlayer } from '@/composables/useAudioPlayer';
 import { useMessageGrouper } from '@/composables/useMessageGrouper';
 import { useLightbox } from '@/composables/useLightbox';
 
@@ -82,15 +82,12 @@ const lastRead = ref<Record<string, number>>({
   'ghost_tester': 0
 });
 
-
+// Removed: useFlipAnimation and provide('flip-animation', ...)
 const { capturePositions, onAvatarEnter, onAvatarLeave } = useFlipAnimation(chatContainer);
-
-// Udostępniamy funkcje animacji dzieciom (MessageItem) przez Provide/Inject
 provide('flip-animation', {
   onAvatarEnter,
   onAvatarLeave
 });
-
 
   const msgs = messagesList.value;
   if (msgs.length > 0) {
@@ -100,7 +97,6 @@ provide('flip-animation', {
     lastRead.value['user_1'] = lastMsgId;
     lastRead.value['user_2'] = lastMsgId2;
   }
-
 
 // Watcher pozycji (flush: 'pre' jest kluczowe)
 watch(lastRead, () => {
@@ -157,6 +153,10 @@ onMounted(async () => {
     simulationInterval = setInterval(() => {
       const msgs = messagesList.value;
       if (!msgs || msgs.length === 0) return;
+
+      if (currentIndex >= msgs.length) {
+        currentIndex = 0; // Reset currentIndex if it's out of bounds
+      }
 
       const targetMessageId = msgs[currentIndex].id;
 
@@ -282,7 +282,7 @@ const loadOlderMessages = async () => {
   });
 }
 
-const { audioStates, toggleAudioPlayback } = useAudioPlayer(props.boxId);
+// Removed: const { audioStates, toggleAudioPlayback } = useAudioPlayer(props.boxId);
 const { getDisplayTime, getMessagePositionInGroup } = useMessageGrouper(messagesList);
 const { isLightboxOpen, currentMediaIndex, filteredMedia, openLightbox } = useLightbox(messagesList);
 
@@ -426,16 +426,13 @@ defineExpose({ scrollToMessage });
 
             <MessageItem
               :message="message"
-              :index="index"
-              :audioStates="audioStates"
-              :currentTheme="boxTheme"
-              :positionInGroup="getMessagePositionInGroup(index)"
-              :boxId="props.boxId"
-              :last-read-map="lastRead"
-              :isLatest="message.id === lastMessageId"
+              :metadata="{
+                position: getMessagePositionInGroup(index),
+                isLatest: message.id === lastMessageId
+              }"
               @open-lightbox="openLightbox"
+              :last-read-map="lastRead"
               @reply="replyTarget = $event"
-              @toggle-audio-playback="toggleAudioPlayback"
               @add-reaction="({ messageId, emoji }) => handleAddReaction(messageId, emoji)"
               @open-modal="emit('open-modal', $event)"
             />

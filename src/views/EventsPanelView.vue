@@ -130,6 +130,7 @@ import 'v-calendar/dist/style.css';
 import { useEventsStore } from '@/stores/events';
 import { useRouter } from 'vue-router';
 import EventsSidebar from '@/components/events/EventsSidebar.vue';
+import CreateEventModal from '@/components/events/CreateEventModal.vue';
 
 /* Ikony */
 import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue';

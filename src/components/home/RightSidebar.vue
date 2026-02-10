@@ -48,7 +48,7 @@ const openChatBox = (id: number) => {
 <template>
   <div class="max-w-[360px] min-w-[280px] ml-auto sticky top-[72px]">
     <HoverScrollbar>
-      <div class="max-h-[calc(100vh-72px)] pr-2 pl-2 pb-4">
+      <div class="max-h-[calc(100vh-72px)] pr-2 pl-2 mt-4 pb-4">
 
         <div class="font-semibold border-b border-b-theme-border text-theme-text">
           {{ $t('home.birthday') }}

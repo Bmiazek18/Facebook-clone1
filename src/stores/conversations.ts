@@ -3,6 +3,7 @@ import { defineStore, storeToRefs } from 'pinia'
 import rawChats from '@/data/rawChats'
 import initialMessages from '@/data/messages'
 import { type ChatMessage, type LinkMessage } from '@/types/Message'
+import { v4 as uuidv4 } from 'uuid';
 import chatSettings from '@/data/chatSettings'
 import { useChatThemeStore, type Theme } from '@/stores/chatTheme'
 
@@ -30,7 +31,7 @@ export const useConversationsStore = defineStore('conversations', () => {
 
       linkMsg.content = linkMsg.url; // Set content to the URL for display purposes
       newMsg = {
-        id: Date.now(),
+        id: uuidv4(),
         chatId: Number(chatId),
         sender: 'me',
         time: Date.now(),
@@ -38,7 +39,7 @@ export const useConversationsStore = defineStore('conversations', () => {
       } as LinkMessage;
     } else {
       newMsg = {
-        id: Date.now(),
+        id: uuidv4(),
         chatId: Number(chatId),
         sender: 'me',
         time: Date.now(),

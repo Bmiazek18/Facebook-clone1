@@ -26,7 +26,7 @@ import { useChatStore } from './stores/chat'
 const chatStore = useChatStore()
 import ProfileIcon from './components/profile/ProfileIcon.vue'
 import { useTheme } from './composables/useTheme'
-import MessageBox from '@/components/chat/MessageBox/MessageBox.vue'
+import MessageBox from '@/components/chat/messageBox/index.vue'
 
 useTheme()
 

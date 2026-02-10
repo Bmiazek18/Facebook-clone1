@@ -3,8 +3,9 @@ import FileIcon from 'vue-material-design-icons/File.vue';
 import type { FileMessage } from '@/types/Message';
 import { useFileSize } from '@/composables/useFileSize';
 
- defineProps<{
-  message: FileMessage;
+const props = defineProps<{
+  message: FileMessage; // Changed from Message to FileMessage
+  isMe: boolean;
 }>();
 
 const downloadFile = (message: FileMessage) => {
@@ -20,12 +21,13 @@ const downloadFile = (message: FileMessage) => {
 <template>
   <div
     class="p-3 bg-gray-200 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-300"
-    @click="downloadFile(message)"
+    :class="props.isMe ? 'text-white' : 'text-gray-900'"
+    @click="downloadFile(props.message)"
   >
     <FileIcon :size="22" />
     <div>
-      <p class="text-sm font-semibold">{{ message.fileName }}</p>
-      <p class="text-xs text-gray-600">{{ useFileSize(message.fileSize) }}</p>
+      <p class="text-sm font-semibold">{{ props.message.fileName }}</p>
+      <p class="text-xs text-gray-600">{{ useFileSize(props.message.fileSize) }}</p>
     </div>
   </div>
 </template>

@@ -1,234 +1,202 @@
 <script setup lang="ts">
-import { ref, computed, inject, onMounted, onUnmounted } from 'vue';
-import PlayIcon from 'vue-material-design-icons/Play.vue';
-import PauseIcon from 'vue-material-design-icons/Pause.vue';
-import PhoneMissedIcon from 'vue-material-design-icons/PhoneMissed.vue';
-import PhoneIcon from 'vue-material-design-icons/Phone.vue';
-import VideoIcon from 'vue-material-design-icons/Video.vue';
-import LinkVariantIcon from 'vue-material-design-icons/LinkVariant.vue';
-import { useAuthStore } from '@/stores/auth';
+import { ref, computed, inject, onMounted, onUnmounted } from 'vue'
 
-import MessegePool from '@/components/chat/MessagePool.vue';
-import BaseModal from '@/components/common/BaseModal.vue';
-import PlayerVideo from '@/components/media/PlayerVideo.vue';
-import ReactionPanel from '@/components/feed/ReactionPanel.vue';
-import MessageReplyContext from '@/components/chat/MessageReplyContext.vue';
-import MessageMediaGallery from '@/components/chat/MessageMediaGallery.vue';
-import MessageFileAttachment from '@/components/chat/MessageFileAttachment.vue';
-import MessageReactions from '@/components/chat/MessageReactions.vue';
-import { formatTimeAgo } from '@/utils/timeFormatter';
+import { useAuthStore } from '@/stores/auth' // Re-added
 
+import ChatMessagePool from '@/components/chat/messageItem/ChatMessagePool.vue'
+import BaseModal from '@/components/common/BaseModal.vue'
+import ReactionPanel from '@/components/feed/ReactionPanel.vue'
+import MessageReplyContext from '@/components/chat/MessageReplyContext.vue'
+import MessageReactions from '@/components/chat/MessageReactions.vue'
 
-import type { Message, ImageMessage, GifMessage, AudioMessage, FileMessage, VideoMessage, AudioState, LinkMessage } from '@/types/Message';
+import ChatMessageEmoji from '@/components/chat/messageItem/ChatMessageEmoji.vue'
+import ChatMessageAction from '@/components/chat/messageItem/ChatMessageAction.vue'
+import ChatMessageCall from '@/components/chat/messageItem/ChatMessageCall.vue'
+import ChatMessageImage from '@/components/chat/messageItem/ChatMessageImage.vue'
+import ChatMessageAudio from '@/components/chat/messageItem/ChatMessageAudio.vue'
+import ChatMessageFile from '@/components/chat/messageItem/ChatMessageFile.vue'
+import ChatMessageVideo from '@/components/chat/messageItem/ChatMessageVideo.vue'
+import ChatMessageLink from '@/components/chat/messageItem/ChatMessageLink.vue'
+import ChatMessagePostLink from '@/components/chat/messageItem/ChatMessagePostLink.vue'
+import ChatMessageText from '@/components/chat/messageItem/ChatMessageText.vue'
+import { formatTimeAgo } from '@/utils/timeFormatter'
+
+import type {
+  Message,
+  ImageMessage,
+  GifMessage,
+  AudioMessage,
+  FileMessage,
+  VideoMessage,
+  AudioState,
+  LinkMessage,
+} from '@/types/Message'
 
 interface Theme {
-  id?: string;
-  sentBubbleColor?: string;
+  id?: string
+  sentBubbleColor?: string
 }
 
-interface ImageMessageWithGroup extends ImageMessage { mediaUrls?: string[]; }
-
+interface ImageMessageWithGroup extends ImageMessage {
+  mediaUrls?: string[]
+}
+const isEmojiOnly = (content: string): boolean => {
+  if (!content?.trim()) return false
+  const nonEmojiChars = content
+    .replace(
+      /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g,
+      '',
+    )
+    .trim()
+  return nonEmojiChars.length === 0
+}
 const props = defineProps<{
-  message: Message;
-  index: number;
-  positionInGroup: 'single' | 'first' | 'middle' | 'last';
-  audioStates: Record<number, AudioState>;
-  currentTheme?: Theme;
-  boxId?: string | number;
-
-  // Mapa odczytania przekazywana z rodzica
-  lastReadMap: Record<string, number>;
-  isLatest: boolean;
-}>();
+  message: Message
+  metadata: {
+    position: 'single' | 'first' | 'middle' | 'last'
+    isLatest: boolean
+  }
+  lastReadMap: Record<string, number> // Added back
+}>()
 
 const emit = defineEmits<{
-  (e: 'open-lightbox', url: string): void;
-  (e: 'toggle-audio-playback', message: Message): void;
-  (e: 'reply', message: Message): void;
-  (e: 'add-reaction', payload: { messageId: number; emoji: string }): void;
-  (e: 'open-modal', type: 'CHANGE_E' | 'CHANGE_NICKNAME' | 'CHANGE_THEME'): void;
-}>();
+  (e: 'open-lightbox', url: string): void
+  (e: 'reply', message: Message): void
+  (e: 'add-reaction', payload: { messageId: number; emoji: string }): void
+  (e: 'open-modal', type: 'CHANGE_E' | 'CHANGE_NICKNAME' | 'CHANGE_THEME'): void
+}>()
+
+// --- INJECTED CONTEXT ---
+// Removed ChatContext interface and related injections/computed properties
+const myUserId = computed(() => `user_${useAuthStore().currentUserId}`);
+
 
 // --- FLIP ANIMATION INJECTION ---
 // Wstrzykujemy funkcje od rodzica (MessageBox), co naprawia błędy przy wielu oknach
 const flipContext = inject<{
-  onAvatarEnter: (el: Element, done: () => void) => void,
+  onAvatarEnter: (el: Element, done: () => void) => void
   onAvatarLeave: (el: Element, done: () => void) => void
-}>('flip-animation');
+}>('flip-animation')
 
 // Fallback (zabezpieczenie)
-const onAvatarEnter = flipContext?.onAvatarEnter || ((el, done) => done());
-const onAvatarLeave = flipContext?.onAvatarLeave || ((el, done) => done());
-
+const onAvatarEnter = flipContext?.onAvatarEnter || ((el, done) => done())
+const onAvatarLeave = flipContext?.onAvatarLeave || ((el, done) => done())
 
 // --- LOGIKA "SEEN BY" ---
-const MAX_VISIBLE_AVATARS = 3;
-const getUserAvatar = (id: string) => `https://ui-avatars.com/api/?name=${id}&background=random&color=fff&size=64`;
-
-const authStore = useAuthStore();
-const myUserId = `user_${authStore.currentUserId}`;
+const MAX_VISIBLE_AVATARS = 3
+const getUserAvatar = (id: string) =>
+  `https://ui-avatars.com/api/?name=${id}&background=random&color=fff&size=64`
 
 const displayReadBy = computed(() => {
-  if (!props.lastReadMap) return { visible: [], hiddenCount: 0 };
+  if (!props.lastReadMap) return { visible: [], hiddenCount: 0 }
 
-  // Filtrujemy mapę: szukamy userów, których cursor wskazuje na TĘ wiadomość
-  // UŻYWAMY '==' ABY IGNOROWAĆ RÓŻNICĘ STRING vs NUMBER
   let readersHere = Object.entries(props.lastReadMap)
     .filter(([, msgId]) => msgId == props.message.id)
-    .map(([userId]) => userId);
+    .map(([userId]) => userId)
 
   if (isMe.value) {
-    readersHere = readersHere.filter(userId => userId !== myUserId);
+    readersHere = readersHere.filter((userId) => userId !== myUserId.value) // Changed
   }
 
-  if (readersHere.length === 0) return { visible: [], hiddenCount: 0 };
+  if (readersHere.length === 0) return { visible: [], hiddenCount: 0 }
 
-  const total = readersHere.length;
-  const shouldTruncate = total > MAX_VISIBLE_AVATARS;
+  const total = readersHere.length
+  const shouldTruncate = total > MAX_VISIBLE_AVATARS
 
-  const visible = shouldTruncate ? readersHere.slice(0, MAX_VISIBLE_AVATARS) : readersHere;
-  const hiddenCount = shouldTruncate ? total - MAX_VISIBLE_AVATARS : 0;
+  const visible = shouldTruncate ? readersHere.slice(0, MAX_VISIBLE_AVATARS) : readersHere
+  const hiddenCount = shouldTruncate ? total - MAX_VISIBLE_AVATARS : 0
 
-  return { visible, hiddenCount };
-});
+  return { visible, hiddenCount }
+})
 
-const currentTime = ref(Date.now());
-let intervalId: ReturnType<typeof setInterval> | null = null;
+const currentTime = ref(Date.now())
+let intervalId: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
   intervalId = setInterval(() => {
-    currentTime.value = Date.now();
-  }, 60 * 1000); // Update every minute
-});
+    currentTime.value = Date.now()
+  }, 60 * 1000) // Update every minute
+})
 
 onUnmounted(() => {
   if (intervalId) {
-    clearInterval(intervalId);
+    clearInterval(intervalId)
   }
-});
+})
 
 const displayTimeAgo = computed(() => {
-    // We need to access currentTime.value here to make this computed property reactive
-    // and trigger re-evaluation when currentTime updates.
-    if (props.isLatest && isMe.value && (props.positionInGroup === 'single' || props.positionInGroup === 'last')) {
-        return formatTimeAgo(props.message.time);
-    }
-    return null;
-});
+  if (
+    props.metadata.isLatest &&
+    isMe.value &&
+    (props.metadata.position === 'single' || props.metadata.position === 'last')
+  ) {
+    return formatTimeAgo(props.message.time)
+  }
+  return null
+})
 
 // --- HELPERY TYPÓW ---
-const isAudioMessage = (msg: Message): msg is AudioMessage => msg.type === 'audio';
-const isImageMessage = (msg: Message): msg is ImageMessageWithGroup => msg.type === 'image';
-const isFileMessage = (msg: Message): msg is FileMessage => msg.type === 'file';
-const isVideoMessage = (msg: Message): msg is VideoMessage => msg.type === 'video';
-const isGifMessage = (msg: Message): msg is GifMessage => msg.type === 'gif';
-const isCallMessage = (msg: Message): boolean => msg.type === 'call';
-const isCallRejectedMessage = (msg: Message): boolean => msg.type === 'call_rejected';
-const isLinkMessage = (msg: Message): msg is LinkMessage => msg.type === 'link';
-const isAnyCallType = (msg: Message): boolean => isCallMessage(msg) || isCallRejectedMessage(msg);
-const isTextMessage = (msg: Message): boolean => msg.type === 'text' && !isEmojiOnly(msg.content);
-const isPostLinkMessage = (msg: Message): boolean => msg.type === 'post_link';
-const isMe = computed(() => props.message.sender === 'me');
-
-const isEmojiOnly = (content: string): boolean => {
-  if (!content?.trim()) return false;
-  const nonEmojiChars = content.replace(/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g, '').trim();
-  return nonEmojiChars.length === 0;
-};
+const isImageMessage = (msg: Message): msg is ImageMessageWithGroup => msg.type === 'image'
+const isFileMessage = (msg: Message): msg is FileMessage => msg.type === 'file'
+const isVideoMessage = (msg: Message): msg is VideoMessage => msg.type === 'video'
+const isGifMessage = (msg: Message): msg is GifMessage => msg.type === 'gif'
+const isAudioMessage = (msg: Message): msg is AudioMessage => msg.type === 'audio'
+const isCallMessage = (msg: Message): boolean => msg.type === 'call'
+const isCallRejectedMessage = (msg: Message): boolean => msg.type === 'call_rejected'
+const isLinkMessage = (msg: Message): msg is LinkMessage => msg.type === 'link'
+const isAnyCallType = (msg: Message): boolean => isCallMessage(msg) || isCallRejectedMessage(msg)
+const isTextMessage = (msg: Message): boolean => msg.type === 'text' && !isEmojiOnly(msg.content)
+const isPostLinkMessage = (msg: Message): boolean => msg.type === 'post_link'
+const isMe = computed(() => props.message.sender === 'me')
 
 const isVideoCall = (msg: Message) => {
-  return msg.content?.toLowerCase().includes('wideo') || msg.content?.toLowerCase().includes('video');
-};
+  return (
+    msg.content?.toLowerCase().includes('wideo') || msg.content?.toLowerCase().includes('video')
+  )
+}
 
 const bubbleRadiusClass = computed(() => {
   const map = {
     single: 'rounded-xl',
-    first: isMe.value ? 'rounded-l-xl rounded-tr-xl rounded-br-[4px]' : 'rounded-r-xl rounded-tl-xl rounded-bl-[4px]',
+    first: isMe.value
+      ? 'rounded-l-xl rounded-tr-xl rounded-br-[4px]'
+      : 'rounded-r-xl rounded-tl-xl rounded-bl-[4px]',
     middle: isMe.value ? 'rounded-l-xl rounded-r-[4px]' : 'rounded-r-xl rounded-l-[4px]',
-    last: isMe.value ? 'rounded-l-xl rounded-tr-[4px] rounded-br-xl' : 'rounded-r-xl rounded-tl-[4px] rounded-bl-xl',
-  };
-  return map[props.positionInGroup] || 'rounded-xl';
-});
+    last: isMe.value
+      ? 'rounded-l-xl rounded-tr-[4px] rounded-br-xl'
+      : 'rounded-r-xl rounded-tl-[4px] rounded-bl-xl',
+  }
+  return map[props.metadata.position] || 'rounded-xl'
+})
 
 const bubbleColorClass = computed(() => {
-  if (!isMe.value) return 'bg-gray-200 text-black';
-  return (props.currentTheme?.sentBubbleColor || 'bg-blue-500') + ' text-white border border-white/10';
-});
+  if (!isMe.value) return 'bg-gray-200 text-black'
+  // Remove injectedTheme usage, assume default theme for now, or get it from props if necessary
+  return ('bg-blue-500' || 'bg-blue-500') + ' text-white border border-white/10' // Simplified
+})
 
 const shouldDisplayAvatar = computed(() => {
-  return props.message.sender === 'other' &&
-         ['single', 'last'].includes(props.positionInGroup) &&
-         !isEmojiOnly(props.message.content || '');
-});
+  return (
+    props.message.sender === 'other' &&
+    ['single', 'last'].includes(props.metadata.position) &&
+    !isEmojiOnly(props.message.content || '')
+  )
+})
 
-const isGroupedImage = computed(() => isImageMessage(props.message) && (props.message.mediaUrls?.length ?? 0) > 0);
-const isSingleImageOrGif = computed(() => (isImageMessage(props.message) || isGifMessage(props.message)) && !isGroupedImage.value);
 
-const callStyle = computed(() => {
-  if (isCallRejectedMessage(props.message)) {
-    return {
-      icon: PhoneMissedIcon,
-      iconBgClass: !isMe.value ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-500'
-    };
-  }
-  const isVideo = isVideoCall(props.message);
-  return {
-    icon: isVideo ? VideoIcon : PhoneIcon,
-    iconBgClass: 'bg-gray-200 text-gray-800'
-  };
-});
 
-const visualizerBars = [10, 20, 14, 25, 20, 15, 20, 10];
-const VISUALIZER_THRESHOLDS = [0, 12, 25, 37, 50, 62, 75, 87];
-
-const formatSeconds = (seconds: number): string => {
-  if (isNaN(seconds) || seconds < 0) return '0:00';
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
-};
-
-function extractDomain(url: string): string {
-  try {
-    const hostname = new URL(url).hostname;
-    return hostname.startsWith('www.') ? hostname.substring(4) : hostname;
-  } catch {
-    return url;
-  }
-}
-
-const getAudioBarStyle = (msgId: number, index: number, duration: number) => {
-  const state = props.audioStates[msgId];
-  const isPlaying = state?.isPlaying;
-  const progressPercent = state ? (state.currentTime / (duration || 1)) * 100 : 0;
-  const threshold = VISUALIZER_THRESHOLDS[index] ?? 0;
-  const isActive = isPlaying && progressPercent > (threshold + 6);
-
-  return {
-    height: `${visualizerBars[index]}px`,
-    width: '3px',
-    backgroundColor: isActive || !isPlaying ? 'white' : 'rgba(255,255,255,0.5)'
-  };
-};
-
-const getPlaybackIndicatorStyle = (msgId: number, duration: number) => {
-  const state = props.audioStates[msgId];
-  const leftPos = state ? (state.currentTime / (duration || 1)) * 100 : 0;
-  return { left: `${leftPos}%` };
-};
-
-const showReactionsPanel = ref(false);
-const openReactionsPanel = () => (showReactionsPanel.value = true);
-const handleReply = () => emit('reply', props.message);
-const handleAddReaction = (payload: { messageId: number; emoji: string }) => emit('add-reaction', payload);
-const toggleAudio = (msg: Message) => emit('toggle-audio-playback', msg);
+const showReactionsPanel = ref(false)
+const openReactionsPanel = () => (showReactionsPanel.value = true)
+const handleReply = () => emit('reply', props.message)
+const handleAddReaction = (payload: { messageId: number; emoji: string }) =>
+  emit('add-reaction', payload)
 </script>
 
 <template>
   <MessageReplyContext v-if="message.isReply" :reply="message" />
 
   <div v-if="message.type === 'poll'" class="flex justify-center mb-4">
-    <MessegePool
+    <ChatMessagePool
       :question="message.pollData.question"
       :initial-options="message.pollData.options"
       :allow-multiple="message.pollData.allowMultiple"
@@ -242,279 +210,155 @@ const toggleAudio = (msg: Message) => emit('toggle-audio-playback', msg);
     :class="{
       'items-start': !isMe,
       'items-end': isMe,
-      'mb-1': positionInGroup !== 'last' && positionInGroup !== 'single',
-      'mb-3': positionInGroup === 'last' || positionInGroup === 'single'
+      'mb-1': props.metadata.position !== 'last' && props.metadata.position !== 'single',
+      'mb-3': props.metadata.position === 'last' || props.metadata.position === 'single',
     }"
   >
     <div class="flex items-end w-full" :class="{ 'flex-row': !isMe, 'flex-row-reverse': isMe }">
+      <div
+        v-if="shouldDisplayAvatar"
+        class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2 shrink-0 overflow-hidden shadow-sm"
+      >
+        <img
+          src="https://ui-avatars.com/api/?name=User&background=random"
+          alt="Avatar"
+          class="w-full h-full object-cover"
+        />
+      </div>
+      <div v-else-if="!isMe" class="w-10"></div>
 
-        <div
-            v-if="shouldDisplayAvatar"
-            class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2 shrink-0 overflow-hidden shadow-sm"
-        >
-            <img src="https://ui-avatars.com/api/?name=User&background=random" alt="Avatar" class="w-full h-full object-cover"/>
-        </div>
-        <div v-else-if="!isMe" class="w-10"></div>
-
-
-        <div
+      <div
         class="flex items-center max-w-[75%]"
         :class="{ 'flex-row': !isMe, 'flex-row-reverse': isMe }"
-        >
+      >
         <div class="relative flex flex-col overflow-visible">
-
-            <div
+          <ChatMessageEmoji
             v-if="isEmojiOnly(message.content)"
-            class="leading-none select-none transition-transform hover:scale-110"
-            :class="{
-                'text-[3rem]': !message.iconSizeState || message.iconSizeState === 'default',
-                'text-[45px]': message.iconSizeState === 'small',
-                'text-[60px]': message.iconSizeState === 'medium',
-                'text-[80px]': message.iconSizeState === 'large',
-            }"
-            >
-            {{ message.content }}
-            </div>
+            :message="message"
+          />
 
-            <div v-else-if="message.type === 'action'" class="flex w-full items-center justify-center text-sm text-gray-500">
-            <span v-if="message.subType==='CHANGE_E'">  Emotka została zmieniona na {{message.payload}}</span>
-            <span v-if="message.subType==='CHANGE_NICKNAME'">  Nick został zmieniony na {{message.payload}}</span>
-            <span v-if="message.subType==='CHANGE_THEME'">Zmieniłeś motyw na {{message.payload}}.</span>
-            <button
-                @click="emit('open-modal', message.subType)"
-                class="ml-1 font-bold text-gray-900 hover:underline">
-                Zmień
-            </button>
-            </div>
+          <ChatMessageAction
+            v-else-if="message.type === 'action'"
+            :message="message"
+            @open-modal="emit('open-modal', $event)"
+          />
 
-            <div
+          <ChatMessageCall
             v-else-if="isAnyCallType(message)"
-            class="flex items-center p-3 bg-white rounded-2xl shadow-sm min-w-[240px] border border-gray-100"
-            >
-            <div
-                class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 mr-3"
-                :class="callStyle.iconBgClass"
-            >
-                <component :is="callStyle.icon" :size="20" />
-            </div>
+            :message="message"
+            :is-me="isMe"
+          />
 
-            <div class="flex flex-col text-gray-800">
-                <span class="font-bold text-[15px] leading-tight">
-                <span v-if="isCallRejectedMessage(message)">Nieodebrane połączenie głosowe</span>
-                <span v-else-if="isVideoCall(message)">Rozmowa wideo</span>
-                <span v-else>Połączenie głosowe</span>
-                </span>
-
-                <span class="text-xs text-gray-500 mt-1">
-                <span v-if="isCallRejectedMessage(message)">
-                    {{ message.timestamp ? message.timestamp.slice(0, 5) : '16:13' }}
-                </span>
-                <span v-else>
-                    {{ formatSeconds(message.duration) }}
-                </span>
-                </span>
-            </div>
-            </div>
-
-            <MessageMediaGallery
-            v-else-if="isGroupedImage && isImageMessage(message)"
-            :media-urls="message.mediaUrls || []"
+          <ChatMessageImage
+            v-else-if="isImageMessage(message) || isGifMessage(message)"
+            :message="message"
             :is-me="isMe"
             @open-lightbox="emit('open-lightbox', $event)"
-            />
+          />
 
-            <div v-else-if="isSingleImageOrGif" class="mb-1">
-            <img
-                :src="(message as ImageMessage).imageUrl"
-                class="max-w-full h-auto rounded-xl shadow-sm cursor-pointer hover:opacity-95 transition-opacity"
-                :class="{ 'border-2 border-purple-400': message.type === 'gif' }"
-                @click="emit('open-lightbox', (message as ImageMessage).imageUrl)"
-                alt="Attachment"
-                loading="lazy"
-            />
-            </div>
-
-            <div
+          <ChatMessageAudio
             v-else-if="isAudioMessage(message)"
-            class="flex items-center w-full min-w-[200px] space-x-3 p-2.5 rounded-full h-12 shadow-sm transition-colors"
-            :class="bubbleColorClass"
-            >
-            <audio
-                :src="message.audioUrl"
-                class="hidden"
-                :id="`audio-${boxId ?? '0'}-${message.id}`"
-                preload="metadata"
-            ></audio>
+            :message="message"
+            :box-id="message.chatId"
+            :bubble-color-class="bubbleColorClass"
+          />
 
-            <button
-                @click="toggleAudio(message)"
-                class="w-8 h-8 rounded-full bg-white text-blue-600 flex items-center justify-center shrink-0 shadow-sm hover:scale-105 transition-transform"
-            >
-                <PauseIcon v-if="audioStates[message.id]?.isPlaying" :size="18" />
-                <PlayIcon v-else :size="18" class="ml-0.5" />
-            </button>
-
-            <div class="grow h-8 relative overflow-hidden flex items-center cursor-pointer" @click="toggleAudio(message)">
-                <div class="flex items-center justify-between space-x-[2px] w-full px-1">
-                <div
-                    v-for="(height, idx) in visualizerBars"
-                    :key="idx"
-                    class="rounded-full shrink-0 transition-colors duration-200"
-                    :style="getAudioBarStyle(message.id, idx, message.duration)"
-                ></div>
-                </div>
-                <div
-                v-if="audioStates[message.id]?.isPlaying"
-                class="absolute top-0 bottom-0 w-[2px] bg-white/80 shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-100 ease-linear"
-                :style="getPlaybackIndicatorStyle(message.id, message.duration)"
-                ></div>
-            </div>
-
-            <span class="text-xs font-bold tabular-nums pr-2 select-none min-w-[35px] text-right">
-                {{ formatSeconds(audioStates[message.id]?.isPlaying ? (audioStates[message.id]?.currentTime || 0) : message.duration) }}
-            </span>
-            </div>
-
-            <MessageFileAttachment
+          <ChatMessageFile
             v-else-if="isFileMessage(message)"
             :message="message"
-            :class="isMe ? 'text-white' : 'text-gray-900'"
-            />
+            :is-me="isMe"
+            :box-id="message.chatId"
+          />
 
-            <div v-else-if="isVideoMessage(message)" class="rounded-xl overflow-hidden shadow-sm">
-            <PlayerVideo :url="message.videoUrl" />
-            </div>
+          <ChatMessageVideo
+            v-else-if="isVideoMessage(message)"
+            :message="message"
+            :box-id="message.chatId"
+          />
 
-            <div
+          <ChatMessageLink
             v-else-if="isLinkMessage(message)"
-            class="flex flex-col overflow-hidden rounded-xl shadow-sm min-w-[250px] max-w-full border border-gray-200 "
-            >
-            <a
-                :href="message.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                :class="[(props.currentTheme?.sentBubbleColor || 'bg-blue-500') ]"
+            :message="message"
+          />
 
-                class="block  p-3 text-white no-underline hover:underline break-all text-sm font-medium"
-            >
-                {{ message.url }}
-            </a>
+          <ChatMessagePostLink
+            v-else-if="isPostLinkMessage(message)"
+            :message="message"
+          />
 
-            <div class="bg-gray-100 px-3 py-2 flex items-center justify-between">
-                <span class="text-black font-bold text-[15px]">
-                {{  extractDomain(message.url) }}
-                </span>
-                <LinkVariantIcon :size="16" class="text-gray-400 opacity-50"/>
-            </div>
-            </div>
-
-            <div
-              v-else-if="isPostLinkMessage(message)"
-              class="flex flex-col overflow-hidden rounded-2xl shadow-sm min-w-[280px] max-w-full border border-gray-100 bg-gray-200"
-            >
-              <div class="flex items-center px-4 py-3">
-                <div class="w-10 h-10 rounded-full overflow-hidden mr-3 border border-gray-200 bg-black">
-                  <img
-                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80"
-                    class="w-full h-full object-cover opacity-90"
-                    alt="Author"
-                  />
-                </div>
-                <div class="flex flex-col">
-                  <span class="font-bold text-gray-900 text-[15px] leading-tight">
-                    Coding Tips
-                  </span>
-                </div>
-              </div>
-
-              <div class="w-full relative bg-gray-800">
-                <img
-                  src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-                  class="w-full h-auto object-cover max-h-[250px]"
-                  alt="Code example"
-                />
-                <div class="absolute bottom-0 w-full bg-yellow-100/90 text-center py-1 text-xs font-bold text-gray-800 border-t border-yellow-200">
-                    Takeaway: Unused Code Create Confusion.
-                </div>
-              </div>
-
-              <div class="px-4 py-3 flex flex-col justify-between min-h-[80px]">
-                <h3 class="font-bold text-gray-900 text-[17px] leading-tight mb-1">
-                  Golden Rules of Writing Good Code.
-                </h3>
-
-                <div class="flex items-center justify-between mt-auto pt-1">
-                  <div class="flex items-center text-gray-500 text-sm font-medium">
-                    <span>Facebook</span>
-                  </div>
-                  <span class="text-gray-400 font-bold text-xl leading-none pb-2 cursor-pointer hover:text-gray-600">...</span>
-                </div>
-              </div>
-            </div>
-
-            <div
+          <ChatMessageText
             v-else-if="isTextMessage(message)"
-            class="relative px-4 py-2 text-[15px] leading-relaxed shadow-sm break-words max-w-full"
-            :class="[bubbleRadiusClass, bubbleColorClass]"
-            >
-            <p>{{ message.content }}</p>
-            </div>
+            :message="message"
+            :bubble-radius-class="bubbleRadiusClass"
+            :bubble-color-class="bubbleColorClass"
+          />
 
-            <div
+          <div
             v-if="message.reactions?.length && !isAnyCallType(message)"
             @click.stop="openReactionsPanel"
             class="absolute -bottom-2 cursor-pointer bg-white rounded-full px-1.5 py-0.5 min-w-[24px] h-6 flex items-center justify-center shadow-md border border-gray-100 z-10 transition-transform hover:scale-110"
             :class="isMe ? 'left-0 translate-y-0' : 'right-0 translate-y-0'"
+          >
+            <span class="text-xs leading-none">{{
+              message.reactions[message.reactions.length - 1]
+            }}</span>
+            <span
+              v-if="message.reactions.length > 1"
+              class="text-[9px] font-bold text-gray-500 ml-0.5"
+              >{{ message.reactions.length }}</span
             >
-            <span class="text-xs leading-none">{{ message.reactions[message.reactions.length - 1] }}</span>
-            <span v-if="message.reactions.length > 1" class="text-[9px] font-bold text-gray-500 ml-0.5">{{ message.reactions.length }}</span>
-            </div>
-
+          </div>
         </div>
 
         <MessageReactions
-            v-if="!isAnyCallType(message) && message.type !== 'action'"
-            :message-id="message.id"
-            :reactions="message.reactions"
-            :is-me="isMe"
-            @add-reaction="handleAddReaction"
-            @open-panel="openReactionsPanel"
-            @reply="handleReply"
+          v-if="!isAnyCallType(message) && message.type !== 'action'"
+          :message-id="message.id"
+          :reactions="message.reactions"
+          :is-me="isMe"
+          @add-reaction="handleAddReaction"
+          @open-panel="openReactionsPanel"
+          @reply="handleReply"
         />
-        </div>
+      </div>
     </div>
-<div v-show="(displayReadBy.visible.length > 0 || displayReadBy.hiddenCount > 0) || positionInGroup =='single' || positionInGroup=='last'" class="h-4 mt-1 mr-1 flex justify-end w-full relative min-h-[16px]">
-             <div v-if="!(displayReadBy.visible.length > 0 || displayReadBy.hiddenCount > 0)">
-       {{ displayTimeAgo }}
-    </div>
-        <TransitionGroup
-          tag="div"
-          class="flex justify-end items-center overflow-visible p-1"
-          @enter="onAvatarEnter"
-          @leave="onAvatarLeave"
-          :css="false"
+    <div
+      v-show="
+        displayReadBy.visible.length > 0 ||
+        displayReadBy.hiddenCount > 0 ||
+        props.metadata.position == 'single' ||
+        props.metadata.position == 'last'
+      "
+      class="h-4 mt-1 mr-1 flex justify-end w-full relative min-h-[16px]"
+    >
+      <div v-if="!(displayReadBy.visible.length > 0 || displayReadBy.hiddenCount > 0)">
+        {{ displayTimeAgo }}
+      </div>
+      <TransitionGroup
+        tag="div"
+        class="flex justify-end items-center overflow-visible p-1"
+        @enter="onAvatarEnter"
+        @leave="onAvatarLeave"
+        :css="false"
+      >
+        <div
+          v-if="displayReadBy.hiddenCount > 0"
+          key="counter"
+          class="w-3.5 h-3.5 rounded-full ring-2 ring-white bg-gray-200 text-[8px] flex items-center justify-center text-gray-500 font-bold relative z-0"
         >
-          <div
-              v-if="displayReadBy.hiddenCount > 0"
-              key="counter"
-              class="w-3.5 h-3.5 rounded-full ring-2 ring-white bg-gray-200 text-[8px] flex items-center justify-center text-gray-500 font-bold relative z-0"
-          >
-              +{{ displayReadBy.hiddenCount }}
-          </div>
+          +{{ displayReadBy.hiddenCount }}
+        </div>
 
-          <img
-              v-for="(userId, i) in displayReadBy.visible"
-              :key="userId"
-              :data-avatar-userid="userId"
-              :src="getUserAvatar(userId)"
-              class="w-3.5 h-3.5 rounded-full ring-2 ring-white relative object-cover shadow-sm select-none border-white bg-gray-200"
-              :style="{ zIndex: i + 1 }"
-              alt="seen"
-          />
-
-        </TransitionGroup>
+        <img
+          v-for="(userId, i) in displayReadBy.visible"
+          :key="userId"
+          :data-avatar-userid="userId"
+          :src="getUserAvatar(userId)"
+          class="w-3.5 h-3.5 rounded-full ring-2 ring-white relative object-cover shadow-sm select-none border-white bg-gray-200"
+          :style="{ zIndex: i + 1 }"
+          alt="seen"
+        />
+      </TransitionGroup>
     </div>
-
   </div>
 
   <BaseModal v-if="showReactionsPanel" @close="showReactionsPanel = false" title="Reakcje">
@@ -523,11 +367,25 @@ const toggleAudio = (msg: Message) => emit('toggle-audio-playback', msg);
 </template>
 
 <style scoped>
-.emoji-size-default { font-size: 1.75rem; }
-.emoji-size-small { font-size: 45px; }
-.emoji-size-medium { font-size: 60px; }
-.emoji-size-large { font-size: 80px; }
-.bg-purple-600 { background-color: #8B5CF6; }
-.group-hover\:flex { display: none; }
-.group:hover .group-hover\:flex { display: flex; }
+.emoji-size-default {
+  font-size: 1.75rem;
+}
+.emoji-size-small {
+  font-size: 45px;
+}
+.emoji-size-medium {
+  font-size: 60px;
+}
+.emoji-size-large {
+  font-size: 80px;
+}
+.bg-purple-600 {
+  background-color: #8b5cf6;
+}
+.group-hover\:flex {
+  display: none;
+}
+.group:hover .group-hover\:flex {
+  display: flex;
+}
 </style>

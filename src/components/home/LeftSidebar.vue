@@ -43,7 +43,7 @@ const visibleShortcuts = computed(() => showMoreShortcuts.value ? shortcuts : sh
 </script>
 
 <template>
-  <div class="fixed flex flex-col h-[calc(100vh-56px)] max-w-[360px] pr-2 sticky top-[56px] bg-theme-bg">
+  <div class="fixed flex flex-col h-[calc(100vh-56px)] p-2 max-w-[360px] pr-2 sticky top-[56px] bg-theme-bg">
 
     <div class="flex-1 overflow-y-auto custom-scrollbar">
 
