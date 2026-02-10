@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import CreateBox from '@/components/create/createPost/CreateBox.vue';
 import ProfileFriendsMini from '@/components/profile/ProfileFriendsMini.vue';
 import PostItem from '@/components/feed/post/PostItem.vue';
-import PostFilter from '@/components/feed/PostFilter.vue';
+import PostFilter from './PostFilter.vue';
 import { usePostsStore } from '@/stores/posts';
 import { useRoute } from 'vue-router';
 import BirthdayPostFeed from '@/components/BirthdayPostFeed.vue';

@@ -27,7 +27,7 @@
 
 import CommentItem from '@/components/feed/comment/CommentItem.vue';
 import type { Post } from '@/types/Post';
-import CommentReplyInput from '@/components/feed/CommentReplyInput.vue';
+import CommentReplyInput from '@/components/feed/comment/CommentReplyInput.vue';
 import { computed } from 'vue';
 import { usePostsStore } from '@/stores/posts';
 import { useCommentsStore } from '@/stores/comments';
