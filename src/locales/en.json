@@ -122,7 +122,8 @@
     "wpTitle": "Wirtualna Polska - Everything that matters",
     "wpDescription": "The latest news from Poland and the world.",
     "andOthers": "and {count} others",
-    "writeCommentAs": "Write a comment as {name}..."
+    "writeCommentAs": "Write a comment as {name}...",
+    "totalVotes": "{count} votes"
   },
   "profile": {
     "myProfile": "My Profile",
@@ -141,14 +142,32 @@
     "commonFriends": "common friends",
     "oneCommonFriend": "1 common friend",
     "noCommonFriends": "No common friends",
-    "isFriend": "Friend"
-    ,"tabs": {
+    "isFriend": "Friend",
+    "addCoverPhoto": "Add cover photo",
+    "addToStory": "Add to story",
+    "sendMessage": "Send message",
+    "friendsCount": "{count} friends",
+    "mutualFriendsCount": "{count} mutual friends",
+    "editProfileImage": "Edit profile image",
+    "info": {
+      "overview": "Overview",
+      "work_edu": "Work and Education",
+      "places": "Places Lived",
+      "contact_basic": "Contact and Basic Info",
+      "family": "Family and Relationships",
+      "details": "Details About You",
+      "events": "Life Events",
+      "details_about": "Details About {name}"
+    },
+    "tabs": {
       "posts": "Posts",
       "info": "Info",
       "friends": "Friends",
       "photos": "Photos",
+      "videos": "Videos",
       "checkins": "Check-ins",
-      "sports": "Sports"
+      "sports": "Sports",
+      "more": "More"
     }
   },
   "language": {

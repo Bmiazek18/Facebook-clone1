@@ -111,6 +111,7 @@
     "wpDescription": "Najnowsze wiadomości z Polski i świata.",
     "andOthers": "i {count} innych",
     "writeCommentAs": "Napisz komentarz jako {name}...",
+    "totalVotes": "{count} głosów",
     "public": "Publiczny",
     "friends": "Tylko dla przyjaciół",
     "private": "Prywatny",
@@ -141,14 +142,32 @@
     "commonFriends": "wspólnych znajomych",
     "oneCommonFriend": "1 wspólny znajomy",
     "noCommonFriends": "Brak wspólnych znajomych",
-    "isFriend": "Znajomy"
-    ,"tabs": {
+    "isFriend": "Znajomy",
+    "addCoverPhoto": "Dodaj zdjęcie w tle",
+    "addToStory": "Dodaj do relacji",
+    "sendMessage": "Wyślij wiadomość",
+    "friendsCount": "{count} znajomych",
+    "mutualFriendsCount": "{count} wspólnych znajomych",
+    "editProfileImage": "Edytuj zdjęcie profilowe",
+    "info": {
+      "overview": "Przegląd",
+      "work_edu": "Praca i wykształcenie",
+      "places": "Miejsca zamieszkania",
+      "contact_basic": "Dane kontaktowe i podstawowe informacje",
+      "family": "Rodzina i związki",
+      "details": "Szczegóły o Tobie",
+      "events": "Wydarzenia z życia",
+      "details_about": "Szczegóły o {name}"
+    },
+    "tabs": {
       "posts": "Posty",
       "info": "Informacje",
       "friends": "Znajomi",
       "photos": "Zdjęcia",
+      "videos": "Wideo",
       "checkins": "Zamelodowania",
-      "sports": "Sport"
+      "sports": "Sport",
+      "more": "Więcej"
     }
   },
   "language": {
