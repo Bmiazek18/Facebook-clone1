@@ -161,10 +161,13 @@
              </Dropdown>
           </div>
 
-          <div class="mb-6 mt-6 relative">
-             <textarea v-model="form.description" rows="3" id="desc" class="block rounded-lg px-4 pt-6 pb-2 w-full text-[15px] text-theme-text bg-theme-bg border-b border-theme-border focus:bg-theme-hover appearance-none focus:outline-none focus:border-theme-primary peer resize-none" placeholder=" "></textarea>
-             <label for="desc" class="absolute text-[15px] text-theme-text-secondary duration-150 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-theme-primary">Jakie są szczegółowe informacje?</label>
-          </div>
+          <CustomTextarea
+               v-model="form.description"
+               id="desc"
+               label="Jakie są szczegółowe informacje?"
+               placeholder=" "
+               class="min-h-[120px]"
+             />
 
           <div class="space-y-4">
 
@@ -255,6 +258,7 @@ import { Dropdown } from 'floating-vue';
 import 'v-calendar/dist/style.css';
 import 'floating-vue/dist/style.css';
 import CustomDropdown from '@/components/common/CustomDropdown.vue';
+import CustomTextarea from '@/components/common/CustomTextarea.vue';
 import { v4 as uuidv4 } from 'uuid'; // Import uuid for unique IDs
 import { useEventsStore } from '@/stores/events'; // Import the events store
 const auth = useAuthStore()

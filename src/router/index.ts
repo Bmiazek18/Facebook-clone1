@@ -112,8 +112,7 @@ const router = createRouter({
         {
           path: 'videos',
           name: 'profile-videos',
-          component: () => import('@/components/profile/PlaceholderTab.vue'),
-          props: { tabName: 'Videos' }
+          component: () => import('@/components/profile/ProfileVideosTab.vue'),
         },
         {
           path: 'checkins',
@@ -197,8 +196,7 @@ const router = createRouter({
         {
           path: 'videos',
           name: 'userProfile-videos',
-          component: () => import('@/components/profile/PlaceholderTab.vue'),
-          props: { tabName: 'Videos' }
+          component: () => import('@/components/profile/ProfileVideosTab.vue'),
         },
         {
           path: 'checkins',

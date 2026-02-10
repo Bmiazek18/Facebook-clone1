@@ -1,17 +1,16 @@
 <template>
   <div :class="isLightbox ? '': 'rounded-2xl'" class="relative w-full  overflow-hidden bg-[#e4e6eb] cursor-pointer shadow-md">
-    <video
-      ref="video"
-      :src="url"
-      class="w-full block "
-      @timeupdate="updateProgress"
-      @loadedmetadata="setDuration"
-      @play="onPlay"
-      @pause="onPause"
-      @ended="onEnded"
-      @click="handleClick"
-    ></video>
-
+  <video
+  ref="video"
+  :src="url"
+  class="w-full h-full block object-cover"
+  @timeupdate="updateProgress"
+  @loadedmetadata="setDuration"
+  @play="onPlay"
+  @pause="onPause"
+  @ended="onEnded"
+  @click="handleClick"
+></video>
 
     <div
       class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2

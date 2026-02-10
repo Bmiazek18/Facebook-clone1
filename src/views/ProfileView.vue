@@ -168,7 +168,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109];
         class="absolute bottom-4 right-4 bg-white hover:bg-gray-50 text-black px-4 py-2 rounded-md font-semibold text-[15px] shadow-sm flex items-center transition-colors cursor-pointer"
     >
         <Camera :size="20" class="mr-2"/>
-        {{ $t('profile.addCoverPhoto') || 'Dodaj zdjęcie w tle' }}
+        {{ $t('profile.addCoverPhoto') }}
     </button>
 </div>
             <div class="max-w-[1250px] mx-auto relative">
@@ -200,10 +200,10 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109];
                             </h1>
 
                             <div class="flex items-center text-[15px] font-semibold text-theme-text mb-2">
-                                <span class="hover:underline cursor-pointer">{{ profileUser.friendsCount }} znajomi</span>
+                                <span class="hover:underline cursor-pointer">{{ $t('profile.friendsCount', { count: profileUser.friendsCount }) }}</span>
                                 <template v-if="profileUser.mutualFriendsCount && !isOwner">
                                   <span class="mx-1.5">•</span>
-                                  <span class="hover:underline cursor-pointer">{{ profileUser.mutualFriendsCount }} wspólnych znajomych</span>
+                                  <span class="hover:underline cursor-pointer">{{ $t('profile.mutualFriendsCount', { count: profileUser.mutualFriendsCount }) }}</span>
                                 </template>
                             </div>
 
