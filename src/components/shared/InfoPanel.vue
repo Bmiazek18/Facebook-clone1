@@ -165,7 +165,7 @@ import MusicNote from 'vue-material-design-icons/MusicNote.vue';
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue';
 import NavbarRight from '@/layouts/Navbar/NavbarRight.vue';
 import CommentFilter from '@/components/feed/CommentFilter.vue';
-import CommentItem from '@/components/feed/CommentItem.vue';
+import CommentItem from '@/components/feed/comment/CommentItem.vue';
 import CommentReplyInput from '@/components/feed/CommentReplyInput.vue';
 import { getUserById } from '@/data/users';
 

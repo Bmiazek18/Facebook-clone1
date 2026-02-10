@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 
-import CommentItem from '@/components/feed/CommentItem.vue';
+import CommentItem from '@/components/feed/comment/CommentItem.vue';
 import type { Post } from '@/types/Post';
 import CommentReplyInput from '@/components/feed/CommentReplyInput.vue';
 import { computed } from 'vue';
