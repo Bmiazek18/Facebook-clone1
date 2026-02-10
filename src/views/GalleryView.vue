@@ -144,7 +144,7 @@ import Share from 'vue-material-design-icons/Share.vue'
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue'
 import ReactionButton from '@/components/feed/ReactionButton.vue'
 import CommentItem from '@/components/feed/comment/CommentItem.vue'
-import GalleryMediaViewer from '@/components/gallery/GalleryMediaViewer.vue'
+import GalleryMediaViewer from '@/components/common/GalleryMediaViewer.vue'
 import { usePostsStore } from '@/stores/posts';
 import CommentReplyInput from "@/components/feed/comment/CommentReplyInput.vue";
 import NavbarRight from '@/layouts/Navbar/NavbarRight.vue'
