@@ -13,10 +13,19 @@ const props = defineProps<{
 }>()
 
 // Use useAudioPlayer directly
-const { audioStates, toggleAudioPlayback } = useAudioPlayer(props.boxId);
+const { audioStates, toggleAudioPlayback, seekAudio } = useAudioPlayer(props.boxId);
 
 // Update toggleAudio to use the local toggleAudioPlayback
 const toggleAudio = () => toggleAudioPlayback(props.message)
+
+const handleSeek = (event: MouseEvent) => {
+  const progressBar = event.currentTarget as HTMLElement;
+  const clickX = event.clientX - progressBar.getBoundingClientRect().left;
+  const progressBarWidth = progressBar.offsetWidth;
+  const seekPercentage = clickX / progressBarWidth;
+  const newTime = (props.message.duration || 0) * seekPercentage;
+  seekAudio(props.message, newTime);
+};
 
 const visualizerBars = [10, 20, 14, 25, 20, 15, 20, 10]
 const VISUALIZER_THRESHOLDS = [0, 12, 25, 37, 50, 62, 75, 87]
@@ -71,7 +80,7 @@ const getPlaybackIndicatorStyle = (msgId: number, duration: number) => {
 
     <div
       class="grow h-8 relative overflow-hidden flex items-center cursor-pointer"
-      @click="toggleAudio()"
+      @click="handleSeek($event)"
     >
       <div class="flex items-center justify-between space-x-[2px] w-full px-1">
         <div

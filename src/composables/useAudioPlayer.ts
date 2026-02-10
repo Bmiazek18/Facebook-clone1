@@ -13,6 +13,25 @@ const currentActiveId = ref<number | null>(null);
 
 export function useAudioPlayer(boxId?: string | number) {
 
+  const seekAudio = (message: Message, seekTime: number) => {
+    const audioId = message.id;
+    const domId = `audio-${boxId ?? '0'}-${audioId}`;
+    const audioElement = document.getElementById(domId) as HTMLAudioElement | null;
+
+    if (audioElement) {
+      audioElement.currentTime = seekTime;
+      if (!audioStates.value[audioId]) {
+        audioStates.value[audioId] = {
+          isPlaying: false,
+          duration: message.duration || audioElement.duration || 0,
+          currentTime: seekTime
+        };
+      } else {
+        audioStates.value[audioId].currentTime = seekTime;
+      }
+    }
+  };
+
   const toggleAudioPlayback = (message: Message) => {
     const audioId = message.id;
     const domId = `audio-${boxId ?? '0'}-${audioId}`;
@@ -79,6 +98,6 @@ export function useAudioPlayer(boxId?: string | number) {
   return {
     audioStates,
     currentActiveId,
-    toggleAudioPlayback
-  };
-}
+    toggleAudioPlayback,
+    seekAudio
+  }}
