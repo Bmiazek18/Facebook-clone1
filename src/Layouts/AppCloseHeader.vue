@@ -22,7 +22,7 @@ import { useRouter } from 'vue-router';
 import { onMounted, onUnmounted, ref } from 'vue';
 
 const router = useRouter();
-const hasAnimatedOnce = ref(false);
+ const hasAnimatedOnce = ref(false); // Removed
 
 const goBack = () => {
   router.back();

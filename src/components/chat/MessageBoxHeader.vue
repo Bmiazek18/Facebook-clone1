@@ -2,7 +2,6 @@
   import { ref } from 'vue';
 import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue';
 import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue';
-import InformationVariantIcon from 'vue-material-design-icons/InformationVariant.vue';
 import PhoneIcon from 'vue-material-design-icons/Phone.vue';
 import VideoOutlineIcon from 'vue-material-design-icons/VideoOutline.vue';
 import MinusIcon from 'vue-material-design-icons/Minus.vue';
