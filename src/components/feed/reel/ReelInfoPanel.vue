@@ -129,12 +129,12 @@ import { getUserById } from '@/data/users';
 import { useReelsStore } from '@/stores/reels';
 import { usePostsStore } from '@/stores/posts';
 import { useCommentsStore } from '@/stores/comments';
-import CommentItem from '@/components/feed/CommentItem.vue';
-import CommentReplyInput from '../feed/CommentReplyInput.vue';
+import CommentItem from '@/components/feed/comment/CommentItem.vue';
+import CommentReplyInput from '../comment/CommentReplyInput.vue';
 import { useLinkModal } from '@/composables/useLinkModal';
 import BaseModal from '@/components/common/BaseModal.vue';
 import LinkModal from '@/components/feed/LinkModal.vue';
-import EmptyState from '../common/EmptyState.vue';
+import EmptyState from '../comment/EmptyState.vue';
 
 const props = defineProps<{
   reel: Reel;

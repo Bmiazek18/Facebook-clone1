@@ -5,7 +5,7 @@ import PostCreator from './tabs/PostCreator.vue';
 import PrivacySelector from '@/components/common/PrivacySelector.vue';
 import TagUsers from './tabs/TagUsers.vue';
 import LocationSelector from './tabs/LocationSelector.vue';
-import GifSelector from '@/components/common/GifSelector.vue';
+import GifSelector from './tabs/GifSelector.vue';
 import ImageEditor from './tabs/ImageEditor.vue';
 import VideoEditor from './tabs/VideoEditor.vue';
 import FeelingModal from './tabs/FeelingModal.vue';

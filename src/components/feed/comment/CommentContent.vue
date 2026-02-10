@@ -2,7 +2,7 @@
 import { defineProps } from 'vue'
 import { getUserById } from '@/data/users'
 import type { ProcessedContent } from '@/utils/contentProcessor'
-import ProfilePopper from '../profile/ProfilePopper.vue';
+import ProfilePopper from '../../profile/ProfilePopper.vue';
 
 defineProps<{
   content: ProcessedContent[]

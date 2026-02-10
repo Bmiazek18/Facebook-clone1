@@ -6,7 +6,7 @@ import FileGifBox from 'vue-material-design-icons/FileGifBox.vue';
 import Send from 'vue-material-design-icons/Send.vue';
 import ChevronDown from 'vue-material-design-icons/ChevronDown.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
-import GifSelector from '@/components/common/GifSelector.vue';
+import GifSelector from '@/components/create/createPost/tabs/GifSelector.vue';
 import { useAuthStore } from '@/stores/auth';
 import { usePostsStore } from '@/stores/posts';
 import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue';

@@ -19,7 +19,7 @@ import PostCreatorToolbar from '../PostCreatorToolbar.vue';
 import LinkPreviewCard from '../item/LinkPreviewCard.vue';
 import StoryTextCard from '../item/StoryTextCard.vue';
 import MediaPreview from '../item/MediaPreview.vue';
-import MapPreview from '../../MapPreview.vue';
+import MapPreview from '@/components/MapPreview.vue';
 import CreatePoll from '../item/CreatePoll.vue';
 import PostItem from '@/components/feed/post/PostItem.vue';
 import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue';

@@ -2,8 +2,8 @@
 import {  ref } from 'vue'
 import InformationOutline from 'vue-material-design-icons/InformationOutline.vue'
 import type { LinkPreview } from '@/types/Post'
-import BaseModal from '../common/BaseModal.vue';
-import LinkModal from './LinkModal.vue';
+import BaseModal from '../../common/BaseModal.vue';
+import LinkModal from '../LinkModal.vue';
 
 defineProps<{
   linkPreview: LinkPreview

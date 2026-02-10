@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import PostMediaGallery from '@/components/feed/PostMediaGallery.vue'
+import PostMediaGallery from './PostMediaGallery.vue'
 import type { Post } from '@/types/Post'
 
 interface Props {

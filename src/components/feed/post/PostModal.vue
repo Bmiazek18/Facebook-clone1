@@ -3,16 +3,16 @@ import { computed } from 'vue'
 import { usePostsStore } from '@/stores/posts'
 import { useCommentsStore } from '@/stores/comments'
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue'
-import EmptyState from '@/components/common/EmptyState.vue'
-import CommentItem from '@/components/feed/CommentItem.vue'
-import PostItem from './post/PostItem.vue'
+import EmptyState from '../comment/EmptyState.vue'
+import CommentItem from '@/components/feed/comment/CommentItem.vue'
+import PostItem from './PostItem.vue'
 import type { Post } from '@/types/Post';
-import CommentReplyInput from '@/components/feed/CommentReplyInput.vue'
+import CommentReplyInput from '@/components/feed/comment/CommentReplyInput.vue'
 import CommentFilter from '@/components/profile/CommentFilter.vue';
 import { getUserById } from '@/data/users';
 import { useLinkModal } from '@/composables/useLinkModal';
-import BaseModal from '../common/BaseModal.vue';
-import LinkModal from './LinkModal.vue';
+import BaseModal from '../../common/BaseModal.vue';
+import LinkModal from '../LinkModal.vue';
 
 const props = defineProps<{
     post: Post

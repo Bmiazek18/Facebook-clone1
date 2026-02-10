@@ -6,7 +6,7 @@ import { useRouter } from 'vue-router'
 import 'floating-vue/dist/style.css'
 
 import BaseModal from '@/components/common/BaseModal.vue'
-import PostModal from '@/components/feed/PostModal.vue'
+import PostModal from './PostModal.vue'
 import ShareAsPostModal from '@/components/feed/ShareAsPostModal.vue'
 import PostHeader from './PostHeader.vue'
 import PostActions from './PostActions.vue'
@@ -27,8 +27,8 @@ import type { Post } from '@/types/Post'
 import ShareAsMessageModal from '@/components/feed/ShareAsMessageModal.vue'
 import { getUserById } from '@/data/users'
 import ReactionPanel from '../ReactionPanel.vue'
-import CommentItem from '../CommentItem.vue'
-import CommentReplyInput from '../CommentReplyInput.vue'
+import CommentItem from '../comment/CommentItem.vue'
+import CommentReplyInput from '../comment/CommentReplyInput.vue'
 
 const props = defineProps<{
   post: Post
