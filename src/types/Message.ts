@@ -1,5 +1,5 @@
 export interface BaseMessage {
-  id: number;
+  id: number | string;
   sender: 'me' | 'other';
   time: number;
   // Opcjonalnie: sformatowany czas jako string (np. "16:13"),
@@ -8,8 +8,9 @@ export interface BaseMessage {
   isReply?: boolean;
   replyToSender?: string;
   replyToContentSnippet?: string;
+  replyToId?: number;
   iconSizeState?: 'default' | 'small' | 'medium' | 'large';
-  reactions?: string[];
+  reactions?: Record<string, string>;
 }
 
 export interface TextMessage extends BaseMessage {

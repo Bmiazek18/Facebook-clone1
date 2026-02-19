@@ -8,7 +8,7 @@ import { useAudioPlayer } from '@/composables/useAudioPlayer'; // Added
 const props = defineProps<{
   message: Message
   boxId: string | number | undefined // Changed from injectedBoxId
-  bubbleColorClass: string
+  bubbleColor: string
   // removed injectedAudioStates
 }>()
 
@@ -61,7 +61,7 @@ const getPlaybackIndicatorStyle = (msgId: number, duration: number) => {
 <template>
   <div
     class="flex items-center w-full min-w-[200px] space-x-3 p-2.5 rounded-full h-12 shadow-sm transition-colors"
-    :class="bubbleColorClass"
+    :style="{ backgroundColor: bubbleColor }"
   >
     <audio
       :src="message.audioUrl"
@@ -72,7 +72,8 @@ const getPlaybackIndicatorStyle = (msgId: number, duration: number) => {
 
     <button
       @click="toggleAudio()"
-      class="w-8 h-8 rounded-full bg-white text-blue-600 flex items-center justify-center shrink-0 shadow-sm hover:scale-105 transition-transform"
+      class="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm hover:scale-105 transition-transform"
+      :style="{ color: bubbleColor }"
     >
       <PauseIcon v-if="audioStates[message.id]?.isPlaying" :size="18" />
       <PlayIcon v-else :size="18" class="ml-0.5" />

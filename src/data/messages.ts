@@ -217,7 +217,7 @@ const messages: ChatMessage[] = [
     type: 'text',
     content: 'Dostałem plik, dzięki.',
     time: createTimestamp(13),
-    reactions: ['✅'],
+
   },
   {
     id: 1021,
@@ -301,7 +301,7 @@ const messages: ChatMessage[] = [
     type: 'text',
     content: 'Dzięki jeszcze raz — dobry job!',
     time: createTimestamp(23),
-    reactions: ['👏','❤️']
+
   },
   // kolejna porcja wiadomości dla czatu 1 (1031-1060)
   {

@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import CustomInput from '@/components/common/CustomInput.vue';
 import CustomDropdown from '@/components/common/CustomDropdown.vue';
+import CustomTextarea from '@/components/common/CustomTextarea.vue';
 
 const sortByOptions = [
   { id: 'drag', title: 'Przeciągnij i upuść', description: 'Ułóż zdjęcia w dowolnej kolejności' },
@@ -12,7 +13,7 @@ const sortByOptions = [
 const albumName = ref('');
 const sortBy = ref('drag');
 const files = ref([]);
-const draggedItem = ref(null); // Przechowuje obiekt przeciąganego elementu
+const draggedItem = ref(null);
 
 const handleFileUpload = (event) => {
   const uploadedFiles = Array.from(event.target.files);
@@ -21,7 +22,9 @@ const handleFileUpload = (event) => {
     id: Math.random().toString(36).substr(2, 9),
     file: file,
     url: URL.createObjectURL(file),
-    description: ''
+    description: '',
+    createdDate: null,
+    location: null
   }));
 
   files.value = [...files.value, ...newFiles];
@@ -32,7 +35,52 @@ const removeFile = (id) => {
   files.value = files.value.filter(f => f.id !== id);
 };
 
-// --- LOGIKA LIVE DRAG & DROP ---
+const useFileMetadata = async () => {
+  try {
+    for (const item of files.value) {
+      const arrayBuffer = await item.file.arrayBuffer();
+      const view = new DataView(arrayBuffer);
+
+      let dateString = null;
+
+      for (let i = 0; i < view.byteLength - 8; i++) {
+        if (view.getUint8(i) === 0xFF && view.getUint8(i + 1) === 0xE1) {
+          const exifLength = view.getUint16(i + 2, false);
+          const exifStart = i + 4;
+
+          for (let j = exifStart; j < exifStart + exifLength - 8; j++) {
+            if (view.getUint8(j) === 0x01 && view.getUint8(j + 1) === 0x32) {
+              const offset = view.getUint32(j + 2, false) + exifStart;
+              const length = view.getUint32(offset, false);
+              const bytes = new Uint8Array(arrayBuffer, offset + 4, length - 1);
+              dateString = new TextDecoder().decode(bytes);
+              break;
+            }
+          }
+          break;
+        }
+      }
+
+      if (!dateString) {
+        dateString = new Date(item.file.lastModified).toISOString();
+      }
+
+      item.createdDate = new Date(dateString);
+    }
+
+    sortFiles();
+  } catch (error) {
+    console.error('Błąd przy czytaniu metadanych:', error);
+  }
+};
+
+const sortFiles = () => {
+  if (sortBy.value === 'date_asc') {
+    files.value.sort((a, b) => a.createdDate - b.createdDate);
+  } else if (sortBy.value === 'date_desc') {
+    files.value.sort((a, b) => b.createdDate - a.createdDate);
+  }
+};
 
 const onDragStart = (event, item) => {
   if (sortBy.value !== 'drag') {
@@ -40,27 +88,19 @@ const onDragStart = (event, item) => {
     return;
   }
   draggedItem.value = item;
-
-  // Ustawienie efektu kursora
   event.dataTransfer.effectAllowed = 'move';
   event.dataTransfer.dropEffect = 'move';
-  // Opcjonalnie: ukryj "ducha" systemowego lub zostaw domyślny
-  // event.dataTransfer.setDragImage(event.target, 0, 0);
 };
 
-// Funkcja wywoływana, gdy najeżdżamy na inny element
 const onDragEnter = (targetItem) => {
-  // Jeśli nie ciągniemy niczego lub najeżdżamy na ten sam element - stop
   if (sortBy.value !== 'drag' || !draggedItem.value || draggedItem.value.id === targetItem.id) {
     return;
   }
 
-  // Znajdź indeksy
   const oldIndex = files.value.findIndex(f => f.id === draggedItem.value.id);
   const newIndex = files.value.findIndex(f => f.id === targetItem.id);
 
   if (oldIndex !== -1 && newIndex !== -1) {
-    // Wyciągnij element i wstaw go w nowe miejsce (mutacja tablicy wywoła animację Vue)
     const itemToMove = files.value.splice(oldIndex, 1)[0];
     files.value.splice(newIndex, 0, itemToMove);
   }
@@ -68,6 +108,27 @@ const onDragEnter = (targetItem) => {
 
 const onDragEnd = () => {
   draggedItem.value = null;
+};
+
+const openLocationSelector = (item) => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        item.location = {
+          lat: latitude,
+          lng: longitude,
+          name: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+        };
+      },
+      (error) => {
+        console.error('Błąd przy pobieraniu lokalizacji:', error);
+        alert('Nie udało się pobrać lokalizacji. Sprawdź uprawnienia.');
+      }
+    );
+  } else {
+    alert('Geolokalizacja nie jest obsługiwana przez tę przeglądarkę.');
+  }
 };
 
 </script>
@@ -100,9 +161,14 @@ const onDragEnd = () => {
           label="Sortuj według"
           v-model="sortBy"
           :options="sortByOptions"
+          @update:modelValue="sortFiles"
         />
 
-        <button class="flex items-center gap-2 w-full bg-theme-bg-tertiary opacity-50 cursor-not-allowed rounded-lg p-2.5 font-semibold text-sm">
+        <button
+          @click="useFileMetadata"
+          :disabled="files.length === 0"
+          v-tooltip="'Odczyta datę utworzenia ze zdjęć. Jeśli niedostępna, użyje daty modyfikacji pliku'"
+          class="flex items-center gap-2 w-full bg-theme-bg-tertiary hover:bg-theme-hover-strong transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-lg p-2.5 font-semibold text-sm">
           🕒 Użyj daty ze zdjęć
         </button>
       </div>
@@ -123,14 +189,14 @@ const onDragEnd = () => {
           <div class="absolute -top-1 -right-1 w-5 h-5 bg-theme-primary rounded-full border-4 border-theme-bg"></div>
         </div>
         <h2 class="text-xl font-bold text-theme-text-secondary">Może coś dodasz?</h2>
-<p class="text-theme-text-secondary">Przeciągnij zdjęcia i filmy tutaj, aby rozpocząć.</p>
+        <p class="text-theme-text-secondary">Przeciągnij zdjęcia i filmy tutaj, aby rozpocząć.</p>
       </div>
 
       <div v-else>
         <TransitionGroup
           name="list"
           tag="div"
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-20 relative"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4  relative"
         >
           <div
             v-for="item in files"
@@ -140,10 +206,9 @@ const onDragEnd = () => {
             @dragenter.prevent="onDragEnter(item)"
             @dragover.prevent
             @dragend="onDragEnd"
-            class="bg-theme-bg-secondary rounded-lg border border-theme-border flex flex-col relative overflow-hidden shadow-md group transition-all duration-300"
+            class="bg-theme-bg-secondary h-[450px] rounded-lg border border-theme-border flex flex-col relative overflow-hidden shadow-md group transition-all duration-300"
             :class="{
               'cursor-move hover:shadow-xl': sortBy === 'drag',
-              // STYL DLA PRZECIĄGANEGO ELEMENTU (Niebieska ramka, półprzezroczystość)
               'opacity-40 border-2 border-dashed border-theme-primary scale-95 bg-theme-bg': draggedItem && draggedItem.id === item.id
             }"
           >
@@ -159,17 +224,30 @@ const onDragEnd = () => {
 
             <div class="p-3 flex flex-col gap-2">
               <div class="relative">
-                <textarea
+                <CustomTextarea
+                  :id="`description-${item.id}`"
+                  label="Opis"
                   v-model="item.description"
                   placeholder="Opis (opcjonalnie)"
-                  class="w-full bg-theme-bg-tertiary rounded-lg p-2.5 text-sm text-theme-text placeholder:text-theme-text-secondary resize-none border border-transparent focus:border-theme-primary/50 focus:bg-theme-bg-tertiary/80 outline-none transition-all h-[60px]"></textarea>
+                />
               </div>
 
               <div class="flex items-center justify-between pt-1">
                  <div class="flex gap-3">
                     <button title="Oznacz osoby" class="text-theme-text-secondary hover:text-theme-text transition-colors">🏷️</button>
-                    <button title="Dodaj lokalizację" class="text-theme-text-secondary hover:text-theme-text transition-colors">📍</button>
-                    <button title="Czas" class="text-theme-text-secondary hover:text-theme-text transition-colors">🕒</button>
+                    <button
+                      @click="openLocationSelector(item)"
+                      :title="`Lokalizacja: ${item.location ? item.location.name : 'Brak'}`"
+                      v-tooltip="`Lokalizacja: ${item.location ? item.location.name : 'Brak'}`"
+                      class="text-theme-text-secondary hover:text-theme-text transition-colors">
+                      📍
+                    </button>
+                    <button
+                      :title="`Czas: ${item.createdDate ? item.createdDate.toLocaleString('pl-PL') : 'Brak daty'}`"
+                      v-tooltip="`Czas: ${item.createdDate ? item.createdDate.toLocaleString('pl-PL') : 'Brak daty'}`"
+                      class="text-theme-text-secondary hover:text-theme-text transition-colors">
+                      🕒
+                    </button>
                  </div>
               </div>
             </div>
@@ -183,7 +261,6 @@ const onDragEnd = () => {
 </template>
 
 <style scoped>
-/* Ukrycie domyślnego scrollbara */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -192,13 +269,10 @@ const onDragEnd = () => {
   scrollbar-width: none;
 }
 
-/* ANIMACJE DRAG & DROP (Vue FLIP) */
-/* 1. Element, który zmienia pozycję w liście (inne ustępują miejsca) */
 .list-move {
   transition: transform 0.3s ease;
 }
 
-/* 2. Styl podczas upuszczania (opcjonalny fade) */
 .list-enter-active,
 .list-leave-active {
   transition: all 0.3s ease;
@@ -209,7 +283,6 @@ const onDragEnd = () => {
   transform: scale(0.9);
 }
 
-/* Ważne: zapewnia płynność animacji elementów, które nie są ciągnięte */
 .list-leave-active {
   position: absolute;
 }

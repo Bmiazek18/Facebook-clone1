@@ -51,6 +51,7 @@
                 <button
                     @click="handleClick(chat.id)"
                     class="w-full group flex items-center py-2 px-1 hover:bg-theme-hover rounded-lg cursor-pointer transition duration-100 text-left"
+                    :class="{'bg-blue-100 dark:bg-blue-700': chat.id.toString() === currentRouteChatId}"
                 >
                     <div class="relative shrink-0 mr-3 w-12 h-12">
                         <!-- Avatar grupowy - dwa zdjęcia nałożone -->
@@ -109,7 +110,7 @@ defineProps({
   isEmbedded: {
     type: Boolean,
     default: false,
-  },
+  }
 });
 
 // 1. IMPORT KOMPONENTÓW IKON
@@ -151,6 +152,7 @@ const route = useRoute();
 
 
 const isInChatView = computed(() => route.path.startsWith('/chat'));
+const currentRouteChatId = computed(() => route.params.chatId as string);
 
 const handleClick = (chatId: number): void => {
   if (isInChatView.value) {

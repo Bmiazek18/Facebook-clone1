@@ -20,7 +20,7 @@ const convStore = useConversationsStore();
 // Stan dla mobile - pokazuj MessageBox gdy użytkownik kliknie w czat
 const showMobileChat = ref(false);
 // Stan dla mobile - pokazuj ChatInfoPanel na pełnym ekranie
-const showMobileInfo = ref(true);
+const showMobileInfo = ref(false);
 
 const breakpoints = useBreakpoints({
   tablet: 768,
@@ -32,7 +32,7 @@ const isMobile = breakpoints.smaller('tablet');
 watch(chatId, (newId) => {
   if (newId) {
     showMobileChat.value = true;
-    showMobileInfo.value = true; // Reset info panel przy zmianie czatu
+    showMobileInfo.value = false; // Reset info panel przy zmianie czatu
   }
 
   const s = convStore.settings.find(x => x.chatId === Number(newId));
@@ -44,7 +44,7 @@ watch(chatId, (newId) => {
     convStore.setSelectedTheme(mappedId);
   }
   if (s?.emoji) convStore.setSelectedEmoji(s.emoji);
-});
+}, { immediate: true });
 
 
 const messageBoxRef = ref<InstanceType<typeof MessageBox> | null>(null);

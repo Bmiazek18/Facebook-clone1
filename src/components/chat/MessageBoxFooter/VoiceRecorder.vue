@@ -4,17 +4,17 @@
     <div v-if="isRecording || isPaused" class="shrink-0">
       <button
         @click="cancelVoiceRecording"
-        class="w-12 h-12 rounded-full flex items-center justify-center text-white transition hover:opacity-90 shadow-md"
-        :class="props.themeColor"
+        class="w-10 h-10 rounded-full flex items-center justify-center text-white transition hover:opacity-90 shadow-md"
+        :style="{ backgroundColor: props.themeColor }"
       >
-        <CloseIcon :size="24" />
+        <CloseIcon :size="20" />
       </button>
     </div>
 
     <div
       v-if="isRecording || isPaused"
-      class="grow h-12 rounded-full flex items-center px-2 relative overflow-hidden shadow-md"
-      :class="props.themeColor"
+      class="grow h-10 rounded-full flex items-center px-2 relative overflow-hidden shadow-md"
+      :style="{ backgroundColor: props.themeColor }"
     >
       <div
         class="absolute inset-y-0 left-0 bg-black/20 pointer-events-none"
@@ -28,7 +28,7 @@
           class="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0 hover:scale-105 transition-transform cursor-pointer text-gray-800"
         >
           <StopIcon v-if="isRecording" :size="20" />
-          <PlayIcon v-else :size="24" class="ml-0.5" />
+          <PlayIcon v-else :size="20" class="ml-0.5" />
         </button>
 
         <span class="text-white text-sm font-semibold tabular-nums tracking-wide">
@@ -38,22 +38,15 @@
     </div>
 
     <div class="shrink-0">
-      <button
-        v-if="!isRecording && !isPaused"
-        @click="startNewRecording"
-        class="w-12 h-12 rounded-full flex items-center justify-center transition hover:bg-gray-100"
-        :class="textColorClass"
-      >
-        <MicrophoneIcon :size="28" />
-      </button>
+
 
       <button
-        v-else
+
         @click="finishAndSend"
-        class="w-12 h-12 rounded-full flex items-center justify-center text-white transition hover:opacity-90 shadow-md"
-        :class="props.themeColor"
+        class="w-10 h-10 rounded-full flex items-center justify-center text-white transition hover:opacity-90 shadow-md"
+        :style="{ backgroundColor: props.themeColor }"
       >
-        <SendIcon :size="24" class="ml-1" />
+        <SendIcon :size="20" class="ml-1" />
       </button>
     </div>
 
@@ -61,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted, computed } from 'vue';
+import { ref, onUnmounted, computed, onMounted } from 'vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 import MicrophoneIcon from 'vue-material-design-icons/Microphone.vue';
 import StopIcon from 'vue-material-design-icons/Stop.vue';
@@ -71,10 +64,6 @@ import PlayIcon from 'vue-material-design-icons/Play.vue';
 const props = defineProps<{
   themeColor: string;
 }>();
-
-const textColorClass = computed(() => {
-  return props.themeColor.replace('bg-', 'text-');
-});
 
 const emit = defineEmits<{
   'audio-recorded': [payload: { audioUrl: string, duration: number }];
@@ -243,5 +232,9 @@ onUnmounted(() => {
   if (mediaStream) {
     mediaStream.getTracks().forEach(track => track.stop());
   }
+});
+
+onMounted(() => {
+  startNewRecording();
 });
 </script>

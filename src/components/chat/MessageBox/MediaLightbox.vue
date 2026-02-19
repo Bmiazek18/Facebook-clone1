@@ -97,9 +97,9 @@ watch(() => props.startIndex, (newIndex) => {
 <template>
   <component :is="fullscreen ? 'Teleport' : 'div'" :to="fullscreen ? 'body' : undefined">
     <div
-      class="flex flex-col overflow-hidden bg-black"
+      class="flex flex-col overflow-hidden bg-black z-99999"
       :class="[
-        fullscreen ? 'fixed inset-0 z-99999 items-center justify-between' : 'relative w-full h-full items-center justify-center'
+        fullscreen ? 'fixed inset-0  items-center justify-between' : 'relative w-full h-full items-center justify-center'
       ]"
     >
 

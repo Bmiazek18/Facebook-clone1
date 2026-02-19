@@ -1,13 +1,14 @@
 <template>
     <div
-        class="flex space-x-1 text-gray-500 shrink-0 cursor-pointer transition-transform duration-100"
+        v-tooltip.top="'Naciśnij i przytrzymaj, by powiększyć'"
+        class="flex items-center text-gray-500 shrink-0 w-[40px] h-[40px] flex align-center justify-center cursor-pointer transition-transform duration-100 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full"
         @mousedown="handlePressStart"
         @mouseup="handlePressEnd"
         @mouseleave="handlePressEnd"
-        @touchstart.prevent="handlePressStart"
+        @touchstart.prevent="handlePressEnd"
         @touchend.prevent="handlePressEnd"
       >
-       <span :class="[currentIconState, 'text-blue-500 hover:text-blue-700 text-2xl']">{{ emoji }}</span>
+       <span :class="[currentIconState, 'text-blue-500 hover:text-blue-700 text-xl']">{{ emoji }}</span>
       </div>
 </template>
 
@@ -96,26 +97,22 @@ onUnmounted(() => {
 
 <style scoped>
 .icon-state-0 {
-    width: 24px;
-    height: 24px;
+
     font-size: 24px;
     transition: all 0.3s ease-out;
 }
 .icon-state-1 {
-    width: 30px;
-    height: 30px;
+
     font-size: 30px;
     transition: all 0.3s ease-out;
 }
 .icon-state-2 {
-    width: 36px;
-    height: 36px;
+
     font-size: 36px;
     transition: all 0.3s ease-out;
 }
 .icon-state-3 {
-    width: 48px;
-    height: 48px;
+
     font-size: 48px;
     transition: all 0.3s ease-out;
 }

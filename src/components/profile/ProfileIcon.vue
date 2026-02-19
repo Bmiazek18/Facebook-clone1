@@ -22,13 +22,13 @@
 
      <button
         @click="addNewElement"
-        class="w-12 h-12 rounded-full bg-[#46484c]
+        class="w-12 h-12 rounded-full
                shadow-xl flex items-center justify-center transition
-               duration-300 ease-in-out hover:bg-gray-100 hover:shadow-2xl
+               duration-300 ease-in-out theme-bg-secondary hover:shadow-2xl
                focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50"
         aria-label="Add New Element"
       >
-        <PencilIcon :size="26" class="text-white" />
+        <PencilIcon :size="26" class="text-theme-text" />
      </button>
   </div>
 </template>

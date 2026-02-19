@@ -1,16 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { useChatThemeStore } from '@/stores/chatTheme';
+import { storeToRefs } from 'pinia';
 import LinkVariantIcon from 'vue-material-design-icons/LinkVariant.vue'
 import type { Message, LinkMessage } from '@/types/Message'
 
-interface Theme {
-  id?: string
-  sentBubbleColor?: string
-}
+const { selectedTheme } = storeToRefs(useChatThemeStore());
 
 const props = defineProps<{
   message: Message
-  injectedTheme: Theme
 }>()
 
 function extractDomain(url: string): string {
@@ -31,7 +28,7 @@ function extractDomain(url: string): string {
       :href="message.url"
       target="_blank"
       rel="noopener noreferrer"
-      :class="[injectedTheme?.sentBubbleColor || 'bg-blue-500']"
+      :style="{ backgroundColor: selectedTheme.sentBubbleColor }"
       class="block p-3 text-white no-underline hover:underline break-all text-sm font-medium"
     >
       {{ message.url }}

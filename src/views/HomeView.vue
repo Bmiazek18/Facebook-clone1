@@ -200,7 +200,7 @@ const handleCancelLeave = () => {
                   transform: `translateY(${virtualRow.start}px)`,
                 }"
               >
-                <div class="mb-4">
+                <!-- <div class="mb-4">
                   <PostItem
                     v-if="processedList[virtualRow.index].type === 'post'"
                     :post="processedList[virtualRow.index].data"
@@ -211,7 +211,7 @@ const handleCancelLeave = () => {
                   <ReelsGallery
                     v-else-if="processedList[virtualRow.index].type === 'reelsGallery'"
                   />
-                </div>
+                </div> -->
               </div>
             </div>
 

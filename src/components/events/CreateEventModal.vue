@@ -264,7 +264,7 @@ import { useEventsStore } from '@/stores/events'; // Import the events store
 const auth = useAuthStore()
 
 // Import nowego komponentu mapy
-import LocationModal from './LocationModal.vue';
+import LocationModal from '../LocationModal.vue';
 
 // Import ikon Material Design
 import CloseIcon from 'vue-material-design-icons/Close.vue';

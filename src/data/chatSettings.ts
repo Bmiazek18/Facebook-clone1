@@ -9,7 +9,7 @@ export interface ChatSetting {
 // minimal settings for some chats
 const chatSettings: ChatSetting[] = [
   { chatId: 1, themeId: 1, emoji: '😄' },
-  { chatId: 2, themeId: 0, emoji: '🤠' },
+  { chatId: 2, themeId: 0, emoji: '🥶' },
   { chatId: 3, themeId: 2, emoji: '🎧' },
   { chatId: 4, themeId: 3, emoji: '📊' },
   { chatId: 5, themeId: 4, emoji: '📁' },

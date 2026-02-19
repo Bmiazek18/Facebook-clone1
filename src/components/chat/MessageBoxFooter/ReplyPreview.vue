@@ -26,12 +26,11 @@
 <script setup lang="ts">
 import { defineProps, defineEmits } from 'vue';
 
-const props = defineProps({
-  reply: {
-    type: Object,
-    default: null,
-  },
-});
+import type { Message } from '@/types/Message';
+
+const props = defineProps<{
+  reply: Message | null
+}>();
 
 const emit = defineEmits(['clearReply']);
 </script>

@@ -116,6 +116,21 @@ export const useConversationsStore = defineStore('conversations', () => {
     return s
   }
 
+
+  function addReaction(chatId: number, messageId: string, emoji: string) {
+    const message = messages.value.find(m => m.chatId === Number(chatId) && m.id === messageId);
+    if (message) {
+      if (!message.reactions) {
+        message.reactions = {};
+      }
+      if (message.reactions[emoji]) {
+        message.reactions[emoji]++;
+      } else {
+        message.reactions[emoji] = 1;
+      }
+    }
+  }
+
   return {
     chats,
     messages,
@@ -133,6 +148,7 @@ export const useConversationsStore = defineStore('conversations', () => {
     updateGroupMembersNicknames,
     setSelectedTheme: themeStore.setSelectedTheme,
     setSelectedEmoji: themeStore.setSelectedEmoji,
+    addReaction,
   }
 })
 

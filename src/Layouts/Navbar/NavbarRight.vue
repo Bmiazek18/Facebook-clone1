@@ -21,6 +21,7 @@ type ActiveMenuType = 'profile' | 'notifications' | 'message' | 'main' | null;
 const route = useRoute()
 const auth = useAuthStore()
 const hideMessageIcon = computed(() => route.meta?.hideMessageIcon === true)
+const isChatActive = computed(() => route.name === 'chat' || route.name === 'chatMessages')
 
 const activeMenu = ref<ActiveMenuType>(null)
 const navTarget = ref(null)
@@ -53,7 +54,7 @@ const activeBtnClass = "bg-[#E7F3FF] dark:bg-[#263951] text-[#1877F2] dark:text-
         v-if="!hideMessageIcon"
         @click="toggleMenu('message')"
         v-tooltip.bottom.no-arrow="{ content: 'Wiadomości', triggers: ['hover'] }"
-        :class="[btnClass, activeMenu === 'message' ? activeBtnClass : '']"
+        :class="[btnClass, activeMenu === 'message' || isChatActive ? activeBtnClass : '']"
       >
         <FacebookMessenger :size="23" />
       </button>

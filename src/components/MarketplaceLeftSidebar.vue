@@ -72,7 +72,7 @@ const sidebarItems = computed(() => [
     :createButton="{ icon: Plus, text: 'Utwórz nowe ogłoszenie', route: '/marketplace/create/item' }"
   >
     <template #pre-list>
-      <div class="px-4 py-4 border-b border-theme-border">
+      <div class="px-2 pt-3 border-t border-theme-border">
         <h3 class="font-semibold text-[17px] mb-2 text-theme-text">Lokalizacja</h3>
         <button @click="openLocation" class="text-blue-600 text-sm hover:underline flex items-center">
           <MapMarker :size="16" class="mr-1" />
@@ -82,7 +82,7 @@ const sidebarItems = computed(() => [
     </template>
 
     <template #list-items>
-      <div class="px-2 py-4">
+      <div>
         <h3 class="font-semibold text-[17px] px-2 mb-2 text-theme-text">Kategorie</h3>
         <ul class="space-y-1">
           <li v-for="(cat, index) in categories" :key="index">

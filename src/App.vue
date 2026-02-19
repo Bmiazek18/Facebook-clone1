@@ -2,7 +2,7 @@
   <MainNavLayout v-if="showMainLayout"/>
 
   <router-view />
-  <div v-if="!isInChatView" class="fixed flex flex-row bottom-0 right-[60px]">
+  <div v-if="!isInChatView" class="fixed flex flex-row bottom-0 right-[60px] z-50">
       <MessageBox
         v-for="boxId in chatStore.getBoxIds"
         :key="boxId"

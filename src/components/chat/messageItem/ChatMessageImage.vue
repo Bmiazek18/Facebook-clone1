@@ -19,7 +19,7 @@ const isImageMessage = (msg: Message): msg is ImageMessageWithGroup => msg.type 
 const isGifMessage = (msg: Message): msg is GifMessage => msg.type === 'gif'
 
 const isGroupedImage = computed(
-  () => isImageMessage(props.message) && (props.message.mediaUrls?.length ?? 0) > 0,
+  () => isImageMessage(props.message) && (props.message.mediaUrls?.length ?? 0) > 1,
 )
 const isSingleImageOrGif = computed(
   () => (isImageMessage(props.message) || isGifMessage(props.message)) && !isGroupedImage.value,
@@ -27,12 +27,12 @@ const isSingleImageOrGif = computed(
 </script>
 
 <template>
-  <div class="mb-2 overflow-visible">
-    <div v-if="!isGroupedImage && isSingleImageOrGif" class="mb-1">
+  <div class="overflow-visible">
+    <div v-if="!isGroupedImage " class="mb-1 color">
       <img
         :src="(message as ImageMessage).imageUrl"
         class="max-w-full h-auto rounded-xl shadow-sm cursor-pointer hover:opacity-95 transition-opacity"
-        :class="{ 'border-2 border-purple-400': message.type === 'gif' }"
+
         @click="emit('open-lightbox', (message as ImageMessage).imageUrl)"
         alt="Attachment"
         loading="lazy"
@@ -47,14 +47,14 @@ const isSingleImageOrGif = computed(
       <img
         :src="message.mediaUrls?.[0]"
         @click="emit('open-lightbox', message.mediaUrls?.[0] ?? '')"
-        class="absolute top-0 right-0 w-[110px] h-[110px] rounded-2xl object-cover bg-theme-bg ring-[3px] ring-white shadow-lg z-30"
+        class="absolute top-0 right-0 w-[120px] h-[120px] rounded-2xl object-cover bg-theme-bg   shadow-lg z-30"
         alt="Zdjęcie 1"
       />
 
       <img
         :src="message.mediaUrls?.[1]"
         @click="emit('open-lightbox', message.mediaUrls?.[1] ?? '')"
-        class="absolute top-[70px] left-0 w-[110px] h-[110px] rounded-2xl object-cover bg-theme-bg ring-[3px] ring-white shadow-lg z-20"
+        class="absolute top-[70px] left-0 w-[120px] h-[120px] rounded-2xl object-cover bg-theme-bg   shadow-lg z-20"
         alt="Zdjęcie 2"
       />
 
@@ -62,7 +62,7 @@ const isSingleImageOrGif = computed(
         <img
           @click="emit('open-lightbox', message.mediaUrls?.[2] ?? '')"
           :src="message.mediaUrls?.[2]"
-          class="absolute bottom-0 right-0 w-[110px] h-[110px] rounded-2xl object-cover bg-theme-bg ring-[3px] ring-white shadow-lg z-10"
+          class="absolute bottom-0 right-0 w-[120px] h-[120px] rounded-2xl object-cover bg-theme-bg   shadow-lg z-10"
           alt="Zdjęcie 3"
         />
       </template>
@@ -72,14 +72,14 @@ const isSingleImageOrGif = computed(
       <img
         @click="emit('open-lightbox', message.mediaUrls?.[0] ?? '')"
         :src="message.mediaUrls?.[0]"
-        class="absolute top-0 left-0 w-[100px] h-20 object-cover rounded-lg shadow-md ring-2 ring-white z-10"
+        class="absolute top-0 left-0 w-[100px] h-20 object-cover rounded-lg shadow-md ring-2  z-10"
         :style="{ transform: 'rotate(-6deg)' }"
         alt="Zdjęcie 1"
       />
       <img
         @click="emit('open-lightbox', message.mediaUrls?.[1] ?? '')"
         :src="message.mediaUrls?.[1]"
-        class="absolute top-2 left-8 w-[100px] h-20 object-cover rounded-lg shadow-md ring-2 ring-white z-20"
+        class="absolute top-2 left-8 w-[100px] h-20 object-cover rounded-lg shadow-md ring-2  z-20"
         :style="{ transform: 'rotate(4deg)' }"
         alt="Zdjęcie 2"
       />
@@ -87,7 +87,7 @@ const isSingleImageOrGif = computed(
         @click="emit('open-lightbox', message.mediaUrls?.[2] ?? '')"
         v-if="(message.mediaUrls?.length ?? 0) >= 3"
         :src="message.mediaUrls?.[2]"
-        class="absolute -top-2 left-4 w-[100px] h-20 object-cover rounded-lg shadow-md ring-2 ring-white z-0"
+        class="absolute -top-2 left-4 w-[100px] h-20 object-cover rounded-lg shadow-md ring-2  z-0"
         :style="{ transform: 'rotate(-2deg)' }"
         alt="Zdjęcie 3"
       />

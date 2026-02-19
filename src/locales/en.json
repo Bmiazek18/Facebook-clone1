@@ -122,8 +122,10 @@
     "wpTitle": "Wirtualna Polska - Everything that matters",
     "wpDescription": "The latest news from Poland and the world.",
     "andOthers": "and {count} others",
-    "writeCommentAs": "Write a comment as {name}...",
-    "totalVotes": "{count} votes"
+    "writeCommentAs": "Write a comment as {name}..."
+  },
+  "poll": {
+    "totalVotes": "1 vote | {count} votes"
   },
   "profile": {
     "myProfile": "My Profile",

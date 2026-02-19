@@ -5,9 +5,13 @@ import type { Message } from '@/types/Message';
 defineProps<{
     reply: Message;
 }>();
+
+const emit = defineEmits(['scrollToReplied']);
+
 </script>
 
 <template>
+  <div @click="emit('scrollToReplied')" class="cursor-pointer">
   <div
     class="flex flex-col"
     :class="{
@@ -27,4 +31,5 @@ defineProps<{
       <p class="text-gray-700 p-3 text-[11px]">{{ reply.replyToContentSnippet }}</p>
     </div>
   </div>
+</div>
 </template>

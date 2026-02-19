@@ -80,20 +80,20 @@ const applyTheme = () => {
              <img
               :src="selectedTheme?.backgroundImage"
               alt="Theme Background"
-              class="w-full h-full object-cover filter blur-[3px] scale-105 transition-all duration-700 transform"
+              class="w-full h-full object-cover  transform"
             />
           </div>
 
           <div
             class="absolute inset-0 z-0 transition-all duration-500"
-            :class="selectedTheme?.gradientClass"
+
           ></div>
 
           <div class="relative z-10 flex-1 flex flex-col justify-center p-8 space-y-4">
 
             <div
               class="self-end max-w-[80%] rounded-2xl rounded-tr-sm p-3.5 text-white text-[15px] leading-snug shadow-lg transition-colors duration-300 border border-white/10"
-              :class="selectedTheme?.sentBubbleColor"
+              :style="{ backgroundColor: selectedTheme?.sentBubbleColor }"
             >
               Testujemy motyw: <strong>{{ selectedTheme?.title }}</strong>. Jak Ci się podoba ten klimat?
             </div>
@@ -104,7 +104,7 @@ const applyTheme = () => {
               </div>
               <div
                 class="order-1 max-w-[80%] rounded-2xl rounded-br-sm p-3.5 text-white text-[15px] leading-snug shadow-lg transition-colors duration-300 border border-white/10"
-                :class="selectedTheme?.sentBubbleColor"
+                :style="{ backgroundColor: selectedTheme?.sentBubbleColor }"
               >
                 Kolor dymków idealnie pasuje do tła!
               </div>
@@ -114,14 +114,14 @@ const applyTheme = () => {
               Jest super! Zostawiamy ten, czy szukamy dalej? 👀
             </div>
 
-            <div class="w-full text-center text-xs font-medium text-white/90 my-2 drop-shadow-md shadow-black">
+            <div class="w-full text-center text-xs font-medium " :style="{ color: selectedTheme?.timestampColor || 'rgba(255, 255, 255, 0.7)' }">
               10:45
             </div>
 
             <div class="flex items-end justify-end gap-2">
               <div
                 class="order-1 max-w-[80%] rounded-2xl rounded-br-sm p-3.5 text-white text-[15px] leading-snug shadow-lg transition-colors duration-300 border border-white/10 font-medium"
-                :class="selectedTheme?.sentBubbleColor"
+                :style="{ backgroundColor: selectedTheme?.sentBubbleColor }"
               >
                 Kliknij przycisk poniżej, aby zatwierdzić.
               </div>
@@ -132,7 +132,7 @@ const applyTheme = () => {
           <div class="relative z-10 p-4 border-t border-white/10 bg-black/20 backdrop-blur-md">
             <button
               class="w-full py-3 px-4 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.01]"
-              :class="selectedTheme?.sentBubbleColor"
+              :style="{ backgroundColor: selectedTheme?.sentBubbleColor }"
               @click="applyTheme"
             >
               Ustaw motyw: {{ selectedTheme?.title }}

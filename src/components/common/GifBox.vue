@@ -4,8 +4,10 @@ import { useI18n } from 'vue-i18n';
 import { renderGrid } from '@giphy/js-components';
 import { GiphyFetch } from '@giphy/js-fetch-api';
 
-useI18n()
+useI18n();
 
+/** * Utils & Logic
+ */
 type DebounceFunction = (...args: unknown[]) => void;
 
 const debounce = (func: DebounceFunction, wait: number): DebounceFunction => {
@@ -15,9 +17,7 @@ const debounce = (func: DebounceFunction, wait: number): DebounceFunction => {
             timeout = null;
             func(...args);
         };
-        if (timeout !== null) {
-            clearTimeout(timeout);
-        }
+        if (timeout !== null) clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
 };
@@ -52,10 +52,10 @@ const makeGrid = (targetEl: HTMLElement): { remove: () => void } => {
     const render = () => {
         return renderGrid(
             {
-                width: 226,
+                width: 280, // Dopasowane do szerokości w-72 (288px) minus lekki padding
                 fetchGifs,
                 columns: 2,
-                gutter: 6,
+                gutter: 2, // Minimalny odstęp dla efektu "kafelków" ze zdjęcia
                 noLink: true,
                 hideAttribution: true,
                 onGifClick,
@@ -65,12 +65,7 @@ const makeGrid = (targetEl: HTMLElement): { remove: () => void } => {
     };
 
     const remove = render();
-
-    return {
-        remove: () => {
-            remove();
-        },
-    };
+    return { remove: () => remove() };
 };
 
 interface IGif {
@@ -85,85 +80,75 @@ const onGifClick = (gif: IGif, e: MouseEvent) => {
     e.preventDefault();
     const url = gif.images.fixed_height.url;
 
-    previewGifUrl.value = url;
-
     emit('handleGifSelection', url);
-
-    searchTerm.value = '';
-    clearGridAndFetchGifs();
 };
 
 const handleGifSearch = debounce(() => {
     previewGifUrl.value = null;
     clearGridAndFetchGifs();
-}, 500);
-
-const handleTrendingClick = (): void => {
-    searchTerm.value = '';
-    previewGifUrl.value = null;
-    clearGridAndFetchGifs();
-};
+}, 400);
 
 const clearGridAndFetchGifs = (): void => {
-    if (grid.value) {
-        grid.value.remove();
-    }
-
-    if (gifs.value) {
-        grid.value = makeGrid(gifs.value);
-    }
+    if (grid.value) grid.value.remove();
+    if (gifs.value) grid.value = makeGrid(gifs.value);
 };
 </script>
 
 <template>
-    <div class="flex flex-col bottom-18 items-center justify-center w-70 h-87.5 bg-white shadow-lg rounded-2xl border p-4">
+    <div class="relative flex flex-col w-72 h-[420px] bg-white shadow-2xl rounded-2xl border border-gray-100 overflow-hidden">
 
-        <div v-if="previewGifUrl" class="w-full mb-3 p-2 bg-indigo-50 border border-indigo-200 rounded-lg flex flex-col items-center">
-            <span class="text-xs text-indigo-700 mb-1">{{ $t('post.gifSelected') }}</span>
-            <img :src="previewGifUrl" alt="Selected GIF" class="max-h-20 w-auto rounded" />
-            <button
-                @click="previewGifUrl = null"
-                class="mt-1 text-xs text-red-500 hover:text-red-700">
-                {{ $t('common.delete') }}
-            </button>
+        <div class="p-3 bg-white z-10">
+            <div class="relative group">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </span>
+                <input
+                    type="text"
+                    v-model="searchTerm"
+                    @input="handleGifSearch"
+                    class="w-full bg-gray-100 border-none py-2 pl-10 pr-4 rounded-full text-[15px] focus:ring-2 focus:ring-gray-200 placeholder-gray-500 transition-all outline-none"
+                    placeholder="Szukaj"
+                />
+            </div>
         </div>
 
-        <div class="flex items-center justify-between w-full" :class="{ 'mt-2': !previewGifUrl }">
-            <input
-                type="text"
-                v-model="searchTerm"
-                @input="handleGifSearch"
-                class="w-full text-xl p-2 border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition duration-150 ease-in-out rounded-xl"
-                placeholder="Search gif"
-            />
-            <span
-                @click="handleTrendingClick"
-                class="ml-2 text-xl p-2 bg-white border border-gray-300 text-gray-700 flex items-center justify-center rounded-xl hover:bg-gray-100 active:bg-gray-200 cursor-pointer transition duration-150 ease-in-out"
-                title="View Trending Gifs"
-            >
-                🔥
-            </span>
+
+
+        <div class="flex-1 overflow-y-auto custom-scrollbar px-1 pb-1">
+            <div ref="gifs" class="flex justify-center" />
         </div>
 
-        <div v-if="!previewGifUrl" class="flex flex-wrap items-center justify-center w-full h-full overflow-y-auto mt-2">
-            <div ref="gifs"/>
-        </div>
-
-        <div v-else class="flex items-center justify-center w-full h-full mt-2 text-gray-500">
-            Wybór gotowy.
-        </div>
+        <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 border-r border-b border-gray-100 shadow-[2px_2px_2px_rgba(0,0,0,0.02)]"></div>
     </div>
 </template>
 
 <style scoped>
-.overflow-y-auto::-webkit-scrollbar {
-    width: 6px;
+/* Stylizacja scrollbara - cienki i subtelny */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
 }
-.overflow-y-auto::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #e5e7eb;
     border-radius: 10px;
 }
-.overflow-y-auto::-webkit-scrollbar-track {
-    background-color: #f8fafc;
+.custom-scrollbar::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+/* Giphy Grid Reset - usuwa niechciane marginesy z biblioteki */
+:deep(.giphy-grid) {
+    margin: 0 auto;
+}
+
+/* Animacja pojawiania się */
+.animate-in {
+    animation: fadeIn 0.2s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 </style>
