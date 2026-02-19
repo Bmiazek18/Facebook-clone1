@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { ref, computed, inject, onMounted, onUnmounted } from 'vue'
-
-import { useAuthStore } from '@/stores/auth' // Re-added
+import type { Theme } from '@/stores/chatTheme'
+import { useAuthStore } from '@/stores/auth'
+import PinIcon from 'vue-material-design-icons/Pin.vue'
 
 import ChatMessagePool from '@/components/chat/messageItem/ChatMessagePool.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import ReactionPanel from '@/components/feed/ReactionPanel.vue'
 import MessageReplyContext from '@/components/chat/MessageReplyContext.vue'
 import MessageReactions from '@/components/chat/MessageReactions.vue'
-
 import ChatMessageEmoji from '@/components/chat/messageItem/ChatMessageEmoji.vue'
+
 import ChatMessageAction from '@/components/chat/messageItem/ChatMessageAction.vue'
 import ChatMessageCall from '@/components/chat/messageItem/ChatMessageCall.vue'
 import ChatMessageImage from '@/components/chat/messageItem/ChatMessageImage.vue'
@@ -18,7 +19,6 @@ import ChatMessageFile from '@/components/chat/messageItem/ChatMessageFile.vue'
 import ChatMessageVideo from '@/components/chat/messageItem/ChatMessageVideo.vue'
 import ChatMessageLink from '@/components/chat/messageItem/ChatMessageLink.vue'
 import ChatMessagePostLink from '@/components/chat/messageItem/ChatMessagePostLink.vue'
-import ChatMessageText from '@/components/chat/messageItem/ChatMessageText.vue'
 import { formatTimeAgo } from '@/utils/timeFormatter'
 
 import type {
@@ -32,14 +32,21 @@ import type {
   LinkMessage,
 } from '@/types/Message'
 
-interface Theme {
-  id?: string
-  sentBubbleColor?: string
+import ChatMessageContent from './messageItem/ChatMessageContent.vue'
+function isSameDay(t1: number, t2: number) {
+    return new Date(t1).toDateString() === new Date(t2).toDateString();
 }
+const getDisplayTime = (timestamp: number) => {
+const dateStr = new Date(timestamp);
+            const timeStr = dateStr.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
 
-interface ImageMessageWithGroup extends ImageMessage {
-  mediaUrls?: string[]
-}
+            if (props.metadata.position === 'first' || !isSameDay(timestamp, new Date().getTime())) {
+                const dayName = dateStr.toLocaleDateString('pl-PL', { weekday: 'short' }).replace('.', '');
+                return `${dayName.charAt(0).toUpperCase() + dayName.slice(1)}, ${timeStr}`;
+            }
+            return timeStr;
+          }
+
 const isEmojiOnly = (content: string): boolean => {
   if (!content?.trim()) return false
   const nonEmojiChars = content
@@ -52,11 +59,14 @@ const isEmojiOnly = (content: string): boolean => {
 }
 const props = defineProps<{
   message: Message
+  theme: Theme,
   metadata: {
     position: 'single' | 'first' | 'middle' | 'last'
     isLatest: boolean
   }
-  lastReadMap: Record<string, number> // Added back
+  lastReadMap: Record<string, number>
+  isHighlighted?: boolean
+  isPinned?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -64,21 +74,19 @@ const emit = defineEmits<{
   (e: 'reply', message: Message): void
   (e: 'add-reaction', payload: { messageId: number; emoji: string }): void
   (e: 'open-modal', type: 'CHANGE_E' | 'CHANGE_NICKNAME' | 'CHANGE_THEME'): void
+  (e: 'scrollToMessage', messageId: number): void
+  (e: 'pin', messageId: number): void
 }>()
 
 // --- INJECTED CONTEXT ---
-// Removed ChatContext interface and related injections/computed properties
 const myUserId = computed(() => `user_${useAuthStore().currentUserId}`);
 
-
 // --- FLIP ANIMATION INJECTION ---
-// Wstrzykujemy funkcje od rodzica (MessageBox), co naprawia błędy przy wielu oknach
 const flipContext = inject<{
   onAvatarEnter: (el: Element, done: () => void) => void
   onAvatarLeave: (el: Element, done: () => void) => void
 }>('flip-animation')
 
-// Fallback (zabezpieczenie)
 const onAvatarEnter = flipContext?.onAvatarEnter || ((el, done) => done())
 const onAvatarLeave = flipContext?.onAvatarLeave || ((el, done) => done())
 
@@ -95,7 +103,7 @@ const displayReadBy = computed(() => {
     .map(([userId]) => userId)
 
   if (isMe.value) {
-    readersHere = readersHere.filter((userId) => userId !== myUserId.value) // Changed
+    readersHere = readersHere.filter((userId) => userId !== myUserId.value)
   }
 
   if (readersHere.length === 0) return { visible: [], hiddenCount: 0 }
@@ -112,15 +120,37 @@ const displayReadBy = computed(() => {
 const currentTime = ref(Date.now())
 let intervalId: ReturnType<typeof setInterval> | null = null
 
+// ==========================================
+// INTERSECTION OBSERVER (Logika Widoczności)
+// ==========================================
+const messageWrapperRef = ref<HTMLElement | null>(null);
+const isVisible = ref(false);
+let observer: IntersectionObserver | null = null;
+
 onMounted(() => {
   intervalId = setInterval(() => {
     currentTime.value = Date.now()
-  }, 60 * 1000) // Update every minute
+  }, 60 * 1000)
+
+  // Inicjalizacja obserwatora
+  observer = new IntersectionObserver(([entry]) => {
+    isVisible.value = entry.isIntersecting;
+  }, {
+    threshold: 1 // Wystarczy, że mały fragment dymka jest na ekranie
+  });
+
+  if (messageWrapperRef.value) {
+    observer.observe(messageWrapperRef.value);
+  }
 })
 
 onUnmounted(() => {
   if (intervalId) {
     clearInterval(intervalId)
+  }
+  // Sprzątanie obserwatora
+  if (observer) {
+    observer.disconnect();
   }
 })
 
@@ -130,7 +160,7 @@ const displayTimeAgo = computed(() => {
     isMe.value &&
     (props.metadata.position === 'single' || props.metadata.position === 'last')
   ) {
-    return formatTimeAgo(props.message.time)
+    return `Wysłano ${formatTimeAgo(props.message.time)}`
   }
   return null
 })
@@ -169,10 +199,14 @@ const bubbleRadiusClass = computed(() => {
   return map[props.metadata.position] || 'rounded-xl'
 })
 
-const bubbleColorClass = computed(() => {
-  if (!isMe.value) return 'bg-gray-200 text-black'
-  // Remove injectedTheme usage, assume default theme for now, or get it from props if necessary
-  return ('bg-blue-500' || 'bg-blue-500') + ' text-white border border-white/10' // Simplified
+const bubbleColor = computed(() => {
+  if (!isMe.value) return '#fff'
+  return props.theme.sentBubbleColor
+})
+
+const textColor = computed(() => {
+  if (!isMe.value) return 'black'
+  return 'white'
 })
 
 const shouldDisplayAvatar = computed(() => {
@@ -183,17 +217,32 @@ const shouldDisplayAvatar = computed(() => {
   )
 })
 
-
-
 const showReactionsPanel = ref(false)
 const openReactionsPanel = () => (showReactionsPanel.value = true)
 const handleReply = () => emit('reply', props.message)
-const handleAddReaction = (payload: { messageId: number; emoji: string }) =>
+const handleAddReaction = (payload: { messageId: number | string; emoji: string }) =>
   emit('add-reaction', payload)
+const handlePin = (messageId: number) => {
+  emit('pin', messageId)
+}
+
+const reactionEmojis = computed(() => {
+  if (!props.message.reactions) return []
+  return Object.keys(props.message.reactions)
+})
+
+const totalReactions = computed(() => {
+  if (!props.message.reactions) return 0
+  return Object.values(props.message.reactions).reduce((acc, count) => acc + count, 0)
+})
 </script>
 
 <template>
-  <MessageReplyContext v-if="message.isReply" :reply="message" />
+  <MessageReplyContext
+    v-if="message.isReply"
+    :reply="message"
+    @scrollToReplied="emit('scrollToMessage', message.replyToId)"
+  />
 
   <div v-if="message.type === 'poll'" class="flex justify-center mb-4">
     <ChatMessagePool
@@ -206,6 +255,7 @@ const handleAddReaction = (payload: { messageId: number; emoji: string }) =>
 
   <div
     v-else
+    ref="messageWrapperRef"
     class="relative flex flex-col group duration-200"
     :class="{
       'items-start': !isMe,
@@ -228,17 +278,26 @@ const handleAddReaction = (payload: { messageId: number; emoji: string }) =>
       <div v-else-if="!isMe" class="w-10"></div>
 
       <div
-        class="flex items-center max-w-[75%]"
+
+        class="flex items-center  max-w-[475px]"
         :class="{ 'flex-row': !isMe, 'flex-row-reverse': isMe }"
       >
-        <div class="relative flex flex-col overflow-visible">
-          <ChatMessageEmoji
-            v-if="isEmojiOnly(message.content)"
-            :message="message"
-          />
 
+        <div
+          v-tooltip.left="getDisplayTime(message.time)"
+          class="relative flex flex-col overflow-visible"
+          :class="{ 'highlighted-message': props.isHighlighted && isVisible }"
+        >
+
+<span v-if="isPinned" class="text-[10px] absolute -top-5 right-0 " :style="{ color: theme.timestampColor }" >  Przypieta</span>
+          <PinIcon
+            v-if="isPinned"
+            :size="20"
+            class="absolute z-99 rotate-45 top-0 right-0 text-red-500 transform translate-x-1/4 -translate-y-1/4"
+          />
+          <ChatMessageEmoji v-if="isEmojiOnly(message.content)" :message="message" />
           <ChatMessageAction
-            v-else-if="message.type === 'action'"
+            v-if="message.type === 'action'"
             :message="message"
             @open-modal="emit('open-modal', $event)"
           />
@@ -260,7 +319,7 @@ const handleAddReaction = (payload: { messageId: number; emoji: string }) =>
             v-else-if="isAudioMessage(message)"
             :message="message"
             :box-id="message.chatId"
-            :bubble-color-class="bubbleColorClass"
+            :bubble-color="bubbleColor"
           />
 
           <ChatMessageFile
@@ -276,36 +335,31 @@ const handleAddReaction = (payload: { messageId: number; emoji: string }) =>
             :box-id="message.chatId"
           />
 
-          <ChatMessageLink
-            v-else-if="isLinkMessage(message)"
-            :message="message"
-          />
+          <ChatMessageLink v-else-if="isLinkMessage(message)" :message="message" />
 
-          <ChatMessagePostLink
-            v-else-if="isPostLinkMessage(message)"
-            :message="message"
-          />
+          <ChatMessagePostLink v-else-if="isPostLinkMessage(message)" :message="message" />
 
-          <ChatMessageText
+          <ChatMessageContent
             v-else-if="isTextMessage(message)"
             :message="message"
             :bubble-radius-class="bubbleRadiusClass"
-            :bubble-color-class="bubbleColorClass"
+            :bubble-color="bubbleColor"
+            :text-color="textColor"
           />
 
           <div
-            v-if="message.reactions?.length && !isAnyCallType(message)"
+            v-if="reactionEmojis.length > 0 && !isAnyCallType(message)"
             @click.stop="openReactionsPanel"
-            class="absolute -bottom-2 cursor-pointer bg-white rounded-full px-1.5 py-0.5 min-w-[24px] h-6 flex items-center justify-center shadow-md border border-gray-100 z-10 transition-transform hover:scale-110"
-            :class="isMe ? 'left-0 translate-y-0' : 'right-0 translate-y-0'"
+            class="absolute -bottom-3 cursor-pointer bg-white rounded-full px-1.5 py-0.5 min-w-[24px] h-6 flex items-center justify-center shadow-md border border-gray-100 z-10 transition-transform hover:scale-110"
+            :class="isMe ? 'left-0 translate-y-0' : '-right-2 translate-y-0'"
           >
             <span class="text-xs leading-none">{{
-              message.reactions[message.reactions.length - 1]
+              reactionEmojis[reactionEmojis.length - 1]
             }}</span>
             <span
-              v-if="message.reactions.length > 1"
+              v-if="totalReactions > 1"
               class="text-[9px] font-bold text-gray-500 ml-0.5"
-              >{{ message.reactions.length }}</span
+              >{{ totalReactions }}</span
             >
           </div>
         </div>
@@ -318,32 +372,29 @@ const handleAddReaction = (payload: { messageId: number; emoji: string }) =>
           @add-reaction="handleAddReaction"
           @open-panel="openReactionsPanel"
           @reply="handleReply"
+          @pin="handlePin"
         />
       </div>
     </div>
     <div
-      v-show="
-        displayReadBy.visible.length > 0 ||
-        displayReadBy.hiddenCount > 0 ||
-        props.metadata.position == 'single' ||
-        props.metadata.position == 'last'
-      "
-      class="h-4 mt-1 mr-1 flex justify-end w-full relative min-h-[16px]"
+
+      :class="{' h-4 mt-1 ': displayReadBy.visible.length > 0 ||
+        displayReadBy.hiddenCount > 0|| displayTimeAgo }"
+      class="h-0 transition-all duration-300  flex justify-end w-full relative "
     >
-      <div v-if="!(displayReadBy.visible.length > 0 || displayReadBy.hiddenCount > 0)">
-        {{ displayTimeAgo }}
+      <div v-if="!(displayReadBy.visible.length > 0 || displayReadBy.hiddenCount > 0)" :style="{ color: props.theme.timestampColor }" class="text-[12px]">
+         {{ displayTimeAgo }}
       </div>
-      <TransitionGroup
-        tag="div"
-        class="flex justify-end items-center overflow-visible p-1"
-        @enter="onAvatarEnter"
-        @leave="onAvatarLeave"
-        :css="false"
-      >
+            <TransitionGroup
+              tag="div"
+              class="flex justify-end items-center overflow-visible p-1"
+              @enter="onAvatarEnter" @leave="onAvatarLeave"
+
+            >
         <div
           v-if="displayReadBy.hiddenCount > 0"
           key="counter"
-          class="w-3.5 h-3.5 rounded-full ring-2 ring-white bg-gray-200 text-[8px] flex items-center justify-center text-gray-500 font-bold relative z-0"
+          class="w-3.5 h-3.5 rounded-full ring-2 ring-white bg-gray-200 text-[8px] flex items-center justify-center text-gray-.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            500 font-bold relative z-0"
         >
           +{{ displayReadBy.hiddenCount }}
         </div>
@@ -367,6 +418,7 @@ const handleAddReaction = (payload: { messageId: number; emoji: string }) =>
 </template>
 
 <style scoped>
+
 .emoji-size-default {
   font-size: 1.75rem;
 }
@@ -387,5 +439,25 @@ const handleAddReaction = (payload: { messageId: number; emoji: string }) =>
 }
 .group:hover .group-hover\:flex {
   display: flex;
+}
+@keyframes pulsowanie {
+    0% {
+      transform: scale(1); /* Rozmiar początkowy */
+    }
+    50% {
+      transform: scale(1.1); /* Powiększenie odrobinę zmniejszone, by animacja w dużym dymku nie była zbyt agresywna */
+    }
+    100% {
+      transform: scale(1); /* Powrót do rozmiaru początkowego */
+    }
+  }
+.highlighted-message {
+
+  animation: pulsowanie .5s ease-in-out ;
+
+  border-radius: 16px;
+}
+.v-move {
+  transition: transform 0.5s ease;
 }
 </style>
