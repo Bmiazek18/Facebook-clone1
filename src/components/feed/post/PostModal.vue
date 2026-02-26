@@ -41,10 +41,11 @@ const handleOpenLinkModal = (url: string) => {
   <div class="flex flex-col w-full lg:w-[700px] h-[90vh] lg:h-[90vh] bg-theme-bg-secondary overflow-hidden">
 
     <HoverScrollbar class="flex-1 min-h-0 w-full">
-      <PostItem :post="props.post" />
+      <PostItem :post="props.post" :hide-close-button="true" :is-in-modal="true" />
 
       <div class="p-2 sm:p-3 md:p-4">
-        <CommentFilter />
+
+        <CommentFilter v-if="props.post.comments?.length > 0" />
 
         <div v-if="props.post.comments && props.post.comments.length > 0">
           <CommentItem
@@ -67,7 +68,7 @@ const handleOpenLinkModal = (url: string) => {
         />
       </div> </HoverScrollbar>
 
-    <div class="p-2 sm:p-3 md:p-4 border-t border-theme-border shrink-0 bg-theme-bg-secondary z-10">
+    <div class="p-2 sm:p-3 md:p-4  shrink-0 bg-theme-bg-secondary z-10">
       <CommentReplyInput
         :post-id="props.post.id"
       />

@@ -3,7 +3,7 @@
     <div class="shadow-theme p-3 mt-2 mx-3 rounded-lg bg-theme-bg-secondary">
       <RouterLink
         :to="profileLink"
-        class="flex pt-2 items-center space-x-3 pb-3 border-b border-theme-border hover:bg-theme-hover cursor-pointer"
+        class="flex pt-2 px-1 rounded-lg items-center space-x-3 pb-2 hover:bg-theme-hover cursor-pointer"
       >
         <img
           :src="currentUser?.avatar || 'https://i.pravatar.cc/150?img=1'"
@@ -14,7 +14,7 @@
           {{ currentUser?.name || 'Użytkownik' }}
         </span>
       </RouterLink>
-
+<div class="border-b border-theme-border my-1"></div>
       <button
         class="w-full mt-3 py-2 px-3 flex items-center justify-center bg-theme-bg-tertiary hover:bg-theme-hover rounded-lg text-sm font-medium text-theme-text transition duration-150"
       >

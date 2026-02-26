@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import { useRoute } from 'vue-router'
 
@@ -33,6 +33,13 @@ const toggleMenu = (menuName: ActiveMenuType) => {
 onClickOutside(navTarget, () => {
   activeMenu.value = null
 })
+// Zamykanie menu przy zmianie routingu
+watch(
+  () => route.fullPath,
+  () => {
+    activeMenu.value = null
+  }
+)
 
 // Stałe klasy dla przycisków, aby kod był czystszy
 const btnClass = "rounded-full p-2 mx-1 transition-colors flex items-center justify-center bg-[#E3E6EA] dark:bg-[#3b3d3f] hover:bg-gray-300 dark:hover:bg-gray-600 text-[#050505] dark:text-white"
@@ -92,7 +99,7 @@ const activeBtnClass = "bg-[#E7F3FF] dark:bg-[#263951] text-[#1877F2] dark:text-
         </button>
       </div>
 
-      <div v-if="activeMenu" class="fixed sm:absolute top-14 sm:top-12 left-[2vw] sm:left-auto right-[4vw] sm:right-0 w-[94vw] sm:w-auto z-50">
+      <div v-if="activeMenu" class="fixed sm:absolute top-14 z-90 sm:top-12 left-[2vw] sm:left-auto right-[4vw] sm:right-0 w-[94vw] sm:w-auto z-50">
         <MainMenu v-if="activeMenu === 'main'" />
         <ProfileMenu v-if="activeMenu === 'profile'" />
         <MessageMenu v-if="activeMenu === 'message'" />

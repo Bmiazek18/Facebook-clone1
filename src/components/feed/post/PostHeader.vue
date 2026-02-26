@@ -30,6 +30,7 @@ const props = defineProps<{
   isShared?: boolean;
   group?: Group;
   isAnonymous?: boolean;
+  hideCloseButton?: boolean;
 }>();
 
 // Placeholder for anonymous user data
@@ -195,7 +196,7 @@ const privacyInfo = computed(() => {
             <PostSettingPopper v-if="post.id" :post-id="post.id" :author-id="post.authorId" />
           </template>
         </VDropdown>
-        <button @click="emit('close')" class="post-header-btn">
+        <button v-if="!isShared && !hideCloseButton" @click="emit('close')" class="post-header-btn">
           <Close :size="20" />
         </button>
       </div>

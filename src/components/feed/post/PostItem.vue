@@ -34,6 +34,8 @@ const props = defineProps<{
   post: Post
   isShared?: boolean
   isGroup?: boolean
+  hideCloseButton?: boolean
+  isInModal?: boolean
 }>()
 
 const groupsStore = useGroupsStore()
@@ -56,6 +58,7 @@ const isShareAsPostModalOpen = ref(false)
 const isReactionModalOpen = ref(false)
 
 const toggleModal = () => {
+  if (props.isInModal) return
   isModalOpen.value = !isModalOpen.value
 }
 
@@ -171,6 +174,7 @@ const totalPollVotes = computed(() => {
         :is-shared="isShared"
         :group="isGroup ? undefined : group"
         :is-anonymous="post.isAnonymous"
+        :hide-close-button="hideCloseButton"
         @edit-post="handleEditPost"
         @hide-post="handleHidePost"
       />

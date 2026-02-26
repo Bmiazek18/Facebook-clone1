@@ -31,9 +31,9 @@ const albums = ref([
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-xl font-bold">Multimedia</h1>
       <div class="flex space-x-6 text-sm">
-        <button class="text-theme-primary hover:text-theme-primary-hover transition flex items-center font-medium">
+        <RouterLink to="/create-album" class="text-theme-primary hover:text-theme-primary-hover transition flex items-center font-medium">
           <span class="text-xl mr-1">+</span> Utwórz album
-        </button>
+        </RouterLink>
         <button class="text-theme-primary hover:text-theme-primary-hover transition font-medium">
           Dodaj zdjęcia/film
         </button>

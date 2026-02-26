@@ -128,7 +128,7 @@ watch(
       </div>
 
       <div class="flex-1 flex flex-col items-center justify-center w-full h-full relative p-0">
-        <div class="flex flex-col h-full md:aspect-9/16 md:w-auto relative group md:mt-4">
+        <div class="flex flex-col h-full md:aspect-9/16 md:w-auto relative group md:mt-4 w-full aspect-auto">
           <div
             @click.stop="prevStory"
             v-if="currentStoryIndex > 0 || currentUserIndex > 0"

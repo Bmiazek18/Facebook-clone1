@@ -1,7 +1,7 @@
 <template>
     <div class="bg-theme-bg-secondary max-w-[800px] rounded-xl shadow-[0_12px_28px_rgba(0,0,0,0.2)] flex flex-col overflow-hidden relative border border-theme-border z-10 h-[850px]">
 <BaseModal
-      :title="'Utwórz wydarzenie'"
+      :title="locationModalTitle"
       v-if="showLocationModal">
          <LocationModal
         :show="showLocationModal"
@@ -321,6 +321,13 @@ const form = ref({
   imageFiles: [],
   frequency: 'Nigdy',
   showGuestList: true
+});
+
+const locationModalTitle = computed(() => {
+  if (form.value.type === 'online') {
+    return 'Wydarzenie online';
+  }
+  return 'Wybierz lokalizację';
 });
 
 const eventTypeOptions = [

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -58,12 +58,15 @@ const fileInput = ref<HTMLInputElement | null>(null)
 
 const createModalRef = ref<InstanceType<typeof CreateModal> | null>(null)
 const showBackButton = ref(false)
-const modalTitle = computed(() => {
+const modalTitle = ref('')
+
+watchEffect(() => {
   if (targetUser.value) {
-    return `${currentUser.value?.name} > ${targetUser.value.name}`
+    modalTitle.value = `${currentUser.value?.name} > ${targetUser.value.name}`
+  } else {
+    modalTitle.value = t('post.createPost')
   }
-  return t('post.createPost')
-})
+});
 
 const handleGoBack = () => {
   createModalRef.value?.goBack()
@@ -127,98 +130,88 @@ const closeCreatePost = () => {
 <template>
   <div
     id="CreatePostBox"
-    class="w-full bg-theme-bg-secondary rounded-lg px-3 mt-4 shadow-md dark:shadow-lg"
+    class="w-full bg-theme-bg-secondary rounded-lg px-4 py-3 mt-4 shadow-sm"
   >
-    <div class="flex items-center py-3 border-b border-theme-border">
-      <a class="mr-2">
-        <img class="rounded-full ml-1 min-w-9 max-h-9" :src="image" />
+    <div v-if="!targetId && !eventTarget && !isGroupComputed" class="flex items-center gap-2">
+      <a class="flex-shrink-0">
+        <img class="rounded-full w-10 h-10 object-cover" :src="image" />
       </a>
+
       <div
         @click="openCreatePost"
-        class="flex items-center justify-start bg-[#F1F2F5] dark:bg-[#333334] hover:bg-theme-bg-hover p-2 rounded-full w-full cursor-pointer"
+        class="flex-grow bg-[#F0F2F5] dark:bg-[#3A3B3C] hover:bg-theme-bg-hover transition-colors py-2.5 px-4 rounded-full cursor-pointer"
       >
-        <div class="text-left pl-2 text-theme-text-secondary">{{ placeholder }}</div>
+        <div class="text-theme-text-secondary text-[17px] truncate">
+          {{ placeholder }}
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+        <button
+          @click="openCreatePost"
+          class="p-0.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-[5px] transition"
+          v-tooltip="$t('post.video')"
+        >
+          <VideoImage :size="34" fillColor="#F12848" />
+        </button>
+
+        <button
+          @click="handleFileClick"
+          class="p-0.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-[5px] transition"
+          v-tooltip="$t('post.image')"
+        >
+          <Image :size="28" fillColor="#43BE62" />
+        </button>
+
+        <button
+          @click="openCreatePostWithFeeling"
+          class="p-0.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-[5px] transition"
+          v-tooltip="$t('post.feeling')"
+        >
+          <EmoticonOutline :size="28" fillColor="#F8B927" />
+        </button>
       </div>
     </div>
 
-    <div class="flex items-center py-2">
-      <template v-if="isGroupComputed">
-        <button
-          @click="openAnonymousPost"
-          class="flex items-center justify-center hover:bg-theme-hover p-1 w-full rounded-lg cursor-pointer"
+    <div v-else>
+      <div class="flex items-center py-3 border-b border-theme-border">
+        <a class="mr-2">
+          <img class="rounded-full ml-1 min-w-9 max-h-9" :src="image" />
+        </a>
+        <div
+          @click="openCreatePost"
+          class="flex items-center justify-start bg-[#F1F2F5] dark:bg-[#333334] hover:bg-theme-bg-hover p-2 rounded-full w-full cursor-pointer"
         >
-          <Incognito :size="30" fillColor="#1877F2" />
-          <div class="text-theme-text-secondary font-medium ml-2 text-sm sm:text-base">
-            Post anonimowy
-          </div>
-        </button>
+          <div class="text-left pl-2 text-theme-text-secondary">{{ placeholder }}</div>
+        </div>
+      </div>
 
-        <button
-          @click="openCreatePostWithFeeling"
-          class="flex items-center justify-center hover:bg-theme-hover p-1 w-full rounded-lg cursor-pointer"
-        >
-          <EmoticonOutline :size="30" fillColor="#F8B927" />
-          <div class="text-theme-text-secondary font-medium ml-2 text-sm sm:text-base">
-            {{ $t('post.addFeeling') }}
-          </div>
-        </button>
-
-        <button
-          @click="openCreatePostPoll"
-          class="flex items-center justify-center hover:bg-theme-hover p-1 w-full rounded-lg cursor-pointer"
-        >
-          <Poll :size="30" fillColor="#FA6900" />
-          <div class="text-theme-text-secondary font-medium ml-2 text-sm sm:text-base">Ankieta</div>
-        </button>
-      </template>
-
-      <template v-else-if="!isGroupComputed">
-        <RouterLink
-          to="/live/produce"
-          class="flex items-center justify-center hover:bg-theme-hover p-1 w-full rounded-lg cursor-pointer"
-        >
-          <VideoImage :size="35" fillColor="#F12848" />
-          <div class="text-theme-text-secondary font-medium">{{ $t('post.addLive') }}</div>
-        </RouterLink>
-        <button
-          @click="handleFileClick"
-          class="flex items-center justify-center hover:bg-theme-hover w-full rounded-lg cursor-pointer"
-        >
-          <Image :size="35" fillColor="#43BE62" />
-          <div class="text-theme-text-secondary font-medium">{{ $t('post.addPhoto') }}</div>
-        </button>
-        <input
-          ref="fileInput"
-          type="file"
-          accept="image/*,video/mp4"
-          class="hidden"
-          @change="handleFileSelect"
-        />
-        <button
-          @click="openCreatePostWithFeeling"
-          class="hidden md:flex items-center justify-center hover:bg-theme-hover w-full rounded-lg cursor-pointer"
-        >
-          <EmoticonOutline :size="35" fillColor="#F8B927" />
-          <div class="text-theme-text-secondary font-medium">{{ $t('post.addFeeling') }}</div>
-        </button>
-      </template>
+      <div class="flex items-center py-2">
+        <template v-if="isGroupComputed">
+          <button @click="openAnonymousPost" class="flex items-center justify-center hover:bg-theme-hover p-1 w-full rounded-lg cursor-pointer">
+            <Incognito :size="30" fillColor="#1877F2" />
+            <span class="text-theme-text-secondary font-medium ml-2 text-sm sm:text-base">Post anonimowy</span>
+          </button>
+          </template>
+        <template v-else>
+          <button @click="handleFileClick" class="flex items-center justify-center hover:bg-theme-hover w-full rounded-lg py-2">
+            <Image :size="30" fillColor="#43BE62" />
+            <span class="ml-2 font-medium text-theme-text-secondary">Zdjęcie/film</span>
+          </button>
+          </template>
+      </div>
     </div>
+
+    <input
+      ref="fileInput"
+      type="file"
+      accept="image/*,video/mp4"
+      class="hidden"
+      @change="handleFileSelect"
+    />
   </div>
 
-  <BaseModal
-    v-if="isOpen"
-    :title="modalTitle"
-    :back="showBackButton"
-    @close="closeCreatePost"
-    @back="handleGoBack"
-  >
-    <CreateModal
-      ref="createModalRef"
-      v-model:showBack="showBackButton"
-      v-model:title="modalTitle"
-      :target-id="modalTargetId"
-      :target-type="modalTargetType"
-      @close="closeCreatePost"
-    />
+  <BaseModal v-if="isOpen" :title="modalTitle" :back="showBackButton" @close="closeCreatePost" @back="handleGoBack">
+    <CreateModal ref="createModalRef" v-model:showBack="showBackButton" v-model:title="modalTitle" :target-id="modalTargetId" :target-type="modalTargetType" @close="closeCreatePost" />
   </BaseModal>
 </template>
