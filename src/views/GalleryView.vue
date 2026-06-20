@@ -12,13 +12,17 @@
                     'max-h-full': isFullScreen
                 }"
             >
-                <button
+
+                  <div class="w-full justify-between flex  py-2 px-5 border-b border-theme-border ">
+                       <button
                     @click="router.back()"
-                    class="absolute top-4 left-4 p-2 text-theme-text rounded-full hover:bg-white/10 z-50"
+                    class="  p-2 text-theme-text rounded-full bg-gray-400 hover:bg-white/10 z-50"
                     :aria-label="$t('common.close')"
                 >
                     <Close :size="28" fillColor="#FFFFFF" />
                 </button>
+                        <NavbarRight/>
+                    </div>
 
                 <GalleryMediaViewer
                     v-model:is-full-screen="isFullScreen"
@@ -33,13 +37,11 @@
                     v-if="!isFullScreen && (currentPost || currentComment)"
                     class="w-full lg:max-w-[490px] flex flex-col lg:min-w-[370px] bg-theme-bg-secondary border-t lg:border-t-0 lg:border-l border-theme-border"
                 >
-                    <div class="w-full flex justify-end-safe py-2 px-5 border-b border-theme-border ">
-                        <NavbarRight/>
-                    </div>
+
                     <div class="flex-1 flex flex-row-reverse overflow-hidden ">
                         <div class="hidden md:block w-[90px] border-l border-theme-border"></div>
                         <div class="w-full">
-                            <HoverScrollbar class=" grow overflow-y-auto">
+                            <HoverScrollbar maxHeight='500' class=" grow overflow-y-auto">
                                 <div class=" px-4 pt-4 pb-2">
                                     <div class="flex items-start justify-between">
                                         <div class="flex items-center gap-2.5">

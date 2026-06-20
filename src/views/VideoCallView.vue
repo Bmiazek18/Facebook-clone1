@@ -1,238 +1,288 @@
-<script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
+<script setup>
+import { onMounted, onBeforeUnmount, ref } from 'vue';
+import * as THREE from 'three';
+// Oficjalna i poprawna paczka npm
+import { FilesetResolver, FaceLandmarker } from '@mediapipe/tasks-vision';
 
-// --- Ikony ---
-import Microphone from 'vue-material-design-icons/Microphone.vue';
-import MicrophoneOff from 'vue-material-design-icons/MicrophoneOff.vue';
-import Video from 'vue-material-design-icons/Video.vue';
-import VideoOff from 'vue-material-design-icons/VideoOff.vue';
-import PhoneHangup from 'vue-material-design-icons/PhoneHangup.vue';
-import MonitorShare from 'vue-material-design-icons/MonitorShare.vue';
-import AccountPlus from 'vue-material-design-icons/AccountPlus.vue';
-import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
+const videoRef = ref(null);
+const canvasRef = ref(null);
+const cheekSize = ref(1.2); // Domyślna, silniejsza wartość dla efektu ze zdjęcia
 
-// --- Typy danych ---
-interface Participant {
-  id: number;
-  name: string;
-  avatar: string;
-  isMuted: boolean;
-  isSpeaking: boolean;
-  isCameraOn: boolean;
+let scene, camera, renderer, faceMaterial, videoTexture;
+let faceLandmarker;
+let animationFrameId;
+let stream;
+
+// VERTEX SHADER - Specjalne horyzontalne rozpychanie dolnych partii twarzy
+const vertexShader = `
+varying vec2 vUv;
+uniform float uCheekSize;
+uniform float uEffectRadius;
+uniform vec2 uLeftCheek;
+uniform vec2 uRightCheek;
+
+void main() {
+    vUv = uv;
+    vec3 pos = position;
+
+    // Środek twarzy to punkt dokładnie pomiędzy lewym a prawym policzkiem
+    vec2 faceCenter = (uLeftCheek + uRightCheek) * 0.5;
+
+    // Obliczamy odległość wierzchołka od środka twarzy
+    float distToFaceCenter = length(pos.xy - faceCenter);
+
+    // Maska twarzy: jeśli wierzchołek jest dalej niż np. 1.8 * promień policzka,
+    // to znaczy, że to już tło i nie chcemy go dotykać.
+    float faceMaskRadius = uEffectRadius * 1.8;
+    float faceMask = smoothstep(faceMaskRadius, faceMaskRadius * 0.7, distToFaceCenter);
+
+    // --- LEWY POLICZEK ---
+    float distToLeft = length(pos.xy - uLeftCheek);
+    if (distToLeft < uEffectRadius) {
+        float normalizedDist = distToLeft / uEffectRadius;
+        float strength = pow(cos(normalizedDist * 1.5707), 2.0);
+
+        // Mnożymy efekt przez faceMask, aby wygasić go na krawędziach wideo (w tle)
+        pos.x -= strength * uEffectRadius * uCheekSize * 0.65 * faceMask;
+        pos.y -= strength * uEffectRadius * uCheekSize * 0.15 * faceMask;
+    }
+
+    // --- PRAWY POLICZEK ---
+    float distToRight = length(pos.xy - uRightCheek);
+    if (distToRight < uEffectRadius) {
+        float normalizedDist = distToRight / uEffectRadius;
+        float strength = pow(cos(normalizedDist * 1.5707), 2.0);
+
+        pos.x += strength * uEffectRadius * uCheekSize * 0.65 * faceMask;
+        pos.y -= strength * uEffectRadius * uCheekSize * 0.15 * faceMask;
+    }
+
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
 }
+`;
 
-// --- Stan Użytkownika (Lokalny) ---
-const isMicMuted = ref(false);
-const isCameraOff = ref(false);
-const isScreenSharing = ref(false);
+const fragmentShader = `
+varying vec2 vUv;
+uniform sampler2D uVideoTexture;
 
-// --- Flaga inicjalizacji pozycji ---
-// Dzięki temu wiemy, czy komponent już obliczył pozycję startową
-const isInitialized = ref(false);
+void main() {
+    gl_FragColor = texture2D(uVideoTexture, vUv);
+}
+`;
 
-// --- Stan Grupy (Remote) ---
-const participants = ref<Participant[]>([
-  { id: 1, name: 'Anna Nowak', avatar: 'https://i.pravatar.cc/300?img=5', isMuted: false, isSpeaking: true, isCameraOn: true },
-  { id: 2, name: 'Piotr Kowalski', avatar: 'https://i.pravatar.cc/300?img=11', isMuted: true, isSpeaking: false, isCameraOn: false },
-  { id: 3, name: 'Marta Wiśniewska', avatar: 'https://i.pravatar.cc/300?img=9', isMuted: false, isSpeaking: false, isCameraOn: true },
-  { id: 4, name: 'Tomek Zieliński', avatar: 'https://i.pravatar.cc/300?img=3', isMuted: false, isSpeaking: true, isCameraOn: false },
-]);
-
-// --- Logika Siatki (Dynamic Grid Layout) ---
-const gridLayoutClass = computed(() => {
-  const count = participants.value.length;
-  if (count === 1) return 'grid-cols-1';
-  if (count === 2) return 'grid-cols-1 md:grid-cols-2';
-  if (count <= 4) return 'grid-cols-2';
-  if (count <= 6) return 'grid-cols-2 md:grid-cols-3';
-  return 'grid-cols-3 md:grid-cols-4';
-});
-
-// --- Logika Drag & Drop (Twoja kamera) ---
-const draggableRef = ref<HTMLElement | null>(null);
-const isDragging = ref(false);
-const position = reactive({ x: 0, y: 0 });
-const dragOffset = reactive({ x: 0, y: 0 });
-
-const startDrag = (event: MouseEvent) => {
-  if (!draggableRef.value) return;
-  isDragging.value = true;
-  const rect = draggableRef.value.getBoundingClientRect();
-  dragOffset.x = event.clientX - rect.left;
-  dragOffset.y = event.clientY - rect.top;
-
-  // Jeśli użytkownik zaczyna ciągnąć, upewnij się, że mamy przejętą kontrolę nad pozycją (left/top)
-  isInitialized.value = true;
-
-  window.addEventListener('mousemove', onDrag);
-  window.addEventListener('mouseup', stopDrag);
+const updateCheekSize = () => {
+    if (faceMaterial) {
+        faceMaterial.uniforms.uCheekSize.value = cheekSize.value;
+    }
 };
 
-const onDrag = (event: MouseEvent) => {
-  if (!isDragging.value || !draggableRef.value) return;
-  const newX = event.clientX - dragOffset.x;
-  const newY = event.clientY - dragOffset.y;
+onMounted(async () => {
+    const width = 640;
+    const height = 480;
 
-  const maxX = window.innerWidth - draggableRef.value.offsetWidth;
-  const maxY = window.innerHeight - draggableRef.value.offsetHeight;
+    // Inicjalizacja Three.js
+    scene = new THREE.Scene();
+    camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10);
+    camera.position.z = 1;
 
-  position.x = Math.max(0, Math.min(newX, maxX));
-  position.y = Math.max(0, Math.min(newY, maxY));
-};
+    renderer = new THREE.WebGLRenderer({ canvas: canvasRef.value, alpha: true, antialias: true });
+    renderer.setSize(width, height);
 
-const stopDrag = () => {
-  isDragging.value = false;
-  window.removeEventListener('mousemove', onDrag);
-  window.removeEventListener('mouseup', stopDrag);
-};
+    // Kamera użytkownika
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { width, height } });
+        videoRef.value.srcObject = stream;
+        videoRef.value.play();
+    } catch (err) {
+        console.error("Brak dostępu do kamery:", err);
+        return;
+    }
 
-onMounted(() => {
-  if (draggableRef.value) {
-    // Obliczamy pozycję startową (odpowiadającą CSS right-6 bottom-[110px])
-    // Dzięki temu po przełączeniu na absolute left/top okno nie przeskoczy
-    position.x = window.innerWidth - draggableRef.value.offsetWidth - 24;
-    position.y = window.innerHeight - draggableRef.value.offsetHeight - 110;
+    videoTexture = new THREE.VideoTexture(videoRef.value);
+    videoTexture.colorSpace = THREE.SRGBColorSpace;
 
-    // Ustawiamy flagę na true, aby Vue zaczęło używać style="{ left: ... }"
-    // Robimy to w nextTick lub po prostu tutaj, co płynnie podmieni sterowanie z CSS na JS
-    isInitialized.value = true;
-  }
-});
+    // Gęsta siatka 128x128 zapobiega poszarpanym krawędziom przy dużym rozciągnięciu
+    const faceGeometry = new THREE.PlaneGeometry(2, 2, 128, 128);
 
-onUnmounted(() => {
-  window.removeEventListener('mousemove', onDrag);
-  window.removeEventListener('mouseup', stopDrag);
-});
-
-// --- Handlery ---
-const toggleMic = () => isMicMuted.value = !isMicMuted.value;
-const toggleCamera = () => isCameraOff.value = !isCameraOff.value;
-const toggleScreenShare = () => isScreenSharing.value = !isScreenSharing.value; // Dodana brakująca funkcja
-const endCall = () => alert("Opuszczono grupę");
-const addParticipant = () => {
-    const isCamOn = Math.random() > 0.5;
-    participants.value.push({
-        id: Date.now(),
-        name: `Osoba ${participants.value.length + 1}`,
-        avatar: `https://i.pravatar.cc/300?img=${participants.value.length + 15}`,
-        isMuted: false,
-        isSpeaking: false,
-        isCameraOn: isCamOn
+    faceMaterial = new THREE.ShaderMaterial({
+        vertexShader,
+        fragmentShader,
+        uniforms: {
+            uVideoTexture: { value: videoTexture },
+            uCheekSize: { value: cheekSize.value },
+            uEffectRadius: { value: 0.4 },
+            uLeftCheek: { value: new THREE.Vector2(-2, -2) },
+            uRightCheek: { value: new THREE.Vector2(2, -2) }
+        },
+        depthWrite: false
     });
-};
 
-const buttonBaseClass = "rounded-full p-3 md:p-4 transition-all duration-200 flex items-center justify-center shadow-lg cursor-pointer";
-const activeBtnClass = "bg-gray-700 hover:bg-gray-600 text-white";
-const inactiveBtnClass = "bg-gray-600 text-white hover:bg-gray-500";
-const hangupBtnClass = "bg-red-600 hover:bg-red-700 text-white px-6 md:px-8";
+    const faceMesh = new THREE.Mesh(faceGeometry, faceMaterial);
+    scene.add(faceMesh);
+
+    // Inicjalizacja MediaPipe
+    try {
+        const filesetResolver = await FilesetResolver.forVisionTasks(
+            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        );
+
+        faceLandmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
+            baseOptions: {
+                modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
+                delegate: "GPU"
+            },
+            outputFaceBlendshapes: false,
+            runningMode: "VIDEO",
+            numFaces: 2
+        });
+    } catch (e) {
+        console.error("Błąd ładowania MediaPipe:", e);
+        return;
+    }
+
+    // Mapowanie współrzędnych dostosowane pod scaleX(-1) na canvasie
+    const mapLandmarkToThree = (landmark) => {
+        const x = landmark.x * 2 - 1;
+        const y = (1 - landmark.y) * 2 - 1;
+        return new THREE.Vector2(x, y);
+    };
+
+    // Pętla renderowania
+    const renderLoop = () => {
+        if (videoRef.value && videoRef.value.readyState >= 2 && faceLandmarker) {
+            const startTimeMs = performance.now();
+            const results = faceLandmarker.detectForVideo(videoRef.value, startTimeMs);
+
+            if (results.faceLandmarks && results.faceLandmarks.length > 0) {
+                const landmarks = results.faceLandmarks[0];
+
+                // Punkty dolnych zewnętrznych policzków/żuchwy (132 i 361)
+                const leftCheekPt = landmarks[132];
+                const rightCheekPt = landmarks[361];
+
+                // Źrenice do wyliczania skali odległości od kamery
+                const leftPupil = landmarks[468];
+                const rightPupil = landmarks[473];
+
+                if (leftCheekPt && rightCheekPt && leftPupil && rightPupil) {
+                    faceMaterial.uniforms.uLeftCheek.value.copy(mapLandmarkToThree(leftCheekPt));
+                    faceMaterial.uniforms.uRightCheek.value.copy(mapLandmarkToThree(rightCheekPt));
+
+                    // Dynamiczne skalowanie obszaru działania na bazie dystansu między oczami
+                    const pupilDist = Math.sqrt(
+                        Math.pow(leftPupil.x - rightPupil.x, 2) +
+                        Math.pow(leftPupil.y - rightPupil.y, 2)
+                    );
+
+                    // Mnożnik 1.6 pozwala objąć cały dół konturu twarzy
+                    const dynamicRadius = pupilDist * 1.6;
+                    faceMaterial.uniforms.uEffectRadius.value = THREE.MathUtils.clamp(dynamicRadius, 0.25, 0.65);
+                }
+            } else {
+                // Ukryj efekt poza ekranem, gdy brak twarzy
+                faceMaterial.uniforms.uLeftCheek.value.set(-5, -5);
+                faceMaterial.uniforms.uRightCheek.value.set(5, -5);
+            }
+        }
+
+        renderer.render(scene, camera);
+        animationFrameId = requestAnimationFrame(renderLoop);
+    };
+
+    renderLoop();
+});
+
+onBeforeUnmount(() => {
+    cancelAnimationFrame(animationFrameId);
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+    if (faceLandmarker) {
+        faceLandmarker.close();
+    }
+    if (renderer) {
+        renderer.dispose();
+    }
+});
 </script>
 
 <template>
-  <div class="flex flex-col h-screen w-full bg-gray-900 text-white overflow-hidden relative font-sans select-none">
-
-    <header class="h-16 px-4 flex justify-between items-center bg-gray-900 border-b border-gray-800 z-20">
-      <div>
-        <h2 class="text-lg font-bold">Spotkanie Zespołu</h2>
-        <span class="text-xs text-gray-400 flex items-center gap-1">
-           <span class="w-2 h-2 rounded-full bg-green-500"></span>
-           {{ participants.length + 1 }} uczestników
-        </span>
-      </div>
-      <button @click="addParticipant" class="bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition">
-         <AccountPlus :size="18" />
-         <span class="hidden md:inline">Dodaj</span>
-      </button>
-    </header>
-
-    <main class="flex-1 p-2 md:p-4 overflow-y-auto flex items-center justify-center bg-black">
-
-      <div :class="['grid gap-2 md:gap-4 w-full h-full max-w-6xl', gridLayoutClass]" style="max-height: 100%;">
-        <div
-          v-for="person in participants"
-          :key="person.id"
-          class="relative bg-gray-800 rounded-xl overflow-hidden shadow-lg group transition-all duration-300 flex flex-col items-center justify-center"
-          :class="[
-            person.isSpeaking && person.isCameraOn ? 'border-2 border-green-500' : 'border border-gray-700'
-          ]"
-        >
-          <template v-if="person.isCameraOn">
-            <img :src="person.avatar" class="w-full h-full object-cover" />
-            <div class="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-black/80 to-transparent"></div>
-          </template>
-
-          <template v-else>
-            <div class="absolute inset-0 bg-gray-800 flex items-center justify-center">
-                <div class="relative">
-                    <img
-                        :src="person.avatar"
-                        class="w-20 h-20 md:w-28 md:h-28 rounded-full object-cover shadow-xl"
-                        :class="person.isSpeaking ? 'ring-4 ring-green-500 ring-offset-4 ring-offset-gray-800' : ''"
-                    />
-                    <div v-if="person.isSpeaking" class="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1 border-2 border-gray-800">
-                        <Microphone :size="12" class="text-white" />
-                    </div>
-                </div>
-            </div>
-          </template>
-
-          <div class="absolute bottom-3 left-3 z-10">
-            <span class="text-sm font-semibold text-white text-shadow drop-shadow-md">
-                {{ person.name }}
-            </span>
-          </div>
-
-          <div v-if="person.isMuted" class="absolute top-3 right-3 bg-red-600/90 p-1.5 rounded-full backdrop-blur-sm z-10">
-             <MicrophoneOff :size="16" />
-          </div>
-
-          <button class="absolute top-3 right-3 p-1.5 rounded-full bg-black/40 hover:bg-black/60 opacity-0 group-hover:opacity-100 transition text-white z-10" v-if="!person.isMuted">
-             <DotsHorizontal :size="20" />
-          </button>
+    <div class="filter-wrapper">
+        <div class="canvas-container">
+            <video ref="videoRef" autoplay playsinline muted class="hidden-video"></video>
+            <canvas ref="canvasRef"></canvas>
         </div>
-      </div>
-    </main>
 
-    <div
-      ref="draggableRef"
-      @mousedown="startDrag"
-      :style="isInitialized ? { left: position.x + 'px', top: position.y + 'px' } : {}"
-      class="absolute w-32 h-48 md:w-48 md:h-32 bg-gray-900 rounded-lg overflow-hidden border border-gray-600 shadow-2xl z-50 cursor-move right-6 bottom-[110px]"
-      :class="{ 'transition-none': isDragging, 'transition-all duration-300': !isDragging }"
-    >
-      <template v-if="!isCameraOff">
-         <img src="https://i.pravatar.cc/300?img=12" class="w-full h-full object-cover pointer-events-none transform -scale-x-100" />
-         <span class="absolute bottom-1 left-2 text-xs font-medium text-gray-300 bg-black/50 px-1 rounded">Ty</span>
-      </template>
-      <template v-else>
-         <div class="w-full h-full flex flex-col items-center justify-center bg-gray-800 pointer-events-none">
-            <img src="https://i.pravatar.cc/300?img=12" class="w-16 h-16 rounded-full opacity-70 mb-2" />
-            <span class="text-xs text-gray-400">Kamera wył.</span>
-         </div>
-      </template>
-
-      <div v-if="isMicMuted" class="absolute top-2 right-2 bg-red-600 p-1 rounded-full pointer-events-none">
-          <MicrophoneOff :size="12" />
-      </div>
+        <div class="control-panel">
+            <h3>Filtr: Mega Policzki</h3>
+            <div class="slider-group">
+                <label for="cheekSlider">Rozmiar:</label>
+                <input
+                    id="cheekSlider"
+                    type="range"
+                    min="0.0"
+                    max="3.0"
+                    step="0.1"
+                    v-model.number="cheekSize"
+                    @input="updateCheekSize"
+                />
+                <span class="value-display">{{ (cheekSize * 100).toFixed(0) }}%</span>
+            </div>
+        </div>
     </div>
-
-    <footer class="h-20 bg-gray-900 border-t border-gray-800 flex items-center justify-center gap-3 md:gap-5 z-40 px-4">
-      <button @click="toggleMic" :class="[buttonBaseClass, isMicMuted ? activeBtnClass : inactiveBtnClass]">
-        <component :is="isMicMuted ? MicrophoneOff : Microphone" :size="24" />
-      </button>
-      <button @click="toggleCamera" :class="[buttonBaseClass, isCameraOff ? activeBtnClass : inactiveBtnClass]">
-        <component :is="isCameraOff ? VideoOff : Video" :size="24" />
-      </button>
-      <button @click="endCall" :class="[buttonBaseClass, hangupBtnClass]">
-        <PhoneHangup :size="28" />
-      </button>
-      <button @click="toggleScreenShare" :class="[buttonBaseClass, isScreenSharing ? 'bg-blue-600 text-white' : inactiveBtnClass]">
-        <MonitorShare :size="24" />
-      </button>
-    </footer>
-
-  </div>
 </template>
 
 <style scoped>
-.text-shadow { text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+.filter-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    background-color: #1a1a1a;
+    font-family: sans-serif;
+    color: #fff;
+}
+
+.canvas-container {
+    position: relative;
+    width: 640px;
+    height: 480px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.hidden-video {
+    display: none;
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+    transform: scaleX(-1); /* Odbicie lustrzane obrazu */
+}
+
+.control-panel {
+    margin-top: 24px;
+    background-color: #2a2a2a;
+    padding: 16px 32px;
+    border-radius: 8px;
+}
+
+.slider-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+input[type="range"] {
+    width: 200px;
+}
+
+.value-display {
+    font-weight: bold;
+    color: #4caf50;
+}
 </style>

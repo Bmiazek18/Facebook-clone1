@@ -1,5 +1,6 @@
 export interface Event {
   id: string;
+  userId: string;
   name: string;
   title?: string;
   startDate: string;
@@ -27,6 +28,7 @@ export const events: Event[] = [
   // Example event
   {
     id: '1',
+    userId: '1',
     name: 'Community Meetup',
     title: 'Community Meetup',
     startDate: '2026-01-23',
@@ -57,6 +59,7 @@ export const events: Event[] = [
   },
   {
     id: '2',
+    userId: '1',
     name: 'Tech Conference 2026',
     title: 'Tech Conference 2026',
     startDate: '2026-03-20',
@@ -85,6 +88,62 @@ export const events: Event[] = [
     guestsGoing: 987,
     guestsInterested: 263,
     coordinates: [54.371661, 18.619082], // Gdańsk, Poland
+  },
+  {
+    id: '3',
+    userId: '2',
+    name: 'Art Exhibition',
+    title: 'Art Exhibition',
+    startDate: '2026-04-10',
+    startTime: '10:00',
+    endDate: '2026-04-12',
+    endTime: '18:00',
+    type: 'offline',
+    privacy: 'public',
+    description: 'A three-day art exhibition showcasing the work of local artists. Discover a diverse range of styles and mediums, from paintings and sculptures to photography and mixed media. This is a great opportunity to support local talent, meet the artists, and purchase unique pieces for your collection. The exhibition will also feature live music, food trucks, and hands-on activities for all ages. Join us for a weekend of creativity, inspiration, and community.',
+    images: [
+      'https://images.unsplash.com/photo-1547891654-e66ed711b934?w=600&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1506806782133-e95cde1a4dba?w=600&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1536924940846-222ab34d490c?w=600&h=400&fit=crop',
+    ],
+    location: 'City Art Gallery',
+    locationName: 'City Art Gallery',
+    address: '123 Art Street, Gdańsk, Poland',
+    showGuestList: true,
+    hosts: ['City Art Gallery', 'Local Artists Association'],
+    date: '10 kwietnia o 10:00',
+    responses: 350,
+    guestsGoing: 275,
+    guestsInterested: 75,
+    coordinates: [54.3520, 18.6466], // Gdańsk, Poland
+  },
+  {
+    id: '4',
+    userId: '1',
+    name: 'Music Festival',
+    title: 'Music Festival',
+    startDate: '2026-07-15',
+    startTime: '12:00',
+    endDate: '2026-07-17',
+    endTime: '23:00',
+    type: 'offline',
+    privacy: 'public',
+    description: 'A three-day music festival with a lineup of international and local bands. Enjoy a weekend of live music, food, and fun. The festival will feature multiple stages with a variety of genres, from rock and pop to electronic and folk. There will also be a wide selection of food and drink vendors, as well as a market with local crafts and merchandise. This is the perfect event for music lovers of all ages. Get your tickets now and get ready to dance the weekend away!',
+    images: [
+      'https://images.unsplash.com/photo-151452525253161-7a46d19cd819?w=600&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=600&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&h=400&fit=crop',
+    ],
+    location: 'Gdańsk Festival Grounds',
+    locationName: 'Gdańsk Festival Grounds',
+    address: 'Gdańsk, Poland',
+    showGuestList: true,
+    hosts: ['Gdańsk Events', 'Music Unlimited'],
+    date: '15 lipca o 12:00',
+    responses: 5000,
+    guestsGoing: 4500,
+    guestsInterested: 500,
+    coordinates: [54.3520, 18.6466], // Gdańsk, Poland
   },
 ];
 

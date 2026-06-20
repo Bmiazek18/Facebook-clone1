@@ -40,14 +40,14 @@ const createPostStore = useCreatePostStore();
 
 // --- Konfiguracja Widoków ---
 const VIEW_CONFIG: Record<ViewKey, { component: Component; titleKey: string; widthClass?: string }> = {
-  creator: { component: PostCreator, titleKey: 'post.createPost', widthClass: 'w-full sm:w-125' },
-  privacy: { component: PrivacySelector, titleKey: 'post.selectPrivacy', widthClass: 'w-full sm:w-125' },
-  tagUsers: { component: TagUsers, titleKey: 'post.tagUsers', widthClass: 'w-full sm:w-125' },
-  location: { component: LocationSelector, titleKey: 'post.addLocation', widthClass: 'w-full sm:w-125' },
-  gifSelector: { component: GifSelector, titleKey: 'post.selectGif', widthClass: 'w-full sm:w-125' },
-  imageEditor: { component: ImageEditor, titleKey: 'post.editImage', widthClass: 'w-full lg:w-300' },
-  videoEditor: { component: VideoEditor, titleKey: 'post.editVideo', widthClass: 'w-full lg:w-300' },
-  feeling: { component: FeelingModal, titleKey: 'post.feelingActivity', widthClass: 'w-full sm:w-125' },
+  creator: { component: PostCreator, titleKey: 'post.createPost', widthClass: 'w-full sm:w-125 p-2 sm:p-4' },
+  privacy: { component: PrivacySelector, titleKey: 'post.selectPrivacy', widthClass: 'w-full sm:w-125 p-2 sm:p-4' },
+  tagUsers: { component: TagUsers, titleKey: 'post.tagUsers', widthClass: 'w-full sm:w-125 p-2 sm:p-4' },
+  location: { component: LocationSelector, titleKey: 'post.addLocation', widthClass: 'w-full sm:w-125 p-2 sm:p-4' },
+  gifSelector: { component: GifSelector, titleKey: 'post.selectGif', widthClass: 'w-full sm:w-125 ' },
+  imageEditor: { component: ImageEditor, titleKey: 'post.editImage', widthClass: 'w-full lg:w-300 p-2 sm:p-4' },
+  videoEditor: { component: VideoEditor, titleKey: 'post.editVideo', widthClass: 'w-full lg:w-300 p-2 sm:p-4' },
+  feeling: { component: FeelingModal, titleKey: 'post.feelingActivity', widthClass: 'w-full sm:w-125 p-2 sm:p-4' },
 };
 
 // --- Composables ---
@@ -168,7 +168,7 @@ onMounted(() => {
   <div
     :class="[
       activeViewConfig.widthClass,
-      'p-2 sm:p-4 mx-auto rounded-xl relative overflow-hidden transition-all duration-300 ease-in-out'
+      ' mx-auto rounded-xl relative overflow-hidden transition-all duration-300 ease-in-out'
     ]"
   >
     <div

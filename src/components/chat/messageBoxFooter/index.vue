@@ -1,7 +1,30 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted } from 'vue'
 import { useConversationsStore } from '@/stores/conversations'
+// --- DODAJ TE IMPORTY NA GÓRZE ---
+import { Emoji, EmojiIndex } from 'emoji-mart-vue-fast/src'
+import data from 'emoji-mart-vue-fast/data/all.json'
 
+const emojiIndex = new EmojiIndex(data)
+const EMOJI_REGEX = /(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|[\u2600-\u27bf])/g
+
+// --- REFERENCJA I SYNCHRONIZACJA SCROLLA ---
+const visualLayer = ref<HTMLElement | null>(null)
+
+const handleScroll = (e: Event) => {
+  if (visualLayer.value) {
+    visualLayer.value.scrollLeft = (e.target as HTMLInputElement).scrollLeft
+  }
+}
+
+// --- PARSOWANIE TEKSTU W INPUT ---
+const parsedTokens = computed(() => {
+  if (!newMessage.value) return []
+  return newMessage.value.split(EMOJI_REGEX).map((part) => ({
+    value: part,
+    isEmoji: EMOJI_REGEX.test(part)
+  })).filter(token => token.value !== '')
+})
 const convStore = useConversationsStore()
 
 // --- FLOATING VUE ---
@@ -412,8 +435,6 @@ onUnmounted(() => {
                         <span class="text-gray-800 font-medium text-[15px]">Wybierz naklejkę</span>
                       </button>
 
-
-
                       <button
                         @click="openGifFromPlus"
                         class="flex items-center gap-4 w-full px-4 py-2 hover:bg-gray-100 transition-colors group text-left"
@@ -547,15 +568,39 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <div class="flex items-center relative min-h-[40px]">
+          <div class="flex items-center relative min-h-[40px] grow overflow-hidden">
+
+            <div
+              ref="visualLayer"
+              class="absolute inset-0 px-4 pr-10 py-2 text-[15px] whitespace-pre flex items-center overflow-hidden pointer-events-none"
+              :style="{ color: props.themes?.timestampColor }"
+            >
+              <span v-if="!newMessage.length" class="opacity-60">Aa</span>
+              <template v-else v-for="(token, index) in parsedTokens" :key="index">
+                <span
+                  v-if="token.isEmoji"
+                  class="inline-flex items-center justify-center align-middle "
+                >
+                  <Emoji
+                    :data="emojiIndex"
+                    :emoji="token.value"
+                    :size="16"
+                    :native="false"
+                    set="facebook"
+                  />
+                </span>
+                <span v-else class="align-middle">{{ token.value }}</span>
+              </template>
+            </div>
+
             <input
               :value="newMessage"
               @input="newMessage = ($event.target as HTMLInputElement).value"
               @keyup.enter="sendMessage(newMessage, 'default')"
+              @scroll="handleScroll"
               type="text"
-              placeholder="Aa"
-              class="grow w-full px-4 py-2 bg-transparent tr focus:outline-none text-[15px]"
-              :style="{ color: props.themes?.timestampColor }"
+              class="real-input absolute inset-0 w-full h-full px-4 pr-10 py-2 bg-transparent focus:outline-none text-[15px] z-10"
+              :style="{ caretColor: props.themes?.timestampColor || '#000' }"
             />
 
             <VDropdown
@@ -564,7 +609,7 @@ onUnmounted(() => {
               :skidding="0"
               :triggers="['click']"
               :autoHide="true"
-              class="absolute right-2 top-1/2 transform -translate-y-1/2"
+              class="absolute right-2 top-1/2 transform -translate-y-1/2 z-20"
             >
               <div v-tooltip.top="'Emoji'" class="p-1 rounded-full hover:bg-black/5">
                 <EmoticonHappyOutlineIcon
@@ -738,5 +783,30 @@ onUnmounted(() => {
   max-width: 320px;
   max-height: 420px;
   overflow: hidden;
+}
+/* Magia ukrywająca tekst natywny, ale zostawiająca działający kursor (caret) */
+.real-input {
+  color: transparent !important;
+  text-shadow: none !important;
+}
+
+.real-input::placeholder {
+  color: transparent !important;
+}
+
+/* Gdy użytkownik zaznaczy tekst myszką - podświetlamy niewidoczny tekst,
+   co daje naturalny efekt na warstwie wizualnej pod spodem */
+.real-input::selection {
+  background-color: rgba(59, 130, 246, 0.4);
+  color: transparent;
+}
+
+/* Fix dla idealnego centrowania Emoji Mart w jednej linii z tekstem */
+:deep(.emoji-mart-emoji) {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  vertical-align: text-bottom;
+  line-height: 0;
 }
 </style>

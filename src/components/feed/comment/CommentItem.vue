@@ -77,7 +77,7 @@ const viewCommentImage = ( commentId: number, postId: string) => {
 const processedContent = computed(() => {
   return processContent(props.comment.content);
 });
-
+console.log('Processed content for comment', props.comment.id, processedContent.value, props.comment.content)
 
 const isRootComment = props.depth === 0
 
@@ -179,7 +179,7 @@ v-if="(showReplies || isReplying || hasReplies) && props.depth <2"
                 <!-- Input odpowiedzi gdy nie ma pokazanych odpowiedzi -->
                 <div v-if="isReplying && !showReplies &&props.depth <2" class="flex mt-2  items-start" :class=" showReplies|| props.depth ==0? 'ml-[-30px]': 'ml-[-26px]'">
                     <div class="w-8 mr-2 relative">
-                        <div class="absolute h-5 border-b-2 border-l-2 border-theme-secondary right-0 rounded-bl-[10px]"
+                        <div class="absolute h-5 border-b-2 border-l-2 border-theme-secondary bg-white right-0 rounded-bl-[10px]"
                              :class="props.depth > 1 ? 'w-[21px]' : 'w-[25px]'"></div>
                     </div>
                     <CommentReplyInput
@@ -201,7 +201,7 @@ v-if="(showReplies || isReplying || hasReplies) && props.depth <2"
                     />
 
                     <!-- Input odpowiedzi po pokazaniu odpowiedzi -->
-                    <div class="flex mt-2 items-start" :class=" props.depth < 2? 'ml-[-30px]': 'ml-[-26px]'">
+                    <div class="flex mt-2 items-start relative bg-theme-bg-secondary" :class=" props.depth < 2? 'ml-[-30px]': 'ml-[-26px]'">
                         <div class="w-8 mr-2 relative">
                              <div class="absolute h-5 border-b-2 border-l-2 border-theme-secondary right-0 rounded-bl-[10px]"
        :class="props.depth == 1  ? 'w-[21px]' : 'w-[25px]'"></div>

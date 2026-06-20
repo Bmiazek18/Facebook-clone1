@@ -2,7 +2,37 @@
 import { ref, onMounted, onUnmounted, computed, defineProps } from 'vue'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
+import StarOutlineIcon from 'vue-material-design-icons/StarOutline.vue'
+import ReplyIcon from 'vue-material-design-icons/Reply.vue' // Będzie służyć jako ikona udostępniania
 
+// Zaktualizowani znajomi ze screena
+const friends = [
+  { name: 'Przemek Krasucki', avatar: 'https://i.pravatar.cc/150?u=10' },
+  { name: 'Mikołaj Niedziela', avatar: 'https://i.pravatar.cc/150?u=1' },
+  { name: 'Mateusz Piszcz', avatar: 'https://i.pravatar.cc/150?u=11' },
+]
+
+// Nowe dane do sekcji "Popularne wśród znajomych"
+const popularEvents = [
+  {
+    id: 1,
+    date: 'Sob, 14 mar o 09:00',
+    title: 'XXIV Studencki Turniej Negocjacyjny - Eliminacje Gdańsk',
+    location: 'ul. Jana Bażyńskiego 6, 80-952 Gdansk, Poland',
+    friend: 'Mateusz',
+    friendAvatar: 'https://i.pravatar.cc/150?u=11',
+    image: 'https://placehold.co/100x100/333/FFF?text=STN'
+  },
+  {
+    id: 2,
+    date: 'Sob, 14 mar – 15 mar',
+    title: 'BELMONDAWG NA WIXAPOLU',
+    location: 'Crackhouse',
+    friend: 'Bartosz',
+    friendAvatar: 'https://i.pravatar.cc/150?u=12',
+    image: 'https://placehold.co/100x100/e6cda3/000?text=BEL'
+  }
+]
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png'
 import iconUrl from 'leaflet/dist/images/marker-icon.png'
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png'
@@ -20,6 +50,7 @@ import EventAboutDetails from '@/components/events/EventAboutDetails.vue';
 
 import type { Event as EventType } from '@/data/events'
 import { useStickySidebar } from '@/composables/useStickySidebar'
+import SuggestedEvents from '@/components/events/SuggestedEvents.vue'
 
 const props = defineProps<{
   eventDetails: EventType | undefined
@@ -81,11 +112,7 @@ onUnmounted(() => {
 })
 
 // --- Hardcoded Data for UI ---
-const friends = [
-  { name: 'Mikołaj Niedziela', avatar: 'https://i.pravatar.cc/150?u=1' },
-  { name: 'Wojtek Piotrowski', avatar: 'https://i.pravatar.cc/150?u=2' },
-  { name: 'Magda Chłopecka', avatar: 'https://i.pravatar.cc/150?u=3' },
-]
+
 
 const organizers = [
   { name: 'Technikalia', type: 'Wydarzenie', role: '92 minionych wydarzeń', logo: 'https://placehold.co/100x100/1e293b/FFF?text=T.26' },
@@ -94,95 +121,138 @@ const organizers = [
 </script>
 
 <template>
-  <div class="grid grid-cols-1 max-w-[1200px] mx-auto lg:grid-cols-5 gap-4 mt-4">
-    <div class="lg:col-span-3 space-y-4">
+  <div class="grid grid-cols-1 max-w-[1200px] mx-auto lg:grid-cols-5 gap-6 mt-6">
+    <div class="lg:col-span-3 space-y-6">
       <EventAboutDetails :event-details="props.eventDetails" />
 
-      <div class="bg-theme-bg-secondary rounded-lg shadow-sm p-4">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold">Poznaj organizatorów</h2>
-        </div>
+      <div class="bg-theme-bg-secondary rounded-xl shadow-sm p-6 ">
+        <h2 class="text-[20px] font-bold mb-6">Poznaj organizatorów</h2>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div v-for="org in organizers" :key="org.name" class="border border-theme-border rounded-lg p-4 flex flex-col items-center text-center">
-            <img :src="org.logo" class="w-20 h-20 rounded-full mb-3 object-cover border border-theme-bg-subtle" />
-            <h3 class="font-bold text-lg">{{ org.name }}</h3>
-            <p class="text-xs text-theme-text-secondary mt-1">{{ org.role }} · {{ org.type }}</p>
-            <div class="mt-4 w-full pt-4 border-t border-theme-bg-subtle">
-              <button class="w-full bg-theme-bg-subtle hover:bg-theme-hover text-theme-text py-2 rounded font-semibold text-sm flex items-center justify-center gap-2 transition">
-                <InformationIcon :size="18" /> Dowiedz się więcej
+          <div v-for="org in organizers" :key="org.name"
+               class="border border-theme-border rounded-xl p-6 flex flex-col items-center text-center bg-theme-bg-subtle/20">
+
+            <div class="w-24 h-24 rounded-full overflow-hidden mb-4 border-4 border-theme-bg-secondary shadow-sm shrink-0">
+              <img :src="org.logo" class="w-full h-full object-cover" />
+            </div>
+
+            <h3 class="font-bold text-[17px] leading-tight">{{ org.name }}</h3>
+            <p class="text-[12px] text-theme-text-secondary mt-1">
+              {{ org.role }} · Strona · {{ org.type }}
+            </p>
+
+            <div class="w-full border-t border-theme-border my-5"></div>
+
+            <p class="text-[14px] text-theme-text-secondary line-clamp-2 mb-6 h-10">
+              {{ org.description || 'Organizator wydarzenia ' + (eventDetails?.name || '') }}
+            </p>
+
+            <div class="w-full mt-auto">
+              <button v-if="org.name.includes('Technikalia')"
+                      class="w-full bg-[#E4E6EB] dark:bg-white/10 hover:bg-[#D8DADF] dark:hover:bg-white/20 text-theme-text py-2.5 rounded-lg font-semibold text-[15px] flex items-center justify-center gap-2 transition">
+                <InformationIcon :size="20" /> Dowiedz się więcej
+              </button>
+              <button v-else
+                      class="w-full bg-[#E4E6EB] dark:bg-white/10 hover:bg-[#D8DADF] dark:hover:bg-white/20 text-theme-text py-2.5 rounded-lg font-semibold text-[15px] flex items-center justify-center gap-2 transition">
+                <ShareVariantIcon :size="20" class="scale-x-[-1]" /> Skontaktuj się z nami
               </button>
             </div>
           </div>
         </div>
       </div>
-      <div class="h-[2000px]"></div>
+<SuggestedEvents />
+      <div class="h-[1000px] bg-gradient-to-b from-transparent to-theme-bg-subtle/10 rounded-lg"></div>
     </div>
 
-    <div
+   <div
       ref="rightSectionRef"
       class="lg:col-span-2 space-y-4 sticky z-10 self-start"
       :style="{ top: `${stickyTop}px` }"
     >
-      <div class="bg-theme-bg-secondary rounded-lg shadow-sm ">
-        <div class="w-full h-[300px] rounded-lg overflow-hidden border border-theme-border relative isolate z-0">
+      <div class="bg-theme-bg-secondary rounded-xl shadow-sm overflow-hidden ">
+        <div class="w-full h-[400px] relative isolate z-0">
           <div ref="mapContainerRef" class="w-full h-full bg-theme-bg-subtle"></div>
         </div>
-        <div class="mt-3 p-4">
-          <div class="font-semibold text-theme-text">{{ eventDetails?.locationName || eventDetails?.location || 'Brak lokalizacji' }}</div>
-          <div class="text-sm text-theme-text-secondary">{{ eventDetails?.address || 'Brak adresu' }}</div>
+        <div class="p-4">
+          <div class="font-bold text-theme-text text-[17px]">
+            {{ eventDetails?.locationName || eventDetails?.location || 'Brak lokalizacji' }}
+          </div>
+          <div class="text-[14px] text-theme-text-secondary mt-0.5">
+            {{ eventDetails?.address || 'Brak adresu' }}
+          </div>
         </div>
       </div>
 
-      <div class="bg-theme-bg-secondary rounded-lg shadow-sm p-4">
-        <h3 class="text-lg font-bold mb-4">Goście</h3>
-        <div class="flex justify-around text-center mb-4">
-          <div>
-            <div class="text-xl font-bold text-theme-text">{{ eventDetails?.guestsGoing || 0 }}</div>
-            <div class="text-xs text-theme-text-secondary">Wezmę udział</div>
+      <div class="bg-theme-bg-secondary rounded-xl shadow-sm p-4 ">
+        <div class="flex justify-between items-center mb-5">
+          <h3 class="text-[20px] font-bold text-theme-text">Goście</h3>
+          <button class="text-[#0866FF] hover:underline text-[15px] font-medium transition-colors">
+            Pokaż wszystkich
+          </button>
+        </div>
+
+        <div class="flex justify-around text-center mb-3">
+          <div class="flex-1">
+            <div class="text-[20px] font-bold text-theme-text">{{ eventDetails?.guestsGoing || 15 }}</div>
+            <div class="text-[14px] text-theme-text-secondary">Wezmą udział</div>
           </div>
-          <div>
-            <div class="text-xl font-bold text-theme-text">{{ eventDetails?.guestsInterested || 0 }}</div>
-            <div class="text-xs text-theme-text-secondary">Zainteresowani</div>
+          <div class="flex-1">
+            <div class="text-[20px] font-bold text-theme-text">{{ eventDetails?.guestsInterested || 58 }}</div>
+            <div class="text-[14px] text-theme-text-secondary">Zainteresowani</div>
           </div>
         </div>
-        <hr class="border-theme-bg-subtle my-4" />
-        <h4 class="text-sm font-semibold mb-3">Wybierz się ze znajomymi</h4>
-        <ul class="space-y-3">
+
+        <div class="border-t border-theme-border my-4"></div>
+
+        <h4 class="text-[17px] font-bold mb-4">Wybierz się ze znajomymi</h4>
+        <ul class="space-y-4">
           <li v-for="friend in friends" :key="friend.name" class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <img :src="friend.avatar" class="w-9 h-9 rounded-full bg-theme-bg-subtle" />
-              <span class="text-sm font-medium text-theme-text">{{ friend.name }}</span>
+              <img :src="friend.avatar" class="w-10 h-10 rounded-full object-cover shadow-sm border border-theme-border" />
+              <span class="text-[15px] font-semibold text-theme-text cursor-pointer hover:underline">
+                {{ friend.name }}
+              </span>
             </div>
-            <button class="bg-theme-bg-subtle hover:bg-theme-hover text-theme-text px-3 py-1.5 rounded text-sm font-semibold transition">
+            <button class="bg-[#E4E6EB] dark:bg-white/10 hover:bg-[#D8DADF] dark:hover:bg-white/20 text-theme-text px-4 py-1.5 rounded-md text-[15px] font-semibold transition">
               Zaproś
             </button>
           </li>
         </ul>
+
+        <button class="w-full mt-5 bg-[#E7F3FF] dark:bg-[#E7F3FF]/10 hover:bg-[#DBE7F2] dark:hover:bg-[#E7F3FF]/20 text-[#0866FF] dark:text-[#E7F3FF] font-semibold py-2 rounded-lg text-[15px] transition-colors">
+          Wyślij wiadomości do znajomych
+        </button>
       </div>
 
-      <div class="bg-theme-bg-secondary rounded-lg shadow-sm p-4">
-        <h3 class="text-lg font-bold mb-4">Popularne wśród znajomych</h3>
-        <div class="flex gap-3">
-          <div class="w-16 h-16 bg-theme-bg-subtle rounded-lg shrink-0 overflow-hidden">
-            <img src="https://placehold.co/100x100/orange/white?text=K" class="w-full h-full object-cover" />
-          </div>
-          <div>
-            <div class="text-red-600 text-xs font-bold uppercase">Śr, 7 sty o 18:00</div>
-            <div class="font-bold text-sm leading-tight mt-0.5">LUBLIN Warsztaty "Kuchenne duety"</div>
-            <div class="text-xs text-theme-text-secondary mt-1">Restauracja Giuseppe</div>
-            <div class="text-xs text-theme-text-secondary mt-1 flex items-center gap-1">
-              <img src="https://i.pravatar.cc/150?u=5" class="w-4 h-4 rounded-full" />
-              Wioleta jest zainteresowana
+      <div class="bg-theme-bg-secondary rounded-xl shadow-sm p-4 ">
+        <h3 class="text-[20px] font-bold mb-5">Popularne wśród znajomych</h3>
+
+        <div class="space-y-6">
+          <div v-for="item in popularEvents" :key="item.id" class="flex gap-3">
+            <div class="w-16 h-16 bg-theme-bg-subtle rounded-lg shrink-0 overflow-hidden border border-theme-border">
+              <img :src="item.image" class="w-full h-full object-cover hover:scale-105 transition-transform" />
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <div class="text-[#E41E3F] text-[13px] font-medium uppercase tracking-tight mb-1">{{ item.date }}</div>
+              <div class="font-bold text-[15px] leading-tight mb-1">{{ item.title }}</div>
+              <div class="text-[14px] text-theme-text-secondary leading-tight">{{ item.location }}</div>
+
+              <div class="text-[13px] text-theme-text-secondary mt-2 flex items-center gap-1.5">
+                <img :src="item.friendAvatar" class="w-4 h-4 rounded-full border border-theme-border" />
+                <span class="truncate">{{ item.friend }} jest zainteresowany</span>
+              </div>
+
+              <div class="flex gap-2 mt-3">
+                <button class="flex-1 bg-[#E4E6EB] dark:bg-white/10 hover:bg-[#D8DADF] dark:hover:bg-white/20 text-theme-text py-1.5 rounded-lg font-semibold text-[15px] flex items-center justify-center gap-1.5 transition">
+                  <StarOutlineIcon :size="20" /> Zainteresowany(a)
+                </button>
+                <button class="bg-[#E4E6EB] dark:bg-white/10 hover:bg-[#D8DADF] dark:hover:bg-white/20 text-theme-text px-4 py-1.5 rounded-lg transition flex items-center justify-center">
+                  <ReplyIcon :size="20" class="rotate-0 scale-x-[-1] opacity-70" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="mt-3 flex gap-2">
-          <button class="flex-1 bg-theme-bg-subtle hover:bg-theme-hover text-theme-text py-1.5 rounded text-sm font-semibold flex items-center justify-center gap-1 transition">
-            <StarIcon :size="16" /> Zainteresowany(a)
-          </button>
-          <button class="bg-theme-bg-subtle hover:bg-theme-hover text-theme-text px-3 py-1.5 rounded transition">
-            <ShareVariantIcon :size="16" />
-          </button>
         </div>
       </div>
     </div>

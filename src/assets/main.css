@@ -1,8 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import "tailwindcss";
+
+
+:root {
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+@theme {
+  --breakpoint-xs: 30rem;
+  --laptop-lg: 1400px;
+  --breakpoint-2xl: 125rem;
+  --breakpoint-3xl: 150rem;
+}
 @custom-variant dark (&:where(.dark, .dark *));
 /* Define semantic color tokens as CSS variables */
 :root {
   --color-bg: #F1F2F5;
+  --primary-color: #2963d8;
   --color-bg-secondary: #FFFFFF;
   --color-bg-tertiary: #E4E6EB;
   --color-text: #080809;;
@@ -55,8 +72,9 @@
   --color-comment-bg: #333334;
   --color-comment-input-bg: var(--color-bg-tertiary);
 }
-@theme {
-  --breakpoint-3xl: 120rem;
+
+.bg-primary{
+  background-color: var(--primary-color);
 }
 /* Semantic utility classes using CSS variables */
 .shadow-theme {

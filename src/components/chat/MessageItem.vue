@@ -255,6 +255,7 @@ const totalReactions = computed(() => {
 
   <div
     v-else
+    v-bind="$attrs"
     ref="messageWrapperRef"
     class="relative flex flex-col group duration-200"
     :class="{
@@ -350,8 +351,8 @@ const totalReactions = computed(() => {
           <div
             v-if="reactionEmojis.length > 0 && !isAnyCallType(message)"
             @click.stop="openReactionsPanel"
-            class="absolute -bottom-3 cursor-pointer bg-white rounded-full px-1.5 py-0.5 min-w-[24px] h-6 flex items-center justify-center shadow-md border border-gray-100 z-10 transition-transform hover:scale-110"
-            :class="isMe ? 'left-0 translate-y-0' : '-right-2 translate-y-0'"
+            class="absolute -bottom-2 right-0 translate-y-0 cursor-pointer bg-white rounded-full px-1.5 py-0.5  flex items-center justify-center w-[20px] h-[18px] shadow-md border border-gray-100 z-10 "
+
           >
             <span class="text-xs leading-none">{{
               reactionEmojis[reactionEmojis.length - 1]

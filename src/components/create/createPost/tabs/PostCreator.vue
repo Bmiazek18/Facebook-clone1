@@ -103,7 +103,10 @@ const displayName = computed(() => {
 // --- STAN SHARED ---
 const sharedEvent = computed(() => props.sharedEventId ? eventsStore.getEventById(props.sharedEventId) : null);
 const sharedPostAsPost = computed<Post | null>(() => {
+
+  console.log('Mapping sharedPost to Post:', props.sharedPost);
   if (!props.sharedPost) return null;
+
   // (Twój kod mapowania PostData na Post - bez zmian)
   return {
     id: props.sharedPost.id,
@@ -111,7 +114,7 @@ const sharedPostAsPost = computed<Post | null>(() => {
     content: props.sharedPost.content,
     date: new Date(props.sharedPost.timestamp).toLocaleDateString(),
     timestamp: props.sharedPost.timestamp,
-    media: { images: props.sharedPost.images, videoUrl: props.sharedPost.videoUrl },
+    media: props.sharedPost.media,
     context: { privacy: 'public', taggedUsersIds: [] },
     stats: { comments: 0, shares: 0 },
     reactions: {},
@@ -287,11 +290,11 @@ const currentBackground = computed(() => cardBackgrounds.find(bg => bg.id === se
     </div>
 
     <div class="flex items-center mb-4">
-      <img :src="displayAvatar" :alt="displayName" class="w-10 h-10 rounded-full mr-3 object-cover border border-theme-border" />
+      <img :src="displayAvatar" :alt="displayName" class="w-10.5 h-10.5 rounded-full mr-3 object-cover" />
 
       <div class="flex flex-col">
         <div class="text-[15px] leading-tight mb-1 text-theme-text">
-          <span class="font-bold">{{ displayName }}</span>
+          <span class="font-medium">{{ displayName }}</span>
 
           <template v-if="!createPostStore.isAnonymous && taggedUsers?.length">
             <span class="font-normal text-theme-text-secondary"> {{ t('post.with') }} </span>
@@ -321,7 +324,7 @@ const currentBackground = computed(() => cardBackgrounds.find(bg => bg.id === se
 
         <div
             v-if="!createPostStore.isAnonymous"
-            class="flex items-center bg-theme-bg-tertiary px-2 py-0.5 rounded-md text-xs font-semibold text-theme-text-secondary w-fit cursor-pointer hover:bg-theme-bg-hover transition-colors"
+            class="flex items-center bg-theme-bg-tertiary px-2 py-1 rounded-md text-xs font-semibold text-theme-text w-fit cursor-pointer hover:bg-theme-bg-hover transition-colors"
             @click="emit('navigate', 'privacy')"
         >
           <component v-if="privacyInfo.icon" :is="privacyInfo.icon" :size="12" class="mr-1" />
@@ -460,7 +463,7 @@ const currentBackground = computed(() => cardBackgrounds.find(bg => bg.id === se
       </div>
     </HoverScrollbar>
 
-    <hr class="my-4 border-theme-border">
+
 
     <PostCreatorToolbar
         @openImageSelector="handleImageClick"
@@ -472,7 +475,7 @@ const currentBackground = computed(() => cardBackgrounds.find(bg => bg.id === se
 
     <button
       :disabled="isPublishButtonDisabled"
-      class="w-full py-2 rounded-lg font-bold text-base transition-colors duration-200"
+      class="w-full py-2 rounded-lg font-[15px] text-base transition-colors duration-200"
       :class="isPublishButtonDisabled
         ? 'bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
         : 'bg-[#1877f2] text-white hover:bg-blue-700'"

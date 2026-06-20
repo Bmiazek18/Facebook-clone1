@@ -37,7 +37,7 @@ const eventPosts = computed(() => {
     <div class="lg:col-span-2">
          <div
       ref="rightSectionRef"
-      class="lg:col-span-2 space-y-4 sticky z-10 self-start bg-theme"
+      class="lg:col-span-2 space-y-4 sticky mt-4 z-10 self-start bg-theme"
       :style="{ top: `${stickyTop}px` }"
     >
 

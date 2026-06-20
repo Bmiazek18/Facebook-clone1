@@ -43,8 +43,8 @@ onMounted(() => fetchGifs());
 </script>
 
 <template>
-  <div class="flex flex-col h-[400px] w-[300px] bg-white rounded-lg shadow-lg overflow-hidden">
-    <div class="p-3 sticky top-0 bg-white z-10 border-b border-gray-50">
+  <div class="flex flex-col h-[400px] w-[300px] overflow-hidden">
+    <div class="sticky py-1.5 px-5 top-0 bg-white z-10 border-b border-gray-50">
       <div class="relative flex items-center">
         <span class="absolute left-4 text-gray-400">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -61,7 +61,7 @@ onMounted(() => fetchGifs());
       </div>
     </div>
 
-    <div class="flex-1 overflow-y-auto custom-scrollbar">
+    <div class="flex-1 overflow-y-auto scrollbar-hide">
       <div v-if="loading && gifs.length === 0" class="flex justify-center py-10">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400"></div>
       </div>
@@ -70,7 +70,7 @@ onMounted(() => fetchGifs());
         <div
           v-for="gif in gifs"
           :key="gif.id"
-          class="w-full mb-[2px] cursor-pointer active:opacity-80 transition-opacity"
+          class="w-full  cursor-pointer active:opacity-80 transition-opacity"
           @click="selectGif(gif.images.fixed_height.url)"
         >
           <img
@@ -88,3 +88,15 @@ onMounted(() => fetchGifs());
     </div>
   </div>
 </template>
+<style scoped>
+/* Ukrycie paska przewijania dla przeglądarek Chrome, Safari i Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ukrycie paska przewijania dla Firefox, IE oraz Edge */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+</style>

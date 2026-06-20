@@ -9,7 +9,7 @@ if (savedTheme === 'dark' || (savedTheme === null && prefersDark)) {
 } else {
   document.documentElement.classList.remove('dark')
 }
-
+import { FingerprintPlugin } from '@fingerprint/vue'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createI18n } from 'vue-i18n'
@@ -21,6 +21,8 @@ import router from './router'
 import FloatingVue from 'floating-vue'
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
+
+
 
 
 const pinia = createPinia()
@@ -60,5 +62,20 @@ app.use(FloatingVue, {
       $extend:'tooltip'
     },
   },
+  customContainers: [
+    '.emoji-mart',
+  ],
 })
+
+
+
+
+app
+  .use(FingerprintPlugin, {
+    apiKey: "tTMZjTZHbPVov7K7zdvL",
+    region: "eu"
+
+  })
+
+
 app.mount('#app')

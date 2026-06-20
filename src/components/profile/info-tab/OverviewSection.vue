@@ -2,6 +2,7 @@
 import { ref, reactive, inject, computed } from 'vue'
 import type { User } from '@/data/users'
 import EditForm from './EditForm.vue'
+import { useI18n } from 'vue-i18n'
 
 // Import ikon
 import PlusCircleOutline from 'vue-material-design-icons/PlusCircleOutline.vue'
@@ -17,6 +18,7 @@ import Email from 'vue-material-design-icons/Email.vue'
 import Web from 'vue-material-design-icons/Web.vue'
 import Translate from 'vue-material-design-icons/Translate.vue'
 
+const { t } = useI18n()
 const props = defineProps<{ profileUser: User }>()
 
 const activeSection = ref<string | null>(null)
@@ -37,14 +39,14 @@ const save = (s: string) => { console.log(`Zapisano ${s}`); close() }
   <div class="space-y-8 text-base">
 
     <div v-if="hasContactInfo || isOwner">
-      <h3 class="font-bold text-xl text-black mb-4">Dane kontaktowe</h3>
+      <h3 class="font-bold text-xl text-black mb-4">{{ $t('profile.info.contactInfo') }}</h3>
 
       <div v-if="profileUser.phone" class="flex justify-between items-center mb-6">
          <div class="flex items-center text-gray-900">
             <Phone class="text-gray-500 mr-4 text-2xl" />
             <div>
                 <div class="font-medium text-lg">{{ profileUser.phone }}</div>
-                <div class="text-xs text-gray-500">Telefon komórkowy</div>
+                <div class="text-xs text-gray-500">{{ $t('profile.info.mobilePhone') }}</div>
             </div>
          </div>
          <div v-if="isOwner" class="flex space-x-3 text-gray-500">
@@ -57,7 +59,7 @@ const save = (s: string) => { console.log(`Zapisano ${s}`); close() }
             <Email class="text-gray-500 mr-4 text-2xl" />
             <div>
                 <div class="font-medium text-lg">{{ profileUser.email }}</div>
-                <div class="text-xs text-gray-500">Email</div>
+                <div class="text-xs text-gray-500">{{ $t('common.email') }}</div>
             </div>
          </div>
          <div v-if="isOwner" class="flex space-x-3 text-gray-500">
@@ -66,14 +68,14 @@ const save = (s: string) => { console.log(`Zapisano ${s}`); close() }
          </div>
       </div>
 
-      <h3 class="font-bold text-xl text-black mb-4">Witryny i linki społecznościowe</h3>
+      <h3 class="font-bold text-xl text-black mb-4">{{ $t('profile.info.websitesAndSocialLinks') }}</h3>
 
         <div v-if="profileUser.website" class="flex justify-between items-center mb-6">
             <div class="flex items-center text-gray-900">
                 <Web class="text-gray-500 mr-4 text-2xl" />
                 <div>
                     <div class="font-medium text-lg">{{ profileUser.website }}</div>
-                    <div class="text-xs text-gray-500">Witryna</div>
+                    <div class="text-xs text-gray-500">{{ $t('profile.info.website') }}</div>
                 </div>
             </div>
             <div v-if="isOwner" class="flex space-x-3 text-gray-500">
@@ -98,34 +100,34 @@ const save = (s: string) => { console.log(`Zapisano ${s}`); close() }
 
 
       <div class="mt-2">
-        <EditForm v-if="activeSection === 'web'" label="Adres witryny" v-model="form.website" @cancel="close" @save="save('web')" />
+        <EditForm v-if="activeSection === 'web'" :label="$t('profile.info.websiteAddress')" v-model="form.website" @cancel="close" @save="save('web')" />
         <button v-else-if="isOwner && !profileUser.website" @click="open('web')" class="flex items-center text-blue-600 hover:underline font-medium mb-4">
-          <PlusCircleOutline class="mr-3 text-2xl" /> Dodaj witrynę internetową
+          <PlusCircleOutline class="mr-3 text-2xl" /> {{ $t('profile.info.addWebsite') }}
         </button>
       </div>
 
       <div class="mt-2">
-        <EditForm v-if="activeSection === 'social'" label="Link społecznościowy" v-model="form.social" @cancel="close" @save="save('social')" />
+        <EditForm v-if="activeSection === 'social'" :label="$t('profile.info.socialLink')" v-model="form.social" @cancel="close" @save="save('social')" />
         <button v-else-if="isOwner && (!profileUser.socialLinks || profileUser.socialLinks.length === 0)" @click="open('social')" class="flex items-center text-blue-600 hover:underline font-medium">
-          <PlusCircleOutline class="mr-3 text-2xl" /> Dodaj link społecznościowy
+          <PlusCircleOutline class="mr-3 text-2xl" /> {{ $t('profile.info.addSocialLink') }}
         </button>
       </div>
     </div>
 
     <div v-if="hasBasicInfo || isOwner">
-      <h3 class="font-bold text-xl text-black mb-4">Podstawowe informacje</h3>
+      <h3 class="font-bold text-xl text-black mb-4">{{ $t('profile.info.basicInfo') }}</h3>
 
       <div class="mb-6" v-if="profileUser.languages || isOwner">
          <div v-if="profileUser.languages" class="flex items-center text-gray-900 mb-4">
             <Translate class="text-gray-500 mr-4 text-2xl" />
             <div>
                 <div class="font-medium text-lg">{{ profileUser.languages }}</div>
-                <div class="text-xs text-gray-500">Języki</div>
+                <div class="text-xs text-gray-500">{{ $t('profile.info.languages') }}</div>
             </div>
          </div>
-         <EditForm v-if="activeSection === 'lang'" label="Język" v-model="form.language" @cancel="close" @save="save('lang')" />
+         <EditForm v-if="activeSection === 'lang'" :label="$t('common.language')" v-model="form.language" @cancel="close" @save="save('lang')" />
          <button v-else-if="isOwner && !profileUser.languages" @click="open('lang')" class="flex items-center text-blue-600 hover:underline font-medium">
-            <PlusCircleOutline class="mr-3 text-2xl" /> Dodaj język
+            <PlusCircleOutline class="mr-3 text-2xl" /> {{ $t('profile.info.addLanguage') }}
          </button>
       </div>
 
@@ -136,7 +138,7 @@ const save = (s: string) => { console.log(`Zapisano ${s}`); close() }
                <Account class="text-gray-500 mr-4 text-2xl"/>
                <div>
                    <div class="font-semibold text-lg">{{ profileUser.gender }}</div>
-                   <div class="text-xs text-gray-500">Płeć</div>
+                   <div class="text-xs text-gray-500">{{ $t('profile.info.gender') }}</div>
                </div>
             </div>
             <button v-if="isOwner" class="hover:bg-gray-200 p-2 rounded-full"><Pencil class="text-xl text-gray-700"/></button>
@@ -147,7 +149,7 @@ const save = (s: string) => { console.log(`Zapisano ${s}`); close() }
                <CommentText class="text-gray-500 mr-4 text-2xl"/>
                <div>
                    <div class="font-semibold text-lg">{{profileUser.namePronounciation}}</div>
-                   <div class="text-xs text-gray-500">Zaimki systemowe</div>
+                   <div class="text-xs text-gray-500">{{ $t('profile.info.pronouns') }}</div>
                </div>
             </div>
             <div v-if="isOwner" class="flex items-center space-x-3 text-gray-500">
@@ -161,7 +163,7 @@ const save = (s: string) => { console.log(`Zapisano ${s}`); close() }
                <CakeVariant class="text-gray-500 mr-4 text-2xl"/>
                <div>
                    <div class="font-semibold text-lg">{{ new Date(profileUser.birthDate).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long' }) }}</div>
-                   <div class="text-xs text-gray-500">Data urodzenia</div>
+                   <div class="text-xs text-gray-500">{{ $t('profile.info.birthDate') }}</div>
                </div>
             </div>
             <div v-if="isOwner" class="flex items-center space-x-3 text-gray-500">
@@ -173,7 +175,7 @@ const save = (s: string) => { console.log(`Zapisano ${s}`); close() }
             <div class="flex items-center text-gray-900 ml-[2.6rem]">
                <div>
                    <div class="font-semibold text-lg">{{ new Date(profileUser.birthDate).getFullYear() }}</div>
-                   <div class="text-xs text-gray-500">Rok urodzenia</div>
+                   <div class="text-xs text-gray-500">{{ $t('profile.info.birthYear') }}</div>
                </div>
             </div>
             <div v-if="isOwner" class="flex items-center space-x-3 text-gray-500 pr-[3.25rem]">

@@ -9,7 +9,11 @@ const props = defineProps<{
     inputClass?: string;
     placeholderClass?: string;
 }>();
-
+onMounted(() => {
+    renderContentEditable();
+    // To sprawia, że Enter wstawia <br> zamiast tworzyć nowe <div>
+    document.execCommand('defaultParagraphSeparator', false, 'br');
+});
 const emit = defineEmits<{
     (e: 'update:modelValue', value: string): void;
     (e: 'input', event: Event): void;
@@ -97,9 +101,9 @@ defineExpose({
                 </div>
             </template>
         </VDropdown>
-        <div 
-            v-if="!modelValue && placeholder" 
-            class="absolute top-0 left-0 text-gray-500 pointer-events-none text-[15px]" 
+        <div
+            v-if="!modelValue && placeholder"
+            class="absolute top-0 left-0 text-gray-500 pointer-events-none text-[15px]"
             :class="placeholderClass"
         >
             {{ placeholder }}

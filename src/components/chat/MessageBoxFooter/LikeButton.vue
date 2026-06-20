@@ -1,119 +1,105 @@
 <template>
+  <div
+    v-tooltip.top="'Naciśnij i przytrzymaj, by powiększyć'"
+    class="flex items-center justify-center shrink-0 w-[40px] h-[40px] cursor-pointer"
+    @mousedown="handlePressStart"
+    @mouseup="handlePressEnd"
+    @mouseleave="handlePressEnd"
+    @touchstart.prevent="handlePressStart"
+    @touchend.prevent="handlePressEnd"
+  >
     <div
-        v-tooltip.top="'Naciśnij i przytrzymaj, by powiększyć'"
-        class="flex items-center text-gray-500 shrink-0 w-[40px] h-[40px] flex align-center justify-center cursor-pointer transition-transform duration-100 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full"
-        @mousedown="handlePressStart"
-        @mouseup="handlePressEnd"
-        @mouseleave="handlePressEnd"
-        @touchstart.prevent="handlePressEnd"
-        @touchend.prevent="handlePressEnd"
-      >
-       <span :class="[currentIconState, 'text-blue-500 hover:text-blue-700 text-xl']">{{ emoji }}</span>
-      </div>
+      class="transition-transform duration-200 ease-out"
+      :style="{ transform: `scale(${currentScale})` }"
+    >
+      <Emoji
+        :data="emojiIndex"
+        :emoji="emoji"
+        set="facebook"
+        :size="28"
+      />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue';
+import { Emoji, EmojiIndex } from 'emoji-mart-vue-fast/src';
+// PAMIĘTAJ O TYM IMPORCIE (naprawia TypeError):
+import data from 'emoji-mart-vue-fast/data/all.json';
+import { el } from 'date-fns/locale';
 
- defineProps<{
-    emoji: string;
+const props = defineProps<{
+  emoji: string;
 }>();
-
-
 
 const emit = defineEmits<{
-    'send-like': [sizeState: 'default' | 'small' | 'medium' | 'large'];
+  'send-like': [sizeState: 'default' | 'small' | 'medium' | 'large'];
 }>();
 
-const animationTimer = ref<ReturnType<typeof setInterval> | null>(null);
+// Inicjalizacja danych emoji
+const emojiIndex = new EmojiIndex(data);
+
+// Logika animacji
+const currentScale = ref(1);
 const pressStartTime = ref<number | null>(null);
-const currentPressDurationVisual = ref(0);
-const ICON_CLASSES = ['icon-state-0', 'icon-state-1', 'icon-state-2', 'icon-state-3'];
-const currentIconState = ref(ICON_CLASSES[0]);
-const MAX_PRESS_TIME_MS = 5000;
-const DURATION_STEP_MS = 1000;
-
-
-const clearTimers = () => {
-  if (animationTimer.value) {
-    clearInterval(animationTimer.value);
-    animationTimer.value = null;
-  }
-  pressStartTime.value = null;
-  currentPressDurationVisual.value = 0;
-  currentIconState.value = ICON_CLASSES[0];
-};
+const animationTimer = ref<ReturnType<typeof setInterval> | null>(null);
 
 const handlePressStart = (event: MouseEvent | TouchEvent) => {
   if (event instanceof MouseEvent && event.button !== 0) return;
   if (pressStartTime.value !== null) return;
 
   pressStartTime.value = Date.now();
-  currentIconState.value = ICON_CLASSES[0];
-  currentPressDurationVisual.value = 0;
 
-  const increaseIconState = () => {
-    currentPressDurationVisual.value += 1;
-
-    if (currentPressDurationVisual.value < ICON_CLASSES.length) {
-      currentIconState.value = ICON_CLASSES[currentPressDurationVisual.value];
-    } else {
-      clearTimers();
+  // Płynne zwiększanie skali co 100ms
+  animationTimer.value = setInterval(() => {
+    const elapsed = Date.now() - (pressStartTime.value || 0);
+    if (elapsed < 1000) currentScale.value = 1.0; // default
+    else if (elapsed < 2000) currentScale.value = 1.2;      // small
+    else if (elapsed < 3000) currentScale.value = 1.4; // medium
+    else if (elapsed < 4000) currentScale.value = 1.8; // large
+    else {
+      // Maksymalny rozmiar osiągnięty
+      if (animationTimer.value) {clearInterval(animationTimer.value);
+        clearInterval(animationTimer.value);
+        currentScale.value = 1.0;
+      }
     }
-  };
-
-  animationTimer.value = setInterval(increaseIconState, DURATION_STEP_MS);
+  }, 100);
 };
 
 const handlePressEnd = () => {
   if (pressStartTime.value === null) return;
 
   const durationMs = Date.now() - pressStartTime.value;
-  clearTimers();
 
-  const durationSeconds = durationMs / 1000;
-
-  if (durationMs > MAX_PRESS_TIME_MS) {
-    return;
-  }
+  // Zatrzymujemy timer
+  if (animationTimer.value) clearInterval(animationTimer.value);
 
   let sizeState: 'default' | 'small' | 'medium' | 'large' = 'default';
 
-  if (durationSeconds >= 3) {
-    sizeState = 'large';
-  } else if (durationSeconds >= 2) {
-    sizeState = 'medium';
-  } else if (durationSeconds >= 1) {
-    sizeState = 'small';
-  }
+  if (durationMs < 1000) sizeState = 'default';
+  else if (durationMs < 2000) sizeState = 'small';
+  else if (durationMs < 3000) sizeState = 'medium';
+  else if (durationMs < 4000) sizeState = 'large';
+
+
   emit('send-like', sizeState);
+
+  // Resetujemy stan wizualny
+  pressStartTime.value = null;
+  currentScale.value = 1;
 };
 
-
 onUnmounted(() => {
-  clearTimers();
+  if (animationTimer.value) clearInterval(animationTimer.value);
 });
 </script>
 
 <style scoped>
-.icon-state-0 {
-
-    font-size: 24px;
-    transition: all 0.3s ease-out;
-}
-.icon-state-1 {
-
-    font-size: 30px;
-    transition: all 0.3s ease-out;
-}
-.icon-state-2 {
-
-    font-size: 36px;
-    transition: all 0.3s ease-out;
-}
-.icon-state-3 {
-
-    font-size: 48px;
-    transition: all 0.3s ease-out;
+/* Możesz dodać efekt "pulsowania" dla największego rozmiaru */
+.reaction-btn {
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 </style>

@@ -8,35 +8,72 @@ import GroupMembersView from '@/views/groups/GroupMembersView.vue'
 import GroupEventsView from '@/views/groups/GroupEventsView.vue'
 import GroupMediaView from '@/views/groups/GroupMediaView.vue'
 import GroupFilesView from '@/views/groups/GroupFilesView.vue'
-
+import Video2CallView from '@/views/Video2CallView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+
+    // ==========================================
+    // 1. GRUPA PUBLICZNA (Niewymagająca logowania)
+    // ==========================================
+    {
+      path: '',
+      meta: { isPublic: true,showMainLayout: false, }, // Wszystkie ścieżki w 'children' dziedziczą tę flagę
+      children: [
+        {
+          path: '/login',
+          name: 'login',
+          component: () => import('@/views/auth/LoginView.vue'),
+
+        },
+        {
+          path: '/register',
+          name: 'register',
+          component: () => import('@/views/auth/RegisterView.vue'),
+        },
+{
+          path: '/identify',
+          name: 'identify',
+          component: () => import('@/views/auth/FindAccount.vue'),
+        },
+        {
+          path: '/recover/initiate',
+          name: 'recoverCode',
+          component: () => import('@/views/auth/ResetPasswordView.vue'),
+        },
+         {
+          path: '/confirmemail',
+          name: 'confirmEmail',
+          component: () => import('@/views/auth/ConfirmEmailView.vue'),
+        },
+      ]
+    },
+
+    // ==========================================
+    // 2. CHRONIONA CZĘŚĆ APLIKACJI
+    // ==========================================
     {
       path: '/',
       name: 'home',
       component: HomeView,
       children:[
          {
-      path: '/photo/:postId/:imageIndex',
-      name: 'photo',
-      component: () => import('../views/GalleryView.vue'),
-      props: true,
-      meta: { showMainLayout: false },
-    },
-      {
-      path: '/comment/:postId/:commentId',
-      name: 'comment',
-      component: () => import('../views/GalleryView.vue'),
-      props: true,
-      meta: { showMainLayout: false },
-    },
+          path: '/photo/:postId/:imageIndex',
+          name: 'photo',
+          component: () => import('../views/GalleryView.vue'),
+          props: true,
+          meta: { showMainLayout: false },
+        },
+        {
+          path: '/comment/:postId/:commentId',
+          name: 'comment',
+          component: () => import('../views/GalleryView.vue'),
+          props: true,
+          meta: { showMainLayout: false },
+        },
       ]
     },
-
-
-
     {
       path: '/post/:id',
       name: 'post',
@@ -60,41 +97,13 @@ const router = createRouter({
           component: () => import('@/components/profile/ProfileInfoTab.vue'),
           redirect: { name: 'profile-info-overview' },
           children: [
-            {
-              path: 'overview',
-              name: 'profile-info-overview',
-              component: () => import('@/components/profile/info-tab/OverviewSection.vue')
-            },
-            {
-              path: 'work_edu',
-              name: 'profile-info-work_edu',
-              component: () => import('@/components/profile/info-tab/WorkEducationSection.vue')
-            },
-            {
-              path: 'places',
-              name: 'profile-info-places',
-              component: () => import('@/components/profile/info-tab/PlacesSection.vue')
-            },
-            {
-              path: 'contact_basic',
-              name: 'profile-info-contact_basic',
-              component: () => import('@/components/profile/info-tab/OverviewSection.vue')
-            },
-            {
-              path: 'family',
-              name: 'profile-info-family',
-              component: () => import('@/components/profile/info-tab/FamilySection.vue')
-            },
-            {
-              path: 'details',
-              name: 'profile-info-details',
-              component: () => import('@/components/profile/info-tab/DetailsSection.vue')
-            },
-            {
-              path: 'events',
-              name: 'profile-info-events',
-              component: () => import('@/components/profile/info-tab/EventsSection.vue')
-            }
+            { path: 'overview', name: 'profile-info-overview', component: () => import('@/components/profile/info-tab/OverviewSection.vue') },
+            { path: 'work_edu', name: 'profile-info-work_edu', component: () => import('@/components/profile/info-tab/WorkEducationSection.vue') },
+            { path: 'places', name: 'profile-info-places', component: () => import('@/components/profile/info-tab/PlacesSection.vue') },
+            { path: 'contact_basic', name: 'profile-info-contact_basic', component: () => import('@/components/profile/info-tab/OverviewSection.vue') },
+            { path: 'family', name: 'profile-info-family', component: () => import('@/components/profile/info-tab/FamilySection.vue') },
+            { path: 'details', name: 'profile-info-details', component: () => import('@/components/profile/info-tab/DetailsSection.vue') },
+            { path: 'events', name: 'profile-info-events', component: () => import('@/components/profile/info-tab/EventsSection.vue') }
           ]
         },
         {
@@ -144,41 +153,13 @@ const router = createRouter({
             return { name: 'userProfile-info-overview', params: { userId: to.params.userId } };
           },
           children: [
-            {
-              path: 'overview',
-              name: 'userProfile-info-overview',
-              component: () => import('@/components/profile/info-tab/OverviewSection.vue')
-            },
-            {
-              path: 'work_edu',
-              name: 'userProfile-info-work_edu',
-              component: () => import('@/components/profile/info-tab/WorkEducationSection.vue')
-            },
-            {
-              path: 'places',
-              name: 'userProfile-info-places',
-              component: () => import('@/components/profile/info-tab/PlacesSection.vue')
-            },
-            {
-              path: 'contact_basic',
-              name: 'userProfile-info-contact_basic',
-              component: () => import('@/components/profile/info-tab/OverviewSection.vue')
-            },
-            {
-              path: 'family',
-              name: 'userProfile-info-family',
-              component: () => import('@/components/profile/info-tab/FamilySection.vue')
-            },
-            {
-              path: 'details',
-              name: 'userProfile-info-details',
-              component: () => import('@/components/profile/info-tab/DetailsSection.vue')
-            },
-            {
-              path: 'events',
-              name: 'userProfile-info-events',
-              component: () => import('@/components/profile/info-tab/EventsSection.vue')
-            }
+            { path: 'overview', name: 'userProfile-info-overview', component: () => import('@/components/profile/info-tab/OverviewSection.vue') },
+            { path: 'work_edu', name: 'userProfile-info-work_edu', component: () => import('@/components/profile/info-tab/WorkEducationSection.vue') },
+            { path: 'places', name: 'userProfile-info-places', component: () => import('@/components/profile/info-tab/PlacesSection.vue') },
+            { path: 'contact_basic', name: 'userProfile-info-contact_basic', component: () => import('@/components/profile/info-tab/OverviewSection.vue') },
+            { path: 'family', name: 'userProfile-info-family', component: () => import('@/components/profile/info-tab/FamilySection.vue') },
+            { path: 'details', name: 'userProfile-info-details', component: () => import('@/components/profile/info-tab/DetailsSection.vue') },
+            { path: 'events', name: 'userProfile-info-events', component: () => import('@/components/profile/info-tab/EventsSection.vue') }
           ]
         },
         {
@@ -206,22 +187,12 @@ const router = createRouter({
         },
       ]
     },
-     {
-      path: '/login',
-      name: 'login',
-      component: () => import('@/views/LoginView.vue'),
-    },
-     {
-      path: '/register',
-      name: 'register',
-      component: () => import('@/views/RegisterView.vue'),
-    },
-     {
+    {
       path: '/live/produce',
       name: 'createLiveLayout',
       component: () => import('@/layouts/CreateLiveLayout.vue'),
       children: [
-         {
+        {
           path: '',
           name: 'picker',
           component: () => import('@/views/LiveProducer.vue'),
@@ -242,14 +213,13 @@ const router = createRouter({
       path: '/groups',
       name: 'groups',
       component: () => import('@/views/GroupsView.vue'),
-
     },
-     {
+    {
       path: '/live/produce/create-event',
       name: 'createEvent',
       component: () => import('@/views/CreateEventView.vue'),
     },
-     {
+    {
       path: '/friends',
       name: 'friends',
       component: () => import('@/views/FriendsView.vue'),
@@ -299,21 +269,20 @@ const router = createRouter({
       path: '/marketplace/item/:id',
       name: 'marketplaceItem',
       component: () => import('@/views/MarketPlace/MarketplaceItemView.vue'),
-       meta: { showMainLayout: false },
+      meta: { showMainLayout: false },
       props: true,
     },
-     {
+    {
       path: '/marketplace/create',
       name: 'MarketplaceItem',
       component: () => import('@/views/MarketPlace/NewMarketplaceView.vue'),
-          meta: { showMainLayout: false },
-
+      meta: { showMainLayout: false },
     },
     {
       path: '/marketplace/create/item',
       name: 'createMarketplaceItem',
       component: () => import('@/views/MarketPlace/MarketplaceCreateItemView.vue'),
-          meta: { showMainLayout: false },
+      meta: { showMainLayout: false },
       props: true,
     },
     {
@@ -327,7 +296,7 @@ const router = createRouter({
       component: () => import('@/views/ReelView.vue'),
       props: true
     },
-     {
+    {
       path: '/chat',
       name: 'chat',
       component: () => import('@/views/ChatView.vue'),
@@ -340,28 +309,29 @@ const router = createRouter({
       props: true,
       meta: { hideMessageIcon: true },
     },
-       {
+    {
       path: '/addAlbum',
       name: 'addAlbum',
       component: () => import('@/views/addAlbum.vue'),
-  meta: { showMainLayout: false },
+      meta: { showMainLayout: false },
     },
-     {
+    {
       path: '/stories/create',
       name: 'createReel',
       component: () => import('@/views/CreateStoryView.vue'),
       meta: { showMainLayout: false },
     },
-     {
+    {
+      // UWAGA: Masz dwie ścieżki '/live/produce', zostawiam je z Twojego oryginału,
+      // ale upewnij się, że nie powoduje to konfliktów w Twojej aplikacji
       path: '/live/produce',
       name: 'liveProduce',
       component: () => import('@/views/LiveProducer.vue'),
-
     },
     {
       path: '/story',
       name: 'story',
-       meta: { showMainLayout: false },
+      meta: { showMainLayout: false },
       component: () => import('@/views/StoryView.vue'),
     },
     {
@@ -371,14 +341,29 @@ const router = createRouter({
       component: () => import('@/views/StoryView.vue'),
       props: true
     },
-     {
+    {
       path: '/video',
       name: 'video',
       component: () => import('@/views/VideoCallView.vue'),
-    }, {
+    },
+    {
+      path: '/video-call',
+      name: 'video-call',
+      component: Video2CallView,
+      meta: {
+        showMainLayout: false,
+        isPopup: true,
+      }
+    },
+    {
       path: '/event',
       name: 'events',
       component: () => import('@/views/EventsPanelView.vue'),
+    },
+    {
+      path: '/events/your-events',
+      name: 'your-events',
+      component: () => import('@/views/events/YourEventsView.vue'),
     },
     {
       path: '/event/:id',
@@ -440,14 +425,6 @@ const router = createRouter({
         }
       ]
     },
- {
-      path: '/login/2',
-      name: 'loginAs',
-      component: () => import('@/views/LoginAsView.vue'),
-    },
-
-
-
     {
       path: '/hashtag/:hashtag',
       name: 'hashtag',
@@ -461,4 +438,27 @@ const router = createRouter({
     },
   ],
 })
+
+// ==========================================
+// GLOBALNY STRAŻNIK NAWIGACJI (Ochrona tras)
+// ==========================================
+router.beforeEach((to, from, next) => {
+  // UWAGA: Gdy wepniesz Vuex lub Pinia, tutaj podmień logikę autoryzacji
+  const isAuthenticated = localStorage.getItem('jwt_token') !== null;
+
+  // Sprawdza, czy trasa docelowa znajduje się w grupie publicznej
+  const isPublic = to.matched.some(record => record.meta.isPublic);
+
+  if (!isPublic && !isAuthenticated) {
+    // Niezalogowany na stronie chronionej -> przerzuć do logowania
+    next({ name: 'login' });
+  } else if (isPublic && isAuthenticated) {
+    // Zalogowany na stronie logowania/rejestracji -> przerzuć na stronę główną
+    next({ name: 'home' });
+  } else {
+    // Zalogowany na chronionej ALBO niezalogowany na publicznej -> przepuść
+    next();
+  }
+})
+
 export default router

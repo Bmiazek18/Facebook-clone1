@@ -1,0 +1,311 @@
+<script setup>
+import { onMounted, onBeforeUnmount, ref } from 'vue';
+import * as THREE from 'three';
+import { FilesetResolver, FaceLandmarker } from '@mediapipe/tasks-vision';
+
+const videoRef = ref(null);
+const canvasRef = ref(null);
+
+let scene, camera, renderer, videoTexture;
+let faceLandmarker;
+let animationFrameId;
+let stream;
+
+// Obiekty Three.js dla elementów psa
+let dogGroup, leftEar, rightEar, dogNose, dogTongue;
+
+// --- STRUKTURY DANYCH DLA FIZYKI USZU (BEZ KOŚCI) ---
+const earPhysics = {
+    // Lewo/prawo (oś Z)
+    leftAngle: 0,
+    leftVelocity: 0,
+    rightAngle: 0,
+    rightVelocity: 0,
+    // Przód/tył (oś X)
+    leftAngleX: 0,
+    leftVelocityX: 0,
+    rightAngleX: 0,
+    rightVelocityX: 0,
+    // Zapamiętane poprzednie pozycje do wyliczania pędu głowy
+    lastHeadPos: new THREE.Vector3(),
+    lastHeadRotationZ: 0
+};
+
+// Parametry fizyki – możesz je tweakować
+const STIFFNESS = 0.12; // Sztywność sprężyny (im mniejsza, tym bardziej sflaczałe uszy)
+const DAMPING = 0.82;   // Tłumienie / Opór (im mniejsze, tym dłużej się bujają)
+
+onMounted(async () => {
+    const width = 640;
+    const height = 480;
+
+    // 1. Inicjalizacja Sceny i Kamery Perspektywicznej
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+    camera.position.z = 3;
+
+    renderer = new THREE.WebGLRenderer({ canvas: canvasRef.value, alpha: true, antialias: true });
+    renderer.setSize(width, height);
+
+    // 2. Uruchomienie Kamery
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { width, height } });
+        videoRef.value.srcObject = stream;
+        videoRef.value.play();
+    } catch (err) {
+        console.error("Brak dostępu do kamery:", err);
+        return;
+    }
+
+    // 3. Tekstura tła
+    videoTexture = new THREE.VideoTexture(videoRef.value);
+    videoTexture.colorSpace = THREE.SRGBColorSpace;
+    scene.background = videoTexture;
+
+    // 4. Ładowanie tekstur PNG
+    const textureLoader = new THREE.TextureLoader();
+    const earTex = textureLoader.load('https://img.icons8.com/emoji/96/dog-face.png'); 
+    const noseTex = textureLoader.load('https://img.icons8.com/color/96/dog-nose.png');
+    const tongueTex = textureLoader.load('https://img.icons8.com/color/96/tongue.png');
+
+    // 5. Tworzenie kontenera (grupy) na elementy filtra
+    dogGroup = new THREE.Group();
+    scene.add(dogGroup);
+
+    const createMaterial = (tex) => new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide });
+
+    // Geometria dla uszu, nosa i języka
+    const earGeo = new THREE.PlaneGeometry(0.35, 0.35);
+    const noseGeo = new THREE.PlaneGeometry(0.2, 0.15);
+    const tongueGeo = new THREE.PlaneGeometry(0.2, 0.3);
+
+    // --- KLUCZOWY TRICK: ZMIANA PIVOT POINTU DLA USZU ---
+    // Przesuwamy geometrię uszu w dół, aby ich punkt obrotu (0,0) znalazł się na samej górze.
+    // Dzięki temu będą się naturalnie dyndać u nasady, zamiast obracać wokół własnego środka.
+    earGeo.translate(0, -0.175, 0);
+
+    leftEar = new THREE.Mesh(earGeo, createMaterial(earTex));
+    rightEar = new THREE.Mesh(earGeo, createMaterial(earTex));
+    dogNose = new THREE.Mesh(noseGeo, createMaterial(noseTex));
+    dogTongue = new THREE.Mesh(tongueGeo, createMaterial(tongueTex));
+
+    dogTongue.scale.set(0, 0, 0);
+    tongueGeo.translate(0, -0.15, 0);
+
+    dogGroup.add(leftEar);
+    dogGroup.add(rightEar);
+    dogGroup.add(dogNose);
+    dogGroup.add(dogTongue);
+
+    // 6. Inicjalizacja MediaPipe
+    try {
+        const filesetResolver = await FilesetResolver.forVisionTasks(
+            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        );
+
+        faceLandmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
+            baseOptions: {
+                modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
+                delegate: "GPU"
+            },
+            outputFaceBlendshapes: false,
+            runningMode: "VIDEO",
+            numFaces: 1
+        });
+    } catch (e) {
+        console.error("MediaPipe error:", e);
+        return;
+    }
+
+    const mapTo3D = (landmark) => {
+        const x = (landmark.x * 2 - 1);
+        const y = -(landmark.y * 2 - 1); 
+        const z = -landmark.z * 2; 
+
+        const vector = new THREE.Vector3(x, y, 0.5);
+        vector.unproject(camera);
+
+        const dir = vector.sub(camera.position).normalize();
+        const distance = -camera.position.z / dir.z + z;
+        return camera.position.clone().add(dir.multiplyScalar(distance));
+    };
+
+    // 7. Główna pętla renderowania filtra
+    const renderLoop = () => {
+        if (videoRef.value && videoRef.value.readyState >= 2 && faceLandmarker) {
+            const startTimeMs = performance.now();
+            const results = faceLandmarker.detectForVideo(videoRef.value, startTimeMs);
+
+            if (results.faceLandmarks && results.faceLandmarks.length > 0) {
+                dogGroup.visible = true;
+                const landmarks = results.faceLandmarks[0];
+
+                // Pobieramy punkty do pozycji 3D elementów
+                const pLeftEar = mapTo3D(landmarks[103]);
+                const pRightEar = mapTo3D(landmarks[332]);
+                const pNose = mapTo3D(landmarks[4]);
+                const pTopLip = mapTo3D(landmarks[0]);
+
+                // --- Pozycjonowanie elementów ---
+                // Przesunięcie Y uwzględnia fakt, że zmieniliśmy punkt kotwiczenia uszu
+                leftEar.position.copy(pLeftEar).add(new THREE.Vector3(-0.05, 0.35, 0.05));
+                rightEar.position.copy(pRightEar).add(new THREE.Vector3(0.05, 0.35, 0.05));
+                dogNose.position.copy(pNose).add(new THREE.Vector3(0, 0, 0.05));
+                dogTongue.position.copy(pTopLip);
+
+                // --- Obliczanie rotacji głowy ---
+                const currentAngleZ = Math.atan2(pRightEar.y - pLeftEar.y, pRightEar.x - pLeftEar.x);
+                dogGroup.rotation.z = currentAngleZ;
+
+                // --- SYMULACJA FIZYKI USZU (SPRING JIGGLE PHYSICS) ---
+                // Obliczamy siły bezwładności na podstawie zmian pozycji nosa (ruch głowy)
+                const headDeltaX = pNose.x - earPhysics.lastHeadPos.x;
+                const headDeltaY = pNose.y - earPhysics.lastHeadPos.y;
+                const headDeltaRotationZ = currentAngleZ - earPhysics.lastHeadRotationZ;
+
+                // Zapobiegamy dzikiemu skokowi fizyki na samym starcie aplikacji
+                if (earPhysics.lastHeadPos.length() > 0) {
+                    // Ruch głowy w lewo/prawo oraz obrót generują siłę odśrodkową na oś Z (boczne gibanie)
+                    const forceZ = -headDeltaX * 12.0 - headDeltaRotationZ * 5.0;
+                    earPhysics.leftVelocity += forceZ;
+                    earPhysics.rightVelocity += forceZ;
+
+                    // Ruch góra/dół (np. skakanie) generuje siłę na oś X (odchylanie przód/tył)
+                    const forceX = headDeltaY * 8.0;
+                    earPhysics.leftVelocityX += forceX;
+                    earPhysics.rightVelocityX += forceX;
+                }
+
+                // Aktualizacja pamięci pozycji głowy do następnej klatki
+                earPhysics.lastHeadPos.copy(pNose);
+                earPhysics.lastHeadRotationZ = currentAngleZ;
+
+                // Matematyczne równanie sprężyny z tłumieniem dla LEWEGO ucha
+                const leftTargetAngleZ = 0; // Naturalna pozycja spoczynkowa ucha
+                earPhysics.leftVelocity += (leftTargetAngleZ - earPhysics.leftAngle) * STIFFNESS;
+                earPhysics.leftVelocity *= DAMPING;
+                earPhysics.leftAngle += earPhysics.leftVelocity;
+
+                const leftTargetAngleX = 0;
+                earPhysics.leftVelocityX += (leftTargetAngleX - earPhysics.leftAngleX) * STIFFNESS;
+                earPhysics.leftVelocityX *= DAMPING;
+                earPhysics.leftAngleX += earPhysics.leftVelocityX;
+
+                // Matematyczne równanie sprężyny z tłumieniem dla PRAWEGO ucha
+                const rightTargetAngleZ = 0;
+                earPhysics.rightVelocity += (rightTargetAngleZ - earPhysics.rightAngle) * STIFFNESS;
+                earPhysics.rightVelocity *= DAMPING;
+                earPhysics.rightAngle += earPhysics.rightVelocity;
+
+                const rightTargetAngleX = 0;
+                earPhysics.rightVelocityX += (rightTargetAngleX - earPhysics.rightAngleX) * STIFFNESS;
+                earPhysics.rightVelocityX *= DAMPING;
+                earPhysics.rightAngleX += earPhysics.rightVelocityX;
+
+                // Aplikujemy wyliczone gibanie do lokalnej rotacji uszu
+                leftEar.rotation.z = earPhysics.leftAngle;
+                leftEar.rotation.x = earPhysics.leftAngleX;
+
+                rightEar.rotation.z = earPhysics.rightAngle;
+                rightEar.rotation.x = earPhysics.rightAngleX;
+
+                // --- Dynamiczne skalowanie ---
+                const pLeftPupil = mapTo3D(landmarks[468]);
+                const pRightPupil = mapTo3D(landmarks[473]);
+                const faceScale = pLeftPupil.distanceTo(pRightPupil) * 3.5;
+
+                leftEar.scale.setScalar(faceScale);
+                rightEar.scale.setScalar(faceScale);
+                dogNose.scale.setScalar(faceScale);
+
+                // --- DETEKCJA OTWARCIA UST ---
+                const topLip2D = landmarks[0];
+                const bottomLip2D = landmarks[17];
+                const mouthOpening2D = Math.abs(bottomLip2D.y - topLip2D.y);
+
+                const pupilDist2D = Math.sqrt(
+                    Math.pow(landmarks[468].x - landmarks[473].x, 2) +
+                    Math.pow(landmarks[468].y - landmarks[473].y, 2)
+                );
+
+                const isOpen = mouthOpening2D > (pupilDist2D * 0.75);
+
+                if (isOpen) {
+                    const tongueLength = THREE.MathUtils.mapLinear(mouthOpening2D, pupilDist2D * 0.25, pupilDist2D * 0.6, 1.0, 2.2);
+                    dogTongue.scale.x = THREE.MathUtils.lerp(dogTongue.scale.x, faceScale, 0.2);
+                    dogTongue.scale.y = THREE.MathUtils.lerp(dogTongue.scale.y, faceScale * tongueLength, 0.2);
+                    dogTongue.scale.z = faceScale;
+                } else {
+                    dogTongue.scale.x = THREE.MathUtils.lerp(dogTongue.scale.x, 0, 0.3);
+                    dogTongue.scale.y = THREE.MathUtils.lerp(dogTongue.scale.y, 0, 0.3);
+                }
+
+            } else {
+                dogGroup.visible = false;
+            }
+        }
+
+        renderer.render(scene, camera);
+        animationFrameId = requestAnimationFrame(renderLoop);
+    };
+
+    renderLoop();
+});
+
+onBeforeUnmount(() => {
+    cancelAnimationFrame(animationFrameId);
+    if (stream) stream.getTracks().forEach(track => track.stop());
+    if (faceLandmarker) faceLandmarker.close();
+    if (renderer) renderer.dispose();
+});
+</script>
+
+<template>
+    <div class="filter-wrapper">
+        <div class="canvas-container">
+            <video ref="videoRef" autoplay playsinline muted class="hidden-video"></video>
+            <canvas ref="canvasRef"></canvas>
+        </div>
+        <div class="info-panel">
+            <h3>Filtr Pieska 🐶</h3>
+            <p>Poruszaj głową na boki, aby uszy zaczęły się gibać!</p>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.filter-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    background-color: #111;
+    font-family: sans-serif;
+    color: #fff;
+}
+.canvas-container {
+    position: relative;
+    width: 640px;
+    height: 480px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+.hidden-video {
+    display: none;
+}
+canvas {
+    width: 100%;
+    height: 100%;
+    transform: scaleX(-1);
+}
+.info-panel {
+    margin-top: 16px;
+    text-align: center;
+}
+.info-panel p {
+    color: #aaa;
+}
+</style>

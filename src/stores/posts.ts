@@ -107,6 +107,7 @@ function handlePostReaction(postId: string, reaction: ReactionType | null) {
       sharedContent: {
         type: 'post',
         originalId: originalPost.id,
+        media: originalPost.media,
       },
       context: {
         privacy: 'public',

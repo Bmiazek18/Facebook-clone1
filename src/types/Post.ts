@@ -81,7 +81,7 @@ export type SharedContentType = 'post' | 'reel' | 'event'|'marketplace';
 export interface SharedContent {
   type: SharedContentType;
   originalId: string;
-
+  media?: PostMedia[];
 }
 
 export type ReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry';

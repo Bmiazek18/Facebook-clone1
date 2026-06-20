@@ -10,7 +10,7 @@ defineProps<{
 </script>
 
 <template>
-  <p class="text-[15px] text-theme-text">
+  <p class="text-[15px] text-theme-text whitespace-pre-wrap break-words">
     <template v-for="(part, index) in content" :key="index">
 
 
@@ -33,7 +33,7 @@ defineProps<{
         rel="noopener noreferrer"
         >{{ part.value }}</a
       >
-      <span v-else>{{ part.value }}</span>
+     <span v-else v-text="part.value"></span>
     </template>
   </p>
 </template>

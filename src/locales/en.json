@@ -494,6 +494,24 @@
     "forgottenAccount": "Forgotten account?",
     "or": "or"
   },
+  "auth": {
+    "register": {
+      "title": "Get started with Facebook",
+      "description": "Create an account to connect with friends, family and communities of people who share your interests.",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "birthdate": "Date of birth",
+      "day": "Day",
+      "month": "Month",
+      "year": "Year",
+      "gender": "Gender",
+      "emailOrPhone": "Mobile number or email address",
+      "password": "Password",
+      "contactNotice": "People who use our service may have uploaded your contact information to Facebook.",
+      "learnMore": "Learn more",
+      "submit": "Sign Up"
+    }
+  },
   "createLive": {
     "createLiveVideo": "Create live video",
     "connectVideoSource": "Connect video source",

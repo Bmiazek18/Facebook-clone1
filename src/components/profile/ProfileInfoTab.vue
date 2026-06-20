@@ -99,7 +99,7 @@
         <div v-if="profileUser" class="flex bg-theme-bg-secondary p-4 rounded-lg shadow-lg min-h-[400px]">
 
             <div class="w-1/3 md:w-1/4 border-r border-gray-200 pr-4">
-                <h2 class="text-xl font-semibold mb-4 text-theme-text ml-2">Informacje</h2>
+                <h2 class="text-xl font-semibold mb-4 text-theme-text ml-2">{{ $t('profile.info.about') }}</h2>
                 <ul class="space-y-1 text-theme-text-secondary">
                     <li
                         v-for="item in menuItems"
@@ -121,7 +121,7 @@
         </div>
 
         <div v-else class="p-8 text-center text-gray-500 bg-theme-bg-secondary rounded-lg shadow-lg">
-            Nie znaleziono użytkownika lub brak ID w adresie URL.
+            {{ $t('profile.info.userNotFound') }}
         </div>
 
         <FriendsSection

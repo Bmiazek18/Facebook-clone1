@@ -147,13 +147,14 @@ const closeCreatePost = () => {
       </div>
 
       <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-        <button
-          @click="openCreatePost"
+        <RouterLink
+          to="/live/produce"
+
           class="p-0.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-[5px] transition"
           v-tooltip="$t('post.video')"
         >
           <VideoImage :size="34" fillColor="#F12848" />
-        </button>
+        </RouterLink>
 
         <button
           @click="handleFileClick"

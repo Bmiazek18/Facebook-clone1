@@ -164,18 +164,18 @@ const handleCancelLeave = () => {
 <template>
   <div class="flex w-full h-screen overflow-hidden bg-theme-bg text-theme-text relative">
 
-    <div id="LeftSection" class="hidden lg:block shrink-0 w-[360px] ">
-      <LeftSidebar />
-    </div>
-
     <div
       ref="parentRef"
       class="flex-1 h-screen overflow-y-auto custom-scrollbar"
     >
-      <div class="flex flex-col md:grid md:grid-cols-[1fr_350px] lg:grid-cols-[5fr_2fr] w-full 3xl:max-w-[1500px] max-w-full mt-14 mx-auto px-0 lg:px-4 gap-4">
+      <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] xl:grid-cols-[360px_680px_350px] w-full max-w-[1450px] xl:max-w-none mt-14 mx-auto justify-between min-[1750px]:justify-center lg:px-6 xl:px-4 gap-4">
 
-        <div id="MiddleSection" class="flex justify-center w-full min-w-0">
-          <div id="PostsSection" class="w-full md:max-w-[700px] px-2 md:px-0">
+        <div id="LeftSection" class="hidden xl:block sticky top-4 ">
+          <LeftSidebar />
+        </div>
+
+        <div id="MiddleSection" class="w-full min-w-0 flex justify-center lg:justify-start xl:justify-center">
+          <div id="PostsSection" class="w-full lg:max-w-[700px] xl:max-w-[680px] px-2 sm:px-4 lg:px-0">
 
             <CreateBox />
             <StoriesList />
@@ -222,14 +222,11 @@ const handleCancelLeave = () => {
             <div v-if="!isLoading && displayedCount >= localPosts.length" class="text-center py-20 text-theme-text-secondary opacity-50">
               Nie ma więcej postów.
             </div>
-
           </div>
         </div>
 
-        <div class="hidden md:block pl-2">
-          <div class="sticky top-4">
-            <RightSidebar />
-          </div>
+        <div id="RightSection" class="hidden lg:block sticky top-4 ">
+          <RightSidebar />
         </div>
 
       </div>

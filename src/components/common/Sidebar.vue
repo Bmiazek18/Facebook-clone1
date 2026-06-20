@@ -1,6 +1,6 @@
 <template>
   <div class="min-w-[360px] relative transform translate-x-0">
-  <aside class="w-[360px] flex flex-col bg-theme-bg-secondary border-r border-theme-border top-[56px] sticky h-[calc(100vh-56px)] z-20">
+  <aside class="w-[360px] flex flex-col bg-theme-bg-secondary shadow-lg top-[56px] sticky h-[calc(100vh-56px)] z-20">
     <HoverScrollbar class="flex-1">
       <div class="p-3">
         <div class="flex justify-between items-center mb-3 px-2">
@@ -10,12 +10,12 @@
           </button>
         </div>
 
-        <div v-if="showSearch" class="relative mb-4 px-2">
-          <MagnifyIcon class="absolute left-5 top-2.5 text-theme-text-secondary" :size="20" />
+        <div v-if="showSearch" class="relative mb-4 pr-2">
+          <MagnifyIcon class="absolute left-3 top-2.5 text-theme-text-secondary" :size="22" />
           <input
             type="text"
             :placeholder="searchPlaceholder"
-            class="w-full bg-[#F1F2F5] dark:bg-[#333334] rounded-full py-1.5 pl-11 pr-4 placeholder-theme-text-secondary focus:outline-none text-[15px]"
+            class="w-full bg-[#F1F2F5] dark:bg-[#333334] rounded-full  py-2 pl-10 pr-4 placeholder-theme-text-secondary focus:outline-none text-[15px]"
           />
         </div>
 
@@ -67,7 +67,7 @@
 
         <div class="border-t border-theme-border my-4 " v-if="$slots['list-header'] || $slots['list-items']"></div>
 
-        <div class="flex justify-between items-center px-2 ">
+        <div class="flex justify-between items-center ">
           <slot name="list-header"></slot>
         </div>
 

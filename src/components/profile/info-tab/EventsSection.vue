@@ -3,12 +3,14 @@ import { ref, reactive, inject } from 'vue'
 import type { User } from '@/data/users'
 import EditForm from './EditForm.vue'
 import ItemMenu from './ItemMenu.vue'
+import { useI18n } from 'vue-i18n'
 
 // Ikony
 import PlusCircleOutline from 'vue-material-design-icons/PlusCircleOutline.vue'
 import Star from 'vue-material-design-icons/Star.vue'
 import Earth from 'vue-material-design-icons/Earth.vue'
 
+const { t } = useI18n()
 defineProps<{ profileUser: User }>()
 
 // Stan: Przechowuje nazwę aktualnie otwartej sekcji
@@ -30,7 +32,7 @@ const save = (section: string) => {
 }
 
 const remove = (section: string, index: number) => {
-  if(confirm(`Czy na pewno chcesz usunąć to wydarzenie?`)) {
+  if(confirm(t('profile.info.confirmRemoveEvent'))) {
     console.log(`Usunięto wydarzenie z indeksu: ${index}`)
   }
 }
@@ -40,7 +42,7 @@ const remove = (section: string, index: number) => {
   <div class="space-y-8 text-base">
 
     <div>
-      <h3 class="font-bold text-xl text-black mb-4">Wydarzenia z życia</h3>
+      <h3 class="font-bold text-xl text-black mb-4">{{ $t('profile.info.lifeEvents') }}</h3>
 
       <div v-if="profileUser.lifeEvents && profileUser.lifeEvents.length > 0" class="space-y-4 mb-4">
         <div v-for="(event, idx) in profileUser.lifeEvents" :key="idx" class="flex justify-between items-start">
@@ -59,8 +61,8 @@ const remove = (section: string, index: number) => {
           <div v-if="isOwner" class="flex items-center space-x-2 text-gray-500">
             <Earth class="text-lg"/>
             <ItemMenu
-              editText="Edytuj wydarzenie"
-              removeText="Usuń wydarzenie"
+              :editText="$t('profile.info.editEvent')"
+              :removeText="$t('profile.info.removeEvent')"
               @edit="open('lifeEvent')"
               @remove="remove('lifeEvent', idx)"
             />
@@ -69,14 +71,14 @@ const remove = (section: string, index: number) => {
       </div>
 
       <div v-else-if="!activeSection" class="text-gray-500 mb-4 flex items-center">
-         <Star class="text-gray-400 text-xl mr-3" /> Brak wydarzeń do wyświetlenia
+         <Star class="text-gray-400 text-xl mr-3" /> {{ $t('profile.info.noEvents') }}
       </div>
 
       <div class="mt-2">
         <EditForm
           v-if="activeSection === 'lifeEvent'"
-          label="Tytuł wydarzenia"
-          placeholder="Np. Ślub, Nowa praca"
+          :label="$t('profile.info.eventTitle')"
+          :placeholder="$t('profile.info.eventPlaceholder')"
           v-model="form.eventName"
           @cancel="close"
           @save="save('lifeEvent')"
@@ -87,7 +89,7 @@ const remove = (section: string, index: number) => {
           @click="open('lifeEvent')"
           class="flex items-center text-blue-600 hover:underline font-medium"
         >
-          <PlusCircleOutline class="mr-3 text-2xl" /> Dodaj wydarzenie z życia
+          <PlusCircleOutline class="mr-3 text-2xl" /> {{ $t('profile.info.addLifeEvent') }}
         </button>
       </div>
     </div>

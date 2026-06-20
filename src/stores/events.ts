@@ -48,9 +48,14 @@ export const useEventsStore = defineStore('events', () => {
     return events.value.find((event) => event.id === id);
   };
 
+  const getEventsByUserId = (userId: string): Event[] => {
+    return events.value.filter((event) => event.userId === userId);
+  };
+
   return {
     events,
     addEvent,
     getEventById,
+    getEventsByUserId,
   };
 });

@@ -1,7 +1,7 @@
 // useCarousel.ts
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 
-export function useCarousel(n:number) {
+export function useCarousel(n:number ) {
   const carouselRef = ref<HTMLElement | null>(null);
   const isStart = ref(true);
   const isEnd = ref(false);

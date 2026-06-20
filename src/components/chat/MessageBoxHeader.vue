@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { useChatThemeStore, type Theme } from '@/stores/chatTheme';
 import { storeToRefs } from 'pinia';
 import { useChatStore } from '@/stores/chat';
+import { useRouter } from 'vue-router'; // 1. IMPORTUJEMY ROUTER
 
 import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue';
 import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue';
@@ -12,12 +13,12 @@ import MinusIcon from 'vue-material-design-icons/Minus.vue';
 import CloseIcon from 'vue-material-design-icons/Close.vue';
 import Information from 'vue-material-design-icons/Information.vue';
 import IncomingCallModal from './IncomingCallModal.vue';
-import ChatSettingModal from './ChatSettingModal.vue'; // Import the new modal component
+import ChatSettingModal from './ChatSettingModal.vue';
 
 const props = defineProps<{
   title: string;
-  subtitle?: string; // np. "Aktywna 9 min temu"
-  avatarUrl?: string; // Link do zdjęcia (jeśli jest)
+  subtitle?: string;
+  avatarUrl?: string;
   users: string[];
   boxId: string | number;
   hideIcons?: boolean;
@@ -32,7 +33,8 @@ const emit = defineEmits<{
 const { selectedTheme } = storeToRefs(useChatThemeStore());
 const activeTheme = computed(() => props.themes || selectedTheme.value);
 
-const chatStore = useChatStore()
+const chatStore = useChatStore();
+const router = useRouter(); // 2. INICJALIZUJEMY ROUTER
 
 const close = (boxId: string | number) => {
     chatStore.removeMessageBox(boxId)
@@ -42,12 +44,29 @@ const minimize = (boxId: string | number) => {
 };
 
 const isCallIncoming = ref(false);
-const isChatSettingModalOpen = ref(false); // Ref to control the visibility of ChatSettingModal
+const isChatSettingModalOpen = ref(false);
+
+// 3. NOWA FUNKCJA DO OTWIERANIA OKNA JAKO POPUP
+const otworzOknoRozmowy = (typPolaczenia: 'audio' | 'video') => {
+  // Generujemy URL z routera. Zakładam nazwę ścieżki 'video-call'.
+  // Możesz też przekazać parametry, np. ID czatu: { name: 'video-call', params: { id: props.boxId } }
+  const routeData = router.resolve({
+    name: 'video-call',
+    query: { type: typPolaczenia, boxId: props.boxId.toString() } // przekazujemy typ i ID w query URL
+  });
+
+  // Otwieramy dedykowane okno popup bez pasków narzędzi i możliwości cofania
+  window.open(
+    routeData.href,
+    `Rozmowa_${props.boxId}`,
+    'popup=yes,width=900,height=650,left=300,top=150,resizable=yes,location=no,toolbar=no,menubar=no'
+  );
+};
 
 const onAccept = () => {
   console.log("Połączenie odebrane!");
   isCallIncoming.value = false;
-  // Tutaj logika przekierowania do pokoju wideo
+  otworzOknoRozmowy('video'); // Otwarcie okna po odebraniu
 };
 
 const onReject = () => {
@@ -72,35 +91,36 @@ const onReject = () => {
         <img v-if="avatarUrl" :src="avatarUrl" alt="Avatar" class="w-full h-full object-cover" />
         <span v-else class="text-xl">🧑‍🤝‍🧑</span>
       </div>
-  <ChatSettingModal
-    :is-open="isChatSettingModalOpen"
-    @close="isChatSettingModalOpen = false"
-    :chatId="boxId"
-  >
-      <div   class="flex items-center min-w-0 hover:bg-black/5 py-1 cursor-pointer rounded-lg" :class="{'gap-1.5': !hideIcons, 'gap-2': hideIcons}">
-        <div class="flex flex-col min-w-0 leading-tight">
-          <span class="font-semibold truncate" :class="{'text-[15px]': !hideIcons, 'text-[16px]': hideIcons}" :style="{ color: activeTheme.headerTextColor || '#111827' }">
-            {{ title }}
-          </span>
-          <span class="truncate" :class="{'text-[12px]': !hideIcons, 'text-[13px]': hideIcons}" :style="{ color: activeTheme.headerTextColor, opacity: 0.6 }">
-            {{ subtitle || 'Aktywna 34 min temu' }}
-          </span>
-        </div>
 
-        <button v-if="!hideIcons" class="shrink-0 p-1 rounded-full hover:bg-black/5 transition-colors flex items-center justify-center">
-          <ChevronDownIcon :size="20" :fillColor="activeTheme.primaryColor || activeTheme.iconColor" />
-        </button>
-      </div>
+      <ChatSettingModal
+        :is-open="isChatSettingModalOpen"
+        @close="isChatSettingModalOpen = false"
+        :chatId="boxId"
+      >
+        <div @click="isChatSettingModalOpen = true" class="flex items-center min-w-0 hover:bg-black/5 py-1 cursor-pointer rounded-lg" :class="{'gap-1.5': !hideIcons, 'gap-2': hideIcons}">
+          <div class="flex flex-col min-w-0 leading-tight">
+            <span class="font-semibold truncate" :class="{'text-[15px]': !hideIcons, 'text-[16px]': hideIcons}" :style="{ color: activeTheme.headerTextColor || '#111827' }">
+              {{ title }}
+            </span>
+            <span class="truncate" :class="{'text-[12px]': !hideIcons, 'text-[13px]': hideIcons}" :style="{ color: activeTheme.headerTextColor, opacity: 0.6 }">
+              {{ subtitle || 'Aktywna 34 min temu' }}
+            </span>
+          </div>
+
+          <button v-if="!hideIcons" class="shrink-0 p-1 rounded-full hover:bg-black/5 transition-colors flex items-center justify-center">
+            <ChevronDownIcon :size="20" :fillColor="activeTheme.primaryColor || activeTheme.iconColor" />
+          </button>
+        </div>
       </ChatSettingModal>
     </div>
 
     <div class="flex items-center shrink-0" :class="{'space-x-1': !hideIcons, 'space-x-3': hideIcons}">
 
-      <button v-tooltip.top="'Rozpocznij połączenie głosowe'" @click="isCallIncoming = true" class="opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center">
+      <button v-tooltip.top="'Rozpocznij połączenie głosowe'" @click="otworzOknoRozmowy('audio')" class="opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center">
         <PhoneIcon :size="hideIcons ? 24 : 18" :fillColor="activeTheme.headerTextColor || activeTheme.iconColor" />
       </button>
 
-      <button v-tooltip.top="'Rozpocznij połączenie wideo'" @click="isCallIncoming = true" class="opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center">
+      <button v-tooltip.top="'Rozpocznij połączenie wideo'" @click="otworzOknoRozmowy('video')" class="opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center">
         <VideoOutlineIcon :size="hideIcons ? 24 : 18" :fillColor="activeTheme.headerTextColor || activeTheme.iconColor" />
       </button>
 
@@ -117,17 +137,6 @@ const onReject = () => {
       </button>
     </div>
   </header>
-
-  <IncomingCallModal
-    :is-open="isCallIncoming"
-    caller-name="Wiktoria Szerszeń"
-    caller-avatar="https://i.pravatar.cc/150?u=wiktoria"
-    @close="isCallIncoming = false"
-    @reject="onReject"
-    @accept="onAccept"
-  />
-
-
 </template>
 
 <style scoped>

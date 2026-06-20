@@ -29,10 +29,10 @@
       <button
         v-if="!isEnd"
         @click="scrollRight"
-        class="absolute top-1/2 z-30 right-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg hover:bg-theme-bg-hover transition duration-150"
-        style="margin-right: 64.5px;"
+        class="absolute top-1/2 z-30 p-3 right-0 transform -translate-y-1/2  bg-theme-bg-secondary rounded-full shadow-lg hover:bg-theme-bg-hover transition duration-150"
+        style="margin-right: 14.5px;"
       >
-        <ChevronRightIcon :size="24" :fillColor="chevronFillColor" />
+        <ChevronRightIcon :size="25"  :fillColor="chevronFillColor" />
       </button>
     </div>
   </div>

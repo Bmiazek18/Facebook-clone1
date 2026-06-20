@@ -494,6 +494,24 @@
     "forgottenAccount": "Nie pamiętasz konta?",
     "or": "lub"
   },
+  "auth": {
+    "register": {
+      "title": "Zacznij korzystać z Facebooka",
+      "description": "Utwórz konto, aby łączyć się ze znajomymi, rodziną oraz społecznościami osób o podobnych zainteresowaniach.",
+      "firstName": "Imię",
+      "lastName": "Nazwisko",
+      "birthdate": "Data urodzenia",
+      "day": "Dzień",
+      "month": "Miesiąc",
+      "year": "Rok",
+      "gender": "Płeć",
+      "emailOrPhone": "Numer telefonu komórkowego lub adres e-mail",
+      "password": "Hasło",
+      "contactNotice": "Osoby korzystające z naszej usługi mogły przesłać Twoje dane kontaktowe do platformy Facebook.",
+      "learnMore": "Dowiedz się więcej",
+      "submit": "Zarejestruj się"
+    }
+  },
   "createLive": {
     "createLiveVideo": "Utwórz transmisję wideo na żywo",
     "connectVideoSource": "Połącz źródło wideo",

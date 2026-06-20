@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-theme-bg-secondary max-w-[800px] rounded-xl shadow-[0_12px_28px_rgba(0,0,0,0.2)] flex flex-col overflow-hidden relative border border-theme-border z-10 h-[850px]">
+    <div class="bg-theme-bg-secondary w-[800px] rounded-xl shadow-[0_12px_28px_rgba(0,0,0,0.2)] flex flex-col overflow-hidden relative border border-theme-border z-10 h-[850px]">
 <BaseModal
       :title="locationModalTitle"
       v-if="showLocationModal">
@@ -401,8 +401,8 @@ const submit = () => {
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar { width: 8px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background-color: var(--color-text-secondary); border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: var(--color-text); }
+
+.is-not-in-month{
+  display: none !important;
+}
 </style>
