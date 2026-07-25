@@ -11,18 +11,7 @@
 
     <label
       :for="id"
-      class="absolute left-4 top-2 z-10 origin-[0] scale-75 transform text-gray-500 duration-200 cursor-text
-
-      /* Stan 1: Input jest pusty (placeholder widoczny) -> Etykieta na środku */
-      peer-placeholder-shown:top-6
-      peer-placeholder-shown:-translate-y-1/2
-      peer-placeholder-shown:scale-100
-
-      /* Stan 2: Focus lub Input wypełniony -> Etykieta u góry (domyślne klasy + nadpisanie) */
-      peer-focus:top-1
-      peer-focus:-translate-y-0
-      peer-focus:scale-70
-      peer-focus:text-blue-600"
+      class="absolute left-4 top-2 z-10 origin-[0] scale-75 transform text-gray-500 duration-200 cursor-text /* Stan 1: Input jest pusty (placeholder widoczny) -> Etykieta na środku */ peer-placeholder-shown:top-6 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 /* Stan 2: Focus lub Input wypełniony -> Etykieta u góry (domyślne klasy + nadpisanie) */ peer-focus:top-1 peer-focus:-translate-y-0 peer-focus:scale-70 peer-focus:text-blue-600"
     >
       {{ label }}
     </label>
@@ -31,12 +20,12 @@
 
 <script setup lang="ts">
 defineProps<{
-  id: string;
-  label: string;
-  modelValue: string;
-}>();
+  id: string
+  label: string
+  modelValue: string
+}>()
 
 defineEmits<{
-  (e: 'update:modelValue', value: string): void;
-}>();
+  (e: 'update:modelValue', value: string): void
+}>()
 </script>

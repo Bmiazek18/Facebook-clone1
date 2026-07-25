@@ -18,7 +18,9 @@
 .slide-left-leave-active,
 .slide-right-enter-active,
 .slide-right-leave-active {
-  transition: transform 0.28s ease, opacity 0.28s ease;
+  transition:
+    transform 0.28s ease,
+    opacity 0.28s ease;
   will-change: transform, opacity;
 
   /* position: absolute jest konieczne dla animacji slajdu */

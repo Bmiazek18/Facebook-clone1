@@ -29,5 +29,13 @@ export const useCommentsStore = defineStore('comments', () => {
     isReplyInputFocused.value = false
   }
 
-  return { replyingToUser, activeReplyInput, setReplyingTo, clearReplyingTo, isReplyInputFocused, setReplyInputFocus, clearReplyInputFocus }
+  return {
+    replyingToUser,
+    activeReplyInput,
+    setReplyingTo,
+    clearReplyingTo,
+    isReplyInputFocused,
+    setReplyInputFocus,
+    clearReplyInputFocus,
+  }
 })

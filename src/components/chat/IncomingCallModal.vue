@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import BaseModal from '@/components/common/BaseModal.vue';
-import LockIcon from 'vue-material-design-icons/Lock.vue';
-import PhoneOffIcon from 'vue-material-design-icons/PhoneOff.vue';
-import PhoneIcon from 'vue-material-design-icons/Phone.vue';
+import BaseModal from '@/components/common/BaseModal.vue'
+import LockIcon from 'vue-material-design-icons/Lock.vue'
+import PhoneOffIcon from 'vue-material-design-icons/PhoneOff.vue'
+import PhoneIcon from 'vue-material-design-icons/Phone.vue'
 
 // Definicja typów dla propsów
 interface Props {
-  isOpen: boolean;
-  callerName: string;
-  callerAvatar: string;
+  isOpen: boolean
+  callerName: string
+  callerAvatar: string
 }
 
 // Props z wartościami domyślnymi
@@ -16,19 +16,19 @@ withDefaults(defineProps<Props>(), {
   isOpen: false,
   callerName: 'Nieznany numer',
   callerAvatar: 'https://via.placeholder.com/150', // Placeholder
-});
+})
 
 // Emity do obsługi akcji w rodzicu
 const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'reject'): void;
-  (e: 'accept'): void;
-}>();
+  (e: 'close'): void
+  (e: 'reject'): void
+  (e: 'accept'): void
+}>()
 
 // Funkcje pomocnicze
-const handleClose = () => emit('close');
-const handleReject = () => emit('reject');
-const handleAccept = () => emit('accept');
+const handleClose = () => emit('close')
+const handleReject = () => emit('reject')
+const handleAccept = () => emit('accept')
 </script>
 
 <template>
@@ -46,9 +46,7 @@ const handleAccept = () => emit('accept');
         {{ callerName }}
       </h2>
 
-      <p class="text-xl font-bold text-theme-text text-center mb-2">
-        dzwoni do Ciebie
-      </p>
+      <p class="text-xl font-bold text-theme-text text-center mb-2">dzwoni do Ciebie</p>
 
       <div class="flex items-center gap-1.5 text-xs text-gray-500 font-medium mb-8">
         <LockIcon :size="16" fillColor="currentColor" />

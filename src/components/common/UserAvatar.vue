@@ -1,65 +1,92 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useStoriesStore } from '@/stores/stories';
+import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStoriesStore } from '@/composables/feed/useAppState'
+import ProfilePopper from '@/components/profile/ProfilePopper.vue'
 
 const props = defineProps<{
   user: {
-    id: number | string;
-    name?: string;
-    avatar?: string;
-  };
-  size?: number | string;
-  disableLink?: boolean;
-}>();
+    id: number | string
+    name?: string
+    avatar?: string
+  }
+  size?: number | string
+  disableLink?: boolean
+  hideStoryRing?: boolean
+}>()
 
-const router = useRouter();
-const storiesStore = useStoriesStore();
+const router = useRouter()
+const storiesStore = useStoriesStore()
 
 const hasStory = computed(() => {
-  if (!props.user?.id) return false;
-  const userStories = storiesStore.getUserStories(props.user.id.toString());
-  return !!userStories && userStories.stories.length > 0;
-});
+  if (!props.user?.id) return false
+  const userStories = storiesStore.getUserStories(props.user.id.toString())
+  return !!userStories && userStories.stories.length > 0
+})
 
 const handleClick = (e: MouseEvent) => {
-  if (props.disableLink) return;
-  e.stopPropagation();
+  if (props.disableLink) return
+  e.stopPropagation()
 
-  if (hasStory.value) {
-    router.push({ name: 'userStories', params: { userId: props.user.id } });
+  if (hasStory.value && !props.hideStoryRing) {
+    router.push(`/stories/${props.user.id}`)
   } else {
-    router.push({ name: 'userProfile', params: { userId: props.user.id } });
+    router.push(`/profile/${props.user.id}`)
   }
-};
+}
 
 const avatarSize = computed(() => {
-    if (typeof props.size === 'number') return `${props.size}px`;
-    return props.size || '40px';
-});
+  if (typeof props.size === 'number') return `${props.size}px`
+  return props.size || '34px' // Domyślny zaktualizowany rozmiar
+})
 
-const ringClass = computed(() => {
-  if (hasStory.value) {
-    return 'ring-[3px] ring-[#1877F2] ring-offset-2';
+// Zmiana z ringClass na borderClass
+const borderClass = computed(() => {
+  if (hasStory.value && !props.hideStoryRing) {
+
+    return 'border-[2px] border-[#0866ff] p-[2px]'
   }
-  return 'border border-gray-200'; // Default subtle border
-});
+  // Odwzorowanie "Zrzut ekranu 2026-07-21 o 12.58.52.png"
+  // 1px delikatnej szarej ramki, przylegającej do zdjęcia.
+  // Całość nadal zajmuje dokładnie ten sam rozmiar.
+  return 'border border-gray-200'
+})
+
+const isError = ref(false)
+const handleImageError = () => {
+  isError.value = true
+}
+
+// Reset state when user or avatar changes
+watch(
+  () => props.user?.avatar,
+  () => {
+    isError.value = false
+  },
+)
+
+const fallbackAvatar = computed(() => {
+  const name = props.user?.name || 'Użytkownik'
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=EBF4FF&color=1877F2&bold=true`
+})
+
+
 </script>
 
 <template>
-  <div
-    class="relative inline-block rounded-full select-none"
-    :class="[
-      !disableLink ? 'cursor-pointer' : '',
-      ringClass
-    ]"
-    :style="{ width: avatarSize, height: avatarSize }"
-    @click="handleClick"
-  >
-    <img
-      class="rounded-full w-full h-full object-cover"
-      :src="user.avatar || 'https://via.placeholder.com/40'"
-      :alt="user.name || 'User'"
+  <ProfilePopper :userId="user?.id" :name="user?.name" :disabled="disableLink">
+    <div
+      class="relative inline-flex items-center justify-center rounded-full select-none shrink-0 bg-white box-border"
+      :class="[!disableLink ? 'cursor-pointer hover:opacity-90 transition-opacity' : '', borderClass]"
+      :style="{ width: avatarSize, height: avatarSize }"
+      @click="handleClick"
     >
-  </div>
+      <img
+        class="rounded-full w-full h-full object-cover"
+        :src="fallbackAvatar"
+        :alt="user?.name || 'User'"
+        @error="handleImageError"
+      />
+    </div>
+  </ProfilePopper>
 </template>

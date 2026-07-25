@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen bg-theme-bg font-sans text-theme-text overflow-hidden">
+  <div class="flex h-screen bg-theme-bg   text-theme-text overflow-hidden">
     <EventsSidebar not />
 
     <div class="flex-1 flex flex-col items-center overflow-y-auto pt-[64px] pb-10 bg-theme-bg">
@@ -135,12 +135,10 @@
               </button>
             </div>
           </header>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-4">
-            <YourEventItem
-              v-for="eventItem in events"
-              :key="eventItem.id"
-              :event="eventItem"
-            />
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-4"
+          >
+            <YourEventItem v-for="eventItem in events" :key="eventItem.id" :event="eventItem" />
           </div>
         </div>
       </main>
@@ -157,7 +155,6 @@ import { ref, computed } from 'vue'
 import { DatePicker as VDatePicker } from 'v-calendar'
 import 'v-calendar/dist/style.css'
 import { useEventsStore } from '@/stores/events'
-import { useRouter } from 'vue-router'
 import EventsSidebar from '@/components/events/EventsSidebar.vue'
 import CreateEventModal from '@/components/events/CreateEventModal.vue'
 
@@ -172,11 +169,10 @@ import CloseIcon from 'vue-material-design-icons/Close.vue'
 import EventsList from '@/components/events/EventsList.vue'
 import NewForYou from '@/components/events/NewForYou.vue'
 
-
 const isDateMenuOpen = ref(false)
 const currentMenuView = ref('list')
 const selectedDate = ref('Dowolna data')
-const range = ref(null)
+const range = ref<{ start: Date; end: Date } | null>(null)
 const isOpen = ref(false)
 
 const dateOptions = [
@@ -224,9 +220,8 @@ const router = useRouter()
 const events = computed(() => eventsStore.events)
 
 const navigateToEvent = (eventId: string) => {
-  router.push({ name: 'event', params: { id: eventId } })
+  router.push(`/event/${eventId}`)
 }
-
 </script>
 
 <style scoped>

@@ -1,21 +1,58 @@
 <template>
-  <div class="min-h-screen bg-theme-bg mt-[50px] flex font-sans">
+  <div class="min-h-screen bg-theme-bg mt-[50px] flex">
     <FriendsSidebar />
     <div class="flex-1 ml-[360px] p-8">
-      <div class="max-w-[1400px] mx-auto">
+      <!-- Sekcja zaproszeń -->
+      <div class="max-w-[1400px] mx-auto mb-8">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-[20px] font-bold text-theme-text">{{ t('friends.friendRequests') }}</h2>
-          <a href="#" class="text-[#1877f2] hover:bg-theme-bg-tertiary px-2 py-1 rounded text-[15px] font-medium">{{ t('friends.showAll') }}</a>
+          <span
+            class="text-sm text-theme-text-secondary font-medium"
+            v-if="friendRequests.length > 0"
+          >
+            Liczba zaproszeń: {{ friendRequests.length }}
+          </span>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
           <FriendCard
             v-for="person in friendRequests"
             :key="person.id"
             :person="person"
             variant="request"
-            @add="handleAddFriend"
-            @remove="(id) => friendRequests = friendRequests.filter(p => p.id !== id)"
+            @confirm="handleConfirmRequest"
+            @delete="handleDeleteRequest"
           />
+        </div>
+        <div
+          v-if="!requestsLoading && friendRequests.length === 0"
+          class="p-6 text-center text-theme-text-secondary bg-theme-bg-secondary rounded-xl border border-theme-border"
+        >
+          Brak oczekujących zaproszeń do grona znajomych
+        </div>
+      </div>
+
+      <!-- Sekcja propozycji -->
+      <div class="max-w-[1400px] mx-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-[20px] font-bold text-theme-text">
+            Propozycje znajomych (Ludzie, których możesz znać)
+          </h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+          <FriendCard
+            v-for="person in friendSuggestions"
+            :key="person.id"
+            :person="person"
+            variant="suggestion"
+            @add="handleAddFriend"
+            @delete="handleDeleteSuggestion"
+          />
+        </div>
+        <div
+          v-if="!suggestionsLoading && friendSuggestions.length === 0"
+          class="p-6 text-center text-theme-text-secondary bg-theme-bg-secondary rounded-xl border border-theme-border"
+        >
+          Brak nowych propozycji znajomych
         </div>
       </div>
     </div>
@@ -23,111 +60,191 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import FriendsSidebar from '../components/friends/FriendsSidebar.vue';
-import FriendCard from '../components/friends/PeopleYouMayKnowCard.vue';
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useAuthStore } from '@/stores/auth'
+import { useQuery, useMutation } from '@vue/apollo-composable'
+import gql from 'graphql-tag'
 
-const { t } = useI18n();
+import FriendsSidebar from '../components/friends/FriendsSidebar.vue'
+import FriendCard from '../components/friends/PeopleYouMayKnowCard.vue'
 
-const handleAddFriend = (id: number) => {
-  console.log(t('friends.sentFriendRequestTo'), id);
-  const person = friendRequests.value.find((p: { id: number }) => p.id === id);
-  if (person) person.isFriend = true;
-};
+const { t } = useI18n()
+const authStore = useAuthStore()
 
-// --- Mock Data (Dane ze screenshota) ---
-const friendRequests = ref([
-  {
-    id: 1,
-    name: 'Patryk Marciniuk',
-    commonFriends: 0,
-    imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-    isFriend: false
-  },
-  {
-    id: 2,
-    name: 'Hubert Rudnik',
-    commonFriends: 78,
-    imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-    isFriend: false
-  },
-  {
-    id: 3,
-    name: 'Michał Kudlak',
-    commonFriends: 97,
-    imageUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-    isFriend: false
-  },
-  {
-    id: 4,
-    name: 'Piotr Kosmala',
-    commonFriends: 11,
-    imageUrl: 'https://images.unsplash.com/photo-1557862921-37829c790f19?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-    isFriend: false
-  },
-  {
-    id: 5,
-    name: 'Mateusz Nowacki',
-    commonFriends: 12,
-    imageUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-    isFriend: false
-  },
-  {
-    id: 6,
-    name: 'Nela Gryczka',
-    commonFriends: 2,
-    imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-    isFriend: false
-  },
-  {
-    id: 7,
-    name: 'Maja Trochim',
-    commonFriends: 7,
-    imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-    isFriend: false
-  },
-  {
-    id: 8,
-    name: 'Wojciech Krasuski',
-    commonFriends: 70,
-    imageUrl: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-    isFriend: false
-  },
-  {
-    id: 9,
-    name: 'Kuba Bielecki',
-    commonFriends: 36,
-    imageUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-    isFriend: false
-  },
-  {
-    id: 10,
-    name: 'Krystian Celejewski',
-    commonFriends: 26,
-    imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-    isFriend: false
-  },
-  {
-    id: 11,
-    name: 'Julka Przeplatacka',
-    commonFriends: 4,
-    imageUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-    isFriend: false
-  },
-  {
-    id: 12,
-    name: 'Bartosz Szczepaniak',
-    commonFriends: 8,
-    imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-    isFriend: false
-  },
-]);
+// Lokalne listy dla optymistycznych aktualizacji interfejsu (np. usuwanie kafelków)
+const friendRequests = ref<any[]>([])
+const friendSuggestions = ref<any[]>([])
+
+// ==========================================
+// 1. Definicje zapytań i mutacji GraphQL
+// ==========================================
+const GET_FRIEND_REQUESTS = gql`
+  query GetFriendRequests($currentUserId: ID!) {
+    getFriendRequests(currentUserId: $currentUserId) {
+      userId
+      mutualFriendsCount
+      user {
+        id
+        firstName
+        lastName
+        avatarId
+      }
+    }
+  }
+`
+
+const GET_FRIEND_SUGGESTIONS = gql`
+  query GetFriendSuggestions($currentUserId: ID!) {
+    getFriendSuggestions(currentUserId: $currentUserId) {
+      userId
+      mutualFriendsCount
+      user {
+        id
+        firstName
+        lastName
+        avatarId
+      }
+    }
+  }
+`
+
+const ACCEPT_FRIEND_REQUEST = gql`
+  mutation AcceptFriendRequest($senderId: ID!, $receiverId: ID!) {
+    acceptFriendRequest(senderId: $senderId, receiverId: $receiverId) {
+      success
+      message
+    }
+  }
+`
+
+const SEND_FRIEND_REQUEST = gql`
+  mutation SendFriendRequest($senderId: ID!, $receiverId: ID!) {
+    sendFriendRequest(senderId: $senderId, receiverId: $receiverId) {
+      success
+      message
+    }
+  }
+`
+
+// ==========================================
+// 2. Pobieranie danych (Queries)
+// ==========================================
+
+// Reaktywne zmienne dla zapytań
+const queryVariables = computed(() => ({
+  currentUserId: String(authStore.currentUserId),
+}))
+
+// Reaktywne opcje sterujące włączaniem zapytania (tylko, gdy mamy ID)
+const queryOptions = computed(() => ({
+  enabled: !!authStore.currentUserId && String(authStore.currentUserId) !== '0',
+  fetchPolicy: 'cache-and-network' as const,
+}))
+
+// A) Pobieranie zaproszeń
+const { onResult: onRequestsResult, loading: requestsLoading } = useQuery(
+  GET_FRIEND_REQUESTS,
+  queryVariables,
+  queryOptions
+)
+
+onRequestsResult((res) => {
+  const reqList = res.data?.getFriendRequests || []
+  friendRequests.value = reqList.map((item: any) => {
+    const u = item.user
+    const avatarUrl = u?.avatarId
+      ? `http://localhost:8080/api/users/avatar/${u.avatarId}`
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          (u?.firstName || '') + ' ' + (u?.lastName || '')
+        )}&background=EBF4FF&color=1877F2&bold=true`
+
+    return {
+      id: item.userId,
+      name: u ? `${u.firstName} ${u.lastName}` : `User ${item.userId}`,
+      commonFriends: item.mutualFriendsCount || 0,
+      imageUrl: avatarUrl,
+      isFriend: false,
+    }
+  })
+})
+
+// B) Pobieranie propozycji znajomych
+const { onResult: onSuggestionsResult, loading: suggestionsLoading } = useQuery(
+  GET_FRIEND_SUGGESTIONS,
+  queryVariables,
+  queryOptions
+)
+
+onSuggestionsResult((res) => {
+  const sugList = res.data?.getFriendSuggestions || []
+  friendSuggestions.value = sugList.map((item: any) => {
+    const u = item.user
+    const avatarUrl = u?.avatarId
+      ? `http://localhost:8080/api/users/avatar/${u.avatarId}`
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          (u?.firstName || '') + ' ' + (u?.lastName || '')
+        )}&background=EBF4FF&color=1877F2&bold=true`
+
+    return {
+      id: item.userId,
+      name: u ? `${u.firstName} ${u.lastName}` : `User ${item.userId}`,
+      commonFriends: item.mutualFriendsCount || 0,
+      imageUrl: avatarUrl,
+      isFriend: false,
+    }
+  })
+})
+
+// ==========================================
+// 3. Obsługa akcji (Mutations)
+// ==========================================
+const { mutate: acceptFriendRequest } = useMutation(ACCEPT_FRIEND_REQUEST)
+const { mutate: sendFriendRequest } = useMutation(SEND_FRIEND_REQUEST)
+
+const handleConfirmRequest = async (senderId: string | number) => {
+  try {
+    const res = await acceptFriendRequest({
+      senderId: String(senderId),
+      receiverId: String(authStore.currentUserId),
+    })
+
+    if (res?.data?.acceptFriendRequest?.success) {
+      // Usuwamy załadowany element lokalnie, żeby nie było mrugnięć i odświeżeń całej listy
+      friendRequests.value = friendRequests.value.filter((r) => r.id !== senderId)
+    }
+  } catch (err) {
+    console.error('Failed to accept friend request:', err)
+  }
+}
+
+const handleAddFriend = async (receiverId: string | number) => {
+  try {
+    const res = await sendFriendRequest({
+      senderId: String(authStore.currentUserId),
+      receiverId: String(receiverId),
+    })
+
+    if (res?.data?.sendFriendRequest?.success) {
+      // Usuwamy załadowany element lokalnie z rekomendacji po pomyślnym wysłaniu zaproszenia
+      friendSuggestions.value = friendSuggestions.value.filter((s) => s.id !== receiverId)
+    }
+  } catch (err) {
+    console.error('Failed to send friend request:', err)
+  }
+}
+
+// Funkcje "czyszczące" (np. użytkownik klika 'Usuń zaproszenie' w UI, aby go nie widzieć na froncie)
+const handleDeleteRequest = (id: string | number) => {
+  friendRequests.value = friendRequests.value.filter((r) => r.id !== id)
+}
+
+const handleDeleteSuggestion = (id: string | number) => {
+  friendSuggestions.value = friendSuggestions.value.filter((s) => s.id !== id)
+}
 </script>
 
-
 <style scoped>
-/* Ukrycie paska przewijania w sidebarze dla estetyki (opcjonalne) */
 ::-webkit-scrollbar {
   width: 8px;
 }

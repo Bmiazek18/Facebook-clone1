@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import ImageWithGradient from '@/components/media/ImageWithGradient.vue'
 import EventsSidebar from '@/components/events/EventsSidebar.vue'
 import CreatePost from '@/components/create/createPost/CreateModal.vue'
@@ -12,9 +12,8 @@ import ShareVariantIcon from 'vue-material-design-icons/ShareVariant.vue'
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue'
 import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue'
 import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue'
-import { useRoute, RouterLink } from 'vue-router'
 import { useEventsStore } from '@/stores/events'
-import type { Event as EventType } from '@/data/events'
+import type { Event as EventType } from '@/types/Event'
 import BaseModal from '@/components/common/BaseModal.vue'
 import InviteModal from '@/components/events/InviteModal.vue'
 import EventShareDropdown from '@/components/events/EventShareDropdown.vue'
@@ -25,6 +24,24 @@ const eventDetails = computed<EventType | undefined>(() => {
   const id = route.params.id as string
   return eventsStore.getEventById(id)
 })
+
+const fetchCurrentEvent = async () => {
+  const id = route.params.id as string
+  if (id) {
+    await eventsStore.fetchEventById(id)
+  }
+}
+
+onMounted(() => {
+  fetchCurrentEvent()
+})
+
+watch(
+  () => route.params.id,
+  () => {
+    fetchCurrentEvent()
+  }
+)
 
 // Computed properties for date formatting
 const eventMonth = computed(() => {
@@ -84,22 +101,11 @@ const nextImage = () => {
   currentImageIndex.value = (currentImageIndex.value + 1) % imagesCount
 }
 
-// Share event logic
-const showShareModal = ref(false)
-const shareEvent = () => {
-  showShareModal.value = true
-}
-const closeShareModal = () => {
-  showShareModal.value = false
-}
-const handlePublishPost = (content: string) => {
-  console.log('Published post with event:', { content, eventId: eventDetails.value?.id })
-  closeShareModal()
-}
+
 </script>
 
 <template>
-  <div class="flex min-h-screen bg-theme-bg font-sans text-theme-text pb-10">
+  <div class="flex min-h-screen bg-theme-bg   text-theme-text pb-10">
     <EventsSidebar />
     <div class="flex-1 flex flex-col">
       <div v-if="eventDetails">
@@ -167,18 +173,18 @@ const handlePublishPost = (content: string) => {
                 class="flex flex-col md:flex-row justify-between items-center mt-6 border-t border-theme-border pt-4 gap-4"
               >
                 <div class="flex gap-6 text-sm font-semibold text-theme-text-secondary">
-                  <RouterLink
-                    :to="{ name: 'event-about', params: { id: eventDetails.id } }"
+                  <NuxtLink
+                    :to="`/event/${eventDetails.id}`"
                     class="pb-4 -mb-4 px-1 hover:bg-theme-hover rounded-t-sm transition-colors"
                   >
                     Informacje
-                  </RouterLink>
-                  <RouterLink
-                    :to="{ name: 'event-discussion', params: { id: eventDetails.id } }"
+                  </NuxtLink>
+                  <NuxtLink
+                    :to="`/event/${eventDetails.id}/discussion`"
                     class="pb-4 -mb-4 px-1 hover:bg-theme-hover rounded-t-sm transition-colors"
                   >
                     Dyskusja
-                  </RouterLink>
+                  </NuxtLink>
                 </div>
                 <div class="flex gap-2 w-full md:w-auto">
                   <button
@@ -209,7 +215,7 @@ const handlePublishPost = (content: string) => {
           </div>
 
           <!-- Router View for nested routes -->
-          <router-view :event-details="eventDetails" />
+          <NuxtPage :event-details="eventDetails" />
         </div>
       </div>
       <div v-else class="flex-1 flex items-center justify-center">
@@ -222,20 +228,13 @@ const handlePublishPost = (content: string) => {
       >
         <InviteModal />
       </BaseModal>
-      <!-- Share Modal -->
-      <BaseModal v-if="showShareModal" @close="closeShareModal" :title="'Udostępnij wydarzenie'">
-        <CreatePost
-          :shared-event-id="eventDetails?.id"
-          @close="closeShareModal"
-          @publish="handlePublishPost"
-        />
-      </BaseModal>
+
     </div>
   </div>
 </template>
 
 <style scoped>
-.router-link-exact-active{
+.router-link-exact-active {
   color: #1877f2 !important;
   border-bottom: 3px solid #1877f2 !important; /* Dodane 'solid' i zmieniono na 3px dla lepszej widoczności */
 }

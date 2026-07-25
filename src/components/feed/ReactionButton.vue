@@ -5,14 +5,15 @@
     @mouseleave="handleMouseLeave"
     :class="display === 'full' ? 'w-full' : 'w-fit'"
   >
-    <div v-if="hasDarkBackground"
-         class="p-2 md:p-3 bg-[#3a3b3c] hover:bg-[#4e4f50] rounded-full transition-colors cursor-pointer"
-         @click="toggleReaction('like')"
+    <div
+      v-if="hasDarkBackground"
+      class="p-2 md:p-3 bg-[#3a3b3c] hover:bg-[#4e4f50] rounded-full transition-colors cursor-pointer"
+      @click="toggleReaction('like')"
     >
       <component
         :is="isLiked || userReaction === 'like' ? ThumbUpIcon : ThumbUpOutline"
         :size="iconSize"
-        :fillColor="(isLiked || userReaction === 'like') ? '#1b74e4' : 'white'"
+        :fillColor="isLiked || userReaction === 'like' ? '#1b74e4' : 'white'"
       />
     </div>
 
@@ -24,20 +25,19 @@
           'hover:bg-theme-hover': display !== 'compact',
           'h-9 text-[15px]': display === 'full',
           'text-[12px] hover:underline': display === 'compact',
-          'text-theme-text-secondary': !userReaction
-        }
+          'text-theme-text-secondary': !userReaction,
+        },
       ]"
       @click="toggleReaction('like')"
     >
       <template v-if="display === 'full'">
         <div v-if="userReaction" class="flex items-center gap-2">
-
           <div class="animate-pop" :key="userReaction">
             <span v-if="userReaction === 'like'" class="flex items-center">
-              <ThumbUpIcon :size="20"  class="text-blue-500" />
+              <ThumbUpIcon :size="20" class="text-blue-500" />
             </span>
             <span v-else-if="userReaction === 'love'" class="flex items-center">
-              <HeartCircleIcon :size="22"  class="text-[#F3425F]" />
+              <HeartCircleIcon :size="22" class="text-[#F3425F]" />
             </span>
             <span v-else class="text-xl leading-none flex items-center">
               {{ getReactionEmoji(userReaction) }}
@@ -67,49 +67,35 @@
       </template>
     </button>
 
-
     <div
       class="absolute left-0 flex gap-1 px-2 py-1.5 rounded-full shadow-xl transition-all duration-200 z-50"
       :class="[
         hasDarkBackground ? 'bg-[#252729]' : 'bg-theme-bg-secondary',
         display === 'full' ? 'bottom-10' : 'bottom-6',
-        isVisible ? 'opacity-100 pointer-events-auto translate-y-0' : 'opacity-0 pointer-events-none translate-y-2'
+        isVisible
+          ? 'opacity-100 pointer-events-auto translate-y-0'
+          : 'opacity-0 pointer-events-none translate-y-2',
       ]"
     >
-<div
-  v-for="(reaction, index) in reactions"
-  :key="reaction.name"
-  class="flex flex-col items-center hover:scale-125 w-[40px] transition-transform duration-200 cursor-pointer"
-  @click="selectReaction(reaction.name)"
->
-  <div
-    class="transition-all duration-300"
-    :style="{
-      transitionDelay: isVisible ? `${index * 40}ms` : '0ms',
-      transform: isVisible ? 'scale(1) translateY(0)' : 'scale(0.3) translateY(20px)',
-      opacity: isVisible ? 1 : 0
-    }"
-  >
-    <LottieIcon
-      v-if="reaction.name === 'like'"
-      :animationData="LIKE_JSON"
-      :size="35"
-
-    />
-    <LottieIcon
-      v-else-if="reaction.name === 'love'"
-      :animationData="LOVE_JSON"
-      :size="35"
-
-    />
-    <img
-      v-else
-      :src="reaction.src"
-      :alt="reaction.name"
-      class="w-10 h-10 object-contain"
-    />
-  </div>
-</div>
+      <div
+        v-for="(reaction, index) in reactions"
+        :key="reaction.name"
+        class="flex flex-col items-center hover:scale-125 w-[40px] transition-transform duration-200 cursor-pointer"
+        @click="selectReaction(reaction.name)"
+      >
+        <div
+          class="transition-all duration-300"
+          :style="{
+            transitionDelay: isVisible ? `${index * 40}ms` : '0ms',
+            transform: isVisible ? 'scale(1) translateY(0)' : 'scale(0.3) translateY(20px)',
+            opacity: isVisible ? 1 : 0,
+          }"
+        >
+          <LottieIcon v-if="reaction.name === 'like'" :animationData="LIKE_JSON" :size="35" />
+          <LottieIcon v-else-if="reaction.name === 'love'" :animationData="LOVE_JSON" :size="35" />
+          <img v-else :src="reaction.src" :alt="reaction.name" class="w-10 h-10 object-contain" />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -127,32 +113,31 @@ import LottieIcon from './LottieIcon.vue'
 import LIKE_JSON from '@/assets/animations/like.json'
 import LOVE_JSON from '@/assets/animations/love.json'
 
-
 const props = defineProps({
   display: {
     type: String,
-    default: 'full'
+    default: 'full',
   },
   userReaction: {
     type: String as () => ReactionType | null,
-    default: null
+    default: null,
   },
   hasDarkBackground: {
     type: Boolean,
-    default: false
+    default: false,
   },
   iconSize: {
     type: Number,
-    default: 20
+    default: 20,
   },
   isLiked: {
     type: Boolean,
-    default: false
+    default: false,
   },
   alwaysDarkPopup: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 const emit = defineEmits(['react'])
@@ -161,35 +146,71 @@ const { t } = useI18n()
 
 // Konfiguracja kolorów przeszła na bezpośrednie wartości HEX
 const reactionConfigs = [
-  { name: 'like', labelKey: 'reaction.like', emoji: '👍', src: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f44d/512.gif", color: '#1b74e4' }, // Niebieski FB
-  { name: 'love', labelKey: 'reaction.love', emoji: '❤️', src: "https://fonts.gstatic.com/s/e/notoemoji/latest/2764_fe0f/512.gif", color: '#f33e58' }, // Malinowy FB
-  { name: 'haha', labelKey: 'reaction.haha', emoji: '😆', src: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f606/512.gif", color: '#f59e0b' }, // Żółty
-  { name: 'wow', labelKey: 'reaction.wow', emoji: '😮', src: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f62f/512.gif", color: '#f59e0b' },   // Żółty
-  { name: 'sad', labelKey: 'reaction.sad', emoji: '😢', src: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f622/512.gif", color: '#60a5fa' },   // Jasnoniebieski
-  { name: 'angry', labelKey: 'reaction.angry', emoji: '😡', src: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f621/512.gif", color: '#ea580c' }  // Pomarańczowo-czerwony
+  {
+    name: 'like',
+    labelKey: 'reaction.like',
+    emoji: '👍',
+    src: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f44d/512.gif',
+    color: '#1b74e4',
+  }, // Niebieski FB
+  {
+    name: 'love',
+    labelKey: 'reaction.love',
+    emoji: '❤️',
+    src: 'https://fonts.gstatic.com/s/e/notoemoji/latest/2764_fe0f/512.gif',
+    color: '#f33e58',
+  }, // Malinowy FB
+  {
+    name: 'haha',
+    labelKey: 'reaction.haha',
+    emoji: '😆',
+    src: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f606/512.gif',
+    color: '#f59e0b',
+  }, // Żółty
+  {
+    name: 'wow',
+    labelKey: 'reaction.wow',
+    emoji: '😮',
+    src: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f62f/512.gif',
+    color: '#f59e0b',
+  }, // Żółty
+  {
+    name: 'sad',
+    labelKey: 'reaction.sad',
+    emoji: '😢',
+    src: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f622/512.gif',
+    color: '#60a5fa',
+  }, // Jasnoniebieski
+  {
+    name: 'angry',
+    labelKey: 'reaction.angry',
+    emoji: '😡',
+    src: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f621/512.gif',
+    color: '#ea580c',
+  }, // Pomarańczowo-czerwony
 ]
 
 const reactions = computed(() =>
-  reactionConfigs.map(config => ({
+  reactionConfigs.map((config) => ({
     ...config,
-    label: t(config.labelKey)
-  }))
+    label: t(config.labelKey),
+  })),
 )
 
 const isVisible = ref(false)
 
 const getReactionEmoji = (name: string) => {
-  return reactionConfigs.find(r => r.name === name)?.emoji || ''
+  return reactionConfigs.find((r) => r.name === name)?.emoji || ''
 }
 
 const getReactionLabel = (name: string) => {
-  const config = reactionConfigs.find(r => r.name === name)
+  const config = reactionConfigs.find((r) => r.name === name)
   return config ? t(config.labelKey) : ''
 }
 
 // Funkcja zwracająca czysty HEX, który Tailwind na pewno zinterpretuje poprawnie w :style
 const getReactionColorHex = (name: string) => {
-  return reactionConfigs.find(r => r.name === name)?.color || '#1b74e4'
+  return reactionConfigs.find((r) => r.name === name)?.color || '#1b74e4'
 }
 
 const selectReaction = (reactionName: ReactionType) => {
@@ -205,13 +226,21 @@ const toggleReaction = (defaultReaction: ReactionType) => {
   }
 }
 
-const { start: startHideTimer, stop: stopHideTimer } = useTimeoutFn(() => {
-  isVisible.value = false
-}, 500, { immediate: false })
+const { start: startHideTimer, stop: stopHideTimer } = useTimeoutFn(
+  () => {
+    isVisible.value = false
+  },
+  500,
+  { immediate: false },
+)
 
-const { start: startShowTimer, stop: stopShowTimer } = useTimeoutFn(() => {
-  isVisible.value = true
-}, 500, { immediate: false })
+const { start: startShowTimer, stop: stopShowTimer } = useTimeoutFn(
+  () => {
+    isVisible.value = true
+  },
+  500,
+  { immediate: false },
+)
 
 const handleMouseEnter = () => {
   stopHideTimer()
@@ -230,7 +259,6 @@ const handleMouseLeave = () => {
 /* Definicja animacji sprężystego powiększenia (pop) */
 @keyframes pop-animation {
   0% {
-
     transform: scale(1);
   }
   50% {

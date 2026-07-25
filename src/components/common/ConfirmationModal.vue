@@ -1,44 +1,60 @@
 <script setup lang="ts">
-import BaseModal from '@/components/common/BaseModal.vue';
+import { ref } from 'vue'
+import BaseModal from '@/components/common/BaseModal.vue'
 
-const emit = defineEmits(['confirm', 'cancel']);
+const emit = defineEmits(['discard', 'saveDraft', 'cancel'])
 
-const handleConfirm = () => {
-  emit('confirm');
-  close();
-};
+const isOpen = ref(false)
+
+const open = () => {
+  isOpen.value = true
+}
+
+const close = () => {
+  isOpen.value = false
+}
+
+const handleDiscard = () => {
+  emit('discard')
+  close()
+}
+
+const handleSaveDraft = () => {
+  emit('saveDraft')
+  close()
+}
 
 const handleCancel = () => {
-  emit('cancel');
-  close();
-};
+  emit('cancel')
+  close()
+}
 
 defineExpose({
   open,
   close,
-});
+})
 </script>
 
 <template>
-  <BaseModal title="nie zapisanie Zmiany" @close="handleCancel">
-    <div class="p-6">
-      <p class="mb-8 text-lg text-gray-900 leading-normal">
-        Twój post nie jest jeszcze ukończony. Czy chcesz wyjść, nie kończąc?
+  <BaseModal v-if="isOpen" title="Odrzucić post?" @close="handleCancel">
+    <div class="p-6 max-w-md">
+      <p class="mb-6 text-[15px] text-gray-500 leading-normal">
+        Jeśli teraz odrzucisz ten post, utracisz go.
       </p>
 
-      <div class="flex justify-end items-center gap-4">
+      <div class="flex justify-end items-center gap-3">
         <button
-          @click="handleCancel"
-          class="px-4 py-2 rounded-md text-blue-600 font-semibold hover:bg-blue-50 transition-colors duration-200"
+          @click="handleDiscard"
+          class="px-4 py-2.5 rounded-lg text-red-600 font-semibold hover:bg-red-50 transition-colors duration-200 text-[15px]"
         >
-          Kontynuuj edycję
+          Usuń wersję roboczą
         </button>
 
         <button
-          @click="handleConfirm"
-          class="px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold shadow-sm hover:bg-blue-700 transition-colors duration-200"
+          @click="handleSaveDraft"
+          class="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-semibold shadow-sm hover:bg-blue-700 transition-colors duration-200 text-[15px]"
         >
-          Opuść
+          Zapisz jako wersję roboczą
         </button>
       </div>
     </div>

@@ -1,15 +1,15 @@
 <template>
-  <div class="bg-theme-bg-secondary p-3  rounded-2xl  shadow-sm mb-6">
-    <h2 class="text-[17px] font-bold text-theme-text ">Nowe dla Ciebie</h2>
+  <div class="bg-theme-bg-secondary p-3 rounded-2xl shadow-sm mb-6">
+    <h2 class="text-[17px] font-bold text-theme-text">Nowe dla Ciebie</h2>
 
-    <div class="flex items-center gap-3 hover:bg-theme-hover w-[40%] cursor-pointer px-1 py-3 rounded-lg transition">
+    <div
+      class="flex items-center gap-3 hover:bg-theme-hover w-[40%] cursor-pointer px-1 py-3 rounded-lg transition"
+    >
       <div class="relative w-12 h-12 flex-shrink-0">
         <img
-
           alt="Technikalia"
           class="w-full h-full rounded-full object-cover border border-theme-border"
         />
-
       </div>
 
       <div class="flex flex-col">
@@ -25,5 +25,5 @@
 </template>
 
 <script setup lang="ts">
-import CameraIcon from 'vue-material-design-icons/Camera.vue';
+import CameraIcon from 'vue-material-design-icons/Camera.vue'
 </script>

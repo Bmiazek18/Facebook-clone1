@@ -28,11 +28,18 @@ defineEmits(['update:modelValue', 'save', 'cancel'])
       </div>
     </div>
     <div class="flex justify-between items-center border-t border-gray-300 pt-3">
-      <button class="flex items-center space-x-2 bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded-md font-semibold text-sm text-gray-700">
+      <button
+        class="flex items-center space-x-2 bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded-md font-semibold text-sm text-gray-700"
+      >
         <Earth class="text-lg" /> <span>{{ $t('common.public') }}</span>
       </button>
       <div class="flex space-x-2">
-        <button @click="$emit('cancel')" class="px-4 py-1.5 rounded-md font-semibold text-sm text-gray-700 hover:bg-gray-200">{{ $t('common.cancel') }}</button>
+        <button
+          @click="$emit('cancel')"
+          class="px-4 py-1.5 rounded-md font-semibold text-sm text-gray-700 hover:bg-gray-200"
+        >
+          {{ $t('common.cancel') }}
+        </button>
         <button
           @click="$emit('save')"
           class="px-4 py-1.5 rounded-md font-semibold text-sm text-white transition"

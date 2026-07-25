@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
-import { useRoute } from 'vue-router'
 
 // Ikony
 import DotsGrid from 'vue-material-design-icons/DotsGrid.vue'
@@ -15,11 +14,15 @@ import NotificationMenu from '@/layouts/Navbar/NotificationMenu.vue'
 import MessageMenu from './MessageMenu.vue'
 
 import { useAuthStore } from '@/stores/auth'
+import { useConversationsStore } from '@/stores/conversations'
+import { useNotificationsStore } from '@/stores/notifications'
 
-type ActiveMenuType = 'profile' | 'notifications' | 'message' | 'main' | null;
+type ActiveMenuType = 'profile' | 'notifications' | 'message' | 'main' | null
 
 const route = useRoute()
 const auth = useAuthStore()
+const convStore = useConversationsStore()
+const notifStore = useNotificationsStore()
 const hideMessageIcon = computed(() => route.meta?.hideMessageIcon === true)
 const isChatActive = computed(() => route.name === 'chat' || route.name === 'chatMessages')
 
@@ -30,81 +33,104 @@ const toggleMenu = (menuName: ActiveMenuType) => {
   activeMenu.value = activeMenu.value === menuName ? null : menuName
 }
 
-onClickOutside(navTarget, () => {
-  activeMenu.value = null
-})
+onClickOutside(
+  navTarget,
+  () => {
+    activeMenu.value = null
+  },
+  {
+    // Ignorujemy wszystkie elementy poppera/dropdownu wrzucane do <body>
+    ignore: ['.v-popper__popper', '.v-popper__wrapper']
+  }
+)
 // Zamykanie menu przy zmianie routingu
 watch(
   () => route.fullPath,
   () => {
     activeMenu.value = null
-  }
+  },
 )
 
 // Stałe klasy dla przycisków, aby kod był czystszy
-const btnClass = "rounded-full p-2 mx-1 transition-colors flex items-center justify-center bg-[#E3E6EA] dark:bg-[#3b3d3f] hover:bg-gray-300 dark:hover:bg-gray-600 text-[#050505] dark:text-white"
-const activeBtnClass = "bg-[#E7F3FF] dark:bg-[#263951] text-[#1877F2] dark:text-[#1877F2]"
+const btnClass =
+  'rounded-full p-2 mx-1 transition-colors flex items-center justify-center bg-[#E3E6EA] dark:bg-[#3b3d3f] hover:bg-gray-300 dark:hover:bg-gray-600 text-[#050505] dark:text-white'
+const activeBtnClass = 'bg-[#E7F3FF] dark:bg-[#263951] text-[#1877F2] dark:text-[#1877F2]'
 </script>
 
 <template>
-   <div ref="navTarget" class="flex items-center justify-end w-[260px] relative">
+  <div ref="navTarget" class="flex items-center justify-end w-[260px] relative">
+    <button
+      @click="toggleMenu('main')"
+      v-tooltip.bottom.no-arrow="{ content: 'Menu', triggers: ['hover'] }"
+      :class="[btnClass, activeMenu === 'main' ? activeBtnClass : '']"
+    >
+      <DotsGrid :size="23" />
+    </button>
 
-      <button
-        @click="toggleMenu('main')"
-        v-tooltip.bottom.no-arrow="{ content: 'Menu', triggers: ['hover'] }"
-        :class="[btnClass, activeMenu === 'main' ? activeBtnClass : '']"
+    <button
+      v-if="!hideMessageIcon"
+      @click="toggleMenu('message')"
+      v-tooltip.bottom.no-arrow="{ content: 'Wiadomości', triggers: ['hover'] }"
+      :class="[btnClass, activeMenu === 'message' || isChatActive ? activeBtnClass : '']"
+      class="relative"
+    >
+      <FacebookMessenger :size="23" />
+      <div
+        v-if="convStore.unreadCount > 0"
+        class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-semibold w-[16px] h-[16px] rounded-full flex items-center justify-center"
       >
-        <DotsGrid :size="23" />
-      </button>
+        {{ convStore.unreadCount }}
+      </div>
+    </button>
 
-      <button
-        v-if="!hideMessageIcon"
-        @click="toggleMenu('message')"
-        v-tooltip.bottom.no-arrow="{ content: 'Wiadomości', triggers: ['hover'] }"
-        :class="[btnClass, activeMenu === 'message' || isChatActive ? activeBtnClass : '']"
+    <button
+      @click="toggleMenu('notifications')"
+      v-tooltip.bottom.no-arrow="{ content: 'Powiadomienia', triggers: ['hover'] }"
+      :class="[btnClass, activeMenu === 'notifications' ? activeBtnClass : '']"
+      class="relative"
+    >
+      <Bell :size="23" />
+      <div
+        v-if="notifStore.unreadCount > 0"
+        class="absolute -top-1 -right-1 bg-red-600 text-white text-[12px] font-semibold w-[18px] h-[18px] rounded-full flex items-center justify-center"
       >
-        <FacebookMessenger :size="23" />
-      </button>
+        {{ notifStore.unreadCount }}
+      </div>
+    </button>
 
+    <div class="flex items-center relative ml-1">
       <button
-        @click="toggleMenu('notifications')"
-        v-tooltip.bottom.no-arrow="{ content: 'Powiadomienia', triggers: ['hover'] }"
-        :class="[btnClass, activeMenu === 'notifications' ? activeBtnClass : '']"
+        @click="toggleMenu('profile')"
+        v-tooltip.bottom.no-arrow="{ content: 'Konto', triggers: ['hover'] }"
         class="relative"
       >
-        <Bell :size="23" />
-        <div class="absolute -top-1 -right-1 bg-red-600 text-white text-[12px] font-semibold w-[18px] h-[18px] rounded-full flex items-center justify-center ">
-          1
+        <img
+          :class="[
+            'rounded-full w-10 h-10 object-cover cursor-pointer transition-all',
+            activeMenu === 'profile' ? 'ring-2 ring-[#1877F2]' : '',
+          ]"
+          :src="auth.currentUser?.avatar"
+        />
+        <div
+          :class="[
+            'absolute bottom-0 -right-1 rounded-full p-px border-[2px] border-white dark:border-[#242526] flex items-center justify-center transition-colors',
+            btnClass,
+            activeMenu === 'profile' ? activeBtnClass : 'p-0 w-3 h-3',
+          ]"
+        >
+          <ChevronDown :size="12" />
         </div>
       </button>
-
-      <div class="flex items-center relative ml-1">
-        <button @click="toggleMenu('profile')" v-tooltip.bottom.no-arrow="{ content: 'Konto', triggers: ['hover'] }" class="relative">
-          <img
-            :class="[
-              'rounded-full w-10 h-10 object-cover cursor-pointer transition-all',
-              activeMenu === 'profile' ? 'ring-2 ring-[#1877F2]' : ''
-            ]"
-            :src="auth.currentUser?.avatar"
-          />
-          <div
-            :class="[
-              'absolute bottom-0 -right-1 rounded-full p-px border-[2px] border-white dark:border-[#242526] flex items-center justify-center transition-colors',
-              btnClass,
-              activeMenu === 'profile' ? activeBtnClass : 'p-0 w-3 h-3'
-            ]"
-          >
-            <ChevronDown :size="12" />
-          </div>
-        </button>
-      </div>
-
-      <div v-if="activeMenu" class="fixed sm:absolute top-14 z-90 sm:top-12 left-[2vw] sm:left-auto right-[4vw] sm:right-0 w-[94vw] sm:w-auto z-50">
-        <MainMenu v-if="activeMenu === 'main'" />
-        <ProfileMenu v-if="activeMenu === 'profile'" />
-        <MessageMenu v-if="activeMenu === 'message'" />
-        <NotificationMenu v-if="activeMenu === 'notifications'" />
-      </div>
     </div>
-</template>
 
+    <div
+      v-if="activeMenu"
+      class="fixed sm:absolute top-14 z-90 sm:top-12 left-[2vw] sm:left-auto right-[4vw] sm:right-0 w-[94vw] sm:w-auto z-50"
+    >
+      <MainMenu v-if="activeMenu === 'main'" />
+      <ProfileMenu v-if="activeMenu === 'profile'" />
+      <MessageMenu v-if="activeMenu === 'message'" />
+      <NotificationMenu v-if="activeMenu === 'notifications'" />
+    </div>
+  </div>
+</template>

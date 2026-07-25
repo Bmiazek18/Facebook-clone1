@@ -30,11 +30,13 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'update-content': [id: string, value: string],
+  'update-content': [id: string, value: string]
   'post-clicked': [postId: string]
 }>()
 
-const elementTransform = computed(() => `rotate(${props.element.rotation}deg) scale(${props.element.scale ?? 1})`)
+const elementTransform = computed(
+  () => `rotate(${props.element.rotation}deg) scale(${props.element.scale ?? 1})`,
+)
 
 const handleStartDrag = (e: MouseEvent) => {
   if (!props.isViewing) {
@@ -48,69 +50,84 @@ const handleUpdateContent = (id: string, value: string) => {
 }
 
 const handleStartRotate = (e: MouseEvent) => {
-
-    props.onStartRotate(e, props.element);
-
-};
+  props.onStartRotate(e, props.element)
+}
 </script>
 
 <template>
   <div
     class="absolute group transition-transform duration-75"
-    :class="{ 'z-50': state.active, 'cursor-move': !isViewing, 'pointer-events-none': isViewing && element.type !== 'post' }"
+    :class="{
+      'z-50': state.active,
+      'cursor-move': !isViewing,
+      'pointer-events-none': isViewing && element.type !== 'post',
+    }"
     :style="{ top: `${element.y}px`, left: `${element.x}px` }"
     @mousedown.stop="handleStartDrag"
   >
     <div
-      class="relative transition-transform duration-75 origin-center"
+      class="relative transition-transform duration-75 origin-center p-1.5 border border-transparent"
+      :class="{
+        'border-white': state.selected && !isViewing,
+        'group-hover:border-white/50': !state.selected && !isViewing,
+      }"
       :style="{
-
-        width: element.type === 'post' ? 'auto' : (element.width ? element.width + 'px' : 'auto'),
-        height: element.type === 'post' ? 'auto' : (element.height ? element.height + 'px' : 'auto'),
+        width: element.type === 'post' ? 'auto' : element.width ? element.width + 'px' : 'auto',
+        height: element.type === 'post' ? 'auto' : element.height ? element.height + 'px' : 'auto',
         transform: elementTransform,
-        ...element.styles
+        ...element.styles,
       }"
     >
       <button
         data-story-control
-        v-if="!state.editing && !state.cropping && !isViewing"
+        v-if="state.selected && !state.editing && !state.cropping && !isViewing"
         @click.stop="handleRemove"
-        class="absolute -top-3 -left-3 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-600 z-50 transition-opacity shadow-md"
+        class="absolute -top-4 -left-4 w-7 h-7 bg-white text-black rounded-full flex items-center justify-center z-50 transition-transform hover:scale-105 shadow-lg border border-gray-200"
       >
-        <Close :size="14" />
+        <Close :size="16" />
       </button>
 
-      <div
-        v-if="state.selected && !state.editing && !isViewing && element.type !== 'post'"
-        class="absolute -bottom-2 -right-2 w-4 h-4 bg-blue-500 rounded-full cursor-se-resize"
-        @mousedown.stop="handleStartRotate"
-      ></div>
+      <template v-if="state.selected && !state.editing && !isViewing">
+        <div
+          v-if="element.type !== 'post' && !(element.type === 'image' && !element.musicTitle)"
+          class="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white rounded-full border border-gray-400 cursor-nesw-resize z-50 shadow-sm hover:scale-125 transition-transform"
+          @mousedown.stop="handleStartRotate"
+        ></div>
+        <div
+          v-else
+          class="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white rounded-full border border-gray-300 pointer-events-none"
+        ></div>
 
-      <StoryMusicElement
-        v-if="element.type === 'image' && element.musicTitle"
-        :element="element"
-      />
+        <div
+          v-if="element.type !== 'post' && !(element.type === 'image' && !element.musicTitle)"
+          class="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white rounded-full border border-gray-400 cursor-nesw-resize z-50 shadow-sm hover:scale-125 transition-transform"
+          @mousedown.stop="handleStartRotate"
+        ></div>
+        <div
+          v-else
+          class="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white rounded-full border border-gray-300 pointer-events-none"
+        ></div>
 
-      <StoryImageElement
-        v-else-if="element.type === 'image'"
-        :element="element"
-      />
+        <div
+          v-if="element.type !== 'post' && !(element.type === 'image' && !element.musicTitle)"
+          class="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white rounded-full border border-gray-400 cursor-se-resize z-50 shadow-sm hover:scale-125 transition-transform"
+          @mousedown.stop="handleStartRotate"
+        ></div>
+        <div
+          v-else
+          class="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white rounded-full border border-gray-300 pointer-events-none"
+        ></div>
+      </template>
 
-      <StoryLinkElement
-        v-else-if="element.type === 'link'"
-        :element="element"
-      />
+      <StoryMusicElement v-if="element.type === 'image' && element.musicTitle" :element="element" />
 
-      <StoryPostElement
-        v-else-if="element.type === 'post'"
-        :element="element"
+      <StoryImageElement v-else-if="element.type === 'image'" :element="element" />
 
-      />
+      <StoryLinkElement v-else-if="element.type === 'link'" :element="element" />
 
-      <StoryReelElement
-        v-else-if="element.type === 'reel'"
-        :element="element"
-      />
+      <StoryPostElement v-else-if="element.type === 'post'" :element="element" />
+
+      <StoryReelElement v-else-if="element.type === 'reel'" :element="element" />
 
       <StoryTextElement
         v-else-if="element.type === 'text'"

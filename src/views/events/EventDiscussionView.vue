@@ -1,30 +1,29 @@
 <script setup lang="ts">
-import { computed, defineProps,ref } from 'vue';
-import { usePostsStore } from '@/stores/posts';
-import CreateBox from '@/components/create/createPost/CreateBox.vue';
-import PostItem from '@/components/feed/post/PostItem.vue';
-import type { Event as EventType } from '@/data/events';
-import { useStickySidebar } from '@/composables/useStickySidebar';
-import EventAboutDetails from '@/components/events/EventAboutDetails.vue';
-
+import { computed, ref } from 'vue'
+import { usePostsStore } from '@/composables/feed/useAppState'
+import CreateBox from '@/components/create/createPost/CreateBox.vue'
+import PostItem from '@/components/feed/post/PostItem.vue'
+import type { Event as EventType } from '@/types/Event'
+import { useStickySidebar } from '@/composables/ui/useStickySidebar'
+import EventAboutDetails from '@/components/events/EventAboutDetails.vue'
 
 const props = defineProps<{
   eventDetails: EventType | undefined
-}>();
+}>()
 
-const postsStore = usePostsStore();
+const postsStore = usePostsStore()
 const rightSectionRef = ref<HTMLDivElement | null>(null)
 const { stickyTop } = useStickySidebar(rightSectionRef, 56, 16)
 const eventPosts = computed(() => {
-  if (!props.eventDetails) return [];
+  if (!props.eventDetails) return []
   return postsStore.posts
-    .filter(post => post.targetType === 'Event' && post.targetId === props.eventDetails?.id)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-});
+    .filter((post) => post.targetType === 'Event' && post.targetId === props.eventDetails?.id)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+})
 </script>
 
 <template>
-  <div class="grid grid-cols-1 max-w-[1200px] mx-auto lg:grid-cols-5 gap-4 ">
+  <div class="grid grid-cols-1 max-w-[1200px] mx-auto lg:grid-cols-5 gap-4">
     <div class="lg:col-span-3 space-y-4">
       <CreateBox :event-target="eventDetails" />
       <div v-if="eventPosts.length > 0" class="space-y-4">
@@ -35,17 +34,13 @@ const eventPosts = computed(() => {
       </div>
     </div>
     <div class="lg:col-span-2">
-         <div
-      ref="rightSectionRef"
-      class="lg:col-span-2 space-y-4 sticky mt-4 z-10 self-start bg-theme"
-      :style="{ top: `${stickyTop}px` }"
-    >
-
-
-  <EventAboutDetails :event-details="props.eventDetails" />
-
-</div>
-
+      <div
+        ref="rightSectionRef"
+        class="lg:col-span-2 space-y-4 sticky mt-4 z-10 self-start bg-theme"
+        :style="{ top: `${stickyTop}px` }"
+      >
+        <EventAboutDetails :event-details="props.eventDetails" />
+      </div>
     </div>
   </div>
 </template>

@@ -1,6 +1,8 @@
 <template>
-  <div class="bg-theme-bg-secondary rounded-xl shadow-sm p-4 md:p-5 ">
-    <h3 class="text-[20px] font-bold text-theme-text mb-4">{{ t('events.suggestedEvents.title') }}</h3>
+  <div class="bg-theme-bg-secondary rounded-xl shadow-sm p-4 md:p-5">
+    <h3 class="text-[20px] font-bold text-theme-text mb-4">
+      {{ t('events.suggestedEvents.title') }}
+    </h3>
 
     <div class="relative group">
       <div
@@ -78,7 +80,7 @@ import StarOutlineIcon from 'vue-material-design-icons/StarOutline.vue'
 import ReplyIcon from 'vue-material-design-icons/Reply.vue' // Służy jako ikona "Udostępnij" po odwróceniu
 import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue'
 import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue'
-import { useCarousel } from '@/composables/useCarousel'
+import { useCarousel } from '@/composables/media/useCarousel'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -92,7 +94,7 @@ const suggestedEvents = [
     date: 'Sob, 14 mar o 21:00',
     title: 'LINKIN PARK night // Gdańsk 2026',
     location: 'AK PG Kwadratowa',
-    interested: '718 zainteresowanych użytkowników'
+    interested: '718 zainteresowanych użytkowników',
   },
   {
     id: 2,
@@ -100,7 +102,7 @@ const suggestedEvents = [
     date: 'Czw, 19 mar o 22:00',
     title: 'FIESTA Night - czwartkowa impreza - studenci z listy fb do 23:00 wchodz...',
     location: 'AK PG Kwadratowa',
-    interested: '70 zainteresowanych użytkowników'
+    interested: '70 zainteresowanych użytkowników',
   },
   // Add more events to make the carousel scrollable
   {
@@ -109,7 +111,7 @@ const suggestedEvents = [
     date: 'Pon, 2 mar o 09:00',
     title: 'Tech Conference 2026',
     location: 'Gdańsk Science and Technology Park',
-    interested: '1200 zainteresowanych użytkowników'
+    interested: '1200 zainteresowanych użytkowników',
   },
   {
     id: 4,
@@ -117,8 +119,8 @@ const suggestedEvents = [
     date: 'Pią, 20 mar o 12:00',
     title: 'Gdańsk Food Fest',
     location: 'Forum Gdańsk',
-    interested: '2500 zainteresowanych użytkowników'
-  }
+    interested: '2500 zainteresowanych użytkowników',
+  },
 ]
 </script>
 

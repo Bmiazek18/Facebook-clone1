@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { defineProps } from 'vue'
-import { useRouter } from 'vue-router'
 import type { Event } from '@/types/Event'
 
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue'
@@ -14,7 +13,7 @@ const props = defineProps<{
 const router = useRouter()
 
 const navigateToEvent = (eventId: string) => {
-  router.push({ name: 'event', params: { id: eventId } })
+  router.push(`/event/${eventId}`)
 }
 </script>
 

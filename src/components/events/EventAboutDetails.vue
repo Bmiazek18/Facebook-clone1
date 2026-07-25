@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { defineProps, computed, ref } from 'vue';
-import type { Event as EventType } from '@/data/events';
-import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
-import EarthIcon from 'vue-material-design-icons/Earth.vue';
-import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue';
+import { defineProps, computed, ref } from 'vue'
+import type { Event as EventType } from '@/types/Event'
+import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue'
+import EarthIcon from 'vue-material-design-icons/Earth.vue'
+import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue'
 
 const props = defineProps<{
-  eventDetails: EventType | undefined;
-}>();
+  eventDetails: EventType | undefined
+}>()
 
-const isDescriptionExpanded = ref(false);
+const isDescriptionExpanded = ref(false)
 
 const truncatedDescription = computed(() => {
-  const description = props.eventDetails?.description || '';
-  const maxLength = 200;
+  const description = props.eventDetails?.description || ''
+  const maxLength = 200
   if (description.length > maxLength && !isDescriptionExpanded.value) {
-    return description.substring(0, maxLength) + '...';
+    return description.substring(0, maxLength) + '...'
   }
-  return description;
-});
+  return description
+})
 </script>
 
 <template>
@@ -32,7 +32,13 @@ const truncatedDescription = computed(() => {
       <li class="flex items-start gap-3">
         <AccountGroupIcon class="text-theme-text-secondary mt-1" />
         <div>
-          Wydarzenie <span class="font-semibold">{{ eventDetails?.hosts?.[0] || 'Organizator' }}</span><span v-if="eventDetails?.hosts?.[1]">, <span class="font-semibold">{{ eventDetails.hosts[1] }}</span></span><span v-if="eventDetails?.hosts?.[2]"> i <span class="font-semibold">{{ eventDetails.hosts[2] }}</span></span>
+          Wydarzenie
+          <span class="font-semibold">{{ eventDetails?.hosts?.[0] || 'Organizator' }}</span
+          ><span v-if="eventDetails?.hosts?.[1]"
+            >, <span class="font-semibold">{{ eventDetails.hosts[1] }}</span></span
+          ><span v-if="eventDetails?.hosts?.[2]">
+            i <span class="font-semibold">{{ eventDetails.hosts[2] }}</span></span
+          >
         </div>
       </li>
       <li class="flex items-start gap-3">
@@ -44,7 +50,13 @@ const truncatedDescription = computed(() => {
       </li>
       <li class="flex items-start gap-3">
         <EarthIcon class="text-theme-text-secondary mt-1" />
-        <div>{{ eventDetails?.privacy === 'public' ? 'Publiczne · Każdy na Facebooku i poza nim' : 'Prywatne' }}</div>
+        <div>
+          {{
+            eventDetails?.privacy === 'public'
+              ? 'Publiczne · Każdy na Facebooku i poza nim'
+              : 'Prywatne'
+          }}
+        </div>
       </li>
     </ul>
     <div class="mt-6 text-sm text-theme-text leading-relaxed">
@@ -58,7 +70,10 @@ const truncatedDescription = computed(() => {
       </span>
     </div>
     <div class="mt-4">
-      <span class="inline-block bg-theme-bg-subtle hover:bg-theme-hover rounded-full px-3 py-1 text-sm font-semibold text-theme-text mr-2 mb-2 cursor-pointer">Gdańsk</span>
+      <span
+        class="inline-block bg-theme-bg-subtle hover:bg-theme-hover rounded-full px-3 py-1 text-sm font-semibold text-theme-text mr-2 mb-2 cursor-pointer"
+        >Gdańsk</span
+      >
     </div>
   </div>
 </template>

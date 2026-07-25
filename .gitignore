@@ -7,12 +7,23 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# Nuxt specific
+.nuxt/
+.output/
+analyze/
+
+# Build outputs & OS files
 .DS_Store
 dist
 dist-ssr
 coverage
 *.local
+
+# Environment variables
+*.env
 
 # Editor directories and files
 .vscode/*
@@ -24,8 +35,8 @@ coverage
 *.sln
 *.sw?
 
+# TypeScript & Linting
 *.tsbuildinfo
-
 .eslintcache
 
 # Cypress
@@ -34,4 +45,3 @@ coverage
 
 # Vitest
 __screenshots__/
-*.env

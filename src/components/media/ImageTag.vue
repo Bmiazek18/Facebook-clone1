@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { ImageTagType } from '@/types/ImageTag'
-import { ref } from 'vue';
+import type { ImageTagType } from '@/types/Post'
+import { ref } from 'vue'
 
 defineProps<{
   tag: ImageTagType
 }>()
 
-const isHovered = ref(false);
+const isHovered = ref(false)
 </script>
 
 <template>
@@ -21,9 +21,7 @@ const isHovered = ref(false);
       v-if="isHovered"
       class="absolute left-1/2 top-[calc(100%+12px)] -translate-x-1/2 flex flex-col items-center filter drop-shadow-md whitespace-nowrap"
     >
-      <div
-        class="bg-white text-black px-3 py-1.5 rounded text-xs font-semibold"
-      >
+      <div class="bg-white text-black px-3 py-1.5 rounded text-xs font-semibold">
         {{ tag.user?.name || tag.name }}
       </div>
       <div

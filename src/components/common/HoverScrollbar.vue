@@ -30,8 +30,8 @@ import { useElementHover, useResizeObserver } from '@vueuse/core'
 
 const props = defineProps<{
   maxHeight?: string
-}>();
-const { maxHeight } = toRefs(props);
+}>()
+const { maxHeight } = toRefs(props)
 
 const containerRef = ref<HTMLElement | null>(null)
 const contentRef = ref<HTMLElement | null>(null)
@@ -119,7 +119,7 @@ onMounted(() => {
     if ((atTop && event.deltaY < 0) || (atBottom && event.deltaY > 0)) {
       // Pozwól na scroll strony tylko jeśli jesteśmy na krawędziach
     } else {
-       event.stopPropagation()
+      event.stopPropagation()
     }
   }
   contentRef.value?.addEventListener('wheel', wheelHandler, { passive: true })

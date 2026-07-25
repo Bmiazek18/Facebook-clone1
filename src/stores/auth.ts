@@ -1,11 +1,23 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { User } from '@/data/users'
-import { getUserById } from '@/data/users'
+import type { User } from '@/utils/users'
+import { getUserById } from '@/utils/users'
+import { useConversationsStore } from '@/stores/conversations'
+
+import { clearAllMessages } from '@/utils/indexedDb'
 
 export const useAuthStore = defineStore('auth', () => {
-  // Current logged in user ID (hardcoded to 1 for now, Bartosz Miazek)
-  const currentUserId = ref<number>(1)
+  const getInitialUserId = (): string | number => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('auth-current-user-id')
+      if (stored && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(stored)) {
+        return stored
+      }
+    }
+    return '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce' // Jan Wiśniewski
+  }
+
+  const currentUserId = ref<string | number>(getInitialUserId())
 
   // Get current user data
   const currentUser = computed((): User | undefined => {
@@ -13,13 +25,33 @@ export const useAuthStore = defineStore('auth', () => {
   })
 
   // Set current user
-  const setCurrentUser = (userId: number) => {
+  const setCurrentUser = async (userId: string | number) => {
     currentUserId.value = userId
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth-current-user-id', String(userId))
+      try {
+        const conversationsStore = useConversationsStore()
+        conversationsStore.clearState()
+        console.log('State and IndexedDB cleared on user change successfully.')
+      } catch (err) {
+        console.error('Failed to clear state on user change:', err)
+      }
+    }
   }
 
   // Logout (reset to null/0)
   const logout = () => {
     currentUserId.value = 0
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth-current-user-id')
+      try {
+        const conversationsStore = useConversationsStore()
+        conversationsStore.clearState()
+        console.log('State and IndexedDB cleared on logout successfully.')
+      } catch (err) {
+        console.error('Failed to clear state on logout:', err)
+      }
+    }
   }
 
   return {

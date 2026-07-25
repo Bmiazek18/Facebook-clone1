@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import FileIcon from 'vue-material-design-icons/File.vue';
-import type { FileMessage } from '@/types/Message';
-import { useFileSize } from '@/composables/useFileSize';
+import FileIcon from 'vue-material-design-icons/File.vue'
+import type { FileMessage } from '@/types/Message'
+import { useFileSize } from '@/composables/shared/useFileSize'
 
 const props = defineProps<{
-  message: FileMessage; // Changed from Message to FileMessage
-  isMe: boolean;
-}>();
+  message: FileMessage // Changed from Message to FileMessage
+  isMe: boolean
+}>()
 
 const downloadFile = (message: FileMessage) => {
-  const link = document.createElement('a');
-  link.href = message.fileUrl;
-  link.download = message.fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+  const link = document.createElement('a')
+  link.href = message.fileUrl
+  link.download = message.fileName
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
 </script>
 
 <template>

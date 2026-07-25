@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, watch, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { useStoriesStore } from '@/stores/stories'
-import { useStoryPlayback } from '@/composables/useStoryPlayback'
-import { formatTimeAgo } from '@/utils/timeFormatter' // Używamy istniejącego composable
+import { ref, computed, watch, reactive, onMounted } from 'vue'
+import { useRouter } from '#imports'
+import { useAuthStore } from '@/stores/auth'
+import { useQuery } from '@vue/apollo-composable'
+import { gql } from 'graphql-tag'
+import { processActiveStories } from '@/utils/stories'
+import { useStoryPlayback } from '@/composables/media/useStoryPlayback'
+import { formatTimeAgo } from '@/utils/timeFormatter'
 
 // Importy komponentów UI
 import NavbarRight from '@/layouts/Navbar/NavbarRight.vue'
@@ -19,7 +22,30 @@ import ChevronLeft from 'vue-material-design-icons/ChevronLeft.vue'
 import ChevronRight from 'vue-material-design-icons/ChevronRight.vue'
 
 const router = useRouter()
-const storiesStore = useStoriesStore()
+const authStore = useAuthStore()
+
+const GET_ACTIVE_STORIES = gql`
+  query GetActiveStories($currentUserId: ID!) {
+    getActiveStories(currentUserId: $currentUserId) {
+      id
+      authorId
+      author {
+        id
+        firstName
+        lastName
+        avatarId
+      }
+      mediaUrl
+      mediaType
+      text
+      createdAt
+      expiresAt
+    }
+  }
+`
+const { result } = useQuery(GET_ACTIVE_STORIES, {
+  currentUserId: String(authStore.currentUserId)
+})
 
 const props = defineProps<{
   userId?: string
@@ -31,21 +57,25 @@ const currentStoryIndex = ref(0)
 const showViewers = ref(false)
 
 // --- COMPUTED: Podstawowe dane ---
-const allUserStories = computed(() => storiesStore.allUserStories)
+const allUserStories = computed(() => {
+  const rawStories = result.value?.getActiveStories ?? []
+  return processActiveStories(rawStories, String(authStore.currentUserId))
+})
 const currentUserStories = computed(() => allUserStories.value[currentUserIndex.value] ?? null)
-const currentStoryItem = computed(() => currentUserStories.value?.stories[currentStoryIndex.value] ?? null)
+const currentStoryItem = computed(
+  () => currentUserStories.value?.stories[currentStoryIndex.value] ?? null,
+)
 const storyItems = computed(() => currentUserStories.value?.stories ?? [])
 
-const isOwner = computed(() => storiesStore.currentUserId === currentUserStories.value?.userId)
+const isOwner = computed(() => String(authStore.currentUserId) === currentUserStories.value?.userId)
 
 const isVideo = computed(() => {
-    const item = currentStoryItem.value
-    if (!item) return false
-    if (item.type === 'video') return true
-    const url = item.imageUrl || ''
-    return ['.mp4', '.webm', '.ogg', '.mov', '.avi'].some((ext) => url.toLowerCase().endsWith(ext))
+  const item = currentStoryItem.value
+  if (!item) return false
+  if (item.type === 'video') return true
+  const url = item.imageUrl || ''
+  return ['.mp4', '.webm', '.ogg', '.mov', '.avi'].some((ext) => url.toLowerCase().endsWith(ext))
 })
-
 
 // --- COMPOSABLE: Logika odtwarzania ---
 const {
@@ -66,9 +96,8 @@ const {
   allUserStories,
   currentStoryItem,
   storyItems,
-  isVideo
+  isVideo,
 )
-
 
 // --- ZGRUPOWANY STAN DLA PODKOMPONENTÓW ---
 const playbackState = reactive({
@@ -82,44 +111,56 @@ const playbackState = reactive({
   storyMusicMuted,
   currentItem: computed(() => {
     if (!currentStoryItem.value || !currentUserStories.value) {
-        return { id: '', src: '', type: 'image' as const, user: { name: '', avatar: '' }, createAt: '' }
+      return {
+        id: '',
+        src: '',
+        type: 'image' as const,
+        user: { name: '', avatar: '' },
+        createAt: '',
+      }
     }
     const story = currentStoryItem.value
     return {
-        id: story.id,
-        src: story.imageUrl || '',
-        type: story.type,
-        user: {
-            name: story.originalUserName || currentUserStories.value.userName,
-            avatar: story.originalUserAvatar || currentUserStories.value.userAvatar,
-        },
-        createAt: formatTimeAgo(story.createdAt),
+      id: story.id,
+      src: story.imageUrl || '',
+      type: story.type,
+      user: {
+        name: story.originalUserName || currentUserStories.value.userName,
+        avatar: story.originalUserAvatar || currentUserStories.value.userAvatar,
+      },
+      createAt: formatTimeAgo(story.createdAt),
     }
   }),
-  musicElement: computed(() => 
-    currentStoryItem.value?.elements?.find((el) => el.musicTitle && el.musicArtist)
+  musicElement: computed(() =>
+    (currentStoryItem.value?.elements as any[])?.find((el: any) => el.musicTitle && el.musicArtist),
   ),
 })
 
-
 // --- WATCHER: Reakcja na zmianę trasy ---
 watch(
-  () => [allUserStories.value, props.userId],
-  ([stories, userId]) => {
-    if (stories.length > 0 && userId) {
-      const userIndex = stories.findIndex((us) => us.userId === userId)
+  () => [allUserStories.value, props.userId] as const,
+  ([stories, userId]: readonly [any[], string | undefined]) => {
+    if (stories && stories.length > 0 && userId) {
+      const userIndex = stories.findIndex((us: any) => String(us.userId) === String(userId))
       if (userIndex !== -1 && currentUserIndex.value !== userIndex) {
         currentUserIndex.value = userIndex
         currentStoryIndex.value = 0
       }
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
+const isFirstMount = ref(true)
+
+onMounted(() => {
+  setTimeout(() => {
+    isFirstMount.value = false
+  }, 500)
+})
 </script>
 
 <template>
-  <div class="flex h-screen w-full bg-black overflow-hidden font-sans select-none">
+  <div class="flex h-screen w-full bg-black overflow-hidden   select-none">
     <StorySidebar />
 
     <main class="flex-1 relative flex flex-col bg-black">
@@ -128,7 +169,9 @@ watch(
       </div>
 
       <div class="flex-1 flex flex-col items-center justify-center w-full h-full relative p-0">
-        <div class="flex flex-col h-full md:aspect-9/16 md:w-auto relative group md:mt-4 w-full aspect-auto">
+        <div
+          class="flex flex-col h-full md:aspect-9/16 md:w-auto relative group md:mt-4 w-full aspect-auto"
+        >
           <div
             @click.stop="prevStory"
             v-if="currentStoryIndex > 0 || currentUserIndex > 0"
@@ -157,7 +200,8 @@ watch(
           </div>
 
           <div
-            class="relative flex-1 bg-gray-900 rounded-none md:rounded-xl overflow-hidden shadow-2xl flex flex-col media-init-animation"
+            class="relative flex-1 bg-gray-900 rounded-none md:rounded-xl overflow-hidden shadow-2xl flex flex-col"
+            :class="{ 'media-init-animation': isFirstMount }"
           >
             <div
               class="absolute inset-y-0 left-0 w-[20%] z-20 cursor-pointer"
@@ -173,7 +217,7 @@ watch(
             ></div>
 
             <StoryMediaRenderer
-              :current-item="playbackState.currentItem"
+              :current-item="(playbackState.currentItem as any)"
               :is-video="isVideo"
               :set-video-ref="setVideoRef"
               :set-image-ref="setImageRef"
@@ -182,7 +226,7 @@ watch(
             />
 
             <StoryOverlays
-              v-bind="playbackState"
+              v-bind="(playbackState as any)"
               :toggle-play="togglePlay"
               :toggle-master-mute="toggleMasterMute"
             />
@@ -213,12 +257,7 @@ watch(
                 width: `${currentStoryItem.sharedPostInfo.width}%`,
                 height: `${currentStoryItem.sharedPostInfo.height}%`,
               }"
-              @click.stop="
-                router.push({
-                  name: 'post',
-                  params: { id: currentStoryItem.sharedPostInfo.postId },
-                })
-              "
+              @click.stop="router.push(`/post/${currentStoryItem.sharedPostInfo.postId}`)"
             ></div>
 
             <a
@@ -247,8 +286,8 @@ watch(
 
         <StoryFooter
           :is-owner="isOwner"
-          :current-story-item="currentStoryItem"
-          :current-item="playbackState.currentItem"
+          :current-story-item="(currentStoryItem as any)"
+          :current-item="(playbackState.currentItem as any)"
           v-model:is-paused="isPaused"
           v-model:show-viewers="showViewers"
         />

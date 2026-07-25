@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, inject, toRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
@@ -18,29 +18,90 @@ import PostMarketplaceCard from './PostMarketplaceCard.vue'
 import PostMediaDisplay from './PostMediaDisplay.vue'
 import MapPreview from '@/components/MapPreview.vue'
 import { useStoryShareStore } from '@/stores/storyShare'
-import { usePostsStore } from '@/stores/posts'
-import { usePostReactions } from '@/composables/usePostReactions'
+import { useComments } from '@/composables/feed/useComments'
+import { usePostReactions } from '@/composables/feed/usePostReactions'
 import { useGroupsStore } from '@/stores/groups'
+import { useAuthStore } from '@/stores/auth'
 import PostPoll from '@/components/common/PostPoll.vue'
+import Briefcase from 'vue-material-design-icons/Briefcase.vue'
+import School from 'vue-material-design-icons/School.vue'
+import Heart from 'vue-material-design-icons/Heart.vue'
+import Home from 'vue-material-design-icons/Home.vue'
+import Airplane from 'vue-material-design-icons/Airplane.vue'
+import Flag from 'vue-material-design-icons/Flag.vue'
+
+const getLifeEventCategory = (category?: string) => {
+  switch (category) {
+    case 'work':
+      return { icon: Briefcase, gradient: 'from-[#1877F2] to-[#0A4EA3]' }
+    case 'education':
+      return { icon: School, gradient: 'from-[#00A400] to-[#006000]' }
+    case 'relationship':
+      return { icon: Heart, gradient: 'from-[#F02849] to-[#AD1029]' }
+    case 'home':
+      return { icon: Home, gradient: 'from-[#F7B928] to-[#C9910D]' }
+    case 'travel':
+      return { icon: Airplane, gradient: 'from-[#2ABBA7] to-[#167D6F]' }
+    default:
+      return { icon: Flag, gradient: 'from-[#8E24AA] to-[#5C1371]' }
+  }
+}
 
 import type { Post } from '@/types/Post'
 import ShareAsMessageModal from '@/components/feed/ShareAsMessageModal.vue'
-import { getUserById } from '@/data/users'
 import ReactionPanel from '../ReactionPanel.vue'
 import CommentItem from '../comment/CommentItem.vue'
 import CommentReplyInput from '../comment/CommentReplyInput.vue'
 
-const props = defineProps<{
-  post: Post
-  isShared?: boolean
-  isGroup?: boolean
-  hideCloseButton?: boolean
-  isInModal?: boolean
-}>()
+const getMediaUrl = (src: string) => {
+  if (!src) return ''
+  if (src.startsWith('http://localhost/files/') || src.startsWith('http://localhost/videos/')) {
+    src = src.replace('http://localhost/', 'http://localhost:8080/')
+  }
+  if (
+    src.startsWith('http://') ||
+    src.startsWith('https://') ||
+    src.startsWith('blob:') ||
+    src.startsWith('data:')
+  ) {
+    return src
+  }
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+  if (src.startsWith('/')) {
+    return `${baseUrl}${src}`
+  }
+  return `${baseUrl}/${src}`
+}
+const getPhotoId = (mediaItem: any, index: number): string => {
+  if (!mediaItem || !mediaItem.src) return String(index)
+  const src = mediaItem.src
+  if (src.includes('/files/')) {
+    const parts = src.split('/files/')
+    const filename = parts[parts.length - 1]
+    const qIdx = filename.indexOf('?')
+    if (qIdx !== -1) return filename.substring(0, qIdx)
+    return filename
+  }
+  const segments = src.split('/')
+  return segments[segments.length - 1] || src
+}
+const props = withDefaults(
+  defineProps<{
+    post: Post
+    isShared?: boolean
+    isGroup?: boolean
+    hideCloseButton?: boolean
+    isInModal?: boolean
+    shouldPostActionVisible?: boolean
+  }>(),
+  {
+    shouldPostActionVisible: true,
+  }
+)
 
 const groupsStore = useGroupsStore()
 const group = computed(() =>
-  props.post.groupId ? groupsStore.getGroupById(props.post.groupId) : undefined
+  props.post.groupId ? groupsStore.getGroupById(props.post.groupId) : undefined,
 )
 
 defineEmits<{
@@ -49,17 +110,25 @@ defineEmits<{
 
 const router = useRouter()
 const storyShareStore = useStoryShareStore()
-const postsStore = usePostsStore()
+const { fetchCommentsForPost } = useComments()
+const allPosts = inject<Ref<Post[]>>('allPosts', ref([]))
+const authStore = useAuthStore()
 
-const { userReaction, likesCount, topReactions } = usePostReactions(String(props.post.id))
+
+
+const { userReaction, likesCount, topReactions } = usePostReactions(toRef(props, 'post'))
 
 const isModalOpen = ref(false)
 const isShareAsPostModalOpen = ref(false)
 const isReactionModalOpen = ref(false)
 
-const toggleModal = () => {
+const toggleModal = async () => {
   if (props.isInModal) return
   isModalOpen.value = !isModalOpen.value
+
+  if (isModalOpen.value) {
+    await fetchCommentsForPost(props.post, 5)
+  }
 }
 
 const toggleReactionModal = () => {
@@ -73,6 +142,7 @@ const postData = computed<Post>(() => {
   return {
     id: String(props.post?.id || Date.now()),
     authorId: props.post?.authorId ?? 0,
+    author: props.post?.author,
     stats: {
       comments: props.post?.stats?.comments ?? 0,
       shares: props.post?.stats?.shares ?? 0,
@@ -94,14 +164,13 @@ const { t } = useI18n()
 
 const shareToStory = () => {
   // Convert to PostData for story share
-  // We need to fetch author details here since PostData still needs them for display
-  const author = getUserById(postData.value.authorId)
+  const author = postData.value.author
 
   const storyPostData = {
     id: postData.value.id,
     author: {
-      name: author?.name || 'Unknown',
-      avatar: author?.avatar || '',
+      name: [author?.firstName, author?.lastName].filter(Boolean).join(' ') || 'Unknown',
+      avatar: author?.avatarId ? `http://localhost:8080/api/users/avatar/${author.avatarId}` : '',
       id: postData.value.authorId,
     },
     content: postData.value.content,
@@ -117,11 +186,7 @@ const shareAsMyPost = () => {
   isShareAsPostModalOpen.value = true
 }
 
-const handleShareAsPost = (comment: string) => {
-  postsStore.sharePost(postToShare.value, comment)
-  isShareAsPostModalOpen.value = false
-  router.push('/profile')
-}
+
 
 const isShareAsMessageModalOpen = ref(false)
 const shareToMessage = () => {
@@ -145,8 +210,14 @@ const openMessenger = (itemId: string) => {
 }
 
 const originalPost = computed(() => {
+  if (props.post.sharedPost) {
+    return props.post.sharedPost
+  }
   if (props.post.sharedContent?.type === 'post' && props.post.sharedContent.originalId) {
-    return postsStore.getPostById(props.post.sharedContent.originalId)
+    return allPosts.value.find((p) => String(p.id) === String(props.post.sharedContent.originalId))
+  }
+  if (props.post.targetType === 'post' && props.post.targetId) {
+    return allPosts.value.find((p) => String(p.id) === String(props.post.targetId))
   }
   return undefined
 })
@@ -178,25 +249,82 @@ const totalPollVotes = computed(() => {
         @edit-post="handleEditPost"
         @hide-post="handleHidePost"
       />
-      <!-- Post content and translation -->
-      <PostContent :post="post" />
-      <PostLinkPreview v-if="post.linkPreview" :link-preview="post.linkPreview" />
-      <PostPoll v-if="post.poll" :poll="post.poll" :post-id="post.id" />
+      <!-- Standard display vs Life Event Display -->
+      <template v-if="post.isLifeEvent">
+        <div class="px-4 pb-3">
+          <div
+            class="border border-theme-border rounded-xl overflow-hidden bg-theme-bg flex flex-col"
+          >
+            <!-- Banner z gradientem -->
+            <div
+              class="w-full h-44 bg-gradient-to-r flex flex-col items-center justify-center p-6 text-center text-white relative select-none"
+              :class="getLifeEventCategory(post.lifeEventCategory).gradient"
+            >
+              <div
+                class="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-lg mb-2"
+              >
+                <component :is="getLifeEventCategory(post.lifeEventCategory).icon" :size="28" />
+              </div>
+              <h3 class="font-extrabold text-[20px] tracking-tight leading-tight drop-shadow-md">
+                {{ (post as any).title || post.content }}
+              </h3>
+              <p class="text-[12px] text-white/90 font-medium mt-1 drop-shadow-sm" v-if="post.date">
+                {{
+                  new Date(post.date).toLocaleDateString('pl-PL', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })
+                }}
+              </p>
+            </div>
 
-      <MapPreview
-        v-if="post.context.location && (!post.media || post.media.length === 0)"
-        :selected-location="post.context.location"
-      />
+            <!-- Zdjęcie (jeśli istnieje) -->
+            <NuxtLink
+              v-if="post.media && post.media.length > 0"
+              :to="`/photo/?fbid=${getPhotoId(post.media[0], 0)}&set=a.${post.id}`"
+              class="block w-full border-t border-theme-border aspect-[1.9/1] bg-black overflow-hidden"
+            >
+              <img
+                :src="getMediaUrl(post.media[0].src)"
+                class="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity"
+              />
+            </NuxtLink>
 
-      <!-- Marketplace data section -->
-      <PostMarketplaceCard
-        v-if="(post as any).marketplaceData"
-        :marketplace-data="(post as any).marketplaceData"
-        @open-messenger="openMessenger"
-      />
+            <!-- Opis (jeśli istnieje oraz tytuł był zdefiniowany oddzielnie) -->
+            <div
+              class="p-4 bg-theme-bg-secondary flex flex-col border-t border-theme-border"
+              v-if="post.content && (post as any).title"
+            >
+              <p class="text-[14px] text-theme-text leading-relaxed whitespace-pre-line">
+                {{ post.content }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </template>
 
-      <!-- Media display (video/images) -->
-      <PostMediaDisplay :post="post" @image-click="goToMarketplaceItem" />
+      <template v-else>
+        <!-- Post content and translation -->
+        <PostContent :post="post" />
+        <PostLinkPreview v-if="post.linkPreview" :link-preview="post.linkPreview" />
+        <PostPoll v-if="post.poll" :poll="post.poll" :post-id="post.id" />
+
+        <MapPreview
+          v-if="post.context?.location && (!post.media || post.media.length === 0)"
+          :selected-location="post.context?.location"
+        />
+
+        <!-- Marketplace data section -->
+        <PostMarketplaceCard
+          v-if="(post as any).marketplaceData"
+          :marketplace-data="(post as any).marketplaceData"
+          @open-messenger="openMessenger"
+        />
+
+        <!-- Media display (video/images) -->
+        <PostMediaDisplay :post="post" @image-click="goToMarketplaceItem" />
+      </template>
     </template>
 
     <template v-else>
@@ -236,15 +364,17 @@ const totalPollVotes = computed(() => {
         :likes-count="likesCount"
         :top-reactions="topReactions"
         :reactions="post.reactions"
-        :comments-count="post.stats.comments"
-        :shares-count="post.poll ? totalPollVotes : post.stats.shares"
+        :reaction-user-names="post.reactionUserNames"
+        :comments-count="post.commentCount ?? post.stats?.comments ?? 0"
+        :shares-count="post.poll ? totalPollVotes : (post.shareCount ?? post.stats?.shares ?? 0)"
         :has-poll="!!post.poll"
         @show-reaction-details="toggleReactionModal"
+        @show-comments="toggleModal"
       />
 
       <PostActions
-        v-if="!isShared"
-        :post-id="post.id"
+        v-if="!isShared && props.shouldPostActionVisible"
+        :post="post"
         @comment="toggleModal"
         @share-as-post="shareAsMyPost"
         @share-to-story="shareToStory"
@@ -272,13 +402,13 @@ const totalPollVotes = computed(() => {
     <BaseModal
       v-if="isModalOpen"
       @close="toggleModal"
-      :title="`Post ${getUserById(post.authorId)?.name}`"
+      :title="`Post ${[post.author?.firstName, post.author?.lastName].filter(Boolean).join(' ')}`"
     >
       <PostModal v-if="props.post" :post="props.post" />
     </BaseModal>
 
-    <BaseModal v-if="isReactionModalOpen" @close="toggleReactionModal" title="Reakcje">
-      <ReactionPanel :reactions="post.reactions" />
+    <BaseModal  noHeader v-if="isReactionModalOpen"  @close="toggleReactionModal">
+      <ReactionPanel :reactions="post.reactions" :reaction-details="post.rawReactions"  @close="toggleReactionModal" />
     </BaseModal>
 
     <BaseModal
@@ -286,14 +416,13 @@ const totalPollVotes = computed(() => {
       v-if="isShareAsMessageModalOpen"
       @close="isShareAsMessageModalOpen = false"
     >
-      <ShareAsMessageModal />
+      <ShareAsMessageModal :share-url="'/post/' + props.post.id" @close="isShareAsMessageModalOpen = false" />
     </BaseModal>
 
     <ShareAsPostModal
       :is-open="isShareAsPostModalOpen"
       :post="postToShare"
       @close="isShareAsPostModalOpen = false"
-      @share="handleShareAsPost"
     />
   </div>
 </template>

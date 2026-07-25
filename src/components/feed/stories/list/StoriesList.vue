@@ -5,16 +5,13 @@
         v-if="!isStart"
         @click="scrollLeft"
         class="absolute top-1/2 z-30 left-0 transform -translate-y-1/2 p-2 bg-theme-bg-secondary rounded-full shadow-lg hover:bg-theme-bg-hover transition duration-150"
-        style="margin-left: 64.5px;"
+        style="margin-left: 64.5px"
       >
         <ChevronLeftIcon :size="24" :fillColor="chevronFillColor" />
       </button>
 
-      <div
-        ref="carouselRef"
-        class="flex overflow-x-auto bg-theme-bg scrollbar-hide"
-      >
-        <AddStoryCard class="mr-4"/>
+      <div ref="carouselRef" class="flex overflow-x-auto bg-theme-bg scrollbar-hide">
+        <AddStoryCard class="mr-4" />
 
         <!-- User Stories from Store -->
         <StoryCard
@@ -29,51 +26,43 @@
       <button
         v-if="!isEnd"
         @click="scrollRight"
-        class="absolute top-1/2 z-30 p-3 right-0 transform -translate-y-1/2  bg-theme-bg-secondary rounded-full shadow-lg hover:bg-theme-bg-hover transition duration-150"
-        style="margin-right: 14.5px;"
+        class="absolute top-1/2 z-30 p-3 right-0 transform -translate-y-1/2 bg-theme-bg-secondary rounded-full shadow-lg hover:bg-theme-bg-hover transition duration-150"
+        style="margin-right: 14.5px"
       >
-        <ChevronRightIcon :size="25"  :fillColor="chevronFillColor" />
+        <ChevronRightIcon :size="25" :fillColor="chevronFillColor" />
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useRouter } from 'vue-router';
-import AddStoryCard from '@/components/feed/stories/list/AddStoryCard.vue';
-import StoryCard from '@/components/feed/stories/list/StoryCard.vue';
-import { useCarousel } from '@/composables/useCarousel';
-import { useStoriesStore } from '@/stores/stories';
-import { useTheme } from '@/composables/useTheme';
-import type { UserStories } from '@/types/Story';
+import { computed } from 'vue'
+import AddStoryCard from '@/components/feed/stories/list/AddStoryCard.vue'
+import StoryCard from '@/components/feed/stories/list/StoryCard.vue'
+import { useCarousel } from '@/composables/media/useCarousel'
+import { useTheme } from '@/composables/shared/useTheme'
+import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue'
+import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue'
+import type { UserStories } from '@/types/Story'
 
-import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
-import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue';
+const props = defineProps<{
+  stories?: any[]
+}>()
 
-const router = useRouter();
-const storiesStore = useStoriesStore();
-const { isDark } = useTheme();
+const router = useRouter()
+const { isDark } = useTheme()
 
-const chevronFillColor = computed(() => isDark.value ? '#B0B3B8' : '#4B5563');
+const chevronFillColor = computed(() => (isDark.value ? '#B0B3B8' : '#4B5563'))
 
-const {
-  carouselRef,
-  isStart,
-  isEnd,
-  scrollLeft,
-  scrollRight,
-} = useCarousel(4);
+const { carouselRef, isStart, isEnd, scrollLeft, scrollRight } = useCarousel(4)
 
-const allUserStories = computed(() => storiesStore.allUserStories);
+const allUserStories = computed(() => props.stories ?? [])
 
 const handleStoryClick = (userStory: UserStories) => {
   // Navigate to story viewer
-  router.push(`/stories/${userStory.userId}`);
-};
+  router.push(`/stories/${userStory.userId}`)
+}
 </script>
-
-
 
 <style scoped>
 .scrollbar-hide {

@@ -17,7 +17,9 @@
       <label class="text-gray-400 text-sm block mb-1">Rozmiar: {{ text.fontSize }}px</label>
       <input
         :model-value="text.fontSize"
-        @input="emit('update', { ...text, fontSize: Number(($event.target as HTMLInputElement).value) })"
+        @input="
+          emit('update', { ...text, fontSize: Number(($event.target as HTMLInputElement).value) })
+        "
         type="range"
         min="12"
         max="200"
@@ -40,7 +42,12 @@
         <label class="text-gray-400 text-sm block mb-1">Start (s)</label>
         <input
           :model-value="text.startTime"
-          @input="emit('update', { ...text, startTime: Number(($event.target as HTMLInputElement).value) })"
+          @input="
+            emit('update', {
+              ...text,
+              startTime: Number(($event.target as HTMLInputElement).value),
+            })
+          "
           type="number"
           step="0.1"
           class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 outline-none"
@@ -50,7 +57,9 @@
         <label class="text-gray-400 text-sm block mb-1">Koniec (s)</label>
         <input
           :model-value="text.endTime"
-          @input="emit('update', { ...text, endTime: Number(($event.target as HTMLInputElement).value) })"
+          @input="
+            emit('update', { ...text, endTime: Number(($event.target as HTMLInputElement).value) })
+          "
           type="number"
           step="0.1"
           class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 outline-none"
@@ -62,7 +71,9 @@
       <label class="text-gray-400 text-sm block mb-1">Animacja Wejścia</label>
       <select
         :model-value="text.entryAnimation"
-        @change="emit('update', { ...text, entryAnimation: ($event.target as HTMLSelectElement).value })"
+        @change="
+          emit('update', { ...text, entryAnimation: ($event.target as HTMLSelectElement).value })
+        "
         class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 outline-none"
       >
         <option value="none">Brak</option>
@@ -78,10 +89,17 @@
     </div>
 
     <div v-if="text.entryAnimation && text.entryAnimation !== 'none'">
-      <label class="text-gray-400 text-sm block mb-1">Czas wejścia: {{ text.entryDuration }}s</label>
+      <label class="text-gray-400 text-sm block mb-1"
+        >Czas wejścia: {{ text.entryDuration }}s</label
+      >
       <input
         :model-value="text.entryDuration"
-        @input="emit('update', { ...text, entryDuration: Number(($event.target as HTMLInputElement).value) })"
+        @input="
+          emit('update', {
+            ...text,
+            entryDuration: Number(($event.target as HTMLInputElement).value),
+          })
+        "
         type="range"
         min="0.1"
         max="3"
@@ -94,7 +112,9 @@
       <label class="text-gray-400 text-sm block mb-1">Animacja Ciągła</label>
       <select
         :model-value="text.loopAnimation"
-        @change="emit('update', { ...text, loopAnimation: ($event.target as HTMLSelectElement).value })"
+        @change="
+          emit('update', { ...text, loopAnimation: ($event.target as HTMLSelectElement).value })
+        "
         class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 outline-none"
       >
         <option value="none">Brak</option>
@@ -108,7 +128,9 @@
       <label class="text-gray-400 text-sm block mb-1">Animacja Wyjścia</label>
       <select
         :model-value="text.exitAnimation"
-        @change="emit('update', { ...text, exitAnimation: ($event.target as HTMLSelectElement).value })"
+        @change="
+          emit('update', { ...text, exitAnimation: ($event.target as HTMLSelectElement).value })
+        "
         class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 outline-none"
       >
         <option value="none">Brak</option>
@@ -126,7 +148,12 @@
       <label class="text-gray-400 text-sm block mb-1">Czas wyjścia: {{ text.exitDuration }}s</label>
       <input
         :model-value="text.exitDuration"
-        @input="emit('update', { ...text, exitDuration: Number(($event.target as HTMLInputElement).value) })"
+        @input="
+          emit('update', {
+            ...text,
+            exitDuration: Number(($event.target as HTMLInputElement).value),
+          })
+        "
         type="range"
         min="0.1"
         max="3"
@@ -145,16 +172,16 @@
 </template>
 
 <script setup lang="ts">
-import type { TextOverlay } from '@/types/video-editor.types';
+import type { TextOverlay } from '@/types/video-editor.types'
 
 interface Props {
-  text: TextOverlay | null;
+  text: TextOverlay | null
 }
 
-defineProps<Props>();
+defineProps<Props>()
 
 const emit = defineEmits<{
-  update: [text: TextOverlay];
-  delete: [];
-}>();
+  update: [text: TextOverlay]
+  delete: []
+}>()
 </script>

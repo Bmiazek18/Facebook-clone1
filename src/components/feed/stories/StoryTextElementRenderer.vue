@@ -1,36 +1,34 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useRouter } from 'vue-router';
-import type { TextElement } from '@/types/StoryElement';
-import { users } from '@/data/users';
-
+import { computed } from 'vue'
+import type { TextElement } from '@/types/StoryElement'
+import { getAllUsers } from '@/utils/users'
 
 const props = defineProps<{
-  element: TextElement;
-}>();
+  element: TextElement
+}>()
 
-const router = useRouter();
+const router = useRouter()
 
 // Find the first mention and compute its corresponding user ID
 const firstMentionedUser = computed(() => {
-  const mentionRegex = /@(\w+)/; // Find the first @username
-  const match = props.element.content.match(mentionRegex);
+  const mentionRegex = /@(\w+)/ // Find the first @username
+  const match = props.element.content.match(mentionRegex)
   console.log(match)
   if (match) {
-    const username = match[1];
-    const user = users.find(u => u.id === parseInt(username));
+    const username = match[1]
+    const user = getAllUsers().find((u) => String(u.id) === username)
     console.log(user)
-    return user;
+    return user
   }
-  return null;
-});
+  return null
+})
 
 const navigateToUserProfile = () => {
   console.log('sss')
   if (firstMentionedUser.value) {
-    router.push(`/profile/${firstMentionedUser.value.id}`);
+    router.push(`/profile/${firstMentionedUser.value.id}`)
   }
-};
+}
 </script>
 
 <template>
@@ -38,12 +36,12 @@ const navigateToUserProfile = () => {
     class="absolute cursor-pointer"
     :style="{
       ...element.styles,
-     width:'50px',
-     height:'50px',
+      width: '50px',
+      height: '50px',
       backgroundColor: 'transparent',
       // Optionally show a border on hover for debugging/usability
-      border: '2px solid rgba(255, 255, 255, 0.5)'
+      border: '2px solid rgba(255, 255, 255, 0.5)',
     }"
     @click="navigateToUserProfile"
-  >  </div>
+  ></div>
 </template>

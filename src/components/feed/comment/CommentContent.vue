@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { defineProps } from 'vue'
-import { getUserById } from '@/data/users'
+import { getUserById } from '@/utils/users'
 import type { ProcessedContent } from '@/utils/contentProcessor'
-import ProfilePopper from '../../profile/ProfilePopper.vue';
+import ProfilePopper from '../../profile/ProfilePopper.vue'
 
 defineProps<{
   content: ProcessedContent[]
@@ -10,21 +10,23 @@ defineProps<{
 </script>
 
 <template>
-  <p class="text-[15px] text-theme-text whitespace-pre-wrap break-words">
+  <p class="text-[15px] text-theme-text whitespace-pre-wrap line- break-words">
     <template v-for="(part, index) in content" :key="index">
+      <ProfilePopper
+        mention
+        comment
+        v-if="part.type === 'mention'"
+        :user-id="part.userId"
+        class="inline-flex"
+      />
 
-
-<ProfilePopper mention v-if="part.type === 'mention'" :user-id="part.userId" class="inline-flex"/>
-
-
-
-      <router-link
+      <NuxtLink
         v-else-if="part.type === 'hashtag'"
-        :to="{ name: 'hashtag', params: { hashtag: part.hashtag } }"
+        :to="`/hashtag/${part.hashtag}`"
         class="text-blue-500 hover:underline"
       >
         {{ part.value }}
-      </router-link>
+      </NuxtLink>
       <a
         v-else-if="part.type === 'link'"
         class="text-blue-500 hover:underline"
@@ -33,7 +35,7 @@ defineProps<{
         rel="noopener noreferrer"
         >{{ part.value }}</a
       >
-     <span v-else v-text="part.value"></span>
+      <span v-else v-text="part.value"></span>
     </template>
   </p>
 </template>

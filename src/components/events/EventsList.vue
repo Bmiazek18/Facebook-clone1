@@ -1,33 +1,49 @@
 <template>
-  <div class="w-full px-6 mx-auto bg-white rounded-2xl shadow-[0_1px_2px_rgba(0,0,0,0.1)] border border-theme-border p-4 font-sans">
-
+  <div
+    class="w-full px-6 mx-auto bg-white rounded-2xl shadow-[0_1px_2px_rgba(0,0,0,0.1)] border border-theme-border p-4  "
+  >
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-[17px] font-bold text-gray-900 m-0">Twoje wydarzenia</h2>
       <a href="#" class="text-[#0064d1] no-underline text-[15px] hover:underline">See all</a>
     </div>
 
     <ul class="list-none m-0 border border-theme-border rounded-lg">
-      <li v-for="(event, index) in events" :key="event.id" class="flex gap-3 pt-2 px-2 cursor-pointer hover:bg-theme-hover rounded-lg transition-colors">
-
+      <li
+        v-for="(event, index) in events"
+        :key="event.id"
+        class="flex gap-3 pt-2 px-2 cursor-pointer hover:bg-theme-hover rounded-lg transition-colors"
+      >
         <div class="shrink-0 pt-1 pb-2">
-          <img :src="event.image" :alt="event.title" class="w-[168px] h-[108px] rounded-lg object-cover border border-black/10" />
+          <img
+            :src="event.image"
+            :alt="event.title"
+            class="w-[168px] h-[108px] rounded-lg object-cover border border-black/10"
+          />
         </div>
 
-        <div :class="['grow flex gap-4 pt-2', index !== events.length - 1 ? 'pb-2 border-b border-[#ced0d4]' : '']">
-
+        <div
+          :class="[
+            'grow flex gap-4 pt-2',
+            index !== events.length - 1 ? 'pb-2 border-b border-[#ced0d4]' : '',
+          ]"
+        >
           <div class="grow flex flex-col justify-center">
             <span class="text-[13px] font-semibold text-theme-text mb-0.5">{{ event.date }}</span>
-            <h3 v-tooltip="event.title" class="text-[17px] font-semibold text-theme-text ">{{ event.title }}</h3>
-            <span  class="text-[14px] h-[21px] font-medium text-theme-text-secondary m-0 mb-1">{{ event.location }}</span>
+            <h3 v-tooltip="event.title" class="text-[17px] font-semibold text-theme-text">
+              {{ event.title }}
+            </h3>
+            <span class="text-[14px] h-[21px] font-medium text-theme-text-secondary m-0 mb-1">{{
+              event.location
+            }}</span>
 
             <div class="flex items-center text-[12px] text-gray-500 gap-1.5 mt-1">
               <template v-if="event.invitedBy">
                 <img :src="event.inviterAvatar" alt="Avatar" class="w-4 h-4 rounded-full" />
-                <span class=" text-gray-700">{{ event.invitedBy }} zaprosił Cię</span>
+                <span class="text-gray-700">{{ event.invitedBy }} zaprosił Cię</span>
               </template>
               <template v-else-if="event.friendAttending">
                 <img :src="event.friendAvatar" alt="Avatar" class="w-4 h-4 rounded-full" />
-                <span class=" text-gray-700">{{ event.friendAttending }} weźmie udział</span>
+                <span class="text-gray-700">{{ event.friendAttending }} weźmie udział</span>
               </template>
               <template v-else>
                 <span>{{ event.stats }}</span>
@@ -42,7 +58,7 @@
                 'flex items-center justify-center gap-1.5 border-none rounded-md px-3 h-9 text-[15px] font-semibold cursor-pointer transition-colors',
                 event.isInterested
                   ? 'bg-[#ebf5ff] hover:bg-[#e1f0ff] text-[#0064d1]'
-                  : 'bg-[#e4e6eb] hover:bg-[#d8dadf] text-[#050505]'
+                  : 'bg-[#e4e6eb] hover:bg-[#d8dadf] text-[#050505]',
               ]"
             >
               <component
@@ -59,15 +75,22 @@
             <EventShareDropdown :event="event" />
 
             <VDropdown :distance="0" placement="bottom-end">
-              <button class="flex items-center justify-center bg-[#e4e6eb] hover:bg-[#d8dadf] text-[#050505] border-none rounded-md px-2.5 h-9 cursor-pointer transition-colors">
+              <button
+                class="flex items-center justify-center bg-[#e4e6eb] hover:bg-[#d8dadf] text-[#050505] border-none rounded-md px-2.5 h-9 cursor-pointer transition-colors"
+              >
                 <DotsHorizontalIcon class="w-5 h-5 flex items-center justify-center" />
               </button>
 
-              <template #popper="{hide}">
-                <ul class="flex flex-col p-2 min-w-[320px] m-0 list-none bg-white rounded-xl shadow-lg border border-gray-100">
+              <template #popper="{ hide }">
+                <ul
+                  class="flex flex-col p-2 min-w-[320px] m-0 list-none bg-white rounded-xl shadow-lg border border-gray-100"
+                >
                   <li v-for="option in moreOptions" :key="option.id">
                     <button
-                      @click="option.action(event); hide()"
+                      @click="
+                        option.action(event);
+                        hide();
+                      "
                       class="flex items-center gap-3.5 p-2.5 hover:bg-[#f2f2f2] rounded-lg text-left transition-colors w-full cursor-pointer border-none bg-transparent"
                     >
                       <component :is="option.icon" class="w-6 h-6 text-[#050505]" />
@@ -77,7 +100,6 @@
                 </ul>
               </template>
             </VDropdown>
-
           </div>
         </div>
       </li>
@@ -85,7 +107,7 @@
   </div>
   <BaseModal v-if="isOpen" @close="isOpen = false" :title="'Zaproś osoby'">
     <InviteModal />
-    </BaseModal>
+  </BaseModal>
 </template>
 
 <script setup lang="ts">
@@ -112,7 +134,6 @@ import AlertBoxOutlineIcon from 'vue-material-design-icons/AlertBoxOutline.vue'
 import BaseModal from '../common/BaseModal.vue'
 import InviteModal from './InviteModal.vue'
 
-
 // ==========================================
 // DEDYKOWANE FUNKCJE DLA AKCJI W DROPDOWNACH
 // ==========================================
@@ -129,7 +150,6 @@ const unfollowEvent = (event: any) => console.log('Przestano obserwować:', even
 const addToCalendar = (event: any) => console.log('Dodawanie do kalendarza:', event.id)
 const reportEvent = (event: any) => console.log('Zgłaszanie wydarzenia:', event.id)
 
-
 // ==========================================
 // KONFIGURACJA LIST ROZWIJANYCH
 // ==========================================
@@ -139,12 +159,26 @@ const moreOptions = shallowRef([
   { id: 'invite', label: 'Zaproś', icon: EmailOutlineIcon, action: inviteToEvent },
   { id: 'share', label: 'Udostępnij', icon: ShareOutlineIcon, action: shareEvent },
   { id: 'save', label: 'Zapisz', icon: BookmarkOutlineIcon, action: saveEvent },
-  { id: 'settings', label: 'Ustawienia powiadomień', icon: CogOutlineIcon, action: notificationSettings },
-  { id: 'unfollow', label: 'Przestań obserwować wydarzenie', icon: CloseBoxOutlineIcon, action: unfollowEvent },
-  { id: 'add_calendar', label: 'Dodaj do kalendarza', icon: TrayArrowDownIcon, action: addToCalendar },
-  { id: 'report', label: 'Zgłoś wydarzenie', icon: AlertBoxOutlineIcon, action: reportEvent }
+  {
+    id: 'settings',
+    label: 'Ustawienia powiadomień',
+    icon: CogOutlineIcon,
+    action: notificationSettings,
+  },
+  {
+    id: 'unfollow',
+    label: 'Przestań obserwować wydarzenie',
+    icon: CloseBoxOutlineIcon,
+    action: unfollowEvent,
+  },
+  {
+    id: 'add_calendar',
+    label: 'Dodaj do kalendarza',
+    icon: TrayArrowDownIcon,
+    action: addToCalendar,
+  },
+  { id: 'report', label: 'Zgłoś wydarzenie', icon: AlertBoxOutlineIcon, action: reportEvent },
 ])
-
 
 // ==========================================
 // DANE
@@ -162,7 +196,7 @@ const events = ref([
     friendAttending: null,
     friendAvatar: null,
     stats: null,
-    isInterested: false
+    isInterested: false,
   },
   {
     id: 2,
@@ -175,7 +209,7 @@ const events = ref([
     friendAttending: 'Bartek',
     friendAvatar: 'https://i.pravatar.cc/150?u=bartek',
     stats: null,
-    isInterested: true
+    isInterested: true,
   },
   {
     id: 3,
@@ -188,8 +222,8 @@ const events = ref([
     friendAttending: null,
     friendAvatar: null,
     stats: '85 osób zainteresowanych · 21 osób weźmie udział',
-    isInterested: true
-  }
+    isInterested: true,
+  },
 ])
 
 const toggleInterest = (index: number) => {

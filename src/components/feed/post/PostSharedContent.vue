@@ -1,14 +1,18 @@
 <template>
   <!-- Shared Post -->
-  <div v-if="post.sharedContent?.type === 'post' && originalPost" class="mx-3 mb-3 mt-2 rounded-lg overflow-hidden">
+  <div
+    v-if="originalPost"
+    class="mx-3 mb-3 mt-2 rounded-lg overflow-hidden"
+  >
     <PostItem :post="originalPost" :is-shared="true" />
   </div>
 
   <!-- Shared Reel -->
-  <div v-if="post.sharedContent?.type === 'reel' && sharedReel"
-       class="mb-3 mt-2 relative w-auto h-[800px] bg-gradient-to-b from-[#5c6b55] to-[#2e3b2b] rounded-xl overflow-hidden shadow-lg border border-gray-700/30 group cursor-pointer"
-       @click="router.push(`/reel/${sharedReel.id}`)">
-
+  <div
+    v-if="post.sharedContent?.type === 'reel' && sharedReel"
+    class="mb-3 mt-2 relative w-auto h-[800px] bg-gradient-to-b from-[#5c6b55] to-[#2e3b2b] rounded-xl overflow-hidden shadow-lg border border-gray-700/30 group cursor-pointer"
+    @click="router.push(`/reel/${sharedReel.id}`)"
+  >
     <div class="absolute inset-0 w-full h-full">
       <video
         ref="reelVideoRef"
@@ -20,7 +24,9 @@
         playsinline
         :muted="isReelMuted"
       ></video>
-      <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none"></div>
+      <div
+        class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none"
+      ></div>
     </div>
 
     <div class="absolute top-4 left-4 flex items-center gap-3 z-20 pointer-events-none">
@@ -30,10 +36,11 @@
 
       <div class="flex flex-col text-white drop-shadow-md">
         <span class="font-bold text-sm leading-tight flex items-center gap-1">
-          {{ reelAuthor?.name }} <span class="text-gray-300 font-normal text-xs opacity-90">• Obserwuj</span>
+          {{ reelAuthor?.name }}
+          <span class="text-gray-300 font-normal text-xs opacity-90">• Obserwuj</span>
         </span>
         <div class="flex items-center gap-1 text-xs text-gray-200 opacity-80 mt-0.5">
-          <Earth :size="12" class="text-gray-200"/>
+          <Earth :size="12" class="text-gray-200" />
         </div>
       </div>
     </div>
@@ -50,15 +57,20 @@
     </div>
 
     <div class="absolute bottom-6 left-4 right-16 z-20">
-      <div class="flex items-center bg-black/30 backdrop-blur-md self-start px-3 py-2 rounded-full max-w-[220px] text-white border border-white/10">
+      <div
+        class="flex items-center bg-black/30 backdrop-blur-md self-start px-3 py-2 rounded-full max-w-[220px] text-white border border-white/10"
+      >
         <div class="shrink-0 mr-2 flex items-center justify-center">
           <MusicNote :size="16" class="animate-pulse-slow" />
         </div>
 
         <div class="overflow-hidden w-full relative h-[16px] flex items-center">
-          <div class="w-full overflow-hidden mask-[linear-gradient(90deg,transparent_0%,white_10%,white_90%,transparent_100%)]">
+          <div
+            class="w-full overflow-hidden mask-[linear-gradient(90deg,transparent_0%,white_10%,white_90%,transparent_100%)]"
+          >
             <div class="animate-marquee whitespace-nowrap text-xs font-medium tracking-wide">
-              {{ reelAuthor?.name }} • Oryginalny dźwięk &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ reelAuthor?.name }} • Oryginalny dźwięk &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              {{ reelAuthor?.name }} • Oryginalny dźwięk &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              {{ reelAuthor?.name }} • Oryginalny dźwięk &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             </div>
           </div>
         </div>
@@ -67,10 +79,11 @@
   </div>
 
   <!-- Shared Event -->
-  <div v-if="post.sharedContent?.type === 'event' && sharedEvent"
-       class="mb-4 mt-2 overflow-hidden cursor-pointer bg-[#f0f2f5] border-b border-[#dadde1] transition-colors group"
-       @click="router.push(`/event/${sharedEvent.id}`)">
-
+  <div
+    v-if="sharedEvent"
+    class="mb-4 mt-2 overflow-hidden cursor-pointer bg-[#f0f2f5] border-b border-[#dadde1] transition-colors group"
+    @click="router.push(`/event/${sharedEvent.id}`)"
+  >
     <div class="relative w-full aspect-[1.91/1] bg-gray-100 dark:bg-[#3A3B3C]">
       <img
         v-if="sharedEvent.images && sharedEvent.images[0]"
@@ -82,10 +95,14 @@
 
     <div class="p-3 flex justify-between items-center">
       <div class="flex-1 min-w-0 pr-3">
-        <div class="text-[#F02849] text-[13px] font-semibold uppercase mb-0.5 tracking-wide leading-none">
+        <div
+          class="text-[#F02849] text-[13px] font-semibold uppercase mb-0.5 tracking-wide leading-none"
+        >
           {{ sharedEvent.date || 'SOB, 16 MAJ O 15:00' }}
         </div>
-        <h3 class="text-[#050505] dark:text-[#E4E6EB] font-bold text-[17px] leading-snug truncate mb-0.5">
+        <h3
+          class="text-[#050505] dark:text-[#E4E6EB] font-bold text-[17px] leading-snug truncate mb-0.5"
+        >
           {{ sharedEvent.title || sharedEvent.name }}
         </h3>
         <div class="text-[#65676B] dark:text-[#B0B3B8] text-[13px] truncate">
@@ -99,30 +116,23 @@
         :class="[
           isInterested
             ? 'bg-[#E7F3FF] text-[#1877F2] hover:bg-[#DBEBFF]'
-            : 'bg-[#E4E6EB] dark:bg-[#3A3B3C] text-[#050505] dark:text-[#E4E6EB] hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]'
+            : 'bg-[#E4E6EB] dark:bg-[#3A3B3C] text-[#050505] dark:text-[#E4E6EB] hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50]',
         ]"
       >
-        <component
-          :is="isInterested ? Star : StarOutline"
-          :size="20"
-        />
+        <component :is="isInterested ? Star : StarOutline" :size="20" />
 
         <span class="hidden sm:inline">
           {{ isInterested ? 'Interesuję się' : 'Zainteresowany(a)' }}
         </span>
 
-        <ChevronDown
-          v-if="isInterested"
-          :size="20"
-        />
+        <ChevronDown v-if="isInterested" :size="20" />
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, defineAsyncComponent, inject, type Ref } from 'vue'
 
 import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
 import StarOutline from 'vue-material-design-icons/StarOutline.vue'
@@ -132,10 +142,10 @@ import VolumeHigh from 'vue-material-design-icons/VolumeHigh.vue'
 import VolumeMute from 'vue-material-design-icons/VolumeMute.vue'
 import MusicNote from 'vue-material-design-icons/MusicNote.vue'
 
-import { usePostsStore } from '@/stores/posts'
 import { useEventsStore } from '@/stores/events'
-import { useReelsStore } from '@/stores/reels'
 import type { Post } from '@/types/Post'
+import { processPostsIntoReels } from '@/utils/reels'
+import { useAuthStore } from '@/stores/auth'
 
 // Import PostItem for recursive rendering
 const PostItem = defineAsyncComponent(() => import('./PostItem.vue'))
@@ -145,14 +155,20 @@ const props = defineProps<{
 }>()
 
 const router = useRouter()
-const postsStore = usePostsStore()
 const eventsStore = useEventsStore()
-const reelsStore = useReelsStore()
+const authStore = useAuthStore()
+const allPosts = inject<Ref<Post[]>>('allPosts', ref([]))
 
 // Shared content computed properties
 const originalPost = computed(() => {
+  if (props.post.sharedPost) {
+    return props.post.sharedPost
+  }
   if (props.post.sharedContent?.type === 'post' && props.post.sharedContent.originalId) {
-    return postsStore.getPostById(props.post.sharedContent.originalId)
+    return allPosts.value.find((p) => String(p.id) === String(props.post.sharedContent.originalId))
+  }
+  if (props.post.targetType === 'post' && props.post.targetId) {
+    return allPosts.value.find((p) => String(p.id) === String(props.post.targetId))
   }
   return undefined
 })
@@ -161,24 +177,31 @@ const sharedEvent = computed(() => {
   if (props.post.sharedContent?.type === 'event' && props.post.sharedContent.originalId) {
     return eventsStore.getEventById(props.post.sharedContent.originalId)
   }
+  if (props.post.targetType === 'event' && props.post.targetId) {
+    return eventsStore.getEventById(props.post.targetId)
+  }
   return undefined
 })
 
 const sharedReel = computed(() => {
   if (props.post.sharedContent?.type === 'reel' && props.post.sharedContent.originalId) {
-    return reelsStore.getReelById(props.post.sharedContent.originalId)
+    const originalPostObj = allPosts.value.find((p) => String(p.id) === String(props.post.sharedContent.originalId))
+    if (originalPostObj) {
+      const processed = processPostsIntoReels([originalPostObj], String(authStore.currentUserId))
+      return processed[0] || null
+    }
   }
   return undefined
 })
 
 // Add computed for reel author to keep template clean
-import { getUserById } from '@/data/users';
+import { getUserById } from '@/utils/users'
 const reelAuthor = computed(() => {
-    if (sharedReel.value) {
-        return getUserById(sharedReel.value.authorId);
-    }
-    return null;
-});
+  if (sharedReel.value) {
+    return getUserById(sharedReel.value.authorId)
+  }
+  return null
+})
 
 // Reel controls
 const isReelMuted = ref(true)

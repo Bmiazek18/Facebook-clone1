@@ -1,54 +1,65 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { GiphyFetch } from '@giphy/js-fetch-api';
-import type { IGif } from '@giphy/js-types';
+import { ref, onMounted } from 'vue'
+import { GiphyFetch } from '@giphy/js-fetch-api'
+import type { IGif } from '@giphy/js-types'
+import { useCreatePostStore } from '@/stores/createPost'
 
-const emit = defineEmits<{
-  (e: 'select', url: string): void;
-}>();
+const createPostStore = useCreatePostStore()
 
-const searchTerm = ref('');
-const gifs = ref<IGif[]>([]);
-const loading = ref(false);
-const gf = new GiphyFetch(import.meta.env.VITE_GIPHY_KEY as string);
+const searchTerm = ref('')
+const gifs = ref<IGif[]>([])
+const loading = ref(false)
+const gf = new GiphyFetch(import.meta.env.VITE_GIPHY_KEY as string)
 
 const fetchGifs = async () => {
-  loading.value = true;
+  loading.value = true
   try {
     const res = searchTerm.value
       ? await gf.search(searchTerm.value, { limit: 20 })
-      : await gf.trending({ limit: 20 });
+      : await gf.trending({ limit: 20 })
 
-    gifs.value = res.data;
+    gifs.value = res.data
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 const debounce = (func: (...args: string[]) => void, wait: number) => {
-  let timeout: number;
+  let timeout: number
   return (...args: string[]) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-};
+    clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
+  }
+}
 
-const handleGifSearch = debounce(() => fetchGifs(), 500);
+const handleGifSearch = debounce(() => fetchGifs(), 500)
 
 const selectGif = (url: string) => {
-  emit('select', url);
-};
+  createPostStore.postData.gif = url
+  createPostStore.navigateBack()
+}
 
-onMounted(() => fetchGifs());
+onMounted(() => fetchGifs())
 </script>
 
 <template>
-  <div class="flex flex-col h-[400px] w-[300px] overflow-hidden">
+  <div class="flex flex-col h-[80vh] w-[300px] overflow-hidden">
     <div class="sticky py-1.5 px-5 top-0 bg-white z-10 border-b border-gray-50">
       <div class="relative flex items-center">
         <span class="absolute left-4 text-gray-400">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
           </svg>
         </span>
         <input
@@ -70,7 +81,7 @@ onMounted(() => fetchGifs());
         <div
           v-for="gif in gifs"
           :key="gif.id"
-          class="w-full  cursor-pointer active:opacity-80 transition-opacity"
+          class="w-full cursor-pointer active:opacity-80 transition-opacity"
           @click="selectGif(gif.images.fixed_height.url)"
         >
           <img
@@ -96,7 +107,7 @@ onMounted(() => fetchGifs());
 
 /* Ukrycie paska przewijania dla Firefox, IE oraz Edge */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 </style>

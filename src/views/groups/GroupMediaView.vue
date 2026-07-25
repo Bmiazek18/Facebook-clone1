@@ -1,8 +1,8 @@
 <script setup>
-import { ref } from 'vue';
+import { ref } from 'vue'
 
-const activeTab = ref('Zdjęcia');
-const tabs = ['Zdjęcia', 'Filmy', 'Albumy'];
+const activeTab = ref('Zdjęcia')
+const tabs = ['Zdjęcia', 'Filmy', 'Albumy']
 
 // Dane dla sekcji Zdjęcia
 const photos = ref([
@@ -12,7 +12,7 @@ const photos = ref([
   { id: 4, url: 'https://via.placeholder.com/300?text=Koszulka' },
   { id: 5, url: 'https://via.placeholder.com/300?text=Tabela' },
   { id: 6, url: 'https://via.placeholder.com/300?text=Składki' },
-]);
+])
 
 // Dane dla sekcji Albumy
 const albums = ref([
@@ -20,20 +20,22 @@ const albums = ref([
     id: 1,
     title: '25 października 2018',
     count: 1,
-    coverUrl: 'https://via.placeholder.com/400?text=Okładka+Albumu'
-  }
-]);
+    coverUrl: 'https://via.placeholder.com/400?text=Okładka+Albumu',
+  },
+])
 </script>
 
 <template>
-  <div class=" bg-theme-bg-secondary text-theme-text p-6 font-sans">
-
+  <div class="bg-theme-bg-secondary text-theme-text p-6  ">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-xl font-bold">Multimedia</h1>
       <div class="flex space-x-6 text-sm">
-        <RouterLink to="/create-album" class="text-theme-primary hover:text-theme-primary-hover transition flex items-center font-medium">
+        <NuxtLink
+          to="/create-album"
+          class="text-theme-primary hover:text-theme-primary-hover transition flex items-center font-medium"
+        >
           <span class="text-xl mr-1">+</span> Utwórz album
-        </RouterLink>
+        </NuxtLink>
         <button class="text-theme-primary hover:text-theme-primary-hover transition font-medium">
           Dodaj zdjęcia/film
         </button>
@@ -47,15 +49,23 @@ const albums = ref([
         @click="activeTab = tab"
         :class="[
           'pb-3 text-sm font-semibold transition-all relative px-1',
-          activeTab === tab ? 'text-theme-primary' : 'text-theme-text-secondary hover:text-theme-text'
+          activeTab === tab
+            ? 'text-theme-primary'
+            : 'text-theme-text-secondary hover:text-theme-text',
         ]"
       >
         {{ tab }}
-        <div v-if="activeTab === tab" class="absolute bottom-0 left-0 right-0 h-[3px] bg-theme-primary rounded-t-full"></div>
+        <div
+          v-if="activeTab === tab"
+          class="absolute bottom-0 left-0 right-0 h-[3px] bg-theme-primary rounded-t-full"
+        ></div>
       </button>
     </div>
 
-    <div v-if="activeTab === 'Zdjęcia'" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-1">
+    <div
+      v-if="activeTab === 'Zdjęcia'"
+      class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-1"
+    >
       <div
         v-for="photo in photos"
         :key="photo.id"
@@ -68,7 +78,10 @@ const albums = ref([
       </div>
     </div>
 
-    <div v-if="activeTab === 'Albumy'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+    <div
+      v-if="activeTab === 'Albumy'"
+      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"
+    >
       <div v-for="album in albums" :key="album.id" class="group cursor-pointer text-left">
         <div class="aspect-square overflow-hidden rounded-md border border-theme-border mb-3">
           <img
@@ -84,6 +97,5 @@ const albums = ref([
     <div v-if="activeTab === 'Filmy'" class="py-10 text-center text-theme-text-secondary">
       Brak filmów do wyświetlenia.
     </div>
-
   </div>
 </template>

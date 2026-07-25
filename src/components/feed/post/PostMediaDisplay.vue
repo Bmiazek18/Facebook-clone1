@@ -2,10 +2,9 @@
   <PostMediaGallery
     v-if="post.media && post.media.length > 0"
     :media="post.media"
-    :post-id="Number(post.id) ?? 0"
+    :post-id="post.id"
     @click="
-      (post as any).marketplaceData &&
-        $emit('image-click', (post as any).marketplaceData.itemId)
+      (post as any).marketplaceData && $emit('image-click', (post as any).marketplaceData.itemId)
     "
   />
 </template>

@@ -11,9 +11,7 @@ const props = defineProps<{
     class="flex flex-col overflow-hidden rounded-2xl shadow-sm min-w-[280px] max-w-full border border-gray-100 bg-gray-200"
   >
     <div class="flex items-center px-4 py-3">
-      <div
-        class="w-10 h-10 rounded-full overflow-hidden mr-3 border border-gray-200 bg-black"
-      >
+      <div class="w-10 h-10 rounded-full overflow-hidden mr-3 border border-gray-200 bg-black">
         <img
           src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80"
           class="w-full h-full object-cover opacity-90"

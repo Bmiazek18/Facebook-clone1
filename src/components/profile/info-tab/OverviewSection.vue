@@ -1,189 +1,236 @@
 <script setup lang="ts">
-import { ref, reactive, inject, computed } from 'vue'
-import type { User } from '@/data/users'
-import EditForm from './EditForm.vue'
-import { useI18n } from 'vue-i18n'
+import { ref, reactive, inject } from 'vue'
+import type { User } from '@/utils/users'
+import { useMutation } from '@vue/apollo-composable'
+import { gql } from 'graphql-tag'
 
-// Import ikon
-import PlusCircleOutline from 'vue-material-design-icons/PlusCircleOutline.vue'
-import Phone from 'vue-material-design-icons/Phone.vue'
-import Lock from 'vue-material-design-icons/Lock.vue'
+// Import ikon z Material Design
 import Pencil from 'vue-material-design-icons/Pencil.vue'
-import Account from 'vue-material-design-icons/Account.vue' // Płeć
-import CakeVariant from 'vue-material-design-icons/CakeVariant.vue' // Data urodzenia
-import CommentText from 'vue-material-design-icons/CommentText.vue' // Zaimki (Dymek)
-import Earth from 'vue-material-design-icons/Earth.vue' // Publiczne
-import AccountMultiple from 'vue-material-design-icons/AccountMultiple.vue' // Znajomi
-import Email from 'vue-material-design-icons/Email.vue'
-import Web from 'vue-material-design-icons/Web.vue'
-import Translate from 'vue-material-design-icons/Translate.vue'
+import Earth from 'vue-material-design-icons/Earth.vue'
+import MapMarker from 'vue-material-design-icons/MapMarker.vue'
+import Domain from 'vue-material-design-icons/Domain.vue'
+import HandWave from 'vue-material-design-icons/HandWave.vue' // <-- DODANA IKONA DŁONI
 
-const { t } = useI18n()
 const props = defineProps<{ profileUser: User }>()
-
-const activeSection = ref<string | null>(null)
 const isOwner = inject('isOwner')
-// Dodajemy pola social i language do formularza
-const form = reactive({ website: '', social: '', language: '' })
+const fetchUserProfile = inject<() => Promise<void>>('fetchUserProfile')
 
-const hasContactInfo = computed(() => !!(props.profileUser.phone || props.profileUser.email || props.profileUser.website || (props.profileUser.socialLinks && props.profileUser.socialLinks.length > 0)))
-const hasBasicInfo = computed(() => !!(props.profileUser.gender || props.profileUser.birthDate || props.profileUser.languages || props.profileUser.namePronounciation))
+// --- STANY EDYCJI ---
+const isEditingPinned = ref(false)
+const isEditingBio = ref(false)
 
+// --- DANE BIOGRAMU ---
+const bioText = ref(props.profileUser.bio || '')
+const maxBioLength = 101
 
-const open = (s: string) => activeSection.value = s
-const close = () => activeSection.value = null
-const save = (s: string) => { console.log(`Zapisano ${s}`); close() }
+// --- DANE PRZYPIĘTYCH SZCZEGÓŁÓW ---
+const pinnedSettings = reactive({
+  location: true,
+  school: true,
+})
+
+const UPDATE_PROFILE_MUTATION = gql`
+  mutation UpdateProfile($userId: ID!, $input: UpdateProfileInput!) {
+    updateProfile(userId: $userId, input: $input) {
+      id
+      bio
+    }
+  }
+`
+
+const { mutate: updateProfile } = useMutation(UPDATE_PROFILE_MUTATION)
+
+// --- FUNKCJE ZAPISU ---
+const savePinned = () => {
+  isEditingPinned.value = false
+}
+const saveBio = async () => {
+  try {
+    await updateProfile({
+      userId: String(props.profileUser.id),
+      input: {
+        bio: bioText.value
+      }
+    })
+    if (fetchUserProfile) {
+      await fetchUserProfile()
+    }
+    isEditingBio.value = false
+  } catch (err) {
+    console.error('Failed to save bio:', err)
+  }
+}
 </script>
 
 <template>
-  <div class="space-y-8 text-base">
+  <div class="max-w-[850px] text-[#050505] antialiased">
+    <!-- ============================================== -->
+    <!-- SEKCJA 1: BIOGRAM                              -->
+    <!-- ============================================== -->
+    <h2 class="font-semibold text-[17px] mb-5">Biogram</h2>
 
-    <div v-if="hasContactInfo || isOwner">
-      <h3 class="font-bold text-xl text-black mb-4">{{ $t('profile.info.contactInfo') }}</h3>
-
-      <div v-if="profileUser.phone" class="flex justify-between items-center mb-6">
-         <div class="flex items-center text-gray-900">
-            <Phone class="text-gray-500 mr-4 text-2xl" />
-            <div>
-                <div class="font-medium text-lg">{{ profileUser.phone }}</div>
-                <div class="text-xs text-gray-500">{{ $t('profile.info.mobilePhone') }}</div>
-            </div>
-         </div>
-         <div v-if="isOwner" class="flex space-x-3 text-gray-500">
-             <Lock class="text-lg text-gray-400"/>
-             <button class="hover:bg-gray-200 p-2 rounded-full"><Pencil class="text-xl text-gray-700"/></button>
-         </div>
-      </div>
-      <div v-if="profileUser.email" class="flex justify-between items-center mb-6">
-         <div class="flex items-center text-gray-900">
-            <Email class="text-gray-500 mr-4 text-2xl" />
-            <div>
-                <div class="font-medium text-lg">{{ profileUser.email }}</div>
-                <div class="text-xs text-gray-500">{{ $t('common.email') }}</div>
-            </div>
-         </div>
-         <div v-if="isOwner" class="flex space-x-3 text-gray-500">
-             <Lock class="text-lg text-gray-400"/>
-             <button class="hover:bg-gray-200 p-2 rounded-full"><Pencil class="text-xl text-gray-700"/></button>
-         </div>
+    <!-- TRYB EDYCJI BIOGRAMU -->
+    <div v-if="isEditingBio" class="mb-8">
+      <div
+        class="inline-flex items-center gap-1.5 bg-[#E4E6EB] px-3 py-1.5 rounded-md font-semibold text-[15px] text-[#050505] mb-4"
+      >
+        <Earth :size="16" class="text-[#65676B]" />
+        Publiczne
       </div>
 
-      <h3 class="font-bold text-xl text-black mb-4">{{ $t('profile.info.websitesAndSocialLinks') }}</h3>
+      <h3 class="font-semibold text-[17px] mb-3">Edytuj biogram</h3>
 
-        <div v-if="profileUser.website" class="flex justify-between items-center mb-6">
-            <div class="flex items-center text-gray-900">
-                <Web class="text-gray-500 mr-4 text-2xl" />
-                <div>
-                    <div class="font-medium text-lg">{{ profileUser.website }}</div>
-                    <div class="text-xs text-gray-500">{{ $t('profile.info.website') }}</div>
-                </div>
-            </div>
-            <div v-if="isOwner" class="flex space-x-3 text-gray-500">
-                <Lock class="text-lg text-gray-400"/>
-                <button class="hover:bg-gray-200 p-2 rounded-full"><Pencil class="text-xl text-gray-700"/></button>
-            </div>
-        </div>
+      <div
+        class="relative border-[2px] border-[#1877F2] rounded-lg p-3 pt-6 pb-[8px] bg-white focus-within:ring-0"
+      >
+        <span class="absolute top-2 left-3 text-[13px] text-[#1877F2] font-normal"
+          >Przedstaw się</span
+        >
+        <textarea
+          v-model="bioText"
+          :maxlength="maxBioLength"
+          rows="3"
+          class="w-full resize-none outline-none bg-transparent text-[15px] text-[#050505]"
+          autofocus
+        ></textarea>
+      </div>
 
-        <div v-for="social in profileUser.socialLinks" :key="social.name" class="flex justify-between items-center mb-6">
-            <div class="flex items-center text-gray-900">
-                <Web class="text-gray-500 mr-4 text-2xl" />
-                <div>
-                    <div class="font-medium text-lg">{{ social.url }}</div>
-                    <div class="text-xs text-gray-500">{{ social.name }}</div>
-                </div>
-            </div>
-            <div v-if="isOwner" class="flex space-x-3 text-gray-500">
-                <Lock class="text-lg text-gray-400"/>
-                <button class="hover:bg-gray-200 p-2 rounded-full"><Pencil class="text-xl text-gray-700"/></button>
-            </div>
-        </div>
+      <div class="text-[13px] text-[#65676B] text-left mt-1.5">
+        {{ bioText.length }}/{{ maxBioLength }}
+      </div>
 
-
-      <div class="mt-2">
-        <EditForm v-if="activeSection === 'web'" :label="$t('profile.info.websiteAddress')" v-model="form.website" @cancel="close" @save="save('web')" />
-        <button v-else-if="isOwner && !profileUser.website" @click="open('web')" class="flex items-center text-blue-600 hover:underline font-medium mb-4">
-          <PlusCircleOutline class="mr-3 text-2xl" /> {{ $t('profile.info.addWebsite') }}
+      <div class="flex justify-end space-x-2 pt-4 border-t border-gray-200 mt-4">
+        <button
+          @click="isEditingBio = false"
+          class="px-4 py-1.5 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold rounded-md text-[15px] transition-colors"
+        >
+          Anuluj
         </button>
-      </div>
-
-      <div class="mt-2">
-        <EditForm v-if="activeSection === 'social'" :label="$t('profile.info.socialLink')" v-model="form.social" @cancel="close" @save="save('social')" />
-        <button v-else-if="isOwner && (!profileUser.socialLinks || profileUser.socialLinks.length === 0)" @click="open('social')" class="flex items-center text-blue-600 hover:underline font-medium">
-          <PlusCircleOutline class="mr-3 text-2xl" /> {{ $t('profile.info.addSocialLink') }}
+        <button
+          @click="saveBio"
+          :disabled="bioText.length === 0"
+          class="px-4 py-1.5 font-semibold rounded-md text-[15px] transition-colors"
+          :class="
+            bioText.length > 0
+              ? 'bg-[#E4E6EB] text-[#050505] hover:bg-[#D8DADF]'
+              : 'bg-[#E4E6EB] text-[#BCC0C4] cursor-not-allowed'
+          "
+        >
+          Zapisz
         </button>
       </div>
     </div>
 
-    <div v-if="hasBasicInfo || isOwner">
-      <h3 class="font-bold text-xl text-black mb-4">{{ $t('profile.info.basicInfo') }}</h3>
+    <!-- TRYB PODGLĄDU BIOGRAMU (KLIKALNY TEKST Z IKONĄ) -->
+    <div class="mb-[8px]" v-else>
+      <!-- Element aktywujący edycję -->
+      <div
+        @click="isOwner ? (isEditingBio = true) : null"
+        class="inline-flex items-center text-[15px] text-[#65676B] font-medium transition-colors"
+        :class="isOwner ? 'cursor-pointer hover:bg-gray-100 p-2 -ml-2 rounded-md' : ''"
+      >
+        <HandWave :size="20" class="mr-3 text-black" />
 
-      <div class="mb-6" v-if="profileUser.languages || isOwner">
-         <div v-if="profileUser.languages" class="flex items-center text-gray-900 mb-4">
-            <Translate class="text-gray-500 mr-4 text-2xl" />
-            <div>
-                <div class="font-medium text-lg">{{ profileUser.languages }}</div>
-                <div class="text-xs text-gray-500">{{ $t('profile.info.languages') }}</div>
+        <span>{{ bioText ? bioText : 'Informacje o Tobie' }}</span>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- SEKCJA 2: PRZYPIĘTE SZCZEGÓŁY                  -->
+    <!-- ============================================== -->
+    <div class="flex justify-between items-center mb-5">
+      <h3 class="font-semibold text-[17px]">Przypięte szczegóły</h3>
+    </div>
+
+    <!-- TRYB EDYCJI PRZYPIĘTYCH -->
+    <div v-if="isEditingPinned" class="mt-1 pb-[8px]">
+      <p class="text-[15px] text-[#65676B] mb-5 leading-5">
+        Wybierz maksymalnie 5 szczegółów do wyświetlenia u góry Twojego profilu. Informacje
+        szczegółowe będą wyświetlane na podstawie ustawień grupy odbiorców.
+      </p>
+
+      <div class="space-y-5">
+        <label v-if="profileUser.location" class="flex items-start space-x-3 cursor-pointer">
+          <input
+            type="checkbox"
+            v-model="pinnedSettings.location"
+            class="w-5 h-5 mt-0.5 rounded text-[#1877F2] border-gray-300 focus:ring-[#1877F2]"
+          />
+          <MapMarker :size="24" class="text-[#65676B] shrink-0" />
+          <div class="flex flex-col">
+            <span class="font-medium text-[15px] leading-5">{{ profileUser.location }}</span>
+            <div class="flex items-center text-[13px] text-[#65676B] mt-0.5 gap-1">
+              <Earth :size="12" /> Publiczne
             </div>
-         </div>
-         <EditForm v-if="activeSection === 'lang'" :label="$t('common.language')" v-model="form.language" @cancel="close" @save="save('lang')" />
-         <button v-else-if="isOwner && !profileUser.languages" @click="open('lang')" class="flex items-center text-blue-600 hover:underline font-medium">
-            <PlusCircleOutline class="mr-3 text-2xl" /> {{ $t('profile.info.addLanguage') }}
-         </button>
+          </div>
+        </label>
+
+        <label v-if="profileUser.school" class="flex items-start space-x-3 cursor-pointer">
+          <input
+            type="checkbox"
+            v-model="pinnedSettings.school"
+            class="w-5 h-5 mt-0.5 rounded text-[#1877F2] border-gray-300 focus:ring-[#1877F2]"
+          />
+          <Domain :size="24" class="text-[#65676B] shrink-0" />
+          <div class="flex flex-col">
+            <span class="font-medium text-[15px] leading-5">{{ profileUser.school }}</span>
+            <div class="flex items-center text-[13px] text-[#65676B] mt-0.5 gap-1">
+              <Earth :size="12" /> Publiczne
+            </div>
+          </div>
+        </label>
       </div>
 
-      <div class="space-y-6">
-
-         <div v-if="profileUser.gender" class="flex justify-between items-center">
-            <div class="flex items-center text-gray-900">
-               <Account class="text-gray-500 mr-4 text-2xl"/>
-               <div>
-                   <div class="font-semibold text-lg">{{ profileUser.gender }}</div>
-                   <div class="text-xs text-gray-500">{{ $t('profile.info.gender') }}</div>
-               </div>
-            </div>
-            <button v-if="isOwner" class="hover:bg-gray-200 p-2 rounded-full"><Pencil class="text-xl text-gray-700"/></button>
-         </div>
-
-         <div v-if="profileUser.namePronounciation" class="flex justify-between items-center">
-            <div class="flex items-center text-gray-900">
-               <CommentText class="text-gray-500 mr-4 text-2xl"/>
-               <div>
-                   <div class="font-semibold text-lg">{{profileUser.namePronounciation}}</div>
-                   <div class="text-xs text-gray-500">{{ $t('profile.info.pronouns') }}</div>
-               </div>
-            </div>
-            <div v-if="isOwner" class="flex items-center space-x-3 text-gray-500">
-                <Earth class="text-lg text-gray-400"/>
-                <button class="hover:bg-gray-200 p-2 rounded-full"><Pencil class="text-xl text-gray-700"/></button>
-            </div>
-         </div>
-
-         <div v-if="profileUser.birthDate" class="flex justify-between items-center">
-            <div class="flex items-center text-gray-900">
-               <CakeVariant class="text-gray-500 mr-4 text-2xl"/>
-               <div>
-                   <div class="font-semibold text-lg">{{ new Date(profileUser.birthDate).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long' }) }}</div>
-                   <div class="text-xs text-gray-500">{{ $t('profile.info.birthDate') }}</div>
-               </div>
-            </div>
-            <div v-if="isOwner" class="flex items-center space-x-3 text-gray-500">
-                <AccountMultiple class="text-lg text-gray-400"/> <button class="hover:bg-gray-200 p-2 rounded-full"><Pencil class="text-xl text-gray-700"/></button>
-            </div>
-         </div>
-
-         <div v-if="profileUser.birthDate" class="flex justify-between items-center">
-            <div class="flex items-center text-gray-900 ml-[2.6rem]">
-               <div>
-                   <div class="font-semibold text-lg">{{ new Date(profileUser.birthDate).getFullYear() }}</div>
-                   <div class="text-xs text-gray-500">{{ $t('profile.info.birthYear') }}</div>
-               </div>
-            </div>
-            <div v-if="isOwner" class="flex items-center space-x-3 text-gray-500 pr-[3.25rem]">
-                <AccountMultiple class="text-lg text-gray-400"/>
-            </div>
-         </div>
-
+      <div class="flex justify-end space-x-2 pt-4 border-t border-gray-200 mt-6">
+        <button
+          @click="isEditingPinned = false"
+          class="px-4 py-1.5 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold rounded-md text-[15px] transition-colors"
+        >
+          Anuluj
+        </button>
+        <button
+          @click="savePinned"
+          class="px-4 py-1.5 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold rounded-md text-[15px] transition-colors"
+        >
+          Zapisz
+        </button>
       </div>
+    </div>
+
+    <!-- TRYB PODGLĄDU PRZYPIĘTYCH -->
+    <div
+      v-else
+      class="mt-4 flex flex-wrap items-center gap-x-2 gap-y-2 justify-between text-[15px] text-[#050505] font-normal"
+    >
+      <div class="flex flex-row">
+        <div v-if="profileUser.location && pinnedSettings.location" class="flex items-center gap-2">
+          <MapMarker :size="20" class="text-[#050505]" />
+          <span>{{ profileUser.location }}</span>
+        </div>
+
+        <span
+          v-if="
+            profileUser.location &&
+            pinnedSettings.location &&
+            profileUser.school &&
+            pinnedSettings.school
+          "
+          class="text-[#65676B] font-bold"
+          >·</span
+        >
+
+        <div v-if="profileUser.school && pinnedSettings.school" class="flex items-center gap-2">
+          <Domain :size="20" class="text-[#050505]" />
+          <span>{{ profileUser.school }}</span>
+        </div>
+      </div>
+      <button
+        v-if="isOwner && !isEditingPinned"
+        @click="isEditingPinned = true"
+        class="p-2 hover:bg-[#F2F2F2] rounded-full transition-colors"
+      >
+        <Pencil :size="20" class="text-[#65676B]" />
+      </button>
     </div>
   </div>
 </template>

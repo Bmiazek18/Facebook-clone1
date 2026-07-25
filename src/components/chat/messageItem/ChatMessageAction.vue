@@ -11,9 +11,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div
-    class="flex w-full items-center justify-center text-sm text-gray-500"
-  >
+  <div class="flex w-full items-center justify-center text-sm text-gray-500">
     <span v-if="message.subType === 'CHANGE_E'">
       Emotka została zmieniona na {{ message.payload }}</span
     >

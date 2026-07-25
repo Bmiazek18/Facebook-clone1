@@ -1,96 +1,101 @@
 <template>
-  <div class="rounded-lg ">
-
-
-    <div v-if="allUserStories.length === 0" class="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
+  <div class="rounded-lg">
+    <div
+      v-if="allUserStories.length === 0"
+      class="text-gray-500 dark:text-gray-400 text-sm text-center py-4"
+    >
       Brak aktywnych relacji
     </div>
 
-    <div v-else class="space-y-3">
+    <div v-else class="space-y-1">
       <div
         v-for="userStory in allUserStories"
         :key="userStory.userId"
         @click="handleStoryClick(userStory)"
-        class="flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg cursor-pointer transition-colors"
+        class="flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl cursor-pointer transition-colors"
       >
-        <!-- Avatar with ring -->
+        <!-- Avatar z niebieską ramką dla nieobejrzanych (zgodnie ze screenem z FB szeroki, pełny border) -->
         <div class="relative shrink-0">
           <div
             :class="[
-              'p-0.5 rounded-full',
+              'rounded-full w-[60px] h-[60px] transition-all',
               userStory.hasUnviewedStories
-                ? 'bg-linear-to-tr from-blue-500 to-blue-600'
-                : 'bg-gray-300 dark:bg-gray-600'
+                ? 'ring-3 ring-blue-500   p-0.75'
+                : 'ring-1 ring-gray-500  p-0.5',
             ]"
           >
-            <div class="p-0.5 bg-white dark:bg-gray-900 rounded-full">
-              <img
-                :src="userStory.userAvatar"
-                class="w-12 h-12 rounded-full object-cover"
-                :alt="userStory.userName"
-              />
-            </div>
-          </div>
-
-          <!-- Story count badge -->
-          <div
-            v-if="userStory.stories.length > 1"
-            class="absolute -bottom-1 -right-1 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white dark:border-gray-800"
-          >
-            {{ userStory.stories.length }}
+            <img
+              :src="userStory.userAvatar"
+              class="w-full h-full rounded-full object-cover"
+              :alt="userStory.userName"
+            />
           </div>
         </div>
 
-        <!-- User info -->
+        <!-- Informacje o użytkowniku -->
         <div class="flex-1 min-w-0">
-          <p class="font-semibold text-sm text-gray-900 dark:text-white truncate">
+          <p class="font-semibold text-[15px] text-theme-text truncate mb-0.5">
             {{ userStory.userName }}
           </p>
-          <p v-if="userStory.userId === 'birthdays'" class="text-xs text-gray-500 dark:text-gray-400">
-            {{ todaysDate }}
-          </p>
-          <p v-else class="text-xs text-gray-500 dark:text-gray-400">
-            {{ getTimeAgo(userStory.stories[0]?.createdAt) }}
-          </p>
+          <div class="flex items-center text-[15px] text-theme-text-secondary font-normal">
+            <!-- Liczba nowych relacji wyświetlana obok czasu tekstowo (np. "1 nowa · 16 godz.") -->
+            <template v-if="userStory.hasUnviewedStories && userStory.stories.length > 0">
+              <span class="text-blue-600 dark:text-blue-400 font-medium">
+                {{ userStory.stories.length }} {{ getStoryLabel(userStory.stories.length) }}
+              </span>
+              <span class="mx-1 text-gray-400 dark:text-gray-500 select-none">·</span>
+            </template>
+
+            <span v-if="userStory.userId === 'birthdays'">
+              {{ todaysDate }}
+            </span>
+            <span v-else>
+              {{ getTimeAgo(userStory.stories[0]?.createdAt) }}
+            </span>
+          </div>
         </div>
-
-
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useStoriesStore } from '@/stores/stories';
-import type { UserStories } from '@/types/Story';
+import { computed } from 'vue'
+import { useStoriesStore } from '@/composables/feed/useAppState'
+import type { UserStories } from '@/types/Story'
 
-const router = useRouter();
-const storiesStore = useStoriesStore();
+const router = useRouter()
+const storiesStore = useStoriesStore()
 
-const allUserStories = computed(() => storiesStore.allUserStories);
+const allUserStories = computed(() => storiesStore.allUserStories)
 
 const handleStoryClick = (userStory: UserStories) => {
-  router.push(`/stories/${userStory.userId}`);
-};
+  router.push(`/stories/${userStory.userId}`)
+}
 
 const todaysDate = computed(() => {
-  return new Date().toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
-});
+  return new Date().toLocaleDateString(undefined, { month: 'long', day: 'numeric' })
+})
+
+// Pomocnicza funkcja do odmiany słowa "nowa/nowe/nowych"
+const getStoryLabel = (count: number) => {
+  if (count === 1) return 'nowa'
+  if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20)) return 'nowe'
+  return 'nowych'
+}
 
 const getTimeAgo = (timestamp?: number) => {
-  if (!timestamp) return '';
+  if (!timestamp) return ''
 
-  const now = Date.now();
-  const diff = now - timestamp;
+  const now = Date.now()
+  const diff = now - timestamp
 
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
+  const minutes = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
 
-  if (minutes < 1) return 'Teraz';
-  if (minutes < 60) return `${minutes} min`;
-  if (hours < 24) return `${hours} godz.`;
-  return 'Wczoraj';
-};
+  if (minutes < 1) return 'Teraz'
+  if (minutes < 60) return `${minutes} min`
+  if (hours < 24) return `${hours} godz.`
+  return 'Wczoraj'
+}
 </script>

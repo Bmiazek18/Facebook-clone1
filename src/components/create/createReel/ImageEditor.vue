@@ -2,12 +2,13 @@
   <div v-if="image" class="bg-gray-800 rounded-lg p-4 space-y-3">
     <h4 class="text-white font-semibold">Edycja Obrazka</h4>
 
-
     <div>
       <label class="text-gray-400 text-sm block mb-1">Rotacja: {{ image.rotation }}°</label>
       <input
         :model-value="image.rotation"
-        @input="emit('update', { ...image, rotation: Number(($event.target as HTMLInputElement).value) })"
+        @input="
+          emit('update', { ...image, rotation: Number(($event.target as HTMLInputElement).value) })
+        "
         type="range"
         min="0"
         max="360"
@@ -16,10 +17,14 @@
     </div>
 
     <div>
-      <label class="text-gray-400 text-sm block mb-1">Przezroczystość: {{ (image.opacity * 100).toFixed(0) }}%</label>
+      <label class="text-gray-400 text-sm block mb-1"
+        >Przezroczystość: {{ (image.opacity * 100).toFixed(0) }}%</label
+      >
       <input
         :model-value="image.opacity"
-        @input="emit('update', { ...image, opacity: Number(($event.target as HTMLInputElement).value) })"
+        @input="
+          emit('update', { ...image, opacity: Number(($event.target as HTMLInputElement).value) })
+        "
         type="range"
         min="0"
         max="1"
@@ -33,7 +38,12 @@
         <label class="text-gray-400 text-sm block mb-1">Start (s)</label>
         <input
           :model-value="image.startTime"
-          @input="emit('update', { ...image, startTime: Number(($event.target as HTMLInputElement).value) })"
+          @input="
+            emit('update', {
+              ...image,
+              startTime: Number(($event.target as HTMLInputElement).value),
+            })
+          "
           type="number"
           step="0.1"
           class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 outline-none"
@@ -43,7 +53,9 @@
         <label class="text-gray-400 text-sm block mb-1">Koniec (s)</label>
         <input
           :model-value="image.endTime"
-          @input="emit('update', { ...image, endTime: Number(($event.target as HTMLInputElement).value) })"
+          @input="
+            emit('update', { ...image, endTime: Number(($event.target as HTMLInputElement).value) })
+          "
           type="number"
           step="0.1"
           class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 outline-none"
@@ -55,7 +67,9 @@
       <label class="text-gray-400 text-sm block mb-1">Animacja Wejścia</label>
       <select
         :model-value="image.entryAnimation"
-        @change="emit('update', { ...image, entryAnimation: ($event.target as HTMLSelectElement).value })"
+        @change="
+          emit('update', { ...image, entryAnimation: ($event.target as HTMLSelectElement).value })
+        "
         class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 outline-none"
       >
         <option value="none">Brak</option>
@@ -70,7 +84,9 @@
       <label class="text-gray-400 text-sm block mb-1">Animacja Wyjścia</label>
       <select
         :model-value="image.exitAnimation"
-        @change="emit('update', { ...image, exitAnimation: ($event.target as HTMLSelectElement).value })"
+        @change="
+          emit('update', { ...image, exitAnimation: ($event.target as HTMLSelectElement).value })
+        "
         class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 outline-none"
       >
         <option value="none">Brak</option>
@@ -91,16 +107,16 @@
 </template>
 
 <script setup lang="ts">
-import type { ImageOverlay } from '@/types/video-editor.types';
+import type { ImageOverlay } from '@/types/video-editor.types'
 
 interface Props {
-  image: ImageOverlay | null;
+  image: ImageOverlay | null
 }
 
-defineProps<Props>();
+defineProps<Props>()
 
 const emit = defineEmits<{
-  update: [image: ImageOverlay];
-  delete: [];
-}>();
+  update: [image: ImageOverlay]
+  delete: []
+}>()
 </script>

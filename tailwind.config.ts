@@ -1,17 +1,12 @@
-import type { Config } from 'tailwindcss'
-
-import scrollbar from 'tailwind-scrollbar'
-
-const config: Config = {
+const config = {
   content: [
-    "./index.html",
+    "./app.vue",
     "./src/**/*.{vue,ts,tsx,js,jsx}",
   ],
   darkMode: 'class',
   theme: {
     extend: {},
   },
-  plugins: [scrollbar],
 }
 
 export default config

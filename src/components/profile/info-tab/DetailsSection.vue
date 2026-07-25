@@ -1,143 +1,344 @@
 <script setup lang="ts">
-import { ref, reactive, inject } from 'vue'
-import type { User } from '@/data/users'
-import EditForm from './EditForm.vue'
-import ItemMenu from './ItemMenu.vue'
-import { useI18n } from 'vue-i18n'
+import { ref, computed, inject } from 'vue'
 
-// Ikony
-import PlusCircleOutline from 'vue-material-design-icons/PlusCircleOutline.vue'
+// Import Twojego customowego inputa
+import CustomInput from '@/components/common/CustomInput.vue'
+
+// Import ikon z vue-material-design-icons
 import Earth from 'vue-material-design-icons/Earth.vue'
-import AccountDetails from 'vue-material-design-icons/AccountDetails.vue'
-import VolumeHigh from 'vue-material-design-icons/VolumeHigh.vue'
-import FormatQuoteClose from 'vue-material-design-icons/FormatQuoteClose.vue'
-import AccountBadge from 'vue-material-design-icons/AccountBadge.vue'
+import Pencil from 'vue-material-design-icons/Pencil.vue'
+import School from 'vue-material-design-icons/School.vue'
+import Domain from 'vue-material-design-icons/Domain.vue'
+import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
 
-const { t } = useI18n()
-const props = defineProps<{ profileUser: User }>()
+const isOwner = inject('isOwner', true)
 
-const activeSection = ref<string | null>(null)
-const editingIndex = ref<number | null>(null) // Indeks elementu edytowanego
-const form = reactive({ bio: '', pronunciation: '', otherName: '', quote: '' })
-const isOwner = inject('isOwner')
+// --- MOCKOWE DANE AKTUALNEJ SZKOŁY ŚREDNIEJ (Zrzut ekranu 08.18.22) ---
+const highSchoolData = ref({
+  name: 'Zespół Szkół nr 3 im. Władysława Stanisława Reymonta w Łukowie',
+  logo: 'https://via.placeholder.com/40', // Tutaj w realnym kodzie dasz poprawny url awatara/logo
+})
 
-const close = () => { activeSection.value = null; editingIndex.value = null }
+// --- STANY EDYCJI SEKCJI ---
+const activeForm = ref<'none' | 'university' | 'highschool'>('none')
 
-// --- FUNKCJE WYPEŁNIAJĄCE FORMULARZ ---
-const editBio = () => { form.bio = props.profileUser.bioDetails || ''; activeSection.value = 'bio' }
-const editPron = () => { form.pronunciation = props.profileUser.namePronounciation || ''; activeSection.value = 'pron' }
+// --- FORMULARZ: SZKOŁA WYŻSZA ---
+const uniForm = ref({
+  name: '',
+  startYear: '',
+  endYear: '',
+  isGraduated: false,
+  fieldOfStudy: '',
+  dorm: '',
+  description: '',
+  activities: '',
+  attendedFor: 'Szkoła wyższa',
+  degree: '',
+})
 
-const editOtherName = (idx: number) => {
-  if (props.profileUser.otherNames) form.otherName = props.profileUser.otherNames[idx]
-  editingIndex.value = idx
-  activeSection.value = 'other_edit'
+// --- FORMULARZ: SZKOŁA ŚREDNIA ---
+const hsForm = ref({
+  name: '',
+  startYear: '',
+  endYear: '',
+  isGraduated: false,
+})
+
+const years = Array.from({ length: 40 }, (_, i) => String(new Date().getFullYear() - i))
+
+// Walidacja przycisków zapisu
+const isUniValid = computed(() => uniForm.value.name.trim().length > 0)
+const isHsValid = computed(() => hsForm.value.name.trim().length > 0)
+
+const resetForms = () => {
+  activeForm.value = 'none'
+  // Opcjonalnie tutaj reset stanów formularzy
 }
-const addOtherName = () => { form.otherName = ''; activeSection.value = 'other_add' }
 
-const editQuote = (idx: number) => {
-  if (props.profileUser.favoriteQuotes) form.quote = props.profileUser.favoriteQuotes[idx]
-  editingIndex.value = idx
-  activeSection.value = 'quote_edit'
+const saveUniversity = () => {
+  if (!isUniValid.value) return
+  resetForms()
 }
-const addQuote = () => { form.quote = ''; activeSection.value = 'quote_add' }
 
-const save = (s: string) => { console.log(`Zapisano ${s}`, form); close() }
-const remove = (s: string, idx?: number) => { console.log(`Usunięto ${s}`) }
+const saveHighSchool = () => {
+  if (!isHsValid.value) return
+  resetForms()
+}
 </script>
 
 <template>
-  <div class="space-y-8 text-base">
+  <div class="max-w-[850px] text-[#050505] antialiased space-y-6">
+    <div class="space-y-4">
+      <h2 class="font-semibold text-[17px]">Szkoła wyższa</h2>
 
-    <div>
-      <h3 class="font-bold text-xl text-black mb-4">{{ $t('profile.info.detailsAboutYou') }}</h3>
-
-      <div v-if="activeSection === 'bio'" class="mb-4">
-         <EditForm :label="$t('common.description')" v-model="form.bio" @cancel="close" @save="save('bio')" />
+      <div v-if="activeForm !== 'university'">
+        <button
+          @click="isOwner ? (activeForm = 'university') : null"
+          class="inline-flex items-center text-[15px] text-[#65676B] font-medium transition-colors"
+          :class="isOwner ? 'cursor-pointer hover:bg-gray-100 p-2 -ml-2 rounded-md' : ''"
+        >
+          <School :size="20" class="text-[#65676B] mr-3" />
+          <span class="text-[#65676B] font-normal">Szkoła wyższa</span>
+        </button>
       </div>
 
-      <div v-else-if="profileUser.bioDetails" class="flex justify-between items-start mb-4">
-         <div class="flex items-start text-gray-900">
-            <AccountDetails class="text-2xl text-gray-400 mt-1 mr-3"/>
-            <p class="whitespace-pre-wrap">{{ profileUser.bioDetails }}</p>
-         </div>
-         <div v-if="isOwner" class="flex items-center space-x-2 text-gray-500 ml-4">
-            <Earth class="text-lg"/>
-            <ItemMenu :editText="$t('profile.info.editBio')" :removeText="$t('common.delete')" @edit="editBio" @remove="remove('bio')"/>
-         </div>
-      </div>
+      <div v-else class="space-y-4 border-t border-gray-100 pt-4">
+        <div
+          class="inline-flex items-center gap-1.5 bg-[#E4E6EB] px-3 py-1.5 rounded-md font-semibold text-[15px] text-[#050505] mb-2"
+        >
+          <Earth :size="16" class="text-[#65676B]" />
+          Publiczne
+        </div>
 
-      <button v-if="isOwner && !profileUser.bioDetails && activeSection !== 'bio'" @click="editBio" class="flex items-center text-blue-600 hover:underline font-medium">
-         <PlusCircleOutline class="mr-3 text-2xl" /> {{ $t('profile.info.addDetailsAboutYou') }}
-      </button>
-    </div>
+        <div>
+          <CustomInput id="uni-name" label="Nazwa uczelni" v-model="uniForm.name" variant="new" />
+          <p class="text-[12px] text-[#65676B] px-1 mt-1">Wymagane</p>
+        </div>
 
-    <div>
-      <h3 class="font-bold text-xl text-black mb-4">{{ $t('profile.info.namePronunciation') }}</h3>
-
-       <div v-if="activeSection === 'pron'" class="mb-4">
-          <EditForm :label="$t('profile.info.pronunciation')" v-model="form.pronunciation" @cancel="close" @save="save('pron')"/>
-       </div>
-
-       <div v-else-if="profileUser.namePronounciation" class="flex justify-between items-center mb-4">
-         <div class="flex items-center text-gray-900">
-            <div class="mr-3 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center"><VolumeHigh class="text-xl text-gray-500"/></div>
-            <span>{{ profileUser.namePronounciation }}</span>
-         </div>
-         <div v-if="isOwner" class="flex items-center space-x-2 text-gray-500"><Earth class="text-lg"/><ItemMenu :editText="$t('profile.info.editPronunciation')" :removeText="$t('common.delete')" @edit="editPron" @remove="remove('pron')"/></div>
-      </div>
-
-       <button v-if="isOwner && !profileUser.namePronounciation && activeSection !== 'pron'" @click="editPron" class="flex items-center text-blue-600 hover:underline font-medium">
-          <PlusCircleOutline class="mr-3 text-2xl" /> {{ $t('profile.info.addNamePronunciation') }}
-       </button>
-    </div>
-
-    <div>
-       <h3 class="font-bold text-xl text-black mb-4">{{ $t('profile.info.otherNames') }}</h3>
-       <div v-if="profileUser.otherNames" class="space-y-4 mb-4">
-          <div v-for="(name, idx) in profileUser.otherNames" :key="idx">
-
-             <div v-if="activeSection === 'other_edit' && editingIndex === idx">
-                <EditForm :label="$t('common.name')" v-model="form.otherName" @cancel="close" @save="save('other')" />
-             </div>
-
-             <div v-else class="flex justify-between items-center">
-                <div class="flex items-center text-gray-900"><AccountBadge class="text-2xl text-gray-400 mr-3"/><span class="text-lg">{{ name }}</span></div>
-                <div v-if="isOwner" class="flex items-center space-x-2 text-gray-500"><Earth class="text-lg"/><ItemMenu :editText="$t('profile.info.editName')" :removeText="$t('common.delete')" @edit="editOtherName(idx)" @remove="remove('other', idx)"/></div>
-             </div>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <div class="relative inline-block">
+              <select
+                v-model="uniForm.startYear"
+                class="appearance-none bg-[#E4E6EB] hover:bg-[#D8DADF] transition-colors pl-3 pr-8 py-1.5 rounded-md font-semibold text-[15px] text-[#050505] outline-none cursor-pointer"
+              >
+                <option value="" disabled selected>Rok</option>
+                <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
+              </select>
+              <ChevronDown
+                :size="16"
+                class="absolute right-2 top-2.5 pointer-events-none text-[#050505]"
+              />
+            </div>
+            <span class="text-[15px] text-[#65676B]">do</span>
+            <div class="relative inline-block">
+              <select
+                v-model="uniForm.endYear"
+                class="appearance-none bg-[#E4E6EB] hover:bg-[#D8DADF] transition-colors pl-3 pr-8 py-1.5 rounded-md font-semibold text-[15px] text-[#050505] outline-none cursor-pointer"
+              >
+                <option value="" disabled selected>Rok</option>
+                <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
+              </select>
+              <ChevronDown
+                :size="16"
+                class="absolute right-2 top-2.5 pointer-events-none text-[#050505]"
+              />
+            </div>
           </div>
-       </div>
 
-       <div v-if="activeSection === 'other_add'" class="mt-2">
-          <EditForm :label="$t('common.name')" v-model="form.otherName" @cancel="close" @save="save('other')"/>
-       </div>
-       <button v-else-if="isOwner" @click="addOtherName" class="flex items-center text-blue-600 hover:underline font-medium">
-          <PlusCircleOutline class="mr-3 text-2xl" /> {{ $t('profile.info.addNickname') }}
-       </button>
-    </div>
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              v-model="uniForm.isGraduated"
+              type="checkbox"
+              class="w-5 h-5 rounded text-[#1877F2] border-gray-300 focus:ring-[#1877F2]"
+            />
+            <span class="font-normal text-[15px]">Ukończenie szkoły</span>
+          </label>
+        </div>
 
-    <div>
-      <h3 class="font-bold text-xl text-black mb-4">{{ $t('profile.info.favoriteQuotes') }}</h3>
-      <div v-if="profileUser.favoriteQuotes" class="space-y-4 mb-4">
-        <div v-for="(q, i) in profileUser.favoriteQuotes" :key="i">
+        <div>
+          <CustomInput
+            id="uni-field"
+            label="Kierunek"
+            v-model="uniForm.fieldOfStudy"
+            variant="new"
+          />
+          <p class="text-[12px] text-[#65676B] px-1 mt-1">0/3 elementy</p>
+        </div>
 
-           <div v-if="activeSection === 'quote_edit' && editingIndex === i">
-              <EditForm :label="$t('profile.info.quote')" v-model="form.quote" @cancel="close" @save="save('quote')" />
-           </div>
+        <CustomInput id="uni-dorm" label="Akademik" v-model="uniForm.dorm" variant="new" />
 
-           <div v-else class="flex justify-between items-start">
-              <div class="flex items-start text-gray-900"><FormatQuoteClose class="text-2xl text-gray-400 mt-1 mr-3"/><span class="italic">{{ q }}</span></div>
-              <div v-if="isOwner" class="flex items-center space-x-2 text-gray-500 ml-4"><Earth class="text-lg"/><ItemMenu :editText="$t('profile.info.editQuote')" :removeText="$t('common.delete')" @edit="editQuote(i)" @remove="remove('quote', i)"/></div>
-           </div>
+        <div
+          class="group relative border border-[#ccd0d5] rounded-xl p-4 pt-6 pb-2.5 bg-transparent focus-within:border-[#1877f2] focus-within:ring-1 focus-within:ring-[#1877f2] transition-all"
+        >
+          <label
+            class="absolute left-4 z-10 origin-[0] transform duration-300 cursor-text text-[#606770]"
+            :class="
+              uniForm.description
+                ? 'top-1 scale-75'
+                : 'top-1/2 -translate-y-1/2 scale-100 group-focus-within:top-1 group-focus-within:-translate-y-0 group-focus-within:scale-75'
+            "
+            >Opis</label
+          >
+          <textarea
+            v-model="uniForm.description"
+            rows="3"
+            class="w-full resize-none block border-0 p-0 text-[15px] text-[#1c1e21] focus:outline-none bg-transparent"
+          ></textarea>
+        </div>
+
+        <div>
+          <CustomInput
+            id="uni-activities"
+            label="Zajęcia"
+            v-model="uniForm.activities"
+            variant="new"
+          />
+          <p class="text-[12px] text-[#65676B] px-1 mt-1">Do 10 pozycji</p>
+        </div>
+
+        <div
+          class="group relative border border-[#ccd0d5] rounded-xl p-4 pt-6 pb-2.5 bg-transparent"
+        >
+          <label class="absolute left-4 top-1 scale-75 text-[#606770]">Uczęszczał(a) na:</label>
+          <div
+            class="w-full text-[15px] text-[#1c1e21] pt-1 flex justify-between items-center cursor-pointer"
+          >
+            <span>{{ uniForm.attendedFor }}</span>
+            <ChevronDown :size="18" class="text-[#606770]" />
+          </div>
+        </div>
+
+        <CustomInput
+          id="uni-degree"
+          label="Tytuł/stopień naukowy"
+          v-model="uniForm.degree"
+          variant="new"
+        />
+
+        <div class="flex justify-end space-x-2 pt-4 border-t border-gray-200 mt-4">
+          <button
+            @click="resetForms"
+            class="px-5 py-2 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold rounded-md text-[15px] transition-colors"
+          >
+            Anuluj
+          </button>
+          <button
+            @click="saveUniversity"
+            :disabled="!isUniValid"
+            class="px-5 py-2 font-semibold rounded-md text-[15px] transition-colors"
+            :class="
+              isUniValid
+                ? 'bg-[#E4E6EB] text-[#050505] hover:bg-[#D8DADF]'
+                : 'bg-[#E4E6EB] text-[#BCC0C4] cursor-not-allowed'
+            "
+          >
+            Zapisz
+          </button>
         </div>
       </div>
-
-      <div v-if="activeSection === 'quote_add'" class="mt-2">
-         <EditForm :label="$t('profile.info.quote')" v-model="form.quote" @cancel="close" @save="save('quote')" />
-      </div>
-      <button v-else-if="isOwner" @click="addQuote" class="flex items-center text-blue-600 hover:underline font-medium">
-         <PlusCircleOutline class="mr-3 text-2xl" /> {{ $t('profile.info.addFavoriteQuotes') }}
-      </button>
     </div>
 
+    <hr class="border-gray-200" />
+
+    <div class="space-y-4">
+      <h2 class="font-semibold text-[17px]">Szkoła średnia</h2>
+
+      <div v-if="activeForm !== 'highschool'" class="space-y-3">
+        <div
+          v-if="highSchoolData.name"
+          class="flex items-center justify-between group p-2 -ml-2 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <div class="flex items-center gap-3">
+            <img
+              :src="highSchoolData.logo"
+              alt="School logo"
+              class="w-10 h-10 rounded-full border border-gray-200 object-cover"
+            />
+            <div class="flex flex-col">
+              <span class="text-[15px] font-semibold leading-5 text-[#050505]">{{
+                highSchoolData.name
+              }}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1">
+            <div class="p-2 text-[#65676B]"><Earth :size="18" /></div>
+            <button
+              @click="activeForm = 'highschool'"
+              class="p-2 text-[#050505] hover:bg-[#E4E6EB] rounded-full transition-colors"
+            >
+              <Pencil :size="18" />
+            </button>
+          </div>
+        </div>
+
+        <button
+          @click="isOwner ? (activeForm = 'highschool') : null"
+          class="inline-flex items-center gap-3 px-4 py-2 bg-[#E4E6EB]/50 hover:bg-[#E4E6EB] transition-colors rounded-lg text-[15px] font-semibold text-[#050505]"
+        >
+          <Domain :size="20" class="text-[#65676B]" />
+          <span class="text-[#65676B] font-normal">Szkoła średnia</span>
+        </button>
+      </div>
+
+      <div v-else class="space-y-4 border-t border-gray-100 pt-4">
+        <div
+          class="inline-flex items-center gap-1.5 bg-[#E4E6EB] px-3 py-1.5 rounded-md font-semibold text-[15px] text-[#050505] mb-2"
+        >
+          <Earth :size="16" class="text-[#65676B]" />
+          Publiczne
+        </div>
+
+        <div>
+          <CustomInput id="hs-name" label="Szkoła" v-model="hsForm.name" variant="new" />
+          <p class="text-[12px] text-[#65676B] px-1 mt-1">Wymagane</p>
+        </div>
+
+        <div class="space-y-4">
+          <div class="flex flex-col gap-2">
+            <span class="text-[15px] font-semibold text-[#050505]">Okres</span>
+            <div class="flex items-center gap-3">
+              <div class="relative inline-block">
+                <select
+                  v-model="hsForm.startYear"
+                  class="appearance-none bg-[#E4E6EB] hover:bg-[#D8DADF] transition-colors pl-3 pr-8 py-1.5 rounded-md font-semibold text-[15px] text-[#050505] outline-none cursor-pointer"
+                >
+                  <option value="" disabled selected>Rok</option>
+                  <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
+                </select>
+                <ChevronDown
+                  :size="16"
+                  class="absolute right-2 top-2.5 pointer-events-none text-[#050505]"
+                />
+              </div>
+              <span class="text-[15px] text-[#65676B]">do</span>
+              <div class="relative inline-block">
+                <select
+                  v-model="hsForm.endYear"
+                  class="appearance-none bg-[#E4E6EB] hover:bg-[#D8DADF] transition-colors pl-3 pr-8 py-1.5 rounded-md font-semibold text-[15px] text-[#050505] outline-none cursor-pointer"
+                >
+                  <option value="" disabled selected>Rok</option>
+                  <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
+                </select>
+                <ChevronDown
+                  :size="16"
+                  class="absolute right-2 top-2.5 pointer-events-none text-[#050505]"
+                />
+              </div>
+            </div>
+          </div>
+
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              v-model="hsForm.isGraduated"
+              type="checkbox"
+              class="w-5 h-5 rounded text-[#1877F2] border-gray-300 focus:ring-[#1877F2]"
+            />
+            <span class="font-normal text-[15px]">Ukończenie szkoły</span>
+          </label>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-4 border-t border-gray-200 mt-4">
+          <button
+            @click="resetForms"
+            class="px-5 py-2 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold rounded-md text-[15px] transition-colors"
+          >
+            Anuluj
+          </button>
+          <button
+            @click="saveHighSchool"
+            :disabled="!isHsValid"
+            class="px-5 py-2 font-semibold rounded-md text-[15px] transition-colors"
+            :class="
+              isHsValid
+                ? 'bg-[#E4E6EB] text-[#050505] hover:bg-[#D8DADF]'
+                : 'bg-[#E4E6EB] text-[#BCC0C4] cursor-not-allowed'
+            "
+          >
+            Zapisz
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import type { StoryElement } from '@/types/StoryElement'
+import { getAllUsers } from '@/utils/users'
+import MentionInput from '@/components/MentionInput.vue'
 
 const props = defineProps<{
   element: StoryElement
@@ -11,15 +13,45 @@ const props = defineProps<{
 
 const emit = defineEmits<{ 'update-content': [id: string, value: string] }>()
 
-const textValue = computed({
-  get: () => props.element.content,
-  set: (val: string) => emit('update-content', props.element.id, val)
+// Local draft text state to avoid triggering parent component re-renders while typing
+const localText = ref(props.element.content)
+
+const formattedContent = computed(() => {
+  if (!props.element.content) return ''
+  const allUsers = getAllUsers()
+  // Safe HTML replacement: escape tags first, then wrap user tags [@id] in underlined span (no @ symbol)
+  return props.element.content
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\[@([a-zA-Z0-9-]+)\]/g, (match, userId) => {
+      const user = allUsers.find((u) => String(u.id) === userId)
+      return user
+        ? `<span class="underline font-semibold cursor-pointer">${user.name}</span>`
+        : match
+    })
 })
 
-// Auto-focus directive
-const vFocus = {
-  mounted: (el: HTMLElement) => el.focus()
-}
+const mentionInputRef = ref<any>(null)
+
+// Watch for isEditing state changes:
+// - When editing starts: load content to local ref and focus.
+// - When editing ends: emit the final sformatted content to the parent.
+watch(
+  () => props.isEditing,
+  (editing) => {
+    if (editing) {
+      localText.value = props.element.content
+      nextTick(() => {
+        mentionInputRef.value?.focus()
+        mentionInputRef.value?.moveCursorToEnd()
+      })
+    } else {
+      emit('update-content', props.element.id, localText.value)
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -27,23 +59,23 @@ const vFocus = {
   <div
     v-if="!isEditing"
     @dblclick="onEnableEdit(element.id)"
-    class="text-center min-w-[50px] whitespace-pre-wrap leading-tight drop-shadow-lg p-2 border-2 border-transparent group-hover:border-white/40 rounded-lg"
+    class="text-center min-w-[50px] whitespace-pre-wrap leading-tight drop-shadow-lg p-2 border-2 border-transparent group-hover:border-white/40 rounded-lg w-full h-full"
     :style="element.styles"
   >
-    <span v-if="element.content">{{ element.content }}</span>
+    <span v-if="element.content" v-html="formattedContent"></span>
     <span v-else class="opacity-50">Zacznij pisać...</span>
   </div>
 
   <!-- Edit Mode -->
-  <textarea
+  <MentionInput
     v-else
-    v-focus
-    v-model="textValue"
-    @blur="onDisableEdit"
+    ref="mentionInputRef"
+    v-model="localText"
     @keydown.enter.stop="onDisableEdit"
     @mousedown.stop
-    class="bg-transparent text-center resize-none outline-none overflow-hidden min-w-[200px] p-2 border-2 border-blue-500 rounded-lg"
+    :inputClass="'bg-transparent text-center resize-none outline-none overflow-visible min-w-[200px] p-2 border-2 border-transparent rounded-lg placeholder:text-white/60 w-full h-full'"
+    placeholderClass="w-full text-center p-2 text-white/60"
     :style="element.styles"
-    rows="2"
-  ></textarea>
+    placeholder="Zacznij pisać..."
+  />
 </template>

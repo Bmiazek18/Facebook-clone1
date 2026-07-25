@@ -1,14 +1,10 @@
 <template>
-  <div class="min-h-screen bg-[#f0f2f5] flex flex-col font-sans items-center">
-
+  <div class="min-h-screen bg-[#f0f2f5] flex flex-col   items-center">
     <div class="pt-20 pb-6">
-      <h1 class="text-[#1877f2] text-6xl font-bold tracking-tighter cursor-pointer">
-        facebook
-      </h1>
+      <h1 class="text-[#1877f2] text-6xl font-bold tracking-tighter cursor-pointer">facebook</h1>
     </div>
 
     <div class="bg-white rounded-lg shadow-xl w-[396px] p-4 text-center">
-
       <div class="flex justify-center mb-3 mt-2">
         <img
           src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
@@ -65,52 +61,57 @@
           {{ t('login.createNewAccount') }}
         </button>
       </div>
-
     </div>
 
     <footer class="bg-white w-full text-[#737373] text-xs pt-5 pb-5 mt-auto">
       <div class="max-w-[980px] mx-auto px-4">
-        <div class="flex flex-wrap gap-x-2.5 gap-y-1 mb-2 items-center justify-center md:justify-start">
+        <div
+          class="flex flex-wrap gap-x-2.5 gap-y-1 mb-2 items-center justify-center md:justify-start"
+        >
           <span v-for="(lang, index) in languages" :key="index">
-            <a href="#" class="hover:underline" :class="{'text-[#737373]': index === 0, 'text-[#8a8d91]': index !== 0}">{{ t(lang.key) }}</a>
+            <a
+              href="#"
+              class="hover:underline"
+              :class="{ 'text-[#737373]': index === 0, 'text-[#8a8d91]': index !== 0 }"
+              >{{ t(lang.key) }}</a
+            >
           </span>
           <button class="bg-[#f5f6f7] border border-[#ccd0d5] px-2 hover:bg-[#ebedf0]">+</button>
         </div>
 
         <div class="border-b border-[#dddfe2] my-2"></div>
 
-        <div class="flex flex-wrap gap-x-4 gap-y-1 mb-4 text-[#8a8d91] justify-center md:justify-start">
+        <div
+          class="flex flex-wrap gap-x-4 gap-y-1 mb-4 text-[#8a8d91] justify-center md:justify-start"
+        >
           <a href="#" v-for="(link, index) in footerLinks" :key="index" class="hover:underline">
             {{ t(link.key) }}
           </a>
         </div>
 
-        <div class="text-[#737373] text-center md:text-left">
-          Meta © 2025
-        </div>
+        <div class="text-[#737373] text-center md:text-left">Meta © 2025</div>
       </div>
     </footer>
-
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n();
+const { t } = useI18n()
 
 // State
-const password = ref('');
+const password = ref('')
 
 // Handlers
 const handleLogin = () => {
   if (!password.value) {
-    alert('Please enter your password');
-    return;
+    alert('Please enter your password')
+    return
   }
-  console.log('Logging in user Bartosz with password:', password.value);
-};
+  console.log('Logging in user Bartosz with password:', password.value)
+}
 
 // Footer Data (Konsystentne z poprzednimi ekranami)
 const languages = [
@@ -124,8 +125,8 @@ const languages = [
   { key: 'login.ukrainian' },
   { key: 'login.spanish' },
   { key: 'login.portuguese' },
-  { key: 'login.arabic' }
-];
+  { key: 'login.arabic' },
+]
 
 const footerLinks = [
   { key: 'login.signUp' },
@@ -157,8 +158,8 @@ const footerLinks = [
   { key: 'login.adChoices' },
   { key: 'login.terms' },
   { key: 'login.help' },
-  { key: 'login.contactUploadingAndNonUsers' }
-];
+  { key: 'login.contactUploadingAndNonUsers' },
+]
 </script>
 
 <style scoped>

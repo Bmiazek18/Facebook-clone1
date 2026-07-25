@@ -1,7 +1,7 @@
 // --- Element Types ---
 export type ElementType = 'text' | 'image' | 'link' | 'post' | 'reel'
 
-import type { ImageTagType } from './ImageTag';
+import type { ImageTagType } from './ImageTag'
 
 // --- Shared Data Types ---
 
@@ -12,85 +12,85 @@ export interface PostMedia {
   audioUrl?: string
 }
 export interface PostData {
-  id: string;
+  id: string
   author: {
-    name: string;
-    avatar: string;
-    id: number;
-  };
-  content: string;
-  media: PostMedia[];
-  videoUrl?: string;
-  timestamp: number;
+    name: string
+    avatar: string
+    id: number
+  }
+  content: string
+  media: PostMedia[]
+  videoUrl?: string
+  timestamp: number
 }
 
 export interface ReelData {
-  id: string;
-  authorId: number;
-  videoSrc: string;
-  poster?: string;
-  caption: string;
+  id: string
+  authorId: number
+  videoSrc: string
+  poster?: string
+  caption: string
 }
 
 // --- Base Element Interface ---
 export interface BaseStoryElement {
-  id: string;
-  type: ElementType;
-  content: string;
-  x: number;
-  y: number;
-  width?: number;
-  height?: number;
-  rotation: number;
-  scale: number;
-  styles?: Record<string, string>;
+  id: string
+  type: ElementType
+  content: string
+  x: number
+  y: number
+  width?: number
+  height?: number
+  rotation: number
+  scale: number
+  styles?: Record<string, string>
 }
 
 // --- Text Element ---
 export interface TextElement extends BaseStoryElement {
-  type: 'text';
+  type: 'text'
 }
 
 // --- Image Element ---
 export interface ImageElement extends BaseStoryElement {
-  type: 'image';
-  cropX?: number;
-  cropY?: number;
-  cropZoom?: number;
-  altText?: string;
+  type: 'image'
+  cropX?: number
+  cropY?: number
+  cropZoom?: number
+  altText?: string
   // Music overlay (optional)
-  musicTitle?: string;
-  musicArtist?: string;
-  musicStyle?: 'large' | 'small' | 'text' | 'icon';
+  musicTitle?: string
+  musicArtist?: string
+  musicStyle?: 'large' | 'small' | 'text' | 'icon'
 }
 
 // --- Link Element ---
-export type LinkStyle = 'default' | 'minimal' | 'button';
+export type LinkStyle = 'default' | 'minimal' | 'button'
 
 export interface LinkElement extends BaseStoryElement {
-  type: 'link';
-  linkUrl?: string;
-  linkTitle?: string;
-  linkStyle?: LinkStyle;
+  type: 'link'
+  linkUrl?: string
+  linkTitle?: string
+  linkStyle?: LinkStyle
 }
 
 // --- Post Element ---
 export interface PostElement extends BaseStoryElement {
-  type: 'post';
-  postData?: PostData;
+  type: 'post'
+  postData?: PostData
 }
 
 // --- Reel Element ---
 export interface ReelElement extends BaseStoryElement {
-  type: 'reel';
-  reelData?: ReelData;
+  type: 'reel'
+  reelData?: ReelData
 }
 
 // --- Union Type for all elements ---
-export type StoryElement = TextElement | ImageElement | LinkElement | PostElement | ReelElement;
+export type StoryElement = TextElement | ImageElement | LinkElement | PostElement | ReelElement
 
 // --- Background Settings ---
 export interface BackgroundSettings {
-  type: 'gradient' | 'image';
-  value: string;
+  type: 'gradient' | 'image'
+  value: string
 }

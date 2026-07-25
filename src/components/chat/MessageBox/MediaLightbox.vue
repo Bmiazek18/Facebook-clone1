@@ -1,97 +1,110 @@
 <script setup lang="ts" name="MultiMediaLightbox">
-import { ref, computed, watch, onUnmounted, onMounted } from 'vue';
-import CloseIcon from 'vue-material-design-icons/Close.vue';
-import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue';
-import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
-import DownloadIcon from 'vue-material-design-icons/Download.vue';
-import ShareVariantOutlineIcon from 'vue-material-design-icons/ShareVariantOutline.vue';
-import PlayerVideo from '@/components/media/PlayerVideo.vue';
-const props = withDefaults(defineProps<{
-  media: Array<{
-    id: number;
-    type: 'image' | 'video' | 'gif';
-    imageUrl?: string;
-    videoUrl?: string;
-  }>,
-  modelValue: boolean,
-  startIndex: number,
-  fullscreen?: boolean
-}>(), {
-  fullscreen: true
-});
+import { ref, computed, watch, onUnmounted, onMounted } from 'vue'
+import CloseIcon from 'vue-material-design-icons/Close.vue'
+import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue'
+import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue'
+import DownloadIcon from 'vue-material-design-icons/Download.vue'
+import ShareVariantOutlineIcon from 'vue-material-design-icons/ShareVariantOutline.vue'
+import PlayerVideo from '@/components/media/PlayerVideo.vue'
 
-const emit = defineEmits(['update:modelValue']);
+const props = withDefaults(
+  defineProps<{
+    media: Array<{
+      id: number
+      type: 'image' | 'video' | 'gif'
+      imageUrl?: string
+      videoUrl?: string
+    }>
+    modelValue: boolean
+    startIndex: number
+    fullscreen?: boolean
+  }>(),
+  {
+    fullscreen: true,
+  },
+)
 
-const currentIndex = ref(props.startIndex);
+const emit = defineEmits(['update:modelValue'])
 
-const currentMedia = computed(() => props.media[currentIndex.value] || null);
+const currentIndex = ref(props.startIndex)
 
-const close = () => emit('update:modelValue', false);
+const currentMedia = computed(() => props.media[currentIndex.value] || null)
+
+const close = () => emit('update:modelValue', false)
 const goTo = (idx: number) => {
-  if (idx >= 0 && idx < props.media.length) currentIndex.value = idx;
-};
+  if (idx >= 0 && idx < props.media.length) currentIndex.value = idx
+}
 const next = () => {
-  currentIndex.value = (currentIndex.value + 1) % props.media.length;
-};
+  currentIndex.value = (currentIndex.value + 1) % props.media.length
+}
 const prev = () => {
-  currentIndex.value = (currentIndex.value - 1 + props.media.length) % props.media.length;
-};
+  currentIndex.value = (currentIndex.value - 1 + props.media.length) % props.media.length
+}
 
-const isVideo = (media: typeof currentMedia.value) => media?.type === 'video';
+const isVideo = (media: typeof currentMedia.value) => media?.type === 'video'
 
 const download = () => {
-  if (!currentMedia.value) return;
+  if (!currentMedia.value) return
 
-  const url = isVideo(currentMedia.value) ? currentMedia.value.videoUrl : currentMedia.value.imageUrl;
-  if (!url) return;
+  const url = isVideo(currentMedia.value)
+    ? currentMedia.value.videoUrl
+    : currentMedia.value.imageUrl
+  if (!url) return
 
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `media_${Date.now()}.${url.split('.').pop()}`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `media_${Date.now()}.${url.split('.').pop()}`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
 
 const share = () => {
-  alert('Funkcja udostępniania nie jest dostępna w Twojej przeglądarce lub dla tego typu pliku.');
-};
+  alert('Funkcja udostępniania nie jest dostępna w Twojej przeglądarce lub dla tego typu pliku.')
+}
 
 // --- LOGIKA BLOKOWANIA SCROLLA ---
 const toggleBodyScroll = (shouldLock: boolean) => {
   // Tylko blokuj scroll gdy fullscreen jest włączony
   if (props.fullscreen) {
-    document.body.style.overflow = shouldLock ? 'hidden' : '';
+    document.body.style.overflow = shouldLock ? 'hidden' : ''
   }
-};
+}
 
-watch(() => props.modelValue, (isOpened) => {
-  toggleBodyScroll(isOpened);
-}, { immediate: true });
+watch(
+  () => props.modelValue,
+  (isOpened) => {
+    toggleBodyScroll(isOpened)
+  },
+  { immediate: true },
+)
 
 const handleKeydown = (event: KeyboardEvent) => {
   switch (event.key) {
     case 'Escape':
-      close();
-      break;
+      close()
+      break
     case 'ArrowRight':
-      next();
-      break;
+      next()
+      break
     case 'ArrowLeft':
-      prev();
-      break;
+      prev()
+      break
   }
-};
+}
 
-onMounted(() => window.addEventListener('keydown', handleKeydown));
+onMounted(() => window.addEventListener('keydown', handleKeydown))
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydown);
-  toggleBodyScroll(false);
-});
+  window.removeEventListener('keydown', handleKeydown)
+  toggleBodyScroll(false)
+})
 
-watch(() => props.startIndex, (newIndex) => {
-  currentIndex.value = newIndex;
-});
+watch(
+  () => props.startIndex,
+  (newIndex) => {
+    currentIndex.value = newIndex
+  },
+)
 </script>
 
 <template>
@@ -99,64 +112,79 @@ watch(() => props.startIndex, (newIndex) => {
     <div
       class="flex flex-col overflow-hidden bg-black z-99999"
       :class="[
-        fullscreen ? 'fixed inset-0  items-center justify-between' : 'relative w-full h-full items-center justify-center'
+        fullscreen
+          ? 'fixed inset-0 items-center justify-between'
+          : 'relative w-full h-full items-center justify-center',
       ]"
     >
-
       <div
         v-if="!isVideo(currentMedia)"
         class="absolute inset-0 z-0 blur-background"
-        :style="{ backgroundImage: currentMedia && currentMedia.imageUrl ? `url(${currentMedia.imageUrl})` : 'none' }"
-      >
-      </div>
+        :style="{
+          backgroundImage:
+            currentMedia && currentMedia.imageUrl ? `url(${currentMedia.imageUrl})` : 'none',
+        }"
+      ></div>
 
       <header
         v-if="fullscreen"
         class="w-full flex justify-between items-center p-3 text-white relative z-10"
       >
-        <button @click="close" class="flex items-center space-x-1 text-lg hover:text-gray-300 transition">
+        <button
+          @click="close"
+          class="flex items-center space-x-1 text-lg hover:text-gray-300 transition"
+        >
           <CloseIcon :size="24" />
           <span>Zamknij</span>
         </button>
         <div class="flex space-x-3">
           <DownloadIcon :size="24" class="cursor-pointer hover:text-gray-300" @click="download" />
-          <ShareVariantOutlineIcon :size="24" class="cursor-pointer hover:text-gray-300" @click="share" />
+          <ShareVariantOutlineIcon
+            :size="24"
+            class="cursor-pointer hover:text-gray-300"
+            @click="share"
+          />
         </div>
       </header>
 
-      <div class="flex flex-col items-center justify-center grow w-full relative z-10">
-        <div class="flex items-center justify-center w-full grow relative group">
+      <div class="flex flex-col items-center justify-center grow w-full relative z-10 overflow-hidden">
+        <div class="flex items-center justify-center w-full grow relative group h-full">
+          <!-- Strzałka w lewo - pełna wysokość -->
           <button
-             v-if="media.length >1"
+            v-if="media.length > 1"
             @click="prev"
-            class="absolute left-4 p-2 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70 z-20 transition-opacity"
+            class="absolute left-0 top-0 bottom-0 w-16 md:w-20 flex items-center justify-center bg-black/50 text-white hover:bg-black/80 z-20 transition-all duration-300"
             :class="fullscreen ? '' : 'opacity-0 group-hover:opacity-100'"
           >
-            <ChevronLeftIcon :size="30" />
+            <ChevronLeftIcon :size="40" />
           </button>
 
           <!-- render obraz lub video -->
           <template v-if="currentMedia">
-            <img v-if="!isVideo(currentMedia)"
-                 :src="currentMedia.imageUrl"
-                 :class="fullscreen ? 'max-w-[80%] max-h-[80vh]' : 'max-w-full max-h-[70vh]'"
-                 class="object-contain"
-                 alt="Powiększony obraz" />
-            <PlayerVideo v-else
-                 :lightbox="true"
-                 :url="currentMedia.videoUrl ?? ''"
-                 :class="fullscreen ? 'max-w-[80%] max-h-[80vh]' : 'max-w-full max-h-[70vh]'"
-                 class="object-contain"
-                 />
+            <img
+              v-if="!isVideo(currentMedia)"
+              :src="currentMedia.imageUrl"
+              :class="fullscreen ? 'max-w-[80%] max-h-[80vh]' : 'max-w-full max-h-[70vh]'"
+              class="object-contain"
+              alt="Powiększony obraz"
+            />
+            <PlayerVideo
+              v-else
+              :lightbox="true"
+              :url="currentMedia.videoUrl ?? ''"
+              :class="fullscreen ? 'max-w-[80%] max-h-[80vh]' : 'max-w-full max-h-[70vh]'"
+              class="object-contain"
+            />
           </template>
 
+          <!-- Strzałka w prawo - pełna wysokość -->
           <button
-          v-if="media.length >1"
+            v-if="media.length > 1"
             @click="next"
-            class="absolute right-4 p-2 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70 z-20 transition-opacity"
+            class="absolute right-0 top-0 bottom-0 w-16 md:w-20 flex items-center justify-center bg-black/50 text-white hover:bg-black/80 z-20 transition-all duration-300"
             :class="fullscreen ? '' : 'opacity-0 group-hover:opacity-100'"
           >
-            <ChevronRightIcon :size="30" />
+            <ChevronRightIcon :size="40" />
           </button>
 
           <!-- Image Counter -->
@@ -168,31 +196,36 @@ watch(() => props.startIndex, (newIndex) => {
           </div>
         </div>
 
+        <!-- Poprawiona lista miniatur -->
         <div
           v-if="media.length > 1"
-          class="flex overflow-x-auto overflow-y-hidden space-x-2 w-full justify-center"
-          :class="[
-            fullscreen ? 'p-4 max-w-[80%]' : 'mt-4 px-4 max-w-full'
-          ]"
+          class="flex overflow-x-auto overflow-y-hidden space-x-2 w-full hide-scrollbar z-10 justify-center"
+          :class="[fullscreen ? 'p-4 max-w-[90%] mx-auto' : 'mt-4 px-4 max-w-full']"
         >
-          <div v-for="(m, idx) in media" :key="m.id"
-               @click="goTo(idx)"
-               class="shrink-0 w-16 h-16 cursor-pointer border-2 transition-all duration-200 rounded-lg overflow-hidden"
-               :class="{
-                 'border-white opacity-100 scale-105': idx === currentIndex,
-                 'border-transparent opacity-60 hover:opacity-100': idx !== currentIndex
-               }">
-
-            <img v-if="m.type === 'image'" :src="m.imageUrl" class="w-full h-full object-cover" :alt="`Thumbnail ${idx + 1}`" />
+          <div
+            v-for="(m, idx) in media"
+            :key="m.id"
+            @click="goTo(idx)"
+            class="shrink-0 w-12 h-12 cursor-pointer border-2 transition-all duration-200 rounded-lg overflow-hidden"
+            :class="{
+              'border-white opacity-100 scale-105': idx === currentIndex,
+              'border-transparent opacity-50 hover:opacity-100': idx !== currentIndex,
+            }"
+          >
+            <img
+              v-if="m.type === 'image'"
+              :src="m.imageUrl"
+              class="w-full h-full object-cover"
+              :alt="`Thumbnail ${idx + 1}`"
+            />
             <div v-else class="relative w-full h-full">
               <video :src="m.videoUrl" class="w-full h-full object-cover" muted></video>
-              <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/20">
                 <svg class="w-6 h-6 text-white opacity-75" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z"/>
+                  <path d="M8 5v14l11-7z" />
                 </svg>
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -205,7 +238,16 @@ watch(() => props.startIndex, (newIndex) => {
   background-size: 275%;
   background-position: center;
   background-repeat: no-repeat;
-  filter: blur(25px)  brightness(0.7);
+  filter: blur(25px) brightness(0.7);
   -webkit-filter: blur(25px) brightness(0.7);
+}
+
+/* Ukrycie paska przewijania dla estetyki miniatur */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 </style>

@@ -1,207 +1,535 @@
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import type { User } from '@/data/users';
-import type { LocationResult } from '@/types/Location';
-import type { ImageTagType } from '@/types/ImageTag';
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import type { User } from '@/utils/users'
+import type { LocationResult } from '@/types/Location'
+import type { ImageTagType } from '@/types/Post'
+import * as tus from 'tus-js-client'
+import { useAuthStore } from '@/stores/auth'
+import { usePostsStore } from '@/composables/feed/useAppState'
+import { useMutation } from '@vue/apollo-composable'
+import { gql } from 'graphql-tag'
+import { useI18n } from 'vue-i18n'
+import type { PostData } from '@/types/StoryElement'
 
-interface SelectedImage {
-  url: string;
-  altText: string;
-  tags?: ImageTagType[];
-}
-
-interface Feeling {
-  emoji: string;
-  label: string;
-}
-interface Activity {
-  parent: string | undefined;
-  item: {
-    label: string;
-    emoji: string;
-  }
+export interface SelectedImage {
+  url: string
+  serverPath?: string
+  altText: string
+  tags?: ImageTagType[]
+  progress?: number | null
+  type?: 'image' | 'video'
 }
 
-interface Poll {
-  question: string;
-  options: { text: string }[];
+export interface Feeling {
+  emoji: string
+  label: string
 }
+
+export interface Activity {
+  parent: string | undefined
+  item: { label: string; emoji: string }
+}
+
+export interface Poll {
+  question: string
+  options: { text: string }[]
+}
+
+const createInitialPostData = () => ({
+  content: '',
+  privacy: 'friends',
+  taggedUsers: [] as User[],
+  location: null as LocationResult | null,
+  gif: null as string | null,
+  images: [] as SelectedImage[],
+  cardBgId: 0,
+  feeling: null as Feeling | null,
+  activity: null as Activity | null,
+  targetId: null as string | null,
+  targetType: null as 'User' | 'Group' | 'Event' | 'event' | null,
+  isAnonymous: false,
+  poll: null as Poll | null,
+  postVideoUrl: null as string | null,
+  sharedPost: null as PostData | null,
+})
+
+const createInitialUiState = () => ({
+  initialView: null as string | null,
+  imageToEdit: null as SelectedImage | null,
+  imageIndexToEdit: null as number | null,
+  videoToEdit: null as string | null,
+})
 
 export const useCreatePostStore = defineStore('createPost', () => {
-  // --- STATE (Stan) ---
-  const taggedUsers = ref<User[]>([]);
-  const selectedLocation = ref<LocationResult | null>(null);
-  const selectedGif = ref<string | null>(null);
-  const selectedPrivacy = ref<string>('friends');
-  const imageToEdit = ref<SelectedImage | null>(null);
-  const imageIndexToEdit = ref<number | null>(null);
-  const videoToEdit = ref<string | null>(null);
-  const postVideoUrl = ref<string | null>(null);
-  const postContent = ref<string>('');
-  const selectedImages = ref<SelectedImage[]>([]);
-  const selectedCardBgId = ref<number>(0);
-  const initialView = ref<string | null>(null);
-  const selectedFeeling = ref<Feeling | null>(null);
-  const selectedActivity = ref<Activity | null>(null);
-  const targetId = ref<string | null>(null)
-  const targetType = ref<'User' | 'Group' | null>(null)
-  const isAnonymous = ref<boolean>(false); // Add isAnonymous state
-  const poll = ref<Poll | null>(null);
+  const { t } = useI18n()
+  const postData = ref(createInitialPostData())
+  const uiState = ref(createInitialUiState())
 
+  const closeFriends = ref<User[]>([])
+  const tusUploads = new Map<string, tus.Upload>()
+  const triggerImageSelector = ref<(() => void) | null>(null)
 
-  // --- ACTIONS (Akcje) ---
-  function setTarget (id: string | null, type: 'User' | 'Group' | null) {
-    targetId.value = id
-    targetType.value = type
-  }
-  function setTaggedUsers(users: User[]) {
-    taggedUsers.value = users;
+  const currentView = ref<string>('creator')
+  const history = ref<string[]>(['creator'])
+  const transitionName = ref('slide-left')
+
+  function setInitialView(viewName: string) {
+    uiState.value.initialView = viewName
+    currentView.value = viewName
+    history.value = viewName === 'lifeEvent' ? ['creator', 'lifeEvent'] : [viewName]
   }
 
-  function addTaggedUser(user: User) {
-    taggedUsers.value.push(user);
+  function navigateTo(viewName: string) {
+    transitionName.value = 'slide-left'
+    history.value.push(viewName)
+    currentView.value = viewName
   }
 
-  function setLocation(location: LocationResult | null) {
-    selectedLocation.value = location;
-  }
-
-  function setGif(url: string | null) {
-    selectedGif.value = url;
-  }
-
-  function setPrivacy(privacy: string) {
-    selectedPrivacy.value = privacy;
-  }
-
-  function setImageToEdit(image: SelectedImage | null, index: number | null = null) {
-    imageToEdit.value = image;
-    imageIndexToEdit.value = index;
-  }
-
-  function setVideoToEdit(url: string | null) {
-    videoToEdit.value = url;
-  }
-
-  function setPostContent(content: string) {
-    postContent.value = content;
-  }
-
-  function addSelectedImage(image: SelectedImage) {
-    selectedImages.value.push(image);
-  }
-
-  function removeSelectedImage(index: number) {
-    selectedImages.value.splice(index, 1);
-  }
-
-  function setSelectedCardBgId(id: number) {
-    selectedCardBgId.value = id;
-  }
-
-  function updateImageAltText(index: number, altText: string) {
-    if (selectedImages.value[index]) {
-      selectedImages.value[index].altText = altText;
+  function navigateBack() {
+    if (history.value.length > 1) {
+      transitionName.value = 'slide-right'
+      history.value.pop()
+      currentView.value = history.value[history.value.length - 1] || 'creator'
     }
   }
 
-  function setInitialView(view: string | null) {
-    initialView.value = view;
+  function saveEditedMedia(url: string) {
+    const editIndex = uiState.value.imageIndexToEdit
+    if (currentView.value === 'imageEditor' && editIndex !== null) {
+      const targetImg = postData.value.images[editIndex]
+      if (targetImg) {
+        targetImg.url = url
+      }
+      setImageToEdit(null, null)
+    } else if (currentView.value === 'videoEditor') {
+      if (editIndex !== null && editIndex >= 0) {
+        const targetImg = postData.value.images[editIndex]
+        if (targetImg) {
+          targetImg.url = url
+        }
+      } else {
+        postData.value.postVideoUrl = url
+      }
+      uiState.value.videoToEdit = null
+      uiState.value.imageIndexToEdit = null
+    }
+    navigateBack()
   }
 
-  function setSelectedFeeling(feeling: Feeling | null) {
-    selectedFeeling.value = feeling;
+  try {
+    const saved = localStorage.getItem('fc_close_friends')
+    if (saved) closeFriends.value = JSON.parse(saved)
+  } catch (e) {
+    console.error('Failed to parse close friends from localStorage:', e)
   }
 
-  function setSelectedActivity(activity: Activity | null) {
-    selectedActivity.value = activity;
-  }
-  function setPostVideoUrl(video){
-postVideoUrl.value = video
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && key.startsWith('tus::')) {
+          const value = localStorage.getItem(key)
+          if (value && value.includes('http://localhost/files/')) {
+            localStorage.removeItem(key)
+            i--
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Failed to clean up old tus localStorage entries:', e)
+    }
   }
 
-  function setIsAnonymous(value: boolean) { // Add setIsAnonymous action
-    isAnonymous.value = value;
+  function setTarget(id: string | null, type: 'User' | 'Group' | 'Event' | null) {
+    postData.value.targetId = id
+    postData.value.targetType = type
   }
 
-  function setPoll(newPoll: Poll | null) {
-    poll.value = newPoll;
+  function setCloseFriends(users: User[]) {
+    closeFriends.value = users
+    try {
+      localStorage.setItem('fc_close_friends', JSON.stringify(users))
+    } catch (e) {
+      console.error(e)
+    }
   }
 
-  // Funkcja resetująca stan (oprócz privacy)
+  function addTaggedUser(user: User) {
+    postData.value.taggedUsers.push(user)
+  }
+
+  function addSelectedImage(image: SelectedImage) {
+    postData.value.images.push(image)
+  }
+
+  function removeSelectedImage(index: number) {
+    const itemToRemove = postData.value.images[index]
+    if (itemToRemove) {
+      const upload = tusUploads.get(itemToRemove.url)
+      if (upload) {
+        upload.abort()
+        tusUploads.delete(itemToRemove.url)
+      }
+
+      if (itemToRemove.url.startsWith('blob:')) {
+        URL.revokeObjectURL(itemToRemove.url)
+      }
+    }
+    postData.value.images.splice(index, 1)
+  }
+
+  function updateImageAltText(index: number, altText: string) {
+    if (postData.value.images[index]) {
+      postData.value.images[index].altText = altText
+    }
+  }
+
+  function setImageToEdit(image: SelectedImage | null, index: number | null = null) {
+    uiState.value.imageToEdit = image
+    uiState.value.imageIndexToEdit = index
+  }
+
+  function uploadVideoInChunks(file: File) {
+    const localBlobUrl = URL.createObjectURL(file)
+    const isVid = file.type.startsWith('video/')
+
+    postData.value.images.push({
+      url: localBlobUrl,
+      altText: '',
+      progress: 0,
+      type: isVid ? 'video' : 'image',
+    })
+
+    const upload = new tus.Upload(file, {
+      endpoint: `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/files`,
+      retryDelays: [0, 3000, 5000, 10000],
+      chunkSize: 2 * 1024 * 1024,
+      metadata: {
+        filename: file.name,
+        filetype: file.type,
+      },
+      onProgress: (bytesUploaded, bytesTotal) => {
+        const targetItem = postData.value.images.find((img) => img.url === localBlobUrl)
+        if (targetItem) {
+          targetItem.progress = Math.round((bytesUploaded / bytesTotal) * 100)
+        }
+      },
+      onError: (error) => {
+        console.error(`Błąd Tus dla pliku ${file.name}:`, error)
+      },
+      onSuccess: () => {
+        const targetItem = postData.value.images.find((img) => img.url === localBlobUrl)
+        if (targetItem) {
+          let serverPath = upload.url || undefined
+          if (serverPath && serverPath.includes('/files/')) {
+            serverPath = '/files/' + serverPath.split('/files/').pop()
+          }
+          targetItem.serverPath = serverPath
+          targetItem.progress = null
+        }
+        tusUploads.delete(localBlobUrl)
+      },
+    })
+
+    tusUploads.set(localBlobUrl, upload)
+
+    upload.findPreviousUploads().then((previousUploads) => {
+      if (previousUploads.length > 0 && previousUploads[0]) {
+        upload.resumeFromPreviousUpload(previousUploads[0])
+        console.log(`🚀 Znaleziono przerwany upload pliku ${file.name}. Wznawianie sesji...`)
+      } else {
+        console.log(`🆕 Pierwsze przesyłanie pliku ${file.name}.`)
+      }
+      upload.start()
+    })
+  }
+
   function reset() {
-    taggedUsers.value = [];
-    selectedLocation.value = null;
-    selectedGif.value = null;
-    imageToEdit.value = null;
-    videoToEdit.value = null;
-    postVideoUrl.value = null;
-    postContent.value = '';
-    selectedImages.value = [];
-initialView.value = null;
-    selectedCardBgId.value = 0; // Reset do wartości domyślnej
-    selectedFeeling.value = null;
-    selectedActivity.value = null;
-    targetId.value = null
-    targetType.value = null
-    isAnonymous.value = false; // Reset isAnonymous
-    poll.value = null;
+    tusUploads.forEach((upload) => upload.abort())
+    tusUploads.clear()
 
-    // Nie resetujemy privacy, ponieważ jest ładowane z localStorage
+    postData.value.images.forEach((img) => {
+      if (img.url.startsWith('blob:')) {
+        URL.revokeObjectURL(img.url)
+      }
+    })
+
+    postData.value = createInitialPostData()
+    uiState.value = createInitialUiState()
+    currentView.value = 'creator'
+    history.value = ['creator']
+    transitionName.value = 'slide-left'
   }
+
   const hasUnsavedChanges = computed(() => {
-      return (
-        taggedUsers.value.length > 0 ||
-        selectedLocation.value !== null ||
-        selectedGif.value !== null ||
-        imageToEdit.value !== null ||
-        videoToEdit.value !== null ||
-        postContent.value !== '' ||
-        selectedImages.value.length > 0 ||
-        selectedFeeling.value !== null ||
-        selectedActivity.value !== null
-      );
-    });
-  // --- RETURN (Udostępnienie publiczne) ---
+    const isPostDataChanged = JSON.stringify(postData.value) !== JSON.stringify(createInitialPostData())
+
+    const ui = uiState.value
+    const isUiChanged = ui.imageToEdit !== null || ui.videoToEdit !== null
+
+    return isPostDataChanged || isUiChanged
+  })
+
+  const CREATE_POST_MUTATION = gql`
+    mutation CreatePost($input: CreatePostInput!) {
+      createPost(input: $input) {
+        id
+        content
+        authorId
+        date
+        timestamp
+        isAnonymous
+        media {
+          src
+          altText
+        }
+        commentCount
+        shareCount
+        reactions {
+          reactionType
+          userIds
+        }
+      }
+    }
+  `
+
+  const { mutate: createPost } = useMutation(CREATE_POST_MUTATION, {
+    update: (cache, { data }) => {
+      const createdPost = data?.createPost
+      if (!createdPost) return
+
+      const authStore = useAuthStore()
+      const currentUser = authStore.currentUser
+
+      const firstName = postData.value.isAnonymous
+        ? (t('post.anonymousUser') || 'Anonim')
+        : ((currentUser as any)?.firstName || currentUser?.name?.split(' ')[0] || '')
+
+      const lastName = postData.value.isAnonymous
+        ? ''
+        : ((currentUser as any)?.lastName || currentUser?.name?.split(' ').slice(1).join(' ') || '')
+
+      const authorData = {
+        __typename: 'User',
+        id: String(currentUser?.id || authStore.currentUserId),
+        firstName,
+        lastName,
+        avatarId: postData.value.isAnonymous
+          ? '/img/anonymous-avatar.png'
+          : (currentUser?.avatar || (currentUser as any)?.avatarId || '/default-avatar.png'),
+      }
+
+      const newPostWithAuthor = {
+        ...createdPost,
+        author: authorData,
+        targetId: postData.value.targetId || null,
+        targetType: postData.value.targetType || null,
+        visibility: postData.value.privacy || 'PUBLIC',
+        allowedUserIds: [],
+        reactions: (createdPost.reactions || []).map((r: any) => ({
+          ...r,
+          users: []
+        }))
+      }
+
+      cache.modify({
+        fields: {
+          getFeed(existingFeedRefs = [], { readField }) {
+            const newPostRef = cache.writeFragment({
+              data: newPostWithAuthor,
+              fragment: gql`
+                fragment NewFeedPost on Post {
+                  id
+                  authorId
+                  author {
+                    id
+                    firstName
+                    lastName
+                    avatarId
+                  }
+                  content
+                  date
+                  timestamp
+                  isAnonymous
+                  targetId
+                  targetType
+                  commentCount
+                  shareCount
+                  visibility
+                  allowedUserIds
+                  reactions {
+                    reactionType
+                    userIds
+                    users {
+                      id
+                      firstName
+                      lastName
+                    }
+                  }
+                }
+              `
+            })
+
+            if (existingFeedRefs.some((ref: any) => readField('id', ref) === createdPost.id)) {
+              return existingFeedRefs
+            }
+
+            return [newPostRef, ...existingFeedRefs]
+          }
+        }
+      })
+    }
+  })
+
+  async function publishPost() {
+    const authStore = useAuthStore()
+    const postsStore = usePostsStore()
+
+    const mediaList: any[] = postData.value.images.map((img) => ({
+      src: img.serverPath || img.url,
+      altText: img.altText || '',
+    }))
+
+    if (postData.value.postVideoUrl) {
+      mediaList.push({ src: postData.value.postVideoUrl, altText: '' })
+    }
+    if (postData.value.gif) {
+      mediaList.push({ src: postData.value.gif, altText: '' })
+    }
+
+    const currentUser = authStore.currentUser
+    const authorId = String(currentUser?.id || authStore.currentUserId)
+    const isSharing = !!postData.value.sharedPost
+    const originalPost = postData.value.sharedPost
+
+    try {
+      const result = await createPost({
+        input: {
+          content: postData.value.content,
+          authorId,
+          media: isSharing ? [] : mediaList.map(m => ({ src: m.src, altText: m.altText || '' })),
+          isAnonymous: !!postData.value.isAnonymous,
+          targetId: isSharing ? originalPost!.id : (postData.value.targetId || undefined),
+          targetType: isSharing ? 'post' : (postData.value.targetType || undefined),
+          visibility: postData.value.privacy || 'PUBLIC',
+          allowedUserIds: []
+        }
+      })
+
+      const created = result?.data?.createPost
+      if (created) {
+        const formattedReactions: Record<string, number[]> = {}
+        if (Array.isArray(created.reactions)) {
+          created.reactions.forEach((r: any) => {
+            formattedReactions[r.reactionType.toLowerCase()] = r.userIds.map(String)
+          })
+        }
+
+        const firstName = postData.value.isAnonymous
+          ? (t('post.anonymousUser') || 'Anonim')
+          : ((currentUser as any)?.firstName || currentUser?.name?.split(' ')[0] || '')
+
+        const lastName = postData.value.isAnonymous
+          ? ''
+          : ((currentUser as any)?.lastName || currentUser?.name?.split(' ').slice(1).join(' ') || '')
+
+        const displayName = postData.value.isAnonymous
+          ? t('post.anonymousUser') || 'Anonim'
+          : currentUser?.name || `${(currentUser as any)?.firstName || ''} ${(currentUser as any)?.lastName || ''}`.trim()
+
+        const displayAvatar = postData.value.isAnonymous
+          ? '/img/anonymous-avatar.png'
+          : (currentUser?.avatar || (currentUser as any)?.avatarId || '/default-avatar.png')
+
+        const postWithStats = {
+          ...created,
+          author: {
+            id: authorId,
+            name: displayName,
+            firstName,
+            lastName,
+            avatar: displayAvatar,
+            avatarId: displayAvatar,
+            username: postData.value.isAnonymous
+              ? 'anonymous'
+              : ((currentUser as any)?.username || displayName)
+          },
+          targetId: isSharing ? originalPost!.id : (postData.value.targetId || null),
+          targetType: isSharing ? 'post' : (postData.value.targetType || null),
+          visibility: postData.value.privacy || 'PUBLIC',
+          allowedUserIds: [],
+          reactions: formattedReactions,
+          rawReactions: created.reactions || [],
+          reactionUserNames: {},
+          stats: {
+            reactions: 0,
+            comments: created.commentCount ?? 0,
+            shares: created.shareCount ?? 0
+          },
+          ...(isSharing && originalPost ? {
+            sharedContent: {
+              type: 'post',
+              originalId: originalPost.id,
+              media: originalPost.media,
+            }
+          } : {})
+        }
+
+        if (isSharing && originalPost) {
+          const origInStore = postsStore.getPostById(originalPost.id)
+          if (origInStore && origInStore.stats) {
+            origInStore.stats.shares = (origInStore.stats.shares || 0) + 1
+          }
+        }
+
+        postsStore.addPost(postWithStats)
+      }
+    } catch (err) {
+      console.error('Failed to create post in DB:', err)
+      throw err
+    }
+  }
+
+  function editImage(index: number) {
+    const img = postData.value.images[index]
+    const url = img?.url || ''
+    const existingAlt = img?.altText || ''
+    setImageToEdit({ url, altText: existingAlt }, index)
+    navigateTo('imageEditor')
+  }
+
+  function editVideo(index: number) {
+    const url = index === -1 ? postData.value.postVideoUrl || '' : postData.value.images[index]?.url || ''
+    uiState.value.videoToEdit = url
+    uiState.value.imageIndexToEdit = index
+    navigateTo('videoEditor')
+  }
+
   return {
-    taggedUsers,
-    selectedLocation,
-    selectedGif,
-    selectedPrivacy,
-    imageToEdit,
-    imageIndexToEdit,
-    videoToEdit,
-    postVideoUrl,
-    postContent,
-    selectedImages,
-    selectedCardBgId,
-    initialView,
-    selectedFeeling,
-    selectedActivity,
-    targetId,
-    targetType,
+    postData,
+    uiState,
+    closeFriends,
     hasUnsavedChanges,
-    isAnonymous, // Expose isAnonymous
-    poll,
+    currentView,
+    history,
+    transitionName,
+
     setTarget,
-    setTaggedUsers,
+    setCloseFriends,
     addTaggedUser,
-    setLocation,
-    setGif,
-    setPrivacy,
-    setImageToEdit,
-    setVideoToEdit,
-    setPostContent,
-    setPostVideoUrl,
     addSelectedImage,
     removeSelectedImage,
     updateImageAltText,
-    setSelectedCardBgId,
-    setInitialView,
-    setSelectedFeeling,
-    setSelectedActivity,
-    setIsAnonymous, // Expose setIsAnonymous
-    setPoll,
+    setImageToEdit,
+    uploadVideoInChunks,
     reset,
-  };
-});
+    setInitialView,
+    navigateTo,
+    navigateBack,
+    saveEditedMedia,
+    publishPost,
+    editImage,
+    editVideo,
+    triggerImageSelector,
+  }
+})

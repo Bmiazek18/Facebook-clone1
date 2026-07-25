@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import PlayIcon from 'vue-material-design-icons/Play.vue'
 import PauseIcon from 'vue-material-design-icons/Pause.vue'
 import type { Message, AudioState } from '@/types/Message'
-import { useAudioPlayer } from '@/composables/useAudioPlayer'; // Added
+import { useAudioPlayer } from '@/composables/media/useAudioPlayer' // Added
 
 const props = defineProps<{
   message: Message
@@ -13,19 +13,19 @@ const props = defineProps<{
 }>()
 
 // Use useAudioPlayer directly
-const { audioStates, toggleAudioPlayback, seekAudio } = useAudioPlayer(props.boxId);
+const { audioStates, toggleAudioPlayback, seekAudio } = useAudioPlayer(props.boxId)
 
 // Update toggleAudio to use the local toggleAudioPlayback
 const toggleAudio = () => toggleAudioPlayback(props.message)
 
 const handleSeek = (event: MouseEvent) => {
-  const progressBar = event.currentTarget as HTMLElement;
-  const clickX = event.clientX - progressBar.getBoundingClientRect().left;
-  const progressBarWidth = progressBar.offsetWidth;
-  const seekPercentage = clickX / progressBarWidth;
-  const newTime = (props.message.duration || 0) * seekPercentage;
-  seekAudio(props.message, newTime);
-};
+  const progressBar = event.currentTarget as HTMLElement
+  const clickX = event.clientX - progressBar.getBoundingClientRect().left
+  const progressBarWidth = progressBar.offsetWidth
+  const seekPercentage = clickX / progressBarWidth
+  const newTime = (props.message.duration || 0) * seekPercentage
+  seekAudio(props.message, newTime)
+}
 
 const visualizerBars = [10, 20, 14, 25, 20, 15, 20, 10]
 const VISUALIZER_THRESHOLDS = [0, 12, 25, 37, 50, 62, 75, 87]
@@ -47,7 +47,7 @@ const getAudioBarStyle = (msgId: number, index: number, duration: number) => {
   return {
     height: `${visualizerBars[index]}px`,
     width: '3px',
-    backgroundColor: isActive || !isPlaying  ? 'white' : 'rgba(255,255,255,0.5)',
+    backgroundColor: isActive || !isPlaying ? 'white' : 'rgba(255,255,255,0.5)',
   }
 }
 
@@ -101,7 +101,8 @@ const getPlaybackIndicatorStyle = (msgId: number, duration: number) => {
     <span class="text-xs font-bold tabular-nums pr-2 select-none min-w-[35px] text-right">
       {{
         formatSeconds(
-          audioStates && (audioStates[message.id]?.isPlaying || audioStates[message.id]?.currentTime > 0)
+          audioStates &&
+            (audioStates[message.id]?.isPlaying || audioStates[message.id]?.currentTime > 0)
             ? audioStates[message.id]?.currentTime || 0
             : message.duration,
         )

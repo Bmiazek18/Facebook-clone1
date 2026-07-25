@@ -1,130 +1,214 @@
 <template>
-  <div class="settings-view max-w-xl mx-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-lg rounded-xl p-4">
-    <div class="w-full flex items-center leading-7 pb-4">
+  <div
+    class="settings-view max-w-xl mx-auto bg-theme-bg-secondary text-theme-text  p-2"
+  >
+    <!-- Nagłówek -->
+    <div class="w-full flex items-center pb-4">
       <button
         @click="handleBackClick"
-        class="rounded-lg transition duration-150 p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+        class="rounded-full p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-theme-hover transition duration-150 mr-2"
         aria-label="Wróć"
       >
-        <span class="h-9 w-9 border border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center">
-          <ArrowLeftIcon class="text-gray-700 dark:text-gray-300" />
-        </span>
+        <ArrowLeftIcon class="text-2xl text-theme-text" />
       </button>
-      <span class="ml-4 text-gray-900 dark:text-white font-bold text-[24px]">Wyświetlanie i ułatwienia dostępu</span>
+      <span class="text-theme-text font-bold text-xl leading-snug">
+        Wyświetlanie i ułatwienia dostępu
+      </span>
     </div>
 
-    <section class="setting-group mb-8">
-      <div class="setting-header flex items-start mb-4">
-        <span class="h-9 w-9 border border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center mr-3 mt-1 shrink-0">
-          <MoonWaningCrescentIcon class="text-gray-700 dark:text-gray-300" :size="20" />
+    <!-- Tryb ciemny -->
+    <section class="setting-group mb-6">
+      <div class="setting-header flex items-start mb-3">
+        <span
+          class="h-9 w-9 bg-theme-bg-tertiary dark:bg-theme-bg-tertiary rounded-full flex items-center justify-center mr-3 shrink-0 text-theme-text"
+        >
+          <MoonWaningCrescentIcon :size="20" />
         </span>
         <div class="text-content">
-          <h3 class="text-xl font-semibold">Tryb ciemny</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Dostosuj wygląd, aby zmniejszyć odblask i dać odpocząć oczom.
+          <h3 class="text-base font-bold text-theme-text leading-tight">Tryb ciemny</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">
+            Dostosuj wygląd Facebooka, aby zmniejszyć odblask i dać odpocząć oczom.
           </p>
         </div>
       </div>
 
-      <div class="options-list pl-12 space-y-2">
-        <label class="option-item flex items-center justify-between py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg -mx-2 px-2 transition-colors">
-          <span class="text-base">Wył.</span>
-          <input type="radio" v-model="mode" value="light" class="hidden">
-          <div :class="['w-5 h-5 rounded-full border-2 flex items-center justify-center', mode === 'light' ? 'border-blue-500' : 'border-gray-400 dark:border-gray-600']">
-            <div v-if="mode === 'light'" class="w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+      <div class="options-list pl-12 space-y-1">
+        <!-- Wył. -->
+        <label
+          class="option-item flex items-center justify-between py-2.5 cursor-pointer hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg px-2 -mx-2 transition-colors"
+        >
+          <span class="text-[15px] font-medium text-theme-text">Wył.</span>
+          <input type="radio" v-model="mode" value="light" class="hidden" />
+          <div
+            :class="[
+              'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all',
+              mode === 'light'
+                ? 'border-gray-900 dark:border-white'
+                : 'border-gray-400 dark:border-gray-500',
+            ]"
+          >
+            <div
+              v-if="mode === 'light'"
+              class="w-2.5 h-2.5 bg-gray-900 dark:bg-white rounded-full"
+            ></div>
           </div>
         </label>
 
-        <label class="option-item flex items-center justify-between py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg -mx-2 px-2 transition-colors">
-          <span class="text-base">Wł.</span>
-          <input type="radio" v-model="mode" value="dark" class="hidden">
-          <div :class="['w-5 h-5 rounded-full border-2 flex items-center justify-center', mode === 'dark' ? 'border-blue-500' : 'border-gray-400 dark:border-gray-600']">
-            <div v-if="mode === 'dark'" class="w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+        <!-- Wł. -->
+        <label
+          class="option-item flex items-center justify-between py-2.5 cursor-pointer hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg px-2 -mx-2 transition-colors"
+        >
+          <span class="text-[15px] font-medium text-theme-text">Wł.</span>
+          <input type="radio" v-model="mode" value="dark" class="hidden" />
+          <div
+            :class="[
+              'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all',
+              mode === 'dark'
+                ? 'border-gray-900 dark:border-white'
+                : 'border-gray-400 dark:border-gray-500',
+            ]"
+          >
+            <div
+              v-if="mode === 'dark'"
+              class="w-2.5 h-2.5 bg-gray-900 dark:bg-white rounded-full"
+            ></div>
           </div>
         </label>
 
-        <label class="option-item flex items-start justify-between py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg -mx-2 px-2 transition-colors">
+        <!-- Automatycznie -->
+        <label
+          class="option-item flex items-start justify-between py-2.5 cursor-pointer hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg px-2 -mx-2 transition-colors"
+        >
           <div class="flex-1 pr-4">
-            <span class="text-base block">Automatycznie</span>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Automatycznie dostosowuje wyświetlanie na podstawie ustawień systemowych urządzenia.
+            <span class="text-[15px] font-medium text-theme-text block">Automatycznie</span>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">
+              Automatycznie dostosujemy wyświetlanie na podstawie ustawień systemowych urządzenia.
             </p>
           </div>
-          <input type="radio" v-model="mode" value="auto" class="hidden">
-          <div :class="['w-5 h-5 rounded-full border-2 flex items-center justify-center mt-1', mode === 'auto' ? 'border-blue-500' : 'border-gray-400 dark:border-gray-600']">
-            <div v-if="mode === 'auto'" class="w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+          <input type="radio" v-model="mode" value="auto" class="hidden" />
+          <div
+            :class="[
+              'w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 transition-all shrink-0',
+              mode === 'auto'
+                ? 'border-gray-900 dark:border-white'
+                : 'border-gray-400 dark:border-gray-500',
+            ]"
+          >
+            <div
+              v-if="mode === 'auto'"
+              class="w-2.5 h-2.5 bg-gray-900 dark:bg-white rounded-full"
+            ></div>
           </div>
         </label>
       </div>
     </section>
 
-    <section class="setting-group mb-8">
-      <div class="setting-header flex items-start mb-4">
-        <span class="h-9 w-9 border border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center mr-3 mt-1 shrink-0">
-          <FormatSizeDecreaseIcon class="text-gray-700 dark:text-gray-300" :size="20" />
+    <!-- Tryb kompaktowy -->
+    <section class="setting-group mb-6">
+      <div class="setting-header flex items-start mb-3">
+        <span
+          class="h-9 w-9 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mr-3 shrink-0 text-theme-text"
+        >
+          <FormatSizeDecreaseIcon :size="20" />
         </span>
         <div class="text-content">
-          <h3 class="text-xl font-semibold">Tryb kompaktowy</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Zmniejsz rozmiar czcionki, aby zmieścić więcej treści na ekranie.</p>
+          <h3 class="text-base font-bold text-theme-text leading-tight">Tryb kompaktowy</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">
+            Zmniejsz rozmiar czcionki, aby zmieścić więcej treści na ekranie.
+          </p>
         </div>
       </div>
 
-      <div class="options-list pl-12 space-y-2">
-        <label class="option-item flex items-center justify-between py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg -mx-2 px-2 transition-colors">
-          <span class="text-base">Wył.</span>
-          <input type="radio" v-model="compactMode" value="off" class="hidden">
-          <div :class="['w-5 h-5 rounded-full border-2 flex items-center justify-center', compactMode === 'off' ? 'border-blue-500' : 'border-gray-400 dark:border-gray-600']">
-            <div v-if="compactMode === 'off'" class="w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+      <div class="options-list pl-12 space-y-1">
+        <label
+          class="option-item flex items-center justify-between py-2.5 cursor-pointer hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg px-2 -mx-2 transition-colors"
+        >
+          <span class="text-[15px] font-medium text-theme-text">Wył.</span>
+          <input type="radio" v-model="compactMode" value="off" class="hidden" />
+          <div
+            :class="[
+              'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all',
+              compactMode === 'off'
+                ? 'border-gray-900 dark:border-white'
+                : 'border-gray-400 dark:border-gray-500',
+            ]"
+          >
+            <div
+              v-if="compactMode === 'off'"
+              class="w-2.5 h-2.5 bg-gray-900 dark:bg-white rounded-full"
+            ></div>
           </div>
         </label>
 
-        <label class="option-item flex items-center justify-between py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg -mx-2 px-2 transition-colors">
-          <span class="text-base">Wł.</span>
-          <input type="radio" v-model="compactMode" value="on" class="hidden">
-          <div :class="['w-5 h-5 rounded-full border-2 flex items-center justify-center', compactMode === 'on' ? 'border-blue-500' : 'border-gray-400 dark:border-gray-600']">
-            <div v-if="compactMode === 'on'" class="w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+        <label
+          class="option-item flex items-center justify-between py-2.5 cursor-pointer hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg px-2 -mx-2 transition-colors"
+        >
+          <span class="text-[15px] font-medium text-theme-text">Wł.</span>
+          <input type="radio" v-model="compactMode" value="on" class="hidden" />
+          <div
+            :class="[
+              'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all',
+              compactMode === 'on'
+                ? 'border-gray-900 dark:border-white'
+                : 'border-gray-400 dark:border-gray-500',
+            ]"
+          >
+            <div
+              v-if="compactMode === 'on'"
+              class="w-2.5 h-2.5 bg-gray-900 dark:bg-white rounded-full"
+            ></div>
           </div>
         </label>
       </div>
     </section>
 
+    <!-- Dolne odnośniki -->
     <div class="space-y-1">
-      <a href="#" class="flex items-center py-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg -mx-2 px-2 transition duration-150">
-        <span class="h-9 w-9 border border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center mr-3 shrink-0">
-          <KeyboardIcon :size="20" class="text-gray-700 dark:text-gray-300" />
+      <a
+        href="#"
+        class="flex items-center py-2.5 hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg px-2 -mx-2 transition duration-150"
+      >
+        <span
+          class="h-9 w-9 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mr-3 shrink-0 text-theme-text"
+        >
+          <KeyboardIcon :size="20" />
         </span>
-        <span class="grow text-base font-medium">Klawiatura</span>
+        <span class="grow text-[15px] font-bold text-theme-text">Klawiatura</span>
         <ChevronRightIcon :size="24" class="text-gray-400" />
       </a>
 
-      <a href="#" class="flex items-center py-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg -mx-2 px-2 transition duration-150">
-        <span class="h-9 w-9 border border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center mr-3 shrink-0">
-          <HumanMaleHeightIcon :size="20" class="text-gray-700 dark:text-gray-300" />
+      <a
+        href="#"
+        class="flex items-center py-2.5 hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg px-2 -mx-2 transition duration-150"
+      >
+        <span
+          class="h-9 w-9 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mr-3 shrink-0 text-theme-text"
+        >
+          <HumanMaleHeightIcon :size="20" />
         </span>
-        <span class="grow text-base font-medium">Ustawienia dostępności</span>
+        <span class="grow text-[15px] font-bold text-theme-text">Ustawienia dostępności</span>
       </a>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useTheme } from '@/composables/useTheme';
+import { ref } from 'vue'
+import { useTheme } from '@/composables/shared/useTheme'
 
 // --- IKONY ---
-import KeyboardIcon from 'vue-material-design-icons/Keyboard.vue';
-import HumanMaleHeightIcon from 'vue-material-design-icons/HumanMaleHeight.vue';
-import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
-import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue';
-import MoonWaningCrescentIcon from 'vue-material-design-icons/MoonWaningCrescent.vue';
-import FormatSizeDecreaseIcon from 'vue-material-design-icons/FormatSize.vue';
+import KeyboardIcon from 'vue-material-design-icons/Keyboard.vue'
+import HumanMaleHeightIcon from 'vue-material-design-icons/HumanMaleHeight.vue'
+import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue'
+import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue'
+import MoonWaningCrescentIcon from 'vue-material-design-icons/MoonWaningCrescent.vue'
+import FormatSizeDecreaseIcon from 'vue-material-design-icons/FormatSize.vue'
 
 // --- LOGIKA ---
-// Upewnij się, że useTheme() zwraca 'mode' z useColorMode
-const { mode } = useTheme();
+const { mode } = useTheme()
 
-const compactMode = ref<'off' | 'on'>('off');
+const compactMode = ref<'off' | 'on'>('off')
 
-const emit = defineEmits(['back']);
-const handleBackClick = () => emit('back');
+const emit = defineEmits(['back'])
+const handleBackClick = () => emit('back')
 </script>

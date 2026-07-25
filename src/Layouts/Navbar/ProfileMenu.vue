@@ -1,16 +1,11 @@
 <template>
   <div class="w-full md:w-[360px] bg-theme-bg-secondary p-2 rounded-xl shadow-2xl overflow-hidden">
-
     <div
       class="relative transition-[height] duration-300 ease-in-out"
       ref="wrapperRef"
       style="min-height: 50px"
     >
-      <Transition
-        :name="transitionName"
-        @enter="onEnter"
-        @after-enter="onAfterEnter"
-      >
+      <Transition :name="transitionName" @enter="onEnter" @after-enter="onAfterEnter">
         <component
           :is="currentViewComponent"
           :key="currentView"
@@ -20,42 +15,34 @@
         />
       </Transition>
     </div>
-
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, type Component } from 'vue';
-import { useSlideTransition } from '@/composables/useSlideTransition';
+import { computed, type Component } from 'vue'
+import { useSlideTransition } from '@/composables/ui/useSlideTransition'
 
-import MainMenu from '@/layouts/Navbar/menu/MainMenu.vue';
-import SubMenuDisplay from '@/layouts/Navbar/menu/SubMenu.vue';
-import LanguageSelector from '@/layouts/Navbar/menu/LanguageSelector.vue';
-import SettingsMenu from '@/layouts/Navbar/menu/SettingsMenu.vue';
+import MainMenu from '@/layouts/Navbar/menu/MainMenu.vue'
+import SubMenuDisplay from '@/layouts/Navbar/menu/SubMenu.vue'
+import LanguageSelector from '@/layouts/Navbar/menu/LanguageSelector.vue'
+import SettingsMenu from '@/layouts/Navbar/menu/SettingsMenu.vue'
 
 const viewComponents: Record<string, Component> = {
   main: MainMenu,
   display: SubMenuDisplay,
   language: LanguageSelector,
   settings: SettingsMenu,
-};
+}
 
-const {
-  wrapperRef,
-  currentView,
-  transitionName,
-  navigateTo,
-  navigateBack,
-  onEnter,
-  onAfterEnter
-} = useSlideTransition('main');
+const { wrapperRef, currentView, transitionName, navigateTo, navigateBack, onEnter, onAfterEnter } =
+  useSlideTransition('main')
 
 const currentViewComponent = computed(() => {
-  return viewComponents[currentView.value] || MainMenu;
-});
+  return viewComponents[currentView.value] || MainMenu
+})
 
-const handleNavigation = (viewName: string) => navigateTo(viewName);
-const handleNavigationBack = () => navigateBack();
+const handleNavigation = (viewName: string) => navigateTo(viewName)
+const handleNavigationBack = () => navigateBack()
 </script>
 
 <style scoped>
@@ -75,7 +62,9 @@ const handleNavigationBack = () => navigateBack();
 .slide-left-leave-active,
 .slide-right-enter-active,
 .slide-right-leave-active {
-  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 0.3s ease;
   /* KLUCZOWE: Position absolute TYLKO podczas ruchu,
      aby elementy mogły być na sobie (jeden nad drugim) */
   position: absolute;

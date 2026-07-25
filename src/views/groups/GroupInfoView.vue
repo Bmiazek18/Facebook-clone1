@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import type { Group } from '@/types/Group';
-import GroupInfoSidebar from '@/components/groups/GroupInfoSidebar.vue';
+import { ref } from 'vue'
+import type { Group } from '@/types/Group'
+import GroupInfoSidebar from '@/components/groups/GroupInfoSidebar.vue'
 
 defineProps<{
-  groupDetails?: Group;
-  stickyTop?: number;
-}>();
+  groupDetails?: Group
+  stickyTop?: number
+}>()
 
-const rightSectionRef = ref<HTMLDivElement | null>(null);
-
+const rightSectionRef = ref<HTMLDivElement | null>(null)
 </script>
 
 <template>

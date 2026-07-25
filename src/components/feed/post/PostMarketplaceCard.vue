@@ -1,13 +1,14 @@
 <template>
   <div class="flex">
-
     <div class="flex-1 p-3 flex flex-col justify-between">
       <div>
-        <h3 class="font-bold text-gray-900 text-[15px] line-clamp-2">{{ marketplaceData.title }}</h3>
+        <h3 class="font-bold text-gray-900 text-[15px] line-clamp-2">
+          {{ marketplaceData.title }}
+        </h3>
         <p class="font-bold text-gray-900 text-[17px] mt-1">{{ marketplaceData.price }}</p>
         <p class="text-gray-600 text-[13px] mt-0.5">{{ marketplaceData.location }}</p>
       </div>
-      <p class=" mt-0.5">{{ marketplaceData.description }}</p>
+      <p class="mt-0.5">{{ marketplaceData.description }}</p>
     </div>
 
     <!-- Button on the right -->

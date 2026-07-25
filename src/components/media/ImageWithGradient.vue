@@ -1,274 +1,130 @@
 <script setup lang="ts">
-import { ref, watch, computed, type Ref } from 'vue';
-
-// Definicja typu dla danych koloru (obiekt RGB)
-interface ColorData {
-    r: number;
-    g: number;
-    b: number;
-}
+import { computed, inject, ref, type Ref } from 'vue'
+// Import wymaganych ikon
+import Camera from 'vue-material-design-icons/Camera.vue'
+import ImageOutline from 'vue-material-design-icons/ImageOutline.vue'
+import Upload from 'vue-material-design-icons/Upload.vue'
+import { Dropdown as VDropdown } from 'floating-vue'
 
 // Props
 interface Props {
-    imageUrl?: string,
-    initialWidth?: number,
-    initialHeight?: number
+  imageUrl?: string | null
+  initialWidth?: number
+  initialHeight?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    imageUrl: "https://picsum.photos/id/45/2000/800",
-    initialWidth: 1250,
-    initialHeight: 450
+  imageUrl: null,
+  initialWidth: 1250,
+  initialHeight: 450,
 })
 
-// URL obrazu wczytanego przez użytkownika
-const IMAGE_URL = computed(() => props.imageUrl)
+const isOwner = inject('isOwner', false)
 
-// Referencje do elementów DOM
-// HTMLImageElement reprezentuje element <img>
-const imgRef: Ref<HTMLImageElement | null> = ref(null);
+// Corrected logic: Has cover image when imageUrl is truthy
+const hasCoverImage = computed(() => !!props.imageUrl)
 
-// Stany przechowujące style CSS dla obu gradientów
-const leftGradientStyle: Ref<string> = ref('');
-const rightGradientStyle: Ref<string> = ref('');
+const imageLoaded: Ref<boolean> = ref(false)
 
-// Stan do obsługi ładowania i błędów
-const status: Ref<string> = ref('Ładowanie obrazu...');
-const imageLoaded: Ref<boolean> = ref(false);
-
-// Stałe zdefiniowane przez użytkownika
-const SAMPLING_AREA_WIDTH: number = 50; // Nowa szerokość obszaru uśredniania (w pikselach)
-const samplePoints: number = 7; // Nowa liczba punktów próbkowania
-const gradientHeightPercentage: number = 0.8; // Wysokość gradientu (80% wysokości kontenera)
-
-// Statyczny biały gradient, aby zwiększyć przezroczystość na dole.
-const WHITE_OVERLAY_GRADIENT: string =
-    `linear-gradient(to bottom, transparent 0%, transparent 50%, rgba(255, 255, 255, 0.4) 75%, rgba(255, 255, 255, 0.7) 90%, rgb(255, 255, 255) 100%)`;
-
-// Stałe wymiary widocznego kontenera obrazu (odczytane z szablonu)
-const DISPLAY_WIDTH: number = props.initialWidth;
-const DISPLAY_HEIGHT: number = props.initialHeight;
-
-
-/**
- * Konwertuje składowe RGB na format rgba(r, g, b, a)
- */
-const toRgba = (r: number, g: number, b: number, a: number): string => `rgba(${r}, ${g}, ${b}, ${a.toFixed(3)})`;
-
-
-/**
- * Główna funkcja do pobierania kolorów i generowania stylów gradientu,
- * z uwzględnieniem przycięcia przez object-cover.
- */
-const generateGradient = (): void => {
-    // Sprawdzamy, czy referencja jest elementem HTMLImageElement
-    const img = imgRef.value;
-
-    if (!img || !(img instanceof HTMLImageElement) || !img.naturalWidth) {
-        status.value = 'Błąd: Obraz nie jest załadowany lub jest uszkodzony.';
-        return;
-    }
-
-    try {
-        // Dynamiczne tworzenie Canvas do odczytu pikseli
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-
-        if (!ctx) {
-             status.value = 'Błąd: Nie można uzyskać kontekstu 2D Canvas.';
-            return;
-        }
-
-        const NW: number = img.naturalWidth; // Natural Width (oryginalna szerokość)
-        const NH: number = img.naturalHeight; // Natural Height (oryginalna wysokość)
-
-        canvas.width = NW;
-        canvas.height = NH;
-
-        // Rysowanie obrazu na canvas w oryginalnych wymiarach
-        ctx.drawImage(img, 0, 0, NW, NH);
-
-        // --- 1. Obliczenia dla object-cover, aby znaleźć widoczny obszar na Canvas (w pixelach oryginalnych) ---
-        const SW: number = DISPLAY_WIDTH / NW; // Skala potrzebna do wypełnienia szerokości
-        const SH: number = DISPLAY_HEIGHT / NH; // Skala potrzebna do wypełnienia wysokości
-        const Scale: number = Math.max(SW, SH); // Rzeczywista skala (większa z dwóch)
-
-        // Obliczenie offsetów (o ile przycięto na krawędziach w pikselach ekranu)
-        const ScaledWidth: number = NW * Scale;
-        const ScaledHeight: number = NH * Scale;
-        const OX: number = (DISPLAY_WIDTH - ScaledWidth) / 2; // Offset X w pikselach ekranu
-        const OY: number = (DISPLAY_HEIGHT - ScaledHeight) / 2; // Offset Y w pikselach ekranu
-
-        // Mapowanie punktów zerowych ekranu na Canvas (w pikselach oryginalnych)
-        const C_VisibleX_Start: number = -OX / Scale; // Początkowy X widocznego obszaru na Canvas
-        const C_VisibleY_Start: number = -OY / Scale; // Początkowy Y widocznego obszaru na Canvas
-
-        // --- 2. Obliczenia dla próbkowania ---
-
-        // Wysokość obszaru próbkowania (80% wysokości wyświetlania, zmapowane na Canvas)
-        const C_SamplingRangeY: number = (DISPLAY_HEIGHT * gradientHeightPercentage) / Scale;
-
-        // Rzeczywisty Y startowy na Canvas (minimalna wartość to 0)
-        // Zapewnia, że jeśli obraz jest przycięty od góry, zaczynamy od góry widocznej części
-        const C_Y_Offset: number = Math.max(0, C_VisibleY_Start);
-
-        // Krok próbkowania w oryginalnych pikselach obrazu
-        const stepY: number = C_SamplingRangeY / (samplePoints - 1);
-
-        // --- 3. Funkcja próbkowania z uśrednianiem ---
-
-        /**
-         * Funkcja pobiera i uśrednia dane kolorów z obszaru o szerokości SAMPLING_AREA_WIDTH.
-         * @param startX - Początkowa współrzędna X obszaru uśredniania (na Canvas).
-         */
-        const getColorsDataFromArea = (startX: number): ColorData[] => {
-            const colorData: ColorData[] = [];
-
-            for (let i = 0; i < samplePoints; i++) {
-                // sampleY jest rzeczywistą współrzędną Y na Canvas (piksel oryginalnego obrazu)
-                const relativeSampleY: number = i * stepY;
-                const sampleY: number = Math.min(Math.round(C_Y_Offset + relativeSampleY), NH - 1);
-
-                // Bezpieczna pozycja startowa X
-                const safeStartX: number = Math.max(0, Math.min(NW - SAMPLING_AREA_WIDTH, Math.round(startX)));
-
-                // Pobieramy dane 1xSAMPLING_AREA_WIDTH pikseli
-                // TypeScript gwarantuje, że ctx nie jest null dzięki sprawdzeniu powyżej
-                const imageData: ImageData = ctx!.getImageData(safeStartX, sampleY, SAMPLING_AREA_WIDTH, 1);
-                const data: Uint8ClampedArray = imageData.data;
-
-                let rTotal: number = 0, gTotal: number = 0, bTotal: number = 0;
-                const pixelCount: number = SAMPLING_AREA_WIDTH;
-
-                // Uśrednianie kolorów
-                for (let j = 0; j < data.length; j += 4) {
-                    rTotal += data[j] ?? 0;
-                    gTotal += data[j + 1] ?? 0;
-                    bTotal += data[j + 2] ?? 0;
-                }
-
-                // Obliczanie średnich składowych RGB
-                const r: number = Math.round(rTotal / pixelCount);
-                const g: number = Math.round(gTotal / pixelCount);
-                const b: number = Math.round(bTotal / pixelCount);
-
-                colorData.push({ r, g, b });
-            }
-            return colorData;
-        };
-
-        // --- 4. Obliczanie pozycji próbkowania na Canvas ---
-
-        // Próbkowanie na LEWEJ KRAWĘDZI (wewnątrz 5px marginesu widocznego obszaru)
-        const C_SampleX_Left_Start: number = C_VisibleX_Start + 5;
-
-        // Próbkowanie na PRAWEJ KRAWĘDZI (5px przed końcem widocznego obszaru)
-        const C_VisibleX_End: number = C_VisibleX_Start + DISPLAY_WIDTH / Scale;
-        const C_SampleX_Right_Start: number = C_VisibleX_End - SAMPLING_AREA_WIDTH - 5;
-
-        const leftColorData: ColorData[] = getColorsDataFromArea(C_SampleX_Left_Start);
-        const rightColorData: ColorData[] = getColorsDataFromArea(C_SampleX_Right_Start);
-
-
-        /**
-         * Funkcja pomocnicza do generowania stylu gradientu.
-         * @param colorData - Tablica obiektów ColorData.
-         */
-        const generateStyle = (colorData: ColorData[]): string => {
-            const stops: string[] = colorData.map((data, index) => {
-                // Pozycja w kontenerze (gdzie ma się znaleźć ten kolor)
-                const positionPercent: number = (index / (colorData.length - 1)) * (gradientHeightPercentage * 100);
-
-                // ODWRÓCONY WSPÓŁCZYNNIK ALPHA (Krycie):
-                const linearAlpha: number = (colorData.length - 1 - index) / (colorData.length - 1);
-                const alpha: number = Math.pow(linearAlpha, 2); // Użycie potęgi spowalnia zanikanie.
-
-                const rgbaColor: string = toRgba(data.r, data.g, data.b, alpha);
-
-                return `${rgbaColor} ${positionPercent.toFixed(1)}%`;
-            });
-
-            const finalGradientStops: string = stops.join(', ');
-
-            // Dynamiczny gradient zanikający do dołu (GÓRNA WARSTWA)
-            const dynamicGradient: string = `linear-gradient(to bottom, ${finalGradientStops}, transparent ${(gradientHeightPercentage * 100).toFixed(1)}%, transparent 100%)`;
-
-            // Łączymy dynamiczny gradient z gradientem nakładki białej
-            return `${dynamicGradient}, ${WHITE_OVERLAY_GRADIENT}`;
-        }
-
-        // Ustawianie stylów
-        leftGradientStyle.value = generateStyle(leftColorData);
-        rightGradientStyle.value = generateStyle(rightColorData);
-
-        status.value = 'Gotowe';
-
-    } catch (error) {
-        console.error("Błąd generowania gradientu:", error);
-        // Używamy instanceof do zawężenia typu, aby bezpiecznie pobrać wiadomość
-        if (error instanceof Error) {
-            status.value = `Wystąpił błąd: ${error.message}`;
-        } else {
-             status.value = 'Wystąpił nieznany błąd.';
-        }
-    }
-};
-
-// Monitorowanie stanu załadowania obrazu
-watch(imageLoaded, (isLoaded: boolean) => {
-    if (isLoaded) {
-        generateGradient();
-    }
-});
-
-// Monitorowanie zmiany URL obrazu - regeneruj gradient
-watch(IMAGE_URL, () => {
-    imageLoaded.value = false;
-    leftGradientStyle.value = '';
-    rightGradientStyle.value = '';
-});
-
-// Obsługa błędu ładowania obrazu
-const handleImageError = (event: Event): void => {
-    console.error("Błąd ładowania obrazu:", event);
-    status.value = 'Błąd: Nie udało się załadować obrazu. Sprawdź, czy URL jest poprawny i czy obsługuje CORS.';
-};
+const emit = defineEmits(['upload-cover'])
 </script>
 
 <template>
-    <div
-        class="flex w-full overflow-hidden mb-8"
-        :style="{ height: `${initialHeight}px` }"
-    >
+  <!-- Kontener Główny (Pełna szerokość) -->
+  <div
+    class="w-full overflow-hidden mb-8 relative transition-all duration-300 flex justify-center"
+    :style="{ height: `${initialHeight}px` }"
+  >
+    <!-- Rozmyte tło na pełną szerokość (Tylko gdy posiada zdjęcie w tle) -->
+    <template v-if="hasCoverImage">
+      <img
+        :src="props.imageUrl!"
+        alt="Rozmyte tło"
+        class="absolute top-0 left-0 w-full h-full object-cover blur-md scale-105 z-10 opacity-60"
+        crossOrigin="anonymous"
+      />
+      <!-- Nakładka gradientowa (maska) wygładzająca brzegi -->
+      <div
+        class="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-transparent z-20 pointer-events-none"
+      />
+    </template>
 
-        <div class="grow flex items-center justify-center relative ">
-            <div v-if="leftGradientStyle"
-                class="w-full h-full"
-                :style="{ background: leftGradientStyle }"
-            />
-            <p v-else class="text-gray-500 font-semibold">{{ status }}</p>
+    <!-- Wycentrowana zawartość o stałej szerokości -->
+    <div class="relative h-full z-30" :style="{ width: `${initialWidth}px` }">
+      <!-- STAN 1: Użytkownik POSIADA zdjęcie w tle -->
+      <template v-if="hasCoverImage">
+        <div
+          class="relative h-full flex items-center hover:brightness-95 cursor-pointer justify-center overflow-hidden rounded-b-xl shadow-xl w-full"
+        >
+          <img
+            :src="props.imageUrl!"
+            alt="Źródłowy obraz"
+            class="object-cover w-full h-full"
+            @load="imageLoaded = true"
+            crossOrigin="anonymous"
+          />
         </div>
+      </template>
 
-        <div class="relative flex items-center justify-center" :style="{ width: `${initialWidth}px` }">
-
-            <img
-                ref="imgRef"
-                :src="IMAGE_URL"
-                alt="Źródłowy obraz"
-                class="object-cover w-full h-full rounded-b-xl"
-                @load="imageLoaded = true"
-                @error="handleImageError"
-                crossOrigin="anonymous"
-
-            />
+      <!-- STAN 2: BRAK zdjęcia w tle -->
+      <template v-else>
+        <!-- Szary blok -->
+        <div class="relative h-full bg-[#e4e6eb] rounded-b-xl overflow-hidden shadow-sm w-full">
+          <!-- Przyciemnienie dolnej krawędzi -->
+          <div
+            v-if="isOwner"
+            class="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-black/40 to-transparent z-10 pointer-events-none"
+          />
         </div>
+      </template>
 
-        <div class="grow flex items-center justify-center relative">
-            <div v-if="rightGradientStyle"
-                class="w-full h-full"
-                :style="{ background: rightGradientStyle }"
-            />
-            <p v-else class="text-gray-500 font-semibold">{{ status }}</p>
-        </div>
+      <!-- Wspólny przycisk dodawania/edycji zdjęcia (Widoczny dla właściciela w obu stanach) -->
+      <VDropdown
+        v-if="isOwner"
+        placement="bottom-end"
+        :distance="8"
+        class="absolute bottom-4 right-8 z-40"
+      >
+        <!-- Trigger: Przycisk główny -->
+        <button
+          class="bg-white hover:bg-gray-100 text-[#050505] font-semibold text-[15px] px-3.5 py-1.5 rounded-md shadow-sm flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
+        >
+          <Camera :size="18" class="text-black" />
+          <span>{{ hasCoverImage ? 'Edytuj zdjęcie w tle' : 'Dodaj zdjęcie w tle' }}</span>
+        </button>
+
+        <!-- Popper: Menu rozwijane -->
+        <template #popper>
+          <div class="bg-white p-1.5 min-w-[240px] flex flex-col gap-0.5 rounded-xl">
+            <!-- Opcja 1: Wybierz zdjęcie -->
+            <button
+              class="w-full flex items-center gap-3 px-3 py-2.5 text-[15px] font-medium text-black hover:bg-gray-100 rounded-lg transition-colors text-left cursor-pointer"
+            >
+              <ImageOutline :size="20" class="text-black" />
+              <span>Wybierz zdjęcie w tle</span>
+            </button>
+
+            <!-- Opcja 2: Prześlij zdjęcie -->
+            <button
+              @click="emit('upload-cover')"
+              class="w-full flex items-center gap-3 px-3 py-2.5 text-[15px] font-medium text-black hover:bg-gray-100 rounded-lg transition-colors text-left cursor-pointer"
+            >
+              <Upload :size="20" class="text-black" />
+              <span>Prześlij zdjęcie</span>
+            </button>
+          </div>
+        </template>
+      </VDropdown>
     </div>
+  </div>
 </template>
+
+<style>
+.v-popper__inner {
+  border-radius: 0.75rem !important; /* rounded-xl */
+  border: none !important;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+</style>

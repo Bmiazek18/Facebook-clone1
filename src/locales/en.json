@@ -79,6 +79,8 @@
     "showAll": "Show all"
   },
   "post": {
+    "video": "Video",
+    "image": "Image",
     "createPost": "Create post",
     "addLive": "Go Live",
     "addPhoto": "Add photo",
@@ -131,6 +133,7 @@
     "addToPost": "Add to post",
     "tagUsers": "Tag people",
     "selectPrivacy": "Select privacy",
+    "closeFriendSelector": "Close friends",
     "addLocation": "Add location",
     "selectGif": "Select GIF",
     "editImage": "Edit image",
@@ -146,7 +149,7 @@
     "friends": "Friends",
     "photos": "Photos",
     "videos": "Videos",
-    "posts": "Posts",
+    "all": "Overview",
     "about": "About",
     "followers": "Followers",
     "following": "Following",
@@ -369,39 +372,40 @@
     "sad": "Sad",
     "angry": "Angry"
   },
-      "sharePost": {
-      "title": "Share Post",
-      "searchPlaceholder": "Search by name",
-      "messagePlaceholder": "Write an optional message...",
-      "shareButton": "Share"
-    },
-    "emojiPicker": {
-      "search": "Search emoji",
-      "searchResults": "Search Results",
-      "recent": "Recent",
-      "yourReactions": "Your reactions",
-      "customize": "Customize",
-      "customizeReactions": "Customize reactions",
-      "replaceInstruction": "Touch a reaction, and then select an emoji icon to replace it.",
-      "reset": "Reset",
-      "save": "Save",
-      "notfound": "No Emoji Found",
-      "categories": {
-        "recent": "Frequently Used",
-        "people": "Smileys & People",
-        "nature": "Animals & Nature",
-        "foods": "Food & Drink",
-        "activity": "Activity",
-        "places": "Travel & Places",
-        "objects": "Objects",
-        "symbols": "Symbols",
-        "flags": "Flags"
-      }
-    },
-    "ui": {
-      "friend": "Friend",
-      "message": "Message",
-      "you": "You",    "image": "Image",
+  "sharePost": {
+    "title": "Share Post",
+    "searchPlaceholder": "Search by name",
+    "messagePlaceholder": "Write an optional message...",
+    "shareButton": "Share"
+  },
+  "emojiPicker": {
+    "search": "Search emoji",
+    "searchResults": "Search Results",
+    "recent": "Recent",
+    "yourReactions": "Your reactions",
+    "customize": "Customize",
+    "customizeReactions": "Customize reactions",
+    "replaceInstruction": "Touch a reaction, and then select an emoji icon to replace it.",
+    "reset": "Reset",
+    "save": "Save",
+    "notfound": "No Emoji Found",
+    "categories": {
+      "recent": "Frequently Used",
+      "people": "Smileys & People",
+      "nature": "Animals & Nature",
+      "foods": "Food & Drink",
+      "activity": "Activity",
+      "places": "Travel & Places",
+      "objects": "Objects",
+      "symbols": "Symbols",
+      "flags": "Flags"
+    }
+  },
+  "ui": {
+    "friend": "Friend",
+    "message": "Message",
+    "you": "You",
+    "image": "Image",
     "gif": "GIF",
     "audio": "Audio",
     "dragFileToSend": "Drag file to send",
@@ -627,5 +631,25 @@
     "noResults": "No results found",
     "noResultsDescription": "Try using different keywords.",
     "addFriend": "Add friend"
+  },
+  "postFilter": {
+    "title": "Post filters",
+    "description": "Use filters to find posts on your timeline.",
+    "yearLabel": "Year",
+    "yearAll": "All years",
+    "postedByLabel": "Posted by",
+    "postedByAll": "Anyone",
+    "postedByYou": "You",
+    "postedByOthers": "Others",
+    "privacyLabel": "Privacy",
+    "privacyAll": "All",
+    "privacyPublic": "Public",
+    "privacyFriends": "Friends",
+    "privacyOnlyMe": "Only me",
+    "taggedLabel": "Tagged posts",
+    "taggedAll": "All posts",
+    "taggedOnly": "Only posts I'm tagged in",
+    "clear": "Clear",
+    "done": "Done"
   }
 }

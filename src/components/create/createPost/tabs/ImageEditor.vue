@@ -1,42 +1,42 @@
 <script setup lang="ts">
 // --- FLOATING VUE ---
-import { Dropdown as VDropdown } from 'floating-vue';
-import 'floating-vue/dist/style.css';
+import { Dropdown as VDropdown } from 'floating-vue'
+import 'floating-vue/dist/style.css'
 
-import CropIcon from 'vue-material-design-icons/Crop.vue';
-import RotateRightIcon from 'vue-material-design-icons/RotateRight.vue';
-import TagIcon from 'vue-material-design-icons/Tag.vue';
-import FormatLetterCaseIcon from 'vue-material-design-icons/FormatLetterCase.vue';
-import FileImageIcon from 'vue-material-design-icons/FileImage.vue';
-import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
-import {watchEffect} from 'vue'
-import { ref, reactive, onMounted, onUnmounted, computed, nextTick, watch } from 'vue';
-import VueCropper from 'vue-cropperjs';
-import 'cropperjs/dist/cropper.css';
+import CropIcon from 'vue-material-design-icons/Crop.vue'
+import RotateRightIcon from 'vue-material-design-icons/RotateRight.vue'
+import TagIcon from 'vue-material-design-icons/Tag.vue'
+import FormatLetterCaseIcon from 'vue-material-design-icons/FormatLetterCase.vue'
+import FileImageIcon from 'vue-material-design-icons/FileImage.vue'
+import MagnifyIcon from 'vue-material-design-icons/Magnify.vue'
+import { watchEffect } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, computed, nextTick, watch } from 'vue'
+import VueCropper from 'vue-cropperjs'
+import 'cropperjs/dist/cropper.css'
 
-import { useStoryElementInteraction } from '@/composables/useStoryElementInteraction';
-import StoryElement from '@/components/create/createStory/StoryElement.vue';
-import ImageTag from '@/components/media/ImageTag.vue';
-import EditorSidebar from '../item/EditorSidebar.vue';
-import type { StoryElement as StoryElementType } from '@/types/StoryElement';
-import type { ImageTagType } from '@/types/ImageTag';
+import { useStoryElementInteraction } from '@/composables/media/useStoryElementInteraction'
+import StoryElement from '@/components/create/createStory/StoryElement.vue'
+import ImageTag from '@/components/media/ImageTag.vue'
+import EditorSidebar from '../item/EditorSidebar.vue'
+import type { StoryElement as StoryElementType } from '@/types/StoryElement'
+import type { ImageTagType } from '@/types/Post'
 
-import { useCreatePostStore } from '@/stores/createPost';
-import { storeToRefs } from 'pinia';
+import { useCreatePostStore } from '@/stores/createPost'
+import { storeToRefs } from 'pinia'
 
 // --- TYPY DANYCH ---
 type CropData = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotate: number;
-};
+  x: number
+  y: number
+  width: number
+  height: number
+  rotate: number
+}
 
-import { getAllUsers, type User } from '@/data/users';
-import type { Person } from '@/types/Person';
+import { getAllUsers, type User } from '@/utils/users'
+import type { Person } from '@/types/Person'
 
-const REAL_USERS = getAllUsers();
+const REAL_USERS = getAllUsers()
 
 const userToPerson = (user: User): Person => ({
   id: user.id,
@@ -44,65 +44,81 @@ const userToPerson = (user: User): Person => ({
   imageUrl: user.avatar,
   commonFriends: user.mutualFriendsCount || 0,
   isFriend: true, // Assuming all users in this context are friends
-});
+})
 
 // --- PROPS ---
 // Removed initialImage prop as it's now fetched from store
 
-const emit = defineEmits<{
-  (e: 'done', editedImageUrl: string): void;
-}>();
+
 
 // --- STATE ---
-const createPostStore = useCreatePostStore();
-const { imageToEdit, taggedUsers } = storeToRefs(createPostStore); // Get imageToEdit from store
-const imageRotation = ref(0);
-const taggingMode = ref(false);
-const tags = ref<ImageTagType[]>(createPostStore.selectedImage?.tags || []);
+const createPostStore = useCreatePostStore()
+const { imageToEdit, taggedUsers } = storeToRefs(createPostStore) // Get imageToEdit from store
+const imageRotation = ref(0)
+const taggingMode = ref(false)
 
-watch(tags, (newTags) => {
-  if (createPostStore.selectedImage) {
-    createPostStore.selectedImage.tags = newTags;
+const selectedImage = computed(() => {
+  const idx = createPostStore.uiState.imageIndexToEdit
+  if (idx !== null && createPostStore.postData.images[idx]) {
+    return createPostStore.postData.images[idx]
   }
-}, { deep: true });
+  return createPostStore.uiState.imageToEdit
+})
 
-const newTag = ref<{ x: number, y: number, name: string, isCreating: boolean, user?: User } | null>(null);
-const newTagInputRef = ref<HTMLInputElement | null>(null);
-const searchQuery = ref('');
+const tags = ref<ImageTagType[]>(selectedImage.value?.tags || [])
 
+watch(
+  tags,
+  (newTags) => {
+    if (selectedImage.value) {
+      selectedImage.value.tags = newTags
+    }
+  },
+  { deep: true },
+)
 
+const newTag = ref<{ x: number; y: number; name: string; isCreating: boolean; user?: User } | null>(
+  null,
+)
+const newTagInputRef = ref<HTMLInputElement | null>(null)
+const searchQuery = ref('')
 
-const cropperRef = ref<InstanceType<typeof VueCropper> | null>(null);
-const isCroppingMode = ref(false);
+const cropperRef = ref<InstanceType<typeof VueCropper> | null>(null)
+const isCroppingMode = ref(false)
 
 const currentCropData = ref<CropData>({
   x: 0,
   y: 0,
   width: 0,
   height: 0,
-  rotate: 0
-});
-const imageUrl = ref(imageToEdit.value?.url || ''); // Initialize from store
-const altText = ref(imageToEdit.value?.altText || ''); // Initialize from store
-watch(imageToEdit, (newImageToEdit) => {
-  imageUrl.value = newImageToEdit?.url || '';
-  altText.value = newImageToEdit?.altText || '';
-  if (cropperRef.value && imageUrl.value) {
-    cropperRef.value.replace(imageUrl.value);
-  }
-}, { immediate: true });
+  rotate: 0,
+})
+const imageUrl = ref(imageToEdit.value?.url || '') // Initialize from store
+const altText = ref(imageToEdit.value?.altText || '') // Initialize from store
+watch(
+  imageToEdit,
+  (newImageToEdit) => {
+    imageUrl.value = newImageToEdit?.url || ''
+    altText.value = newImageToEdit?.altText || ''
+    if (cropperRef.value && imageUrl.value) {
+      cropperRef.value.replace(imageUrl.value)
+    }
+  },
+  { immediate: true },
+)
 watch(altText, (newAltText) => {
-  if (createPostStore.selectedImage) {
-    createPostStore.selectedImage.altText = newAltText;
-  } else if (imageToEdit.value) { // Update imageToEdit if selectedImage is not set
+  if (selectedImage.value) {
+    selectedImage.value.altText = newAltText
+  } else if (imageToEdit.value) {
+    // Update imageToEdit if selectedImage is not set
     createPostStore.setImageToEdit({
       url: imageToEdit.value.url,
       altText: newAltText,
-      tags: imageToEdit.value.tags || []
-    });
+      tags: imageToEdit.value.tags || [],
+    })
   }
-});
-const showAltTextInput = ref(false);
+})
+const showAltTextInput = ref(false)
 
 const cropperOptions = reactive({
   viewMode: 1,
@@ -113,22 +129,20 @@ const cropperOptions = reactive({
   movable: true,
   rotatable: true,
   zoomable: true,
-});
+})
 
 // --- WATCHERS & COMPUTED ---
 watchEffect(() => {
   if (imageUrl.value && cropperRef.value) {
-    cropperRef.value.replace(imageUrl.value);
+    cropperRef.value.replace(imageUrl.value)
   }
-});
+})
 
 const filteredUsers = computed(() => {
-  if (!searchQuery.value) return REAL_USERS;
-  const lowerQuery = searchQuery.value.toLowerCase();
-  return REAL_USERS.filter(user =>
-    user.name.toLowerCase().includes(lowerQuery)
-  );
-});
+  if (!searchQuery.value) return REAL_USERS
+  const lowerQuery = searchQuery.value.toLowerCase()
+  return REAL_USERS.filter((user) => user.name.toLowerCase().includes(lowerQuery))
+})
 
 // --- TOOLBAR ---
 const tools = [
@@ -137,240 +151,251 @@ const tools = [
   { id: 3, label: 'Oznacz zdjęcie', icon: TagIcon, action: 'addTag' },
   { id: 4, label: 'Narzędzie tekstowe', icon: FormatLetterCaseIcon, action: 'addTextElement' },
   { id: 5, label: 'Tekst alternatywny', icon: FileImageIcon, action: 'toggleAltText' },
-];
+]
 
 const handleToolAction = (action: string | undefined) => {
-  if (action === 'addTextElement') addTextElement();
-  else if (action === 'rotateImage') rotateImage();
-  else if (action === 'toggleCropMode') toggleCropMode();
-  else if (action === 'addTag') taggingMode.value = true;
-  else if (action === 'toggleAltText') showAltTextInput.value = !showAltTextInput.value;
-};
+  if (action === 'addTextElement') addTextElement()
+  else if (action === 'rotateImage') rotateImage()
+  else if (action === 'toggleCropMode') toggleCropMode()
+  else if (action === 'addTag') taggingMode.value = true
+  else if (action === 'toggleAltText') showAltTextInput.value = !showAltTextInput.value
+}
 
 // --- LOGIKA STORY ELEMENTS ---
-const storyElements = ref<StoryElementType[]>([]);
-const imageWrapperRef = ref<HTMLElement | null>(null);
-const bgDimensions = reactive({ width: 0, height: 0 });
+const storyElements = ref<StoryElementType[]>([])
+const imageWrapperRef = ref<HTMLElement | null>(null)
+const bgDimensions = reactive({ width: 0, height: 0 })
 
 const {
-  activeDragId, activeResizeId, croppingId, editingId, selectedElementId,
-  startDrag, startResize, stopInteraction, enableEdit, disableEdit,
-  onBackgroundClick, toggleCrop,
-} = useStoryElementInteraction(storyElements, bgDimensions);
+  activeDragId,
+  activeResizeId,
+  croppingId,
+  editingId,
+  selectedElementId,
+  startDrag,
+  startResize,
+  stopInteraction,
+  enableEdit,
+  disableEdit,
+  onBackgroundClick,
+  toggleCrop,
+} = useStoryElementInteraction(storyElements, bgDimensions)
 
 onMounted(() => {
   if (imageWrapperRef.value) {
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        bgDimensions.width = entry.contentRect.width;
-        bgDimensions.height = entry.contentRect.height;
+        bgDimensions.width = entry.contentRect.width
+        bgDimensions.height = entry.contentRect.height
       }
-    });
-    observer.observe(imageWrapperRef.value);
+    })
+    observer.observe(imageWrapperRef.value)
   }
-  window.addEventListener('mouseup', stopInteraction);
-});
+  window.addEventListener('mouseup', stopInteraction)
+})
 
 onUnmounted(() => {
-  window.removeEventListener('mouseup', stopInteraction);
-});
+  window.removeEventListener('mouseup', stopInteraction)
+})
 
 // --- LOGIKA CROPPERA ---
 const toggleCropMode = () => {
-  isCroppingMode.value = !isCroppingMode.value;
+  isCroppingMode.value = !isCroppingMode.value
   if (isCroppingMode.value && cropperRef.value) {
     nextTick(() => {
-      cropperRef.value.rotateTo(imageRotation.value);
-    });
+      cropperRef.value.rotateTo(imageRotation.value)
+    })
   }
-};
+}
 
 const onCropChange = (event: CustomEvent) => {
-  const detail = event.detail;
+  const detail = event.detail
   currentCropData.value = {
     x: detail.x,
     y: detail.y,
     width: detail.width,
     height: detail.height,
-    rotate: detail.rotate
-  };
-};
+    rotate: detail.rotate,
+  }
+}
 
 const handleCropConfirm = () => {
-  if (!cropperRef.value) return;
-  const crop = currentCropData.value;
-  if (crop.width <= 0 || crop.height <= 0) return;
+  if (!cropperRef.value) return
+  const crop = currentCropData.value
+  if (crop.width <= 0 || crop.height <= 0) return
 
   const canvas = cropperRef.value.getCroppedCanvas({
     imageSmoothingEnabled: true,
     imageSmoothingQuality: 'high',
-  });
+  })
 
-  if (!canvas) return;
+  if (!canvas) return
 
   canvas.toBlob((blob: Blob | null) => {
-    if (!blob) return;
-    const reader = new FileReader();
+    if (!blob) return
+    const reader = new FileReader()
     reader.onload = (e) => {
       if (e.target && e.target.result) {
-        const imageData = cropperRef.value.getImageData();
-        const nw = imageData.naturalWidth;
-        const nh = imageData.naturalHeight;
-        const rotation = ((crop.rotate % 360) + 360) % 360;
+        const imageData = cropperRef.value.getImageData()
+        const nw = imageData.naturalWidth
+        const nh = imageData.naturalHeight
+        const rotation = ((crop.rotate % 360) + 360) % 360
 
-        const newTags = tags.value.map(tag => {
-          const oldX = (tag.x / 100) * nw;
-          const oldY = (tag.y / 100) * nh;
+        const newTags = tags.value
+          .map((tag) => {
+            const oldX = (tag.x / 100) * nw
+            const oldY = (tag.y / 100) * nh
 
-          let rotatedX = oldX;
-          let rotatedY = oldY;
+            let rotatedX = oldX
+            let rotatedY = oldY
 
-          if (rotation === 90) {
-            rotatedX = nh - oldY;
-            rotatedY = oldX;
-          } else if (rotation === 180) {
-            rotatedX = nw - oldX;
-            rotatedY = nh - oldY;
-          } else if (rotation === 270) {
-            rotatedX = oldY;
-            rotatedY = nw - oldX;
-          }
+            if (rotation === 90) {
+              rotatedX = nh - oldY
+              rotatedY = oldX
+            } else if (rotation === 180) {
+              rotatedX = nw - oldX
+              rotatedY = nh - oldY
+            } else if (rotation === 270) {
+              rotatedX = oldY
+              rotatedY = nw - oldX
+            }
 
-          if (
-            rotatedX >= crop.x && rotatedX <= crop.x + crop.width &&
-            rotatedY >= crop.y && rotatedY <= crop.y + crop.height
-          ) {
-            const localX = rotatedX - crop.x;
-            const localY = rotatedY - crop.y;
-            return {
-              ...tag,
-              x: (localX / crop.width) * 100,
-              y: (localY / crop.height) * 100,
-            };
-          }
-          return null;
-        }).filter((t): t is ImageTagType => t !== null);
+            if (
+              rotatedX >= crop.x &&
+              rotatedX <= crop.x + crop.width &&
+              rotatedY >= crop.y &&
+              rotatedY <= crop.y + crop.height
+            ) {
+              const localX = rotatedX - crop.x
+              const localY = rotatedY - crop.y
+              return {
+                ...tag,
+                x: (localX / crop.width) * 100,
+                y: (localY / crop.height) * 100,
+              }
+            }
+            return null
+          })
+          .filter((t): t is ImageTagType => t !== null)
 
-        imageUrl.value = e.target.result as string;
-        tags.value = newTags;
-        isCroppingMode.value = false;
-        imageRotation.value = 0;
+        imageUrl.value = e.target.result as string
+        tags.value = newTags
+        isCroppingMode.value = false
+        imageRotation.value = 0
       }
-    };
-    reader.readAsDataURL(blob);
-  }, 'image/png');
-};
+    }
+    reader.readAsDataURL(blob)
+  }, 'image/png')
+}
 
 const handleCropCancel = () => {
-  isCroppingMode.value = false;
-};
+  isCroppingMode.value = false
+}
 
 const handleDone = () => {
+  createPostStore.saveEditedMedia(imageUrl.value)
+}
 
-    emit('done', imageUrl.value);
-
-};
-
-const handleCancel = () => console.log('Anuluj');
+const handleCancel = () => console.log('Anuluj')
 
 // --- LOGIKA OBROTU ---
 const rotateImage = () => {
   if (isCroppingMode.value && cropperRef.value) {
-    cropperRef.value.rotate(90);
+    cropperRef.value.rotate(90)
   } else if (imageUrl.value) {
-    const img = new Image();
-    img.src = imageUrl.value;
+    const img = new Image()
+    img.src = imageUrl.value
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
 
-      if (!ctx) return;
+      if (!ctx) return
 
-      const rotationAngle = 90;
+      const rotationAngle = 90
 
-      const width = img.width;
-      const height = img.height;
+      const width = img.width
+      const height = img.height
 
       // Przy obrocie o 90/270 stopni zamieniamy szerokość z wysokością
-      const rotatedWidth = height;
-      const rotatedHeight = width;
+      const rotatedWidth = height
+      const rotatedHeight = width
 
-      canvas.width = rotatedWidth;
-      canvas.height = rotatedHeight;
+      canvas.width = rotatedWidth
+      canvas.height = rotatedHeight
 
-      ctx.save();
-      ctx.translate(rotatedWidth / 2, rotatedHeight / 2);
-      ctx.rotate(rotationAngle * Math.PI / 180);
-      ctx.drawImage(img, -width / 2, -height / 2, width, height);
-      ctx.restore();
+      ctx.save()
+      ctx.translate(rotatedWidth / 2, rotatedHeight / 2)
+      ctx.rotate((rotationAngle * Math.PI) / 180)
+      ctx.drawImage(img, -width / 2, -height / 2, width, height)
+      ctx.restore()
 
-      const rotatedTags = tags.value.map(tag => ({
+      const rotatedTags = tags.value.map((tag) => ({
         ...tag,
         x: 100 - tag.y,
-        y: tag.x
-      }));
+        y: tag.x,
+      }))
 
-      tags.value = rotatedTags;
+      tags.value = rotatedTags
       // --------------------------------------
 
-      imageUrl.value = canvas.toDataURL('image/png');
-      imageRotation.value = 0;
-    };
+      imageUrl.value = canvas.toDataURL('image/png')
+      imageRotation.value = 0
+    }
   }
-};
+}
 
 const handleImageClickForTagging = async (event: MouseEvent) => {
-  if (!taggingMode.value) return;
+  if (!taggingMode.value) return
 
-  const img = event.target as HTMLImageElement;
+  const img = event.target as HTMLImageElement
   // Pobieramy wymiary wizualne (bounding box po obrocie)
-  const rect = img.getBoundingClientRect();
+  const rect = img.getBoundingClientRect()
 
   // 1. Znajdujemy środek obrazka na ekranie
-  const cx = rect.left + rect.width / 2;
-  const cy = rect.top + rect.height / 2;
+  const cx = rect.left + rect.width / 2
+  const cy = rect.top + rect.height / 2
 
   // 2. Obliczamy kliknięcie względem środka
-  const clickX = event.clientX - cx;
-  const clickY = event.clientY - cy;
+  const clickX = event.clientX - cx
+  const clickY = event.clientY - cy
 
   // 3. Konwertujemy kąt na radiany i odwracamy go (minus), żeby "cofnąć" obrót
-  const angleRad = -imageRotation.value * (Math.PI / 180);
+  const angleRad = -imageRotation.value * (Math.PI / 180)
 
   // 4. Matematyczny obrót punktu 2D
   // To nam daje pozycję X/Y względem środka, tak jakby zdjęcie nie było obrócone
-  const unrotatedX = clickX * Math.cos(angleRad) - clickY * Math.sin(angleRad);
-  const unrotatedY = clickX * Math.sin(angleRad) + clickY * Math.cos(angleRad);
+  const unrotatedX = clickX * Math.cos(angleRad) - clickY * Math.sin(angleRad)
+  const unrotatedY = clickX * Math.sin(angleRad) + clickY * Math.cos(angleRad)
 
   // 5. Pobieramy ORYGINALNE wymiary elementu w DOM (przed obrotem CSS)
   // To jest kluczowe - nie używamy rect.width, tylko img.offsetWidth
-  const originalWidth = img.offsetWidth;
-  const originalHeight = img.offsetHeight;
+  const originalWidth = img.offsetWidth
+  const originalHeight = img.offsetHeight
 
-  if (originalWidth === 0 || originalHeight === 0) return;
+  if (originalWidth === 0 || originalHeight === 0) return
 
   // 6. Przesuwamy punkt odniesienia ze środka (0,0) na lewy górny róg
-  const localX = unrotatedX + originalWidth / 2;
-  const localY = unrotatedY + originalHeight / 2;
+  const localX = unrotatedX + originalWidth / 2
+  const localY = unrotatedY + originalHeight / 2
 
   // 7. Zamieniamy na procenty
-  const finalXPerc = (localX / originalWidth) * 100;
-  const finalYPerc = (localY / originalHeight) * 100;
+  const finalXPerc = (localX / originalWidth) * 100
+  const finalYPerc = (localY / originalHeight) * 100
 
   // Walidacja czy nie kliknięto poza obszar (np. na zaokrągleniach)
-  if (finalXPerc < 0 || finalXPerc > 100 || finalYPerc < 0 || finalYPerc > 100) return;
+  if (finalXPerc < 0 || finalXPerc > 100 || finalYPerc < 0 || finalYPerc > 100) return
 
-  newTag.value = { x: finalXPerc, y: finalYPerc, name: '', isCreating: true };
-  searchQuery.value = '';
-  taggingMode.value = false;
+  newTag.value = { x: finalXPerc, y: finalYPerc, name: '', isCreating: true }
+  searchQuery.value = ''
+  taggingMode.value = false
 
-  await nextTick();
-  if (newTagInputRef.value) newTagInputRef.value.focus();
-};
+  await nextTick()
+  if (newTagInputRef.value) newTagInputRef.value.focus()
+}
 
 const createTag = () => {
-  const nameToSave = searchQuery.value || newTag.value?.name;
-  const user = newTag.value?.user;
+  const nameToSave = searchQuery.value || newTag.value?.name
+  const user = newTag.value?.user
 
   if (newTag.value && nameToSave && nameToSave.trim()) {
     const tag: ImageTagType = {
@@ -379,98 +404,109 @@ const createTag = () => {
       y: newTag.value.y,
       name: nameToSave,
       isTemp: false,
-    };
-    if (user) {
-      tag.user = userToPerson(user);
     }
-    tags.value.push(tag);
+    if (user) {
+      tag.user = userToPerson(user)
+    }
+    tags.value.push(tag)
   }
-  newTag.value = null;
-  searchQuery.value = '';
-};
+  newTag.value = null
+  searchQuery.value = ''
+}
 
 const selectUser = (user: User) => {
   if (newTag.value) {
-    newTag.value.name = user.name;
-    newTag.value.user = user;
-    searchQuery.value = user.name;
-    createTag();
-    if (!taggedUsers.value.some(taggedUser => taggedUser.id === user.id)) {
-        createPostStore.addTaggedUser(user);
+    newTag.value.name = user.name
+    newTag.value.user = user
+    searchQuery.value = user.name
+    createTag()
+    if (!taggedUsers.value.some((taggedUser) => taggedUser.id === user.id)) {
+      createPostStore.addTaggedUser(user)
     }
   }
-};
+}
 
 const removeTag = (id: string) => {
-  tags.value = tags.value.filter(tag => tag.id !== id);
-};
+  tags.value = tags.value.filter((tag) => tag.id !== id)
+}
 
 // --- WIZUALIZACJA TAGÓW ---
 const transformedTags = computed(() => {
-  if (!bgDimensions.width || !bgDimensions.height) return [];
+  if (!bgDimensions.width || !bgDimensions.height) return []
 
-  const allTags = tags.value.map(t => ({ ...t, isTemp: false }));
+  const allTags = tags.value.map((t) => ({ ...t, isTemp: false }))
   if (newTag.value && newTag.value.isCreating) {
     allTags.push({
-      id: 'temp_new', x: newTag.value.x, y: newTag.value.y,
-      name: newTag.value.name, isTemp: true
-    });
+      id: 'temp_new',
+      x: newTag.value.x,
+      y: newTag.value.y,
+      name: newTag.value.name,
+      isTemp: true,
+    })
   }
 
-  const w = bgDimensions.width;
-  const h = bgDimensions.height;
-  const cx = w / 2;
-  const cy = h / 2;
-  const angleRad = imageRotation.value * (Math.PI / 180);
+  const w = bgDimensions.width
+  const h = bgDimensions.height
+  const cx = w / 2
+  const cy = h / 2
+  const angleRad = imageRotation.value * (Math.PI / 180)
 
-  return allTags.map(tag => {
-    const pxX = (tag.x / 100) * w;
-    const pxY = (tag.y / 100) * h;
+  return allTags.map((tag) => {
+    const pxX = (tag.x / 100) * w
+    const pxY = (tag.y / 100) * h
 
-    const newX = (pxX - cx) * Math.cos(angleRad) - (pxY - cy) * Math.sin(angleRad) + cx;
-    const newY = (pxX - cx) * Math.sin(angleRad) + (pxY - cy) * Math.cos(angleRad) + cy;
+    const newX = (pxX - cx) * Math.cos(angleRad) - (pxY - cy) * Math.sin(angleRad) + cx
+    const newY = (pxX - cx) * Math.sin(angleRad) + (pxY - cy) * Math.cos(angleRad) + cy
 
     return {
       ...tag,
       x: newX,
-      y: newY
-    };
-  });
-});
+      y: newY,
+    }
+  })
+})
 
 // --- TEKST ---
 const addTextElement = () => {
-  const newId = `el_${Date.now()}`;
+  const newId = `el_${Date.now()}`
   storyElements.value.push({
-    id: newId, type: 'text', content: 'Wpisz tekst',
-    x: 50, y: 50, width: 200, height: 50, rotation: 0, scale: 1,
-    styles: { color: '#ffffff', fontSize: '30px', fontWeight: 'bold' }
-  });
-  selectedElementId.value = newId;
-};
+    id: newId,
+    type: 'text',
+    content: 'Wpisz tekst',
+    x: 50,
+    y: 50,
+    width: 200,
+    height: 50,
+    rotation: 0,
+    scale: 1,
+    styles: { color: '#ffffff', fontSize: '30px', fontWeight: 'bold' },
+  })
+  selectedElementId.value = newId
+}
 
 const updateImageDimensions = (event: Event) => {
-  const img = event.target as HTMLImageElement;
+  const img = event.target as HTMLImageElement
   if (img) {
-    bgDimensions.width = img.offsetWidth;
-    bgDimensions.height = img.offsetHeight;
+    bgDimensions.width = img.offsetWidth
+    bgDimensions.height = img.offsetHeight
   }
-};
+}
 
 const removeElement = (id: string) => {
-  storyElements.value = storyElements.value.filter((el) => el.id !== id);
-  if (selectedElementId.value === id) selectedElementId.value = null;
-};
+  storyElements.value = storyElements.value.filter((el) => el.id !== id)
+  if (selectedElementId.value === id) selectedElementId.value = null
+}
 
 const updateElementContent = (id: string, value: string) => {
-  const target = storyElements.value.find((el) => el.id === id);
-  if (target) target.content = value;
-};
+  const target = storyElements.value.find((el) => el.id === id)
+  if (target) target.content = value
+}
 </script>
 
 <template>
-  <div class="fixed inset-0 flex flex-col h-[700px]  lg:flex-row z-50 h-full w-screen bg-black overflow-hidden font-sans">
-
+  <div
+    class="flex h-[80vh] w-full flex-col lg:flex-row bg-black overflow-hidden   relative"
+  >
     <!-- Sidebar - ukryty na mobile, po lewej na desktop -->
     <EditorSidebar
       class="hidden lg:flex"
@@ -485,17 +521,19 @@ const updateElementContent = (id: string, value: string) => {
       @cancel-crop="handleCropCancel"
       @done="handleDone"
       @cancel-edit="handleCancel"
-      @update:altText="(value) => altText = value"
+      @update:altText="(value) => (altText = value)"
     />
 
     <main class="flex-1 bg-[#18191a] relative flex flex-col h-full">
+      <div
+        class="absolute inset-0 z-0 blur-background"
+        :style="{ backgroundImage: imageToEdit.url ? `url(${imageToEdit.url})` : 'none' }"
+      ></div>
 
-      <div class="absolute inset-0 z-0 blur-background"
-           :style="{ backgroundImage: imageUrl ? `url(${imageUrl})` : 'none' }">
-      </div>
-
-      <div class="flex-1 flex items-center justify-center overflow-hidden relative z-10 p-2 lg:p-4 pb-[200px] lg:pb-4" @mousedown.self="onBackgroundClick">
-
+      <div
+        class="flex-1 flex items-center justify-center overflow-hidden relative z-10 p-[1px]"
+        @mousedown.self="onBackgroundClick"
+      >
         <VueCropper
           v-if="isCroppingMode"
           ref="cropperRef"
@@ -508,94 +546,101 @@ const updateElementContent = (id: string, value: string) => {
 
         <template v-else>
           <div
-            class="relative flex  justify-center h-full w-full"
+            class="relative flex justify-center h-full w-full"
             :class="{ 'cursor-crosshair': taggingMode }"
-
           >
-          <div class="relative">
-  <img
-              v-if="imageUrl"
-              :src="imageUrl"
-              ref="imageWrapperRef"
-              alt="Edytowane zdjęcie"
-              class="max-h-[50vh] lg:max-h-[70vh] max-w-[85vw] lg:max-w-[800px] object-contain w-auto h-full shadow-2xl rounded-sm transition-transform duration-300 ease-out"
-              :style="{ transform: `rotate(${imageRotation}deg)` }"
-                 @click="handleImageClickForTagging"
-              @load="updateImageDimensions"
-            />
+            <div class="relative">
+              <img
+                v-if="imageUrl"
+                :src="imageUrl"
+                ref="imageWrapperRef"
+                alt="Edytowane zdjęcie"
+                class="max-h-[50vh] lg:max-h-[70vh] max-w-[85vw] lg:max-w-[800px] object-contain w-auto h-full shadow-2xl transition-transform duration-300 ease-out"
+                :style="{ transform: `rotate(${imageRotation}deg)` }"
+                @click="handleImageClickForTagging"
+                @load="updateImageDimensions"
+              />
 
-            <template v-for="tag in transformedTags" :key="tag.id">
+              <template v-for="tag in transformedTags" :key="tag.id">
+                <VDropdown
+                  v-if="tag.isTemp"
+                  :shown="true"
+                  :triggers="[]"
+                  :auto-hide="false"
+                  :distance="10"
+                  placement="bottom"
+                  class="absolute z-50"
+                  :style="{
+                    left: `${tag.x}px`,
+                    top: `${tag.y}px`,
+                  }"
+                >
+                  <div
+                    class="w-24 h-24 border-2 border-white/80 shadow-[0_0_10px_rgba(0,0,0,0.3)] rounded-sm -translate-x-1/2 -translate-y-1/2 cursor-default"
+                  ></div>
 
-              <VDropdown
-                v-if="tag.isTemp"
-                :shown="true"
-                :triggers="[]"
-                :auto-hide="false"
-                :distance="10"
-                placement="bottom"
-                class="absolute z-50"
-                :style="{
-                  left: `${tag.x}px`,
-                  top: `${tag.y}px`
-                }"
-              >
-                <div class="w-24 h-24 border-2 border-white/80 shadow-[0_0_10px_rgba(0,0,0,0.3)] rounded-sm -translate-x-1/2 -translate-y-1/2 cursor-default"></div>
+                  <template #popper>
+                    <div class="w-[340px] flex flex-col   bg-white text-left" @click.stop>
+                      <div class="p-3 border-b border-gray-100 flex items-center gap-3">
+                        <MagnifyIcon :size="20" class="text-gray-400 shrink-0" />
+                        <input
+                          ref="newTagInputRef"
+                          v-model="searchQuery"
+                          type="text"
+                          class="w-full text-[15px] outline-none text-gray-700 placeholder-gray-400 bg-transparent py-1"
+                          placeholder="Wprowadź dowolne imię i nazwisko"
+                          @keydown.enter="createTag"
+                          autoFocus
+                        />
+                      </div>
 
-                <template #popper>
-                  <div class="w-[340px] flex flex-col font-sans bg-white text-left" @click.stop>
-
-                    <div class="p-3 border-b border-gray-100 flex items-center gap-3">
-                      <MagnifyIcon :size="20" class="text-gray-400 shrink-0" />
-                      <input
-                        ref="newTagInputRef"
-                        v-model="searchQuery"
-                        type="text"
-                        class="w-full text-[15px] outline-none text-gray-700 placeholder-gray-400 bg-transparent py-1"
-                        placeholder="Wprowadź dowolne imię i nazwisko"
-                        @keydown.enter="createTag"
-                        autoFocus
-                      />
-                    </div>
-
-                    <div class="max-h-[320px] overflow-y-auto py-1 scrollbar-thin">
-                      <div
-                        v-for="user in filteredUsers"
-                        :key="user.id"
-                        @click="selectUser(user)"
-                        class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer transition-colors group"
-                      >
-                        <div class="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-100">
-                          <img :src="user.avatar" :alt="user.name" class="w-full h-full object-cover" />
+                      <div class="max-h-[320px] overflow-y-auto py-1 scrollbar-thin">
+                        <div
+                          v-for="user in filteredUsers"
+                          :key="user.id"
+                          @click="selectUser(user)"
+                          class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer transition-colors group"
+                        >
+                          <div
+                            class="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-100"
+                          >
+                            <img
+                              :src="user.avatar"
+                              :alt="user.name"
+                              class="w-full h-full object-cover"
+                            />
+                          </div>
+                          <span
+                            class="text-[15px] text-gray-900 font-medium group-hover:text-black"
+                          >
+                            {{ user.name }}
+                          </span>
                         </div>
-                        <span class="text-[15px] text-gray-900 font-medium group-hover:text-black">
-                          {{ user.name }}
-                        </span>
-                      </div>
 
-                      <div v-if="filteredUsers.length === 0" class="px-4 py-4 text-sm text-gray-500 text-center">
-                        Brak wyników dla "{{ searchQuery }}".<br/>Naciśnij Enter, aby dodać nowy tag.
+                        <div
+                          v-if="filteredUsers.length === 0"
+                          class="px-4 py-4 text-sm text-gray-500 text-center"
+                        >
+                          Brak wyników dla "{{ searchQuery }}".<br />Naciśnij Enter, aby dodać nowy
+                          tag.
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </template>
-              </VDropdown>
+                  </template>
+                </VDropdown>
 
-              <div
-                v-else
-                class="absolute"
-                :style="{
-                  left: `${tag.x}px`,
-                  top: `${tag.y}px`
-                }"
-              >
-                <ImageTag
-                  :tag="tag"
-
-                />
-              </div>
-            </template>
-          </div>
-
+                <div
+                  v-else
+                  class="absolute"
+                  :style="{
+                    left: `${tag.x}px`,
+                    top: `${tag.y}px`,
+                  }"
+                >
+                  <ImageTag :tag="tag" />
+                </div>
+              </template>
+            </div>
           </div>
 
           <StoryElement
@@ -603,7 +648,10 @@ const updateElementContent = (id: string, value: string) => {
             :key="element.id"
             :element="element"
             :state="{
-              active: activeDragId === element.id || activeResizeId === element.id || selectedElementId === element.id,
+              active:
+                activeDragId === element.id ||
+                activeResizeId === element.id ||
+                selectedElementId === element.id,
               cropping: croppingId === element.id,
               editing: editingId === element.id,
               selected: selectedElementId === element.id,
@@ -620,7 +668,9 @@ const updateElementContent = (id: string, value: string) => {
       </div>
 
       <!-- Mobile Toolbar - widoczny tylko na mobile -->
-      <div class="lg:hidden absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 z-20">
+      <div
+        class="lg:hidden absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 z-20"
+      >
         <!-- Przyciski akcji w trybie crop -->
         <div v-if="isCroppingMode" class="flex gap-2 p-3">
           <button
@@ -697,14 +747,15 @@ const updateElementContent = (id: string, value: string) => {
   border-radius: 20px;
 }
 
-
 :deep(.v-popper__inner) {
   background: white;
   padding: 0;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 :deep(.v-popper__arrow-container) {

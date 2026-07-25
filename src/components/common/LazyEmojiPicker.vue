@@ -49,7 +49,9 @@ const refreshPickerSelection = () => {
   nextTick(() => {
     const modalPicker = document.querySelector('.modal-inner-picker')
     if (!modalPicker) return
-    modalPicker.querySelectorAll('.is-custom-selected').forEach(el => el.classList.remove('is-custom-selected'))
+    modalPicker
+      .querySelectorAll('.is-custom-selected')
+      .forEach((el) => el.classList.remove('is-custom-selected'))
     const buttons = modalPicker.querySelectorAll('button.emoji-mart-emoji')
     buttons.forEach((btn) => {
       if (btn.getAttribute('aria-label')?.includes(selectedNative.value!)) {
@@ -58,8 +60,6 @@ const refreshPickerSelection = () => {
     })
   })
 }
-
-
 
 // KLIKNIĘCIE W KÓŁKO (GÓRA)
 const selectEditSlot = (emoji: string, index: number) => {
@@ -74,28 +74,32 @@ const saveReactions = () => {
 }
 
 // Dodaj to pod definicją localReactions
-const hasChanges = ref(false);
+const hasChanges = ref(false)
 
 // Zaktualizuj handleEmojiSelect
 const handleEmojiSelect = (emoji: { native: string }) => {
-  localReactions.value[activeIndex.value] = emoji.native;
-  hasChanges.value = true; // Aktywujemy przycisk zapisu
-  selectedNative.value = emoji.native;
-  refreshPickerSelection();
-};
+  localReactions.value[activeIndex.value] = emoji.native
+  hasChanges.value = true // Aktywujemy przycisk zapisu
+  selectedNative.value = emoji.native
+  refreshPickerSelection()
+}
 
 // Zaktualizuj resetReactions
 const resetReactions = () => {
-  localReactions.value = ['😂', '😆', '😮', '😢', '😡', '🥹'];
-  hasChanges.value = true; // Reset to też zmiana względem oryginału
-  selectedNative.value = localReactions.value[activeIndex.value];
-  refreshPickerSelection();
-};
+  localReactions.value = ['😂', '😆', '😮', '😢', '😡', '🥹']
+  hasChanges.value = true // Reset to też zmiana względem oryginału
+  selectedNative.value = localReactions.value[activeIndex.value]
+  refreshPickerSelection()
+}
 
 // Synchronizacja, gdyby rodzic zmienił tablicę z zewnątrz
-watch(() => props.customReactions, (newVal) => {
-  localReactions.value = [...newVal]
-}, { deep: true })
+watch(
+  () => props.customReactions,
+  (newVal) => {
+    localReactions.value = [...newVal]
+  },
+  { deep: true },
+)
 
 watch(showModal, (val) => {
   emit('modal-state', val)
@@ -128,7 +132,6 @@ watch(isLoaded, async (loaded) => {
 
 <template>
   <div class="custom-messenger-picker-container" :class="props.class">
-
     <div v-if="!isLoaded" class="p-4 w-[320px] bg-theme-bg-secondary rounded-xl">
       <div class="animate-pulse flex flex-col gap-2">
         <div class="h-10 bg-theme-bg-tertiary rounded-full w-full"></div>
@@ -138,7 +141,11 @@ watch(isLoaded, async (loaded) => {
       </div>
     </div>
 
-    <div v-else-if="Picker && emojiIndex" ref="pickerWrapperRef" class="picker-wrapper shadow-xl border border-theme-border">
+    <div
+      v-else-if="Picker && emojiIndex"
+      ref="pickerWrapperRef"
+      class="picker-wrapper  border border-theme-border"
+    >
       <component
         :is="Picker"
         :data="emojiIndex"
@@ -173,9 +180,12 @@ watch(isLoaded, async (loaded) => {
     </div>
   </div>
 
-  <BaseModal  v-if="showModal" :title="t('emojiPicker.customizeReactions')" @close="showModal = false">
+  <BaseModal
+    v-if="showModal"
+    :title="t('emojiPicker.customizeReactions')"
+    @close="showModal = false"
+  >
     <div class="modal-content ov w-[450px] px-5 pb-4" @click.stop>
-
       <div class="selection-display pt-4">
         <div class="reactions-row">
           <div
@@ -208,26 +218,26 @@ watch(isLoaded, async (loaded) => {
         />
       </div>
 
-      <div class="modal-footer flex justify-between items-center  px-2">
-  <button
-    @click="resetReactions"
-    class="text-[15px] font-semibold text-[#0064d1] hover:underline bg-transparent border-none p-0 cursor-pointer"
-  >
-    {{ t('emojiPicker.reset') }}
-  </button>
+      <div class="modal-footer flex justify-between items-center px-2">
+        <button
+          @click="resetReactions"
+          class="text-[15px] font-semibold text-[#0064d1] hover:underline bg-transparent border-none p-0 cursor-pointer"
+        >
+          {{ t('emojiPicker.reset') }}
+        </button>
 
-  <button
-    @click="hasChanges && saveReactions()"
-    :class="[
-      'px-3 py-2 rounded-xl font-semibold text-[15px] transition-colors duration-200',
-      hasChanges
-        ? 'bg-[#0064d1] text-white cursor-pointer hover:bg-[#0056b3]'
-        : 'bg-[#e4e6eb] text-[#bcc0c4] cursor-not-allowed'
-    ]"
-  >
-    {{ t('emojiPicker.save') }}
-  </button>
-</div>
+        <button
+          @click="hasChanges && saveReactions()"
+          :class="[
+            'px-3 py-2 rounded-xl font-semibold text-[15px] transition-colors duration-200',
+            hasChanges
+              ? 'bg-[#0064d1] text-white cursor-pointer hover:bg-[#0056b3]'
+              : 'bg-[#e4e6eb] text-[#bcc0c4] cursor-not-allowed',
+          ]"
+        >
+          {{ t('emojiPicker.save') }}
+        </button>
+      </div>
     </div>
   </BaseModal>
 </template>

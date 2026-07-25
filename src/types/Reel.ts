@@ -1,27 +1,25 @@
-import type { Comment } from './Post';
+import type { Comment } from './Post'
 
 export interface Reel {
+  id: string
 
-  id: string;
+  authorId: number
 
-  authorId: number;
+  videoSrc: string
 
-  videoSrc: string;
+  poster: string
 
-  poster: string;
+  caption: string
 
-  caption: string;
+  likes: string
 
-  likes: string;
+  isLiked: boolean
 
-  isLiked: boolean;
+  commentsCount: number
 
-  commentsCount: number;
+  sharesCount: number
 
-  sharesCount: number;
+  music: string
 
-  music: string;
-
-  comments?: Comment[];
-
+  comments?: Comment[]
 }

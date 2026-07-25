@@ -1,5 +1,8 @@
 <template>
-  <div class="settings-view max-w-xl mx-auto bg-white dark:bg-theme-bg-secondary text-theme-text rounded-xl p-4">
+  <div
+    class="settings-view max-w-xl mx-auto bg-white dark:bg-theme-bg-secondary text-theme-text rounded-xl p-4"
+  >
+    <!-- Nagłówek -->
     <div class="w-full flex items-center pb-4">
       <button
         @click="handleBackClick"
@@ -11,94 +14,111 @@
       <span class="text-theme-text font-bold text-xl">Ustawienia i prywatność</span>
     </div>
 
-    <section class="flex flex-col gap-2">
+    <!-- Lista opcji -->
+    <nav>
+      <ul class="flex flex-col gap-1 p-0 m-0 list-none">
+        <li v-for="item in menuItems" :key="item.name">
+          <button
+            @click="handleMenuClick(item)"
+            class="w-full flex items-center p-2 rounded-lg hover:bg-theme-hover transition duration-150 cursor-pointer"
+          >
+            <span
+              class="h-9 w-9 bg-theme-bg-tertiary rounded-full flex items-center justify-center mr-3 shrink-0"
+            >
+              <component :is="item.iconComponent" class="text-xl text-theme-text" />
+            </span>
 
-      <a href="#" class="setting-link group flex items-center py-2 px-2 hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg transition duration-150">
-        <span class="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mr-4 shrink-0 text-theme-text">
-          <CogIcon :size="24" />
-        </span>
-        <div class="grow text-lg font-medium text-theme-text">
-          Ustawienia
-        </div>
-      </a>
+            <span class="text-theme-text font-[15px] font-medium" style="font-size: 15px;">
+              {{ $t(item.labelKey) }}
+            </span>
 
-      <button @click="handleLanguageClick" class="setting-link group flex items-center py-2 px-2 hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg transition duration-150 w-full text-left">
-        <span class="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mr-4 shrink-0 text-theme-text">
-          <WebIcon :size="24" />
-        </span>
-        <div class="grow text-lg font-medium text-theme-text">
-          Język
-        </div>
-        <ChevronRightIcon class="text-gray-400" :size="24" />
-      </button>
-
-      <a href="#" class="setting-link group flex items-center py-2 px-2 hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg transition duration-150">
-        <span class="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mr-4 shrink-0 text-theme-text">
-          <LockCheckIcon :size="24" /> </span>
-        <div class="grow text-lg font-medium text-theme-text">
-          Kontrola prywatności
-        </div>
-      </a>
-
-      <a href="#" class="setting-link group flex items-center py-2 px-2 hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg transition duration-150">
-        <span class="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mr-4 shrink-0 text-theme-text">
-          <LockIcon :size="24" />
-        </span>
-        <div class="grow text-lg font-medium text-theme-text">
-          Centrum ochrony prywatności
-        </div>
-      </a>
-
-      <a href="#" class="setting-link group flex items-center py-2 px-2 hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg transition duration-150">
-        <span class="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mr-4 shrink-0 text-theme-text">
-          <FormatListBulletedIcon :size="24" />
-        </span>
-        <div class="grow text-lg font-medium text-theme-text">
-          Dziennik aktywności
-        </div>
-      </a>
-
-      <a href="#" class="setting-link group flex items-center py-2 px-2 hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg transition duration-150">
-        <span class="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mr-4 shrink-0 text-theme-text">
-          <CardTextIcon :size="24" />
-        </span>
-        <div class="grow text-lg font-medium text-theme-text">
-          Preferencje dotyczące Aktualności
-        </div>
-      </a>
-
-    </section>
+            <span class="ml-auto flex items-center">
+              <ChevronRightIcon v-if="item.hasSubMenu" size="30" class="text-theme-text" />
+            </span>
+          </button>
+        </li>
+      </ul>
+    </nav>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n';
+import { useI18n } from 'vue-i18n'
+
 // Ikony
-import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue';
-import CogIcon from 'vue-material-design-icons/Cog.vue';
-import WebIcon from 'vue-material-design-icons/Web.vue'; // Dla ikony globusa/języka
-import LockCheckIcon from 'vue-material-design-icons/LockCheck.vue'; // Dla Kontroli prywatności
-import LockIcon from 'vue-material-design-icons/Lock.vue';
-import FormatListBulletedIcon from 'vue-material-design-icons/FormatListBulleted.vue'; // Dla Dziennika
-import CardTextIcon from 'vue-material-design-icons/CardText.vue'; // Dla Aktualności (feed)
-import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue';
+import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue'
+import CogIcon from 'vue-material-design-icons/Cog.vue'
+import WebIcon from 'vue-material-design-icons/Web.vue'
+import LockCheckIcon from 'vue-material-design-icons/LockCheck.vue'
+import LockIcon from 'vue-material-design-icons/Lock.vue'
+import FormatListBulletedIcon from 'vue-material-design-icons/FormatListBulleted.vue'
+import CardTextIcon from 'vue-material-design-icons/CardText.vue'
+import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue'
 
-useI18n();
+useI18n()
 
-const emit = defineEmits(['back', 'navigate']);
+const emit = defineEmits(['back', 'navigate'])
 
 const handleBackClick = () => {
-  emit('back');
-};
+  emit('back')
+}
+
+// Obsługa kliknięcia elementu z menuItems
+const handleMenuClick = (item: any) => {
+  if (item.action) {
+    item.action()
+  } else if (item.href) {
+    // Nawigacja lub zmiana trasy
+    window.location.href = item.href
+  }
+}
 
 const handleLanguageClick = () => {
-  emit('navigate', 'language');
-};
+  emit('navigate', 'language')
+}
+
+// Tablica menuItems dostosowana do Twojego szablonu HTML
+const menuItems = [
+  {
+    name: 'settings',
+    labelKey: 'settings.title', // Wpisz tu właściwe klucze tlumaczeń i18n
+    iconComponent: CogIcon,
+    href: '#',
+  },
+  {
+    name: 'language',
+    labelKey: 'settings.language',
+    iconComponent: WebIcon,
+    hasSubMenu: true,
+    action: handleLanguageClick,
+  },
+  {
+    name: 'privacyCheckup',
+    labelKey: 'settings.privacyCheckup',
+    iconComponent: LockCheckIcon,
+    href: '#',
+  },
+  {
+    name: 'privacyCenter',
+    labelKey: 'settings.privacyCenter',
+    iconComponent: LockIcon,
+    href: '#',
+  },
+  {
+    name: 'activityLog',
+    labelKey: 'settings.activityLog',
+    iconComponent: FormatListBulletedIcon,
+    href: '#',
+  },
+  {
+    name: 'feedPreferences',
+    labelKey: 'settings.feedPreferences',
+    iconComponent: CardTextIcon,
+    href: '#',
+  },
+]
 </script>
 
 <style scoped>
-.setting-link {
-  text-decoration: none;
-  color: inherit;
-}
+/* Jeśli posiadasz dodatkowe style scoped, dodaj je tutaj */
 </style>

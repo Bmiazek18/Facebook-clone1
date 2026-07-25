@@ -1,52 +1,54 @@
 <script setup lang="ts">
-import { computed, type DefineComponent } from 'vue';
-import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
-import Close from 'vue-material-design-icons/Close.vue';
-import ProfilePopper from '@/components/profile/ProfilePopper.vue';
-import type { Post } from '@/types/Post';
+import { computed, type DefineComponent } from 'vue'
+import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
+import Close from 'vue-material-design-icons/Close.vue'
+import ProfilePopper from '@/components/profile/ProfilePopper.vue'
+import type { Post } from '@/types/Post'
 
-import LockIcon from 'vue-material-design-icons/Lock.vue';
-import EarthIcon from 'vue-material-design-icons/Earth.vue';
-import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
-import AccountMultipleMinusIcon from 'vue-material-design-icons/AccountMultipleMinus.vue';
-import AccountStarIcon from 'vue-material-design-icons/AccountStar.vue';
-import Play from 'vue-material-design-icons/Play.vue';
-import { Dropdown as VDropdown } from 'floating-vue';
-import 'floating-vue/dist/style.css';
-import PostSettingPopper from './PostSettingPopper.vue';
-import FormattedDate from '@/components/common/FormattedDate.vue';
-import { getUserById } from '@/data/users';
-import { groups, type Group } from '@/data/groups';
-import UserAvatar from '@/components/common/UserAvatar.vue';
+import LockIcon from 'vue-material-design-icons/Lock.vue'
+import EarthIcon from 'vue-material-design-icons/Earth.vue'
+import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue'
+import AccountMultipleMinusIcon from 'vue-material-design-icons/AccountMultipleMinus.vue'
+import AccountStarIcon from 'vue-material-design-icons/AccountStar.vue'
+import Play from 'vue-material-design-icons/Play.vue'
+import { Dropdown as VDropdown } from 'floating-vue'
+import 'floating-vue/dist/style.css'
+import PostSettingPopper from './PostSettingPopper.vue'
+import FormattedDate from '@/components/common/FormattedDate.vue'
+import UserAvatar from '@/components/common/UserAvatar.vue'
+import { useGroupsStore } from '@/stores/groups'
+import type { Group } from '@/types/Group'
 
+const groupsStore = useGroupsStore()
 const getGroupById = (id: string): Group | undefined => {
-  return groups.find(group => group.id === id)
+  return groupsStore.getGroupById(id)
 }
 
-import { getEventById, type Event } from '@/data/events';
+import { useEventsStore } from '@/stores/events'
+import type { Event } from '@/types/Event'
 
 const props = defineProps<{
-  post: Post;
-  isShared?: boolean;
-  group?: Group;
-  isAnonymous?: boolean;
-  hideCloseButton?: boolean;
-}>();
+  post: Post
+  isShared?: boolean
+  group?: Group
+  isAnonymous?: boolean
+  hideCloseButton?: boolean
+}>()
 
 // Placeholder for anonymous user data
 const anonymousUser = {
   name: 'Użytkownik anonimowy',
   avatar: 'https://via.placeholder.com/150/000000/FFFFFF?text=Anon', // Generic placeholder
   id: 0, // A dummy ID for anonymous user
-};
+}
 
 const emit = defineEmits<{
-  (e: 'menu'): void;
-  (e: 'close'): void;
-  (e: 'editPost', postId: number): void;
-  (e: 'deletePost', postId: number): void;
-  (e: 'hidePost', postId: number): void;
-}>();
+  (e: 'menu'): void
+  (e: 'close'): void
+  (e: 'editPost', postId: number): void
+  (e: 'deletePost', postId: number): void
+  (e: 'hidePost', postId: number): void
+}>()
 
 // Dane statyczne mapy poza computed dla wydajności
 const PRIVACY_MAP = {
@@ -55,16 +57,25 @@ const PRIVACY_MAP = {
   friends: { label: 'Znajomi', icon: AccountGroupIcon },
   friends_except: { label: 'Znajomi z wyjątkiem...', icon: AccountMultipleMinusIcon },
   specific_friends: { label: 'Konkretni znajomi', icon: AccountStarIcon },
-} as const;
+} as const
 
-const author = computed(() => getUserById(props.post.authorId));
+// Dane autora są zwracane w zapytaniu posta — nie pobieramy ich z lokalnej mapy users.ts.
+const author = computed(() => props.post.author)
+const authorName = computed(
+  () => [author.value?.firstName, author.value?.lastName].filter(Boolean).join(' ') || 'Użytkownik',
+)
+const authorForAvatar = computed(
+  () =>
+    author.value && {
+      id: author.value.id,
+      name: authorName.value,
+      avatar: author.value.avatarId
+        ? `http://localhost:8080/api/users/avatar/${author.value.avatarId}`
+        : undefined,
+    },
+)
 
-const targetUser = computed(() => {
-  if (props.post.targetId && props.post.targetType === 'User') {
-    return getUserById(Number(props.post.targetId))
-  }
-  return null
-})
+const targetUser = computed<{ id: string | number; name: string } | null>(() => null)
 
 const targetGroup = computed(() => {
   if (props.post.targetId && props.post.targetType === 'Group') {
@@ -75,44 +86,46 @@ const targetGroup = computed(() => {
 
 const targetEvent = computed(() => {
   if (props.post.targetId && props.post.targetType === 'Event') {
-    return getEventById(props.post.targetId)
+    const eventsStore = useEventsStore()
+    return eventsStore.getEventById(props.post.targetId)
   }
   return null
 })
 
-const taggedUsers = computed(() => {
-  if (!props.post.context.taggedUsersIds) return [];
-  return props.post.context.taggedUsersIds
-    .map((id) => getUserById(id))
-    .filter((u) => u !== undefined);
-});
+const taggedUsers = computed<{ id: string | number; name: string }[]>(() => [])
 
 const privacyInfo = computed(() => {
-  const privacy = props.post.context.privacy || 'public';
-  return PRIVACY_MAP[privacy as keyof typeof PRIVACY_MAP] || PRIVACY_MAP.public;
-});
+  const privacy = props.post.visibility?.toLowerCase() || props.post.context?.privacy || 'public'
+  return PRIVACY_MAP[privacy as keyof typeof PRIVACY_MAP] || PRIVACY_MAP.public
+})
 </script>
 
 <template>
-  <div class="px-4 pt-3 pb-1" v-memo="[post.id, post.context.privacy, isShared]">
+  <div
+    class="px-4 pt-3 pb-1"
+    v-memo="[post.id, post.visibility, post.context?.privacy, authorName, isShared]"
+  >
     <div class="flex items-start">
-
       <template v-if="targetGroup">
-        <div class="relative w-10 h-10 mr-3 shrink-0">
-          <router-link :to="`/groups/${targetGroup.id}`">
+        <!-- Zmieniono w-10 h-10 na w-[34px] h-[34px] -->
+        <div class="relative w-[34px] h-[34px] mr-3 shrink-0">
+          <NuxtLink :to="`/groups/${targetGroup.id}`">
             <img
               :src="targetGroup.image"
               alt="Group"
               class="w-full h-full object-cover rounded-[8px] border border-black/10 dark:border-white/10"
             />
-          </router-link>
-          <div class="absolute -bottom-[8px] -right-[4px] z-10 rounded-full ring-2 ring-white dark:ring-[#242526]">
-            <UserAvatar v-if="props.post.isAnonymous" :user="anonymousUser" :size="24" />
-            <UserAvatar v-else-if="author" :user="author" :size="24" />
+          </NuxtLink>
+          <div
+            class="absolute -bottom-[8px] -right-[4px] z-10 rounded-full ring-2 ring-white dark:ring-[#242526]"
+          >
+            <UserAvatar v-if="props.post.isAnonymous" :user="anonymousUser" :size="20" />
+            <UserAvatar v-else-if="authorForAvatar" :user="authorForAvatar" :size="20" />
           </div>
         </div>
       </template>
 
+      <!-- Zmieniono size na 34 -->
       <UserAvatar
         v-else-if="props.post.isAnonymous"
         :user="anonymousUser"
@@ -120,74 +133,108 @@ const privacyInfo = computed(() => {
         class="mr-2.5 shrink-0"
       />
       <UserAvatar
-        v-else-if="author"
-        :user="author"
+        v-else-if="authorForAvatar"
+        :user="authorForAvatar"
         :size="40"
         class="mr-2.5 shrink-0"
       />
 
       <div class="flex-1 min-w-0 mt-0.5">
         <div v-if="targetGroup">
-          <div class="text-theme-text text-[15px] font-bold leading-tight hover:underline cursor-pointer">
-            <router-link :to="`/groups/${targetGroup.id}`">{{ targetGroup.name }}</router-link>
+          <div
+            class="text-theme-text text-[15px] font-bold leading-tight hover:underline cursor-pointer"
+          >
+            <NuxtLink :to="`/groups/${targetGroup.id}`">{{ targetGroup.name }}</NuxtLink>
           </div>
           <div class="text-[13px] flex items-center mt-0.5 text-meta">
             <span class="hover:underline cursor-pointer font-medium">
-              <ProfilePopper v-if="props.post.isAnonymous" :name="anonymousUser.name" :user-id="anonymousUser.id" mention />
-              <ProfilePopper v-else :name="author?.name || 'Unknown'" :user-id="post.authorId" mention />
+              <ProfilePopper
+                v-if="props.post.isAnonymous"
+                :name="anonymousUser.name"
+                :user-id="anonymousUser.id"
+                mention
+              />
+              <ProfilePopper v-else :name="authorName" :user-id="post.authorId" mention />
             </span>
             <span class="mx-1">·</span>
             <FormattedDate :date="post.date" class="hover:underline" />
             <span class="mx-1">·</span>
-            <component :is="privacyInfo.icon" :size="14" class="fill-meta" v-tooltip="privacyInfo.label" />
+            <component
+              :is="privacyInfo.icon"
+              :size="14"
+              class="fill-meta"
+              v-tooltip="privacyInfo.label"
+            />
           </div>
         </div>
 
         <div v-else>
           <div class="flex flex-wrap items-baseline gap-1 text-theme-text text-[15px] leading-snug">
             <span class="font-bold hover:underline cursor-pointer">
-              <ProfilePopper v-if="props.post.isAnonymous" :name="anonymousUser.name" :user-id="anonymousUser.id" />
-              <ProfilePopper v-else :name="author?.name || 'Unknown'" :user-id="post.authorId" />
+              <ProfilePopper
+                v-if="props.post.isAnonymous"
+                :name="anonymousUser.name"
+                :user-id="anonymousUser.id"
+              />
+              <ProfilePopper v-else :name="authorName" :user-id="post.authorId" comment />
             </span>
 
             <template v-if="targetUser">
               <Play :size="15" class="fill-meta self-center" />
               <span class="font-bold hover:underline cursor-pointer">
-                <ProfilePopper :name="targetUser.name" :user-id="targetUser.id" />
+                <ProfilePopper :name="targetUser.name" :user-id="targetUser.id" comment />
               </span>
             </template>
 
             <template v-if="targetEvent">
               <Play :size="15" class="fill-meta self-center" />
-              <router-link :to="`/events/${targetEvent.id}`" class="font-bold hover:underline cursor-pointer">
+              <NuxtLink
+                :to="`/event/${targetEvent.id}`"
+                class="font-bold hover:underline cursor-pointer"
+              >
                 {{ targetEvent.name }}
-              </router-link>
+              </NuxtLink>
             </template>
 
             <template v-if="taggedUsers.length">
               <span class="text-meta">z</span>
               <span class="font-bold hover:underline cursor-pointer">
-                <ProfilePopper :name="taggedUsers[0].name" :user-id="taggedUsers[0].id" />
+                <ProfilePopper :name="taggedUsers[0]!.name" :user-id="taggedUsers[0]!.id" />
               </span>
-              <span v-if="taggedUsers.length > 1" class="text-meta"> i {{ taggedUsers.length - 1 }} innymi</span>
+              <span v-if="taggedUsers.length > 1" class="text-meta">
+                i {{ taggedUsers.length - 1 }} innymi</span
+              >
             </template>
 
-            <template v-if="post.context.feeling">
+            <template v-if="post.context?.feeling">
               <span class="text-meta">czuje się</span>
               <span class="font-bold">{{ post.context.feeling.label }}</span>
               <span v-if="post.context.feeling.emoji">{{ post.context.feeling.emoji }}</span>
             </template>
+
+            <template v-if="post.context?.location">
+              <span class="text-meta">— jest w:</span>
+              <span
+                class="font-bold hover:underline cursor-pointer text-blue-600 dark:text-blue-400"
+                >{{ post.context.location.title }}</span
+              >
+            </template>
           </div>
 
-          <div class="flex items-center text-[13px] text-meta mt-0.5 font-medium">
+          <div class="flex items-center text-[13px] text-meta mt-0.5 font-semibold">
             <FormattedDate :date="post.date" class="hover:underline cursor-pointer" />
             <span class="mx-1">·</span>
-            <component :is="privacyInfo.icon" :size="14" class="fill-meta" v-tooltip="privacyInfo.label" />
+            <component
+              :is="privacyInfo.icon"
+              :size="14"
+              class="fill-meta"
+              v-tooltip="privacyInfo.label"
+            />
           </div>
         </div>
       </div>
 
-      <div v-if="!isShared" class="flex items-center -mr-2 ml-2">
+      <div v-if="!isShared" class="flex items-center -mr-2 ml-2 gap-1">
         <VDropdown placement="bottom-end" :triggers="['click']">
           <button @click="emit('menu')" class="post-header-btn">
             <DotsHorizontal :size="20" />
@@ -207,18 +254,18 @@ const privacyInfo = computed(() => {
 <style scoped>
 /* Kolor tekstu dla daty i separatorów */
 .text-meta {
-  color: #65676B;
+  color: #65676b;
 }
 .dark .text-meta {
-  color: #B0B3B8;
+  color: #b0b3b8;
 }
 
 /* Kolor dla ikon (zastępuje fillColor w JS) */
 .fill-meta {
-  fill: #65676B;
+  fill: #65676b;
 }
 .dark .fill-meta {
-  fill: #B0B3B8;
+  fill: #b0b3b8;
 }
 
 /* Przyciski (Dots/Close) */
@@ -227,12 +274,13 @@ const privacyInfo = computed(() => {
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  padding: 8px;
+  width: 34px; /* Ustawiono na sztywno 34px */
+  height: 34px; /* Ustawiono na sztywno 34px */
   transition: background-color 0.2s;
-  color: #65676B;
+  color: #65676b;
 }
 .dark .post-header-btn {
-  color: #B0B3B8;
+  color: #b0b3b8;
 }
 .post-header-btn:hover {
   background-color: rgba(0, 0, 0, 0.05);

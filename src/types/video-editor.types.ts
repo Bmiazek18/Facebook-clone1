@@ -4,44 +4,44 @@
  * Base interface for all timeline items
  */
 export interface BaseTimelineItem {
-  id: string;
-  startTime: number;
-  endTime: number;
+  id: string
+  startTime: number
+  endTime: number
 }
 
 /**
  * Base interface for items with position
  */
 export interface BasePositionedItem extends BaseTimelineItem {
-  position: { x: number; y: number };
+  position: { x: number; y: number }
 }
 
 /**
  * Base interface for items with animations
  */
 export interface BaseAnimatedItem extends BasePositionedItem {
-  entryAnimation?: string;
-  entryDuration?: number;
-  exitAnimation?: string;
-  exitDuration?: number;
+  entryAnimation?: string
+  entryDuration?: number
+  exitAnimation?: string
+  exitDuration?: number
 }
 
 /**
  * Base interface for visual overlays (images, videos)
  */
 export interface BaseVisualOverlay extends BaseAnimatedItem {
-  width: number;
-  height: number;
-  rotation: number;
-  opacity: number;
+  width: number
+  height: number
+  rotation: number
+  opacity: number
 }
 
 /**
  * Base interface for media items with URL
  */
 export interface BaseMediaItem {
-  id: string;
-  url: string;
+  id: string
+  url: string
 }
 
 // Specific interfaces
@@ -50,20 +50,20 @@ export interface BaseMediaItem {
  * Video clip in the main timeline
  */
 export interface VideoClip extends BaseMediaItem {
-  duration: number;
-  startTime: number;
-  thumbnails: string[];
+  duration: number
+  startTime: number
+  thumbnails: string[]
 }
 
 /**
  * Text overlay with styling and animations
  */
 export interface TextOverlay extends BaseAnimatedItem {
-  content: string;
-  fontSize: number;
-  color: string;
-  fontWeight: string;
-  loopAnimation?: string;
+  content: string
+  fontSize: number
+  color: string
+  fontWeight: string
+  loopAnimation?: string
 }
 
 /**
@@ -75,26 +75,26 @@ export interface ImageOverlay extends BaseVisualOverlay, BaseMediaItem {}
  * Picture-in-Picture video overlay
  */
 export interface PipVideoOverlay extends BaseVisualOverlay, BaseMediaItem {
-  volume: number;
+  volume: number
 }
 
 /**
  * Animation state for rendering
  */
 export interface AnimationState {
-  opacity: number;
-  scale: number;
-  translateX: number;
-  translateY: number;
+  opacity: number
+  scale: number
+  translateX: number
+  translateY: number
 }
 
 /**
  * Animation state for images (no translateY)
  */
 export interface ImageAnimationState {
-  opacity: number;
-  scale: number;
-  translateX: number;
+  opacity: number
+  scale: number
+  translateX: number
 }
 
 /**
@@ -109,7 +109,7 @@ export type EntryAnimationType =
   | 'slide-in-right'
   | 'slide-in-top'
   | 'slide-in-bottom'
-  | 'typewriter';
+  | 'typewriter'
 
 export type ExitAnimationType =
   | 'none'
@@ -119,10 +119,6 @@ export type ExitAnimationType =
   | 'slide-out-left'
   | 'slide-out-right'
   | 'slide-out-top'
-  | 'slide-out-bottom';
+  | 'slide-out-bottom'
 
-export type LoopAnimationType =
-  | 'none'
-  | 'pulse'
-  | 'float'
-  | 'shake';
+export type LoopAnimationType = 'none' | 'pulse' | 'float' | 'shake'

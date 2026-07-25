@@ -1,19 +1,30 @@
 <template>
   <div
-  class="w-full md:w-[360px] mx-auto bg-theme-bg-secondary flex flex-col overflow-hidden min-h-0 max-h-[calc(100vh-4rem)]"
-  :class="{ 'rounded-b-2xl shadow-2xl': !isEmbedded }"
->
+    class="w-full md:w-[360px] mx-auto bg-theme-bg-secondary flex flex-col overflow-hidden min-h-0 max-h-[calc(100vh-4rem)]"
+    :class="{ 'rounded-b-2xl shadow-2xl': !isEmbedded }"
+  >
     <header class="p-4 flex justify-between items-center bg-theme-bg-secondary z-10 shrink-0">
       <div class="flex items-center space-x-2">
         <h1 class="text-2xl font-bold text-theme-text">{{ $t('header.title') }}</h1>
-
       </div>
-      <div class="flex space-x-3 text-theme-text-secondary">
-        <DotsHorizontalIcon class="h-6 w-6 cursor-pointer" />
-        <RouterLink to="/chat/1"><ArrowExpandIcon class="h-6 w-6 cursor-pointer" /></RouterLink>
+      <div class="flex space-x-3 text-theme-text-secondary items-center">
+  <VDropdown :distance="12" placement="bottom-end">
+    <button class="flex items-center justify-center p-1 rounded-full hover:bg-theme-hover transition-colors">
+      <DotsHorizontalIcon class="h-6 w-6 cursor-pointer" />
+    </button>
+    <template #popper>
+      <SettingsMenu />
+    </template>
+  </VDropdown>
 
-        <PencilOutlineIcon class="h-6 w-6 cursor-pointer" />
-      </div>
+  <NuxtLink to="/chat" class="flex items-center justify-center p-1 rounded-full hover:bg-theme-hover transition-colors">
+    <ArrowExpandIcon class="h-6 w-6 cursor-pointer" />
+  </NuxtLink>
+
+  <button class="flex items-center justify-center p-1 rounded-full hover:bg-theme-hover transition-colors">
+    <PencilOutlineIcon class="h-6 w-6 cursor-pointer" />
+  </button>
+</div>
     </header>
 
     <div class="px-4 pb-3 shrink-0">
@@ -30,14 +41,20 @@
     <div class="flex px-4 pb-3 space-x-2 shrink-0">
       <button
         @click="activeTab = 'all'"
-        :class="{'bg-blue-500 text-white font-semibold': activeTab === 'all', 'bg-gray-200 text-gray-800': activeTab !== 'all'}"
+        :class="{
+          'bg-blue-500 text-white font-semibold': activeTab === 'all',
+          'bg-gray-200 text-gray-800': activeTab !== 'all',
+        }"
         class="py-1 px-3 rounded-full text-sm transition duration-150"
       >
         {{ $t('chat.allChats') }}
       </button>
       <button
         @click="activeTab = 'unread'"
-        :class="{'bg-blue-500 text-white font-semibold': activeTab === 'unread', 'bg-gray-200 text-gray-800': activeTab !== 'unread'}"
+        :class="{
+          'bg-blue-500 text-white font-semibold': activeTab === 'unread',
+          'bg-gray-200 text-gray-800': activeTab !== 'unread',
+        }"
         class="py-1 px-3 rounded-full text-sm transition duration-150"
       >
         {{ $t('chat.unread') }}
@@ -45,124 +62,168 @@
       <DotsHorizontalIcon class="h-5 w-5 text-gray-500 self-center ml-auto cursor-pointer" />
     </div>
 
-  <div class="flex-1 overflow-y-auto min-h-0 overscroll-y-contain">
-        <ul class="px-4 space-y-1">
-            <li v-for="chat in filteredChats" :key="chat.id">
-                <button
-                    @click="handleClick(chat.id)"
-                    class="w-full group flex items-center py-2 px-1 hover:bg-theme-hover rounded-lg cursor-pointer transition duration-100 text-left"
-                    :class="{'bg-blue-100 dark:bg-blue-700': chat.id.toString() === currentRouteChatId}"
+    <div class="flex-1 overflow-y-auto min-h-0 overscroll-y-contain">
+      <ul class="px-4 space-y-1">
+        <li v-for="chat in filteredChats" :key="chat.id">
+          <button
+            @click="handleClick(chat.id)"
+            class="w-full group flex items-center py-2 px-1 hover:bg-theme-hover rounded-lg cursor-pointer transition duration-100 text-left"
+            :class="{ 'bg-blue-100 dark:bg-blue-700': chat.id.toString() === currentRouteChatId }"
+          >
+            <div class="relative shrink-0 mr-3 w-12 h-12">
+              <!-- Avatar grupowy - dwa zdjęcia nałożone -->
+              <template v-if="chat.isGroup && chat.extraAvatars && chat.extraAvatars.length >= 2">
+                <img
+                  :src="chat.extraAvatars[0]"
+                  alt="Awatar"
+                  class="absolute z-999 bottom-0 left-0 h-8 w-8 rounded-full object-cover border border-theme-border bg-theme-bg ring-2 ring-[#fff]"
+                />
+                <img
+                  :src="chat.extraAvatars[1]"
+                  alt="Awatar"
+                  class="absolute top-0 right-0 h-8 w-8 rounded-full object-cover bg-theme-bg border border-theme-border"
+                />
+              </template>
+              <!-- Pojedynczy avatar -->
+              <template v-else>
+                <img
+                  :src="chat.avatarUrl"
+                  alt="Awatar"
+                  class="h-12 w-12 rounded-full object-cover bg-theme-bg border border-theme-border"
+                />
+              </template>
+              <span
+                v-if="chat.isActive"
+                class="absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white bg-green-500"
+              ></span>
+            </div>
+
+            <div class="grow min-w-0">
+              <p class="text-theme-text truncate" :class="{ 'font-bold': chat.unread }">
+                {{ chat.name }}
+              </p>
+              <p
+                class="text-sm truncate"
+                :class="{
+                  'font-bold text-theme-text': chat.unread,
+                  'text-theme-text-secondary': !chat.unread,
+                }"
+              >
+                <span v-html="chat.lastMessage"></span> · {{ chat.timeAgo }}
+              </p>
+            </div>
+
+            <div class="shrink-0 ml-3 relative flex items-center space-x-1">
+              <div v-if="chat.extraAvatars" class="flex -space-x-1 overflow-hidden">
+                <img
+                  v-for="(avatar, index) in chat.extraAvatars"
+                  :key="index"
+                  :src="avatar"
+                  class="inline-block h-5 w-5 rounded-full ring-2 ring-white bg-gray-300"
+                />
+              </div>
+              <div v-if="chat.unread" class="w-2 h-2 bg-blue-500 rounded-full shrink-0"></div>
+
+              <HandRightIcon v-if="chat.isPinch" class="h-5 w-5 text-theme-text-secondary" />
+              <VDropdown
+                :distance="30"
+                @show="() => setDropdownOpen(chat.id, true)"
+                @hide="() => setDropdownOpen(chat.id, false)"
+                @click.stop
+              >
+                <div
+                  :class="[
+                    'group-hover:flex hover:bg-theme-hover  absolute right-3 top-1/2 -translate-y-1/2 shadow-md border bg-theme-bg border-gray-300 items-center justify-center w-9 h-9 rounded-full',
+                    openDropdowns[chat.id] ? 'flex' : 'hidden',
+                  ]"
                 >
-                    <div class="relative shrink-0 mr-3 w-12 h-12">
-                        <!-- Avatar grupowy - dwa zdjęcia nałożone -->
-                        <template v-if="chat.isGroup && chat.extraAvatars && chat.extraAvatars.length >= 2">
-                            <img :src="chat.extraAvatars[0]" alt="Awatar" class="absolute z-999 bottom-0 left-0 h-8 w-8 rounded-full object-cover border border-theme-border bg-theme-bg ring-2 ring-[#fff]" />
-                            <img :src="chat.extraAvatars[1]" alt="Awatar" class="absolute  top-0 right-0 h-8 w-8 rounded-full object-cover bg-theme-bg border border-theme-border" />
-                        </template>
-                        <!-- Pojedynczy avatar -->
-                        <template v-else>
-                            <img :src="chat.avatarUrl" alt="Awatar" class="h-12 w-12 rounded-full object-cover bg-theme-bg border border-theme-border" />
-                        </template>
-                        <span v-if="chat.isActive" class="absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white bg-green-500"></span>
-                    </div>
-
-                    <div class="grow min-w-0">
-                        <p class="text-theme-text truncate" :class="{'font-bold': chat.unread}">
-                            {{ chat.name }}
-                        </p>
-                        <p class="text-sm truncate" :class="{'font-bold text-theme-text': chat.unread, 'text-theme-text-secondary': !chat.unread}">
-                            <span v-html="chat.lastMessage"></span> · {{ chat.timeAgo }}
-                        </p>
-                    </div>
-
-                    <div class="shrink-0 ml-3 relative flex items-center space-x-1">
-
-                        <div v-if="chat.extraAvatars" class="flex -space-x-1 overflow-hidden">
-                            <img v-for="(avatar, index) in chat.extraAvatars" :key="index" :src="avatar" class="inline-block h-5 w-5 rounded-full ring-2 ring-white bg-gray-300" />
-                        </div>
-                        <div v-if="chat.unread" class="w-2 h-2 bg-blue-500  rounded-full shrink-0"></div>
-
-                        <HandRightIcon v-if="chat.isPinch" class="h-5 w-5 text-theme-text-secondary" />
-                        <VDropdown :distance="30" @show="() => setDropdownOpen(chat.id, true)" @hide="() => setDropdownOpen(chat.id, false)" @click.stop>
-                            <div :class="['group-hover:flex hover:bg-theme-hover  absolute right-3 top-1/2 -translate-y-1/2 shadow-md border bg-theme-bg border-gray-300 items-center justify-center w-9 h-9 rounded-full', openDropdowns[chat.id] ? 'flex' : 'hidden']">
-                                <DotsHorizontalIcon class="cursor-pointer" />
-                            </div>
-                            <template #popper>
-                                <ContexMenu/>
-                            </template>
-                        </VDropdown>
-                    </div>
-                </button>
-            </li>
-        </ul>
-
-
-    </div>
+                  <DotsHorizontalIcon class="cursor-pointer" />
+                </div>
+                <template #popper="{ hide }">
+                  <ContexMenu @select-action="(action) => handleMenuAction(chat.id, action, hide)" />
+                </template>
+              </VDropdown>
+            </div>
+          </button>
+        </li>
+      </ul>
     </div>
 
+    <ChatMuteModal
+      v-if="activeMuteChatId !== null"
+      @save="(duration) => handleMuteChat(activeMuteChatId, duration)"
+      @close="activeMuteChatId = null"
+    />
+  </div>
 </template>
 
-
 <script setup lang="ts">
-import { ref, type Ref, computed } from 'vue';
+import { ref, type Ref, computed } from 'vue'
 
 defineProps({
   isEmbedded: {
     type: Boolean,
     default: false,
-  }
-});
+  },
+})
 
 // 1. IMPORT KOMPONENTÓW IKON
-import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue';
-import ArrowExpandIcon from 'vue-material-design-icons/ArrowExpand.vue';
-import PencilOutlineIcon from 'vue-material-design-icons/PencilOutline.vue';
-import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
-import ContexMenu from '@/components/chat/ContextMenu.vue';
-import { useRouter, useRoute } from 'vue-router';
+import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue'
+import ArrowExpandIcon from 'vue-material-design-icons/ArrowExpand.vue'
+import PencilOutlineIcon from 'vue-material-design-icons/PencilOutline.vue'
+import MagnifyIcon from 'vue-material-design-icons/Magnify.vue'
+import ContexMenu from '@/components/chat/ContextMenu.vue'
+import ChatMuteModal from '@/components/chat/info/modals/ChatMuteModal.vue'
 
+import { useConversationsStore } from '@/stores/conversations'
+import { useChatStore } from '@/stores/chat'
+import type { Chat } from '@/types/Chat'
+import SettingsMenu from './SettingsMenu.vue'
 
-import { useConversationsStore } from '@/stores/conversations';
-import { useChatStore } from '@/stores/chat';
-import type { Chat } from '@/data/rawChats';
+const activeTab: Ref<'all' | 'unread'> = ref('all')
+const activeMuteChatId = ref<string | number | null>(null)
 
-const activeTab: Ref<'all' | 'unread'> = ref('all');
+const handleMenuAction = (chatId: string | number, action: string, hide: () => void) => {
+  hide()
+  if (action === 'mute-notifications') {
+    activeMuteChatId.value = chatId
+  }
+}
 
-const convStore = useConversationsStore();
-const chatStore = useChatStore();
-const chats = computed(() => convStore.chats as Chat[]);
+const handleMuteChat = (chatId: string | number, duration: string) => {
+  convStore.muteChat(chatId, duration)
+  activeMuteChatId.value = null
+}
 
-const openDropdowns = ref<Record<number, boolean>>({});
+const convStore = useConversationsStore()
+const chatStore = useChatStore()
+const chats = computed(() => convStore.chats as Chat[])
+
+const openDropdowns = ref<Record<number, boolean>>({})
 const setDropdownOpen = (id: number, value: boolean) => {
-  openDropdowns.value[id] = value;
-};
+  openDropdowns.value[id] = value
+}
 
 // 4. LOGIKA FILTROWANIA (Computed Property)
 const filteredChats = computed(() => {
   if (activeTab.value === 'unread') {
-    return chats.value.filter(n => n.unread);
+    return chats.value.filter((n) => n.unread)
   }
 
-  return chats.value;
-});
+  return chats.value
+})
 
+const router = useRouter()
+const route = useRoute()
 
-const router = useRouter();
-const route = useRoute();
+const isInChatView = computed(() => route.path.startsWith('/chat'))
+const currentRouteChatId = computed(() => route.params.chatId as string)
 
-
-const isInChatView = computed(() => route.path.startsWith('/chat'));
-const currentRouteChatId = computed(() => route.params.chatId as string);
-
-const handleClick = (chatId: number): void => {
+const handleClick = (chatId: string | number): void => {
   if (isInChatView.value) {
-
-    router.push({ name: 'chatMessages', params: { chatId } }).catch(() => {});
+    router.push(`/chat/${chatId}`).catch(() => {})
   } else {
-
-    chatStore.addMessageBox(chatId);
+    chatStore.addMessageBox(chatId)
   }
-};
-
+}
 </script>
-

@@ -1,6 +1,7 @@
 <template>
-  <div class="w-[900px] max-w-full bg-white rounded-lg shadow-lg flex flex-col h-[85vh] overflow-hidden border border-gray-200 font-sans">
-
+  <div
+    class="w-[900px] max-w-full bg-white rounded-lg shadow-lg flex flex-col h-[85vh] overflow-hidden border border-gray-200  "
+  >
     <div class="p-3 px-4 border-b border-gray-200 bg-white">
       <div class="flex items-center bg-[#f0f2f5] rounded-full px-3 py-2">
         <MagnifyIcon class="text-gray-500 mr-2" :size="20" />
@@ -14,9 +15,7 @@
     </div>
 
     <div class="flex flex-1 overflow-hidden">
-
       <div class="w-1/3 border-r border-gray-200 overflow-y-auto pb-5 custom-scrollbar">
-
         <div class="border-b border-gray-200">
           <div
             @click="isFriendsOpen = !isFriendsOpen"
@@ -31,8 +30,16 @@
             />
           </div>
           <div v-show="isFriendsOpen" class="px-2 pb-2">
-            <div class="px-9 py-2 rounded-md text-sm cursor-pointer mb-0.5 bg-[#e7f3ff] text-[#1877f2] font-medium">Proponowani</div>
-            <div class="px-9 py-2 rounded-md text-sm text-gray-600 cursor-pointer mb-0.5 hover:bg-gray-100">Wszyscy znajomi</div>
+            <div
+              class="px-9 py-2 rounded-md text-sm cursor-pointer mb-0.5 bg-[#e7f3ff] text-[#1877f2] font-medium"
+            >
+              Proponowani
+            </div>
+            <div
+              class="px-9 py-2 rounded-md text-sm text-gray-600 cursor-pointer mb-0.5 hover:bg-gray-100"
+            >
+              Wszyscy znajomi
+            </div>
           </div>
         </div>
 
@@ -50,7 +57,11 @@
             />
           </div>
           <div v-show="isEventsOpen" class="px-2 pb-2">
-            <div class="px-9 py-2 rounded-md text-sm text-gray-600 cursor-pointer mb-0.5 hover:bg-gray-100 leading-snug">Wielkie Otrzęsiny Studenckie</div>
+            <div
+              class="px-9 py-2 rounded-md text-sm text-gray-600 cursor-pointer mb-0.5 hover:bg-gray-100 leading-snug"
+            >
+              Wielkie Otrzęsiny Studenckie
+            </div>
           </div>
         </div>
 
@@ -68,7 +79,9 @@
             />
           </div>
           <div v-show="isMyEventsOpen" class="px-2 pb-2">
-            <div class="px-9 py-2 rounded-md text-sm text-gray-500 mb-0.5 cursor-default">Nie znaleziono wydarzeń.</div>
+            <div class="px-9 py-2 rounded-md text-sm text-gray-500 mb-0.5 cursor-default">
+              Nie znaleziono wydarzeń.
+            </div>
           </div>
         </div>
 
@@ -86,10 +99,13 @@
             />
           </div>
           <div v-show="isGroupsOpen" class="px-2 pb-2">
-            <div class="px-9 py-2 rounded-md text-sm text-gray-600 cursor-pointer mb-0.5 hover:bg-gray-100">Kolegium Sędziów BOZPN</div>
+            <div
+              class="px-9 py-2 rounded-md text-sm text-gray-600 cursor-pointer mb-0.5 hover:bg-gray-100"
+            >
+              Kolegium Sędziów BOZPN
+            </div>
           </div>
         </div>
-
       </div>
 
       <div class="w-1/3 flex flex-col border-r border-gray-200">
@@ -110,8 +126,15 @@
             class="flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors"
             @click="toggleUser(user.id)"
           >
-            <div class="w-10 h-10 rounded-full overflow-hidden mr-3 shrink-0 bg-[#e4e6eb] flex items-center justify-center">
-              <img v-if="user.avatar" :src="user.avatar" alt="Avatar" class="w-full h-full object-cover" />
+            <div
+              class="w-10 h-10 rounded-full overflow-hidden mr-3 shrink-0 bg-[#e4e6eb] flex items-center justify-center"
+            >
+              <img
+                v-if="user.avatar"
+                :src="user.avatar"
+                alt="Avatar"
+                class="w-full h-full object-cover"
+              />
               <AccountIcon v-else class="text-gray-400" :size="28" />
             </div>
             <div
@@ -123,7 +146,9 @@
 
             <div
               class="w-5 h-5 shrink-0 rounded-full border flex items-center justify-center transition-colors"
-              :class="selectedIds.includes(user.id) ? 'bg-[#1877f2] border-[#1877f2]' : 'border-gray-400'"
+              :class="
+                selectedIds.includes(user.id) ? 'bg-[#1877f2] border-[#1877f2]' : 'border-gray-400'
+              "
             >
               <CheckIcon v-if="selectedIds.includes(user.id)" class="text-white" :size="14" />
             </div>
@@ -144,8 +169,15 @@
             :key="'selected-' + user.id"
             class="flex items-center p-2 rounded-md hover:bg-gray-200 transition-colors group"
           >
-            <div class="w-8 h-8 rounded-full overflow-hidden mr-3 shrink-0 bg-[#e4e6eb] flex items-center justify-center">
-              <img v-if="user.avatar" :src="user.avatar" alt="Avatar" class="w-full h-full object-cover" />
+            <div
+              class="w-8 h-8 rounded-full overflow-hidden mr-3 shrink-0 bg-[#e4e6eb] flex items-center justify-center"
+            >
+              <img
+                v-if="user.avatar"
+                :src="user.avatar"
+                alt="Avatar"
+                class="w-full h-full object-cover"
+              />
               <AccountIcon v-else class="text-gray-400" :size="20" />
             </div>
 
@@ -162,11 +194,12 @@
           </div>
         </div>
       </div>
-
     </div>
 
     <div class="p-4 border-t border-gray-200 flex justify-end gap-3 bg-white">
-      <button class="bg-transparent border-none text-[#1877f2] font-semibold text-[15px] cursor-pointer px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">
+      <button
+        class="bg-transparent border-none text-[#1877f2] font-semibold text-[15px] cursor-pointer px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+      >
         Anuluj
       </button>
       <button
@@ -180,26 +213,26 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed } from 'vue'
 
 // Import ikon
-import MagnifyIcon from 'vue-material-design-icons/Magnify.vue';
-import AccountMultipleIcon from 'vue-material-design-icons/AccountMultiple.vue';
-import CalendarIcon from 'vue-material-design-icons/Calendar.vue';
-import CalendarStarIcon from 'vue-material-design-icons/CalendarStar.vue';
-import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue';
-import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue';
-import AccountIcon from 'vue-material-design-icons/Account.vue';
-import CheckIcon from 'vue-material-design-icons/Check.vue';
-import CloseIcon from 'vue-material-design-icons/Close.vue'; // <-- Nowa ikona
+import MagnifyIcon from 'vue-material-design-icons/Magnify.vue'
+import AccountMultipleIcon from 'vue-material-design-icons/AccountMultiple.vue'
+import CalendarIcon from 'vue-material-design-icons/Calendar.vue'
+import CalendarStarIcon from 'vue-material-design-icons/CalendarStar.vue'
+import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue'
+import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue'
+import AccountIcon from 'vue-material-design-icons/Account.vue'
+import CheckIcon from 'vue-material-design-icons/Check.vue'
+import CloseIcon from 'vue-material-design-icons/Close.vue' // <-- Nowa ikona
 
 // Stan akordeonu (według drugiego screena tylko pierwsza zakładka jest domyślnie rozwinięta)
-const isFriendsOpen = ref(true);
-const isEventsOpen = ref(false);
-const isMyEventsOpen = ref(false);
-const isGroupsOpen = ref(false);
+const isFriendsOpen = ref(true)
+const isEventsOpen = ref(false)
+const isMyEventsOpen = ref(false)
+const isGroupsOpen = ref(false)
 
-const searchQuery = ref('');
+const searchQuery = ref('')
 
 // Rozbudowana lista mock-users
 const users = ref([
@@ -218,49 +251,49 @@ const users = ref([
   { id: 13, name: 'Bartłomiej Gawroński', avatar: null },
   { id: 14, name: 'Maks Muranowski', avatar: 'https://i.pravatar.cc/150?u=14' },
   { id: 15, name: 'Szymon Trochowski', avatar: 'https://i.pravatar.cc/150?u=15' },
-]);
+])
 
-const selectedIds = ref([3]); // Mateusz Piszcz domyślnie zaznaczony dla testów
+const selectedIds = ref([3]) // Mateusz Piszcz domyślnie zaznaczony dla testów
 
 // Filtrowanie z lewej strony
 const filteredUsers = computed(() => {
-  if (!searchQuery.value) return users.value;
-  return users.value.filter(u =>
-    u.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
-});
+  if (!searchQuery.value) return users.value
+  return users.value.filter((u) => u.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
+})
 
 // Zmienna obliczeniowa pobierająca pełne obiekty zaznaczonych użytkowników do prawego panelu
 const selectedUsers = computed(() => {
-  return users.value.filter(u => selectedIds.value.includes(u.id));
-});
+  return users.value.filter((u) => selectedIds.value.includes(u.id))
+})
 
 const isAllSelected = computed(() => {
-  return filteredUsers.value.length > 0 &&
-         filteredUsers.value.every(u => selectedIds.value.includes(u.id));
-});
+  return (
+    filteredUsers.value.length > 0 &&
+    filteredUsers.value.every((u) => selectedIds.value.includes(u.id))
+  )
+})
 
 const toggleUser = (id) => {
-  const index = selectedIds.value.indexOf(id);
+  const index = selectedIds.value.indexOf(id)
   if (index === -1) {
-    selectedIds.value.push(id);
+    selectedIds.value.push(id)
   } else {
-    selectedIds.value.splice(index, 1);
+    selectedIds.value.splice(index, 1)
   }
-};
+}
 
 const toggleSelectAll = () => {
   if (isAllSelected.value) {
-    const visibleIds = filteredUsers.value.map(u => u.id);
-    selectedIds.value = selectedIds.value.filter(id => !visibleIds.includes(id));
+    const visibleIds = filteredUsers.value.map((u) => u.id)
+    selectedIds.value = selectedIds.value.filter((id) => !visibleIds.includes(id))
   } else {
-    filteredUsers.value.forEach(u => {
+    filteredUsers.value.forEach((u) => {
       if (!selectedIds.value.includes(u.id)) {
-        selectedIds.value.push(u.id);
+        selectedIds.value.push(u.id)
       }
-    });
+    })
   }
-};
+}
 </script>
 
 <style scoped>

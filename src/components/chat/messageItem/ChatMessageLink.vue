@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useChatThemeStore } from '@/stores/chatTheme';
-import { storeToRefs } from 'pinia';
+import { useChatThemeStore } from '@/stores/chatTheme'
+import { storeToRefs } from 'pinia'
 import LinkVariantIcon from 'vue-material-design-icons/LinkVariant.vue'
 import type { Message, LinkMessage } from '@/types/Message'
 
-const { selectedTheme } = storeToRefs(useChatThemeStore());
+const { selectedTheme } = storeToRefs(useChatThemeStore())
 
 const props = defineProps<{
   message: Message

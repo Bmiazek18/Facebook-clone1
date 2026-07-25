@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
-@import "tailwindcss";
-
+@import 'tailwindcss';
+@import 'floating-vue/dist/style.css';
+@import 'vue-toastification/dist/index.css';
 
 :root {
   font-family: 'Inter', sans-serif;
@@ -8,6 +9,8 @@
 
 body {
   font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 @theme {
   --breakpoint-xs: 30rem;
@@ -18,67 +21,67 @@ body {
 @custom-variant dark (&:where(.dark, .dark *));
 /* Define semantic color tokens as CSS variables */
 :root {
-  --color-bg: #F1F2F5;
+  --color-bg: #f1f2f5;
   --primary-color: #2963d8;
-  --color-bg-secondary: #FFFFFF;
-  --color-bg-tertiary: #E4E6EB;
-  --color-text: #080809;;
-  --color-text-secondary: #65676B;
-  --color-border: #CED0D4;
-  --color-hover: #E5E6E9;
-  --color-hover-strong: #D8DADF;
-  --color-bg-subtle: #E5E6E9;
-  --color-primary: #1877F2;
-  --color-primary-hover: #166FE5;
-  --color-primary-subtle: #EBF5FF;
-  --color-primary-subtle-hover: #DBEAFE;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #e4e6eb;
+  --color-text: #080809;
+  --color-text-secondary: #65676b;
+  --color-border: #ced0d4;
+  --color-hover: #e5e6e9;
+  --color-hover-strong: #d8dadf;
+  --color-bg-subtle: #e5e6e9;
+  --color-primary: #1877f2;
+  --color-primary-hover: #166fe5;
+  --color-primary-subtle: #ebf5ff;
+  --color-primary-subtle-hover: #dbeafe;
   --color-primary-mention-bg: rgba(29, 133, 252, 0.45);
-  --color-border-primary: #E2E5E9;
+  --color-border-primary: #e2e5e9;
   --shadow-color: rgba(0, 0, 0, 0.2);
---color-tooltip-bg: rgba(36, 37, 38, 0.9);
-  --color-tooltip-text: #E4E6EB;
-  --color-tooltip-border: #3E4042;
-  --color-placeholder-text: #A0A3A8;
-  --toast-bg: #FFFFFF;
+  --color-tooltip-bg: rgba(36, 37, 38, 0.9);
+  --color-tooltip-text: #e4e6eb;
+  --color-tooltip-border: #3e4042;
+  --color-placeholder-text: #a0a3a8;
+  --toast-bg: #ffffff;
   --toast-text-color: #1f2937;
   --toast-progress-color: var(--color-primary);
-  --color-comment-bg: #F0F2F5;
+  --color-comment-bg: #f0f2f5;
   --color-comment-input-bg: var(--color-bg-tertiary);
 }
 
 .dark {
   /* Dark mode overrides */
-  --color-bg: #1C1E21;
+  --color-bg: #1c1e21;
   --color-bg-secondary: #252729;
-  --color-bg-tertiary: #3A3B3C;
-  --color-text: #E4E6EB;
+  --color-bg-tertiary: #3a3b3c;
+  --color-text: #e4e6eb;
   --color-text-secondary: #b0b3b8;
-  --color-border: #3A3D42;
-  --color-hover: #35373D;
-  --color-hover-strong: #4E4F50;
-  --color-bg-subtle: #35373D;
-  --color-primary: #1877F2;
-  --color-primary-hover: #166FE5;
-  --color-primary-subtle: #0E2B4B;
-  --color-primary-subtle-hover: #173A64;
-  --color-border-primary: #46484B;;
+  --color-border: #3a3d42;
+  --color-hover: #35373d;
+  --color-hover-strong: #4e4f50;
+  --color-bg-subtle: #35373d;
+  --color-primary: #1877f2;
+  --color-primary-hover: #166fe5;
+  --color-primary-subtle: #0e2b4b;
+  --color-primary-subtle-hover: #173a64;
+  --color-border-primary: #46484b;
   --shadow-color: rgba(0, 0, 0, 0.5);
---color-tooltip-bg: rgba(207, 209, 211, 0.9);     /* Odpowiednik #CFD1D3 */
+  --color-tooltip-bg: rgba(207, 209, 211, 0.9); /* Odpowiednik #CFD1D3 */
   --color-tooltip-text: #050505;
-  --color-tooltip-border: #E4E6EB;
-  --color-placeholder-text: #B0B3B8;
+  --color-tooltip-border: #e4e6eb;
+  --color-placeholder-text: #b0b3b8;
   --toast-bg: #252729;
-  --toast-text-color: #E4E6EB;
+  --toast-text-color: #e4e6eb;
   --color-comment-bg: #333334;
   --color-comment-input-bg: var(--color-bg-tertiary);
 }
 
-.bg-primary{
+.bg-primary {
   background-color: var(--primary-color);
 }
 /* Semantic utility classes using CSS variables */
 .shadow-theme {
-    box-shadow: 0 4px 12px var(--shadow-color);
+  box-shadow: 0 4px 12px var(--shadow-color);
 }
 .bg-theme-bg {
   background-color: var(--color-bg);
@@ -93,7 +96,7 @@ body {
 }
 
 .bg-theme-bg-subtle {
-    background-color: var(--color-bg-subtle);
+  background-color: var(--color-bg-subtle);
 }
 
 .text-theme-text {
@@ -105,7 +108,7 @@ body {
 }
 
 .text-theme-text-muted {
-    color: var(--color-text-secondary);
+  color: var(--color-text-secondary);
 }
 
 .border-theme-border {
@@ -172,7 +175,6 @@ body {
   background: transparent;
 }
 
-
 /* Show scrollbar with fade */
 .scrollbar-visible::-webkit-scrollbar-thumb {
   background-color: rgba(107, 114, 128, 0.5);
@@ -209,7 +211,7 @@ body {
 .v-popper--theme-dark .v-popper__inner {
   background-color: rgba(207, 209, 211, 0.9) !important;
   color: #050505 !important;
-  border: 1px solid #E4E6EB !important;
+  border: 1px solid #e4e6eb !important;
 }
 
 /* Usuwamy strzałkę (na Facebooku jej nie ma) */
@@ -218,26 +220,26 @@ body {
 }
 
 .custom-offline-toast-container {
-    background-color: var(--toast-bg);
-    border-radius: 8px;
-    box-shadow: 0 4px 12px var(--shadow-color);
-    padding: 16px;
-    color: var(--toast-text-color);
+  background-color: var(--toast-bg);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  padding: 16px;
+  color: var(--toast-text-color);
 }
 
 .custom-offline-toast-body {
-    padding: 0 !important;
+  padding: 0 !important;
 }
 
 .custom-offline-toast-container .close-button:hover {
-    background-color: var(--color-hover);
+  background-color: var(--color-hover);
 }
 .Vue-Toastification__toast.custom-toast-container {
   background-color: var(--toast-bg) !important;
   color: var(--toast-text-color) !important;
-display: flex;
+  display: flex;
 
-    align-items: center;
+  align-items: center;
   /* Cień i ramka jak na Facebooku */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
   border-radius: 12px !important;
@@ -264,8 +266,9 @@ display: flex;
 .Vue-Toastification__progress-bar {
   display: none;
 }
-input:focus, textarea:focus {
-    outline: none;
+input:focus,
+textarea:focus {
+  outline: none;
 }
 
 /* Themed scrollbar for Webkit browsers */

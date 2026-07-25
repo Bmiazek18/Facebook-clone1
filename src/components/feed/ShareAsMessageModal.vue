@@ -1,43 +1,63 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-
-// Import ikon
-
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue'
-
 import FacebookMessengerIcon from 'vue-material-design-icons/FacebookMessenger.vue'
+import { getAllUsers } from '@/utils/users'
+import { useConversationsStore } from '@/stores/conversations'
+import { useNotify } from '@/composables/shared/useNotify'
 
-// Stan
+const props = defineProps<{
+  shareUrl?: string
+}>()
+
+const emit = defineEmits(['close'])
+
 const searchQuery = ref('')
 const message = ref('')
-const selectedUsers = ref([1, 2])
+const selectedUsers = ref<Array<string | number>>([1, 2])
 
-import { users } from '@/data/users';
+const convStore = useConversationsStore()
+const notify = useNotify()
 
 const filteredUsers = computed(() => {
+  const users = getAllUsers()
   if (!searchQuery.value) return users
-  return users.filter(user =>
-    user.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
+  return users.filter((user) => user.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
 })
 
 const hasSelection = computed(() => selectedUsers.value.length > 0)
 
-const toggleUserSelection = (userId: number) => {
-  const index = selectedUsers.value.indexOf(userId);
+const toggleUserSelection = (userId: string | number) => {
+  const index = selectedUsers.value.indexOf(userId)
   if (index > -1) {
-    selectedUsers.value.splice(index, 1);
+    selectedUsers.value.splice(index, 1)
   } else {
-    selectedUsers.value.push(userId);
+    selectedUsers.value.push(userId)
   }
-};
+}
+
+const handleSend = () => {
+  const finalMessage = [
+    message.value,
+    props.shareUrl ? (window.location.origin + props.shareUrl) : null
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  selectedUsers.value.forEach((userId) => {
+    convStore.addMessage(userId, { content: finalMessage })
+  })
+
+  notify.success('Wysłano wiadomości w Messengerze!')
+  emit('close')
+}
 </script>
 
 <template>
-  <div class="w-[500px] mx-auto relative bg-white h-[700px] flex flex-col font-sans text-gray-900 border-x border-gray-100 shadow-xl">
-
-    <div class="px-4 py-3 text-xs text-gray-500 bg-white">
-      </div>
+  <div
+    class="w-[500px] mx-auto relative bg-white h-[700px] flex flex-col   text-gray-900 border-x border-gray-100 shadow-xl"
+  >
+    <div class="px-4 py-3 text-xs text-gray-500 bg-white"></div>
 
     <div class="px-4 pb-2">
       <div class="bg-gray-100 rounded-full flex items-center h-10 px-3">
@@ -52,9 +72,6 @@ const toggleUserSelection = (userId: number) => {
     </div>
 
     <div class="flex-1 overflow-y-auto pb-32">
-
-
-
       <div
         v-for="user in filteredUsers"
         :key="user.id"
@@ -63,9 +80,10 @@ const toggleUserSelection = (userId: number) => {
       >
         <div class="flex items-center gap-3">
           <div class="relative w-10 h-10 shrink-0">
-            <img :src="user.avatar" class="w-full h-full rounded-full object-cover border border-gray-100"/>
-
-
+            <img
+              :src="user.avatar"
+              class="w-full h-full rounded-full object-cover border border-gray-100"
+            />
           </div>
           <span class="font-semibold text-sm select-none truncate pr-2">{{ user.name }}</span>
         </div>
@@ -81,8 +99,9 @@ const toggleUserSelection = (userId: number) => {
       </div>
     </div>
 
-    <div class="absolute bottom-0 left-0 right-0 w-full max-w-[500px] mx-auto bg-white px-4 pt-2 pb-5 border-t border-gray-100 z-10">
-
+    <div
+      class="absolute bottom-0 left-0 right-0 w-full max-w-[500px] mx-auto bg-white px-4 pt-2 pb-5 border-t border-gray-100 z-10"
+    >
       <div class="relative mb-3">
         <input
           v-model="message"
@@ -94,16 +113,18 @@ const toggleUserSelection = (userId: number) => {
 
       <button
         :disabled="!hasSelection"
+        @click="handleSend"
         class="w-full py-3 rounded-xl font-semibold text-sm transition-colors flex justify-center items-center gap-2 text-white shadow-sm"
-        :class="hasSelection
-          ? 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
-          : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+        :class="
+          hasSelection
+            ? 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
+            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+        "
       >
         <FacebookMessengerIcon v-if="hasSelection" :size="18" class="text-white" />
         <span>{{ hasSelection ? 'Wyślij osobno' : 'Wyślij' }}</span>
       </button>
     </div>
-
   </div>
 </template>
 

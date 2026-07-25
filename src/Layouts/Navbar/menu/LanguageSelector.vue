@@ -1,141 +1,124 @@
 <template>
-  <div class="language-settings max-w-xl mx-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl font-sans">
-
-    <div class="w-full flex items-center pb-4 border-b border-gray-200 dark:border-gray-700 mb-4 px-4 pt-4">
+  <div
+    class="language-settings max-w-xl mx-auto bg-white dark:bg-theme-bg-secondary text-theme-text rounded-xl p-4"
+  >
+    <!-- Nagłówek -->
+    <div class="w-full flex items-center pb-4 border-b border-gray-200 dark:border-gray-800 mb-2">
       <button
         @click="handleBackClick"
-        class="rounded-full p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-150 mr-2"
+        class="rounded-full p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-theme-hover transition duration-150 mr-2"
         aria-label="Powrót"
       >
-        <ArrowLeftIcon class="text-2xl text-gray-700 dark:text-gray-300" />
+        <ArrowLeftIcon class="text-2xl text-theme-text" />
       </button>
-      <h1 class="text-xl font-bold">{{ $t('language_settings.title') }}</h1>
+      <h1 class="text-xl font-bold text-theme-text">{{ $t('language_settings.title') }}</h1>
     </div>
 
-    <div class="px-4 pb-6 space-y-6">
-
+    <div class="space-y-6 pt-2">
+      <!-- Sekcja 1: Język aplikacji -->
       <section>
-        <h2 class="text-lg font-bold mb-2">{{ $t('language_settings.facebook_language') }}</h2>
-        <div class="py-2">
-          <p class="text-[15px] text-gray-600 dark:text-gray-300 leading-snug mb-4">
-            {{ $t('language_settings.language_description') }}
-          </p>
+        <h2 class="text-base font-bold text-theme-text px-2 mb-1">
+          {{ $t('language_settings.facebook_language') }}
+        </h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 px-2 mb-3 leading-snug">
+          {{ $t('language_settings.language_description') }}
+        </p>
 
-          <div class="flex items-center justify-between">
-            <span class="text-[15px] font-bold text-gray-900 dark:text-white">{{ currentLanguageName }}</span>
-
-            <!-- Switch Toggle -->
-            <div class="flex items-center gap-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1">
-              <button
-                @click="changeLanguage('pl')"
-                :class="[
-                  'px-4 py-2 rounded-full transition-all duration-200 text-lg font-semibold',
-                  currentLocale === 'pl'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                ]"
-              >
-                🇵🇱
-              </button>
-              <button
-                @click="changeLanguage('en')"
-                :class="[
-                  'px-4 py-2 rounded-full transition-all duration-200 text-lg font-semibold',
-                  currentLocale === 'en'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                ]"
-              >
-                🇬🇧
-              </button>
+        <!-- Wyborca języka (Facebook Style) -->
+        <div class="flex flex-col gap-1">
+          <button
+            v-for="lang in availableLanguages"
+            :key="lang.code"
+            @click="changeLanguage(lang.code)"
+            class="w-full flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-theme-hover transition duration-150 text-left cursor-pointer"
+          >
+            <div class="flex flex-col">
+              <span class="text-[15px] font-semibold text-theme-text leading-tight">
+                {{ lang.nativeName }}
+              </span>
+              <span v-if="lang.name !== lang.nativeName" class="text-xs text-gray-500 dark:text-gray-400">
+                {{ lang.name }}
+              </span>
             </div>
-          </div>
+
+            <!-- Radio Indicator -->
+            <div
+              :class="[
+                'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0',
+                currentLocale === lang.code
+                  ? 'border-gray-900 dark:border-white'
+                  : 'border-gray-400 dark:border-gray-500',
+              ]"
+            >
+              <div
+                v-if="currentLocale === lang.code"
+                class="w-2.5 h-2.5 bg-gray-900 dark:bg-white rounded-full"
+              ></div>
+            </div>
+          </button>
         </div>
       </section>
 
-      <hr class="border-gray-200 dark:border-gray-700" />
+      <hr class="border-gray-200 dark:border-gray-800 -mx-4" />
 
-
-
+      <!-- Sekcja 2: Tłumaczenia postów -->
       <section>
-        <h2 class="text-lg font-bold mb-2">Posty od znajomych i stron</h2>
-        <div class="py-2">
-          <p class="text-[15px] text-gray-600 dark:text-gray-300 leading-snug mb-4">
-            Język, na który mają być tłumaczone posty
-          </p>
+        <h2 class="text-base font-bold text-theme-text px-2 mb-1">
+          Posty od znajomych i stron
+        </h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 px-2 mb-3 leading-snug">
+          Język, na który mają być automatycznie tłumaczone posty.
+        </p>
 
-          <div class="flex items-center justify-between">
-            <span class="text-[15px] font-bold text-gray-900 dark:text-white">{{ currentLanguageName }}</span>
-
-            <!-- Switch Toggle -->
-            <div class="flex items-center gap-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1">
-              <button
-                @click="changeLanguage('pl')"
-                :class="[
-                  'px-4 py-2 rounded-full transition-all duration-200 text-lg font-semibold',
-                  currentLocale === 'pl'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                ]"
-              >
-                🇵🇱
-              </button>
-              <button
-                @click="changeLanguage('en')"
-                :class="[
-                  'px-4 py-2 rounded-full transition-all duration-200 text-lg font-semibold',
-                  currentLocale === 'en'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                ]"
-              >
-                🇬🇧
-              </button>
-            </div>
+        <button
+          class="w-full flex items-center justify-between py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-theme-hover transition duration-150 text-left cursor-pointer"
+        >
+          <div class="flex flex-col">
+            <span class="text-xs text-gray-500 dark:text-gray-400">Język docelowy</span>
+            <span class="text-[15px] font-semibold text-theme-text">
+              {{ currentLanguageName }}
+            </span>
           </div>
-        </div>
+          <ChevronRightIcon :size="24" class="text-gray-400" />
+        </button>
       </section>
-
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
-import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue';
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue'
+import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue'
 
-const { locale } = useI18n();
-const emit = defineEmits(['back']);
+const { locale } = useI18n()
+const emit = defineEmits(['back'])
 
 interface Language {
-  code: string;
-  name: string;
-  nativeName: string;
+  code: string
+  name: string
+  nativeName: string
 }
 
 const availableLanguages: Language[] = [
   { code: 'pl', name: 'Polski', nativeName: 'Polski' },
-  { code: 'en', name: 'English', nativeName: 'English (US)' }
-];
+  { code: 'en', name: 'Angielski', nativeName: 'English (US)' },
+]
 
-const currentLocale = computed(() => locale.value);
+const currentLocale = computed(() => locale.value)
 
 const currentLanguageName = computed(() => {
-  const lang = availableLanguages.find(l => l.code === locale.value);
-  return lang ? lang.name : 'Polski';
-});
+  const lang = availableLanguages.find((l) => l.code === locale.value)
+  return lang ? lang.nativeName : 'Polski'
+})
 
 const changeLanguage = (langCode: string) => {
-  locale.value = langCode;
-  localStorage.setItem('locale', langCode);
-};
+  locale.value = langCode
+  localStorage.setItem('locale', langCode)
+}
 
 const handleBackClick = () => {
-  emit('back');
-};
+  emit('back')
+}
 </script>
-
-<style scoped>
-/* Opcjonalne: drobne korekty dla idealnego dopasowania */
-</style>

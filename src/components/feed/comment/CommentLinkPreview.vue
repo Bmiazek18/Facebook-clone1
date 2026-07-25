@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import {  ref } from 'vue'
+import { ref } from 'vue'
 import InformationOutline from 'vue-material-design-icons/InformationOutline.vue'
 import type { LinkPreview } from '@/types/Post'
-import BaseModal from '../../common/BaseModal.vue';
-import LinkModal from '../LinkModal.vue';
+import BaseModal from '../../common/BaseModal.vue'
+import LinkModal from '../LinkModal.vue'
 
 defineProps<{
   linkPreview: LinkPreview
 }>()
 
-const isModalOpen= ref(false)
-const openLinkModal = ()=> {
+const isModalOpen = ref(false)
+const openLinkModal = () => {
   isModalOpen.value = true
 }
-const closeLinkModal = ()=> {
+const closeLinkModal = () => {
   isModalOpen.value = false
 }
 </script>
@@ -27,7 +27,9 @@ const closeLinkModal = ()=> {
     </div>
 
     <div class="flex flex-col justify-center p-3 pr-10 overflow-hidden">
-      <div class="text-[12px] uppercase text-theme-text-secondary font-semibold tracking-wider truncate">
+      <div
+        class="text-[12px] uppercase text-theme-text-secondary font-semibold tracking-wider truncate"
+      >
         {{ linkPreview.domain || new URL(linkPreview.url).hostname.toUpperCase() }}
       </div>
       <div class="text-[15px] text-theme-text leading-tight mt-1 line-clamp-2">
@@ -42,9 +44,12 @@ const closeLinkModal = ()=> {
       <InformationOutline :size="20" />
     </div>
   </div>
-  <BaseModal title="Informacje o tej zawartości
-" v-if="isModalOpen" @close="closeLinkModal">
-  <LinkModal :target-url="linkPreview.url"/>
+  <BaseModal
+    title="Informacje o tej zawartości
+"
+    v-if="isModalOpen"
+    @close="closeLinkModal"
+  >
+    <LinkModal :target-url="linkPreview.url" />
   </BaseModal>
 </template>
-

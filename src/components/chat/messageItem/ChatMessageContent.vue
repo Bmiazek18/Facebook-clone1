@@ -16,7 +16,8 @@ const props = defineProps<{
 const emojiIndex = new EmojiIndex(data)
 
 // Rozszerzony regex dla emoji
-const EMOJI_REGEX = /(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|[\u2600-\u27bf])/g
+const EMOJI_REGEX =
+  /(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|[\u2600-\u27bf])/g
 
 const style = computed(() => ({
   backgroundColor: props.bubbleColor,
@@ -25,15 +26,18 @@ const style = computed(() => ({
 
 const tokens = computed(() => {
   const content = props.message.content || ''
-  return content.split(EMOJI_REGEX).map((part) => ({
-    value: part,
-    isEmoji: EMOJI_REGEX.test(part)
-  })).filter(token => token.value !== '')
+  return content
+    .split(EMOJI_REGEX)
+    .map((part) => ({
+      value: part,
+      isEmoji: EMOJI_REGEX.test(part),
+    }))
+    .filter((token) => token.value !== '')
 })
 
 const isEmojiOnlyMessage = computed(() => {
   if (!props.message.content?.trim()) return false
-  return tokens.value.every(token => token.isEmoji || token.value.trim() === '')
+  return tokens.value.every((token) => token.isEmoji || token.value.trim() === '')
 })
 
 const jumboSize = computed(() => {
@@ -54,17 +58,26 @@ const jumboSize = computed(() => {
           class="emoji-container inline-flex relative align-middle justify-center items-center"
           :style="{ width: jumboSize + 'px', height: jumboSize + 'px' }"
         >
-          <span class="native-emoji-text" :style="{ fontSize: jumboSize + 'px' }">{{ token.value }}</span>
+          <span class="native-emoji-text" :style="{ fontSize: jumboSize + 'px' }">{{
+            token.value
+          }}</span>
 
           <span class="graphic-emoji absolute pointer-events-none">
-            <Emoji :data="emojiIndex" :emoji="token.value" :size="jumboSize" :native="false" set="facebook" />
+            <Emoji
+              :data="emojiIndex"
+              :emoji="token.value"
+              :size="jumboSize"
+              :native="false"
+              set="facebook"
+            />
           </span>
         </span>
       </template>
     </div>
 
-    <div v-else
-      class="relative px-4 py-2 text-[15px] leading-relaxed shadow-sm break-words max-w-full"
+    <div
+      v-else
+      class="relative px-4 py-2 text-[15px] shadow-sm break-words max-w-full"
       :class="[bubbleRadiusClass]"
       :style="style"
     >
@@ -73,12 +86,18 @@ const jumboSize = computed(() => {
           <span
             v-if="token.isEmoji"
             class="emoji-container inline-flex relative align-middle justify-center items-center mx-[1px]"
-            style="width: 20px; height: 20px;"
+            style="width: 20px; height: 20px"
           >
-            <span class="native-emoji-text" style="font-size: 18px;">{{ token.value }}</span>
+            <span class="native-emoji-text" style="font-size: 18px">{{ token.value }}</span>
 
             <span class="graphic-emoji absolute pointer-events-none">
-              <Emoji :data="emojiIndex" :emoji="token.value" :size="18" :native="false" set="facebook" />
+              <Emoji
+                :data="emojiIndex"
+                :emoji="token.value"
+                :size="18"
+                :native="false"
+                set="facebook"
+              />
             </span>
           </span>
 
@@ -107,7 +126,12 @@ const jumboSize = computed(() => {
 /* Gdy użytkownik podświetli tekst, chcemy żeby podświetlenie było normalne, a tekst nadal przezroczysty */
 .native-emoji-text::selection {
   color: transparent;
-  background-color: rgba(59, 130, 246, 0.4); /* Typowy niebieski kolor zaznaczenia (Tailwind blue-500 z przezroczystością) */
+  background-color: rgba(
+    59,
+    130,
+    246,
+    0.4
+  ); /* Typowy niebieski kolor zaznaczenia (Tailwind blue-500 z przezroczystością) */
 }
 
 /* Grafika emoji znajduje się POD niewidzialnym tekstem */

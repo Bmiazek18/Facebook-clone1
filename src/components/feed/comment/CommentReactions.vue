@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Dropdown as VDropdown, vTooltip } from 'floating-vue'
-import { reactionIcons } from '@/composables/usePostReactions'
-import { getUserById } from '@/data/users'
+import { reactionIcons } from '@/composables/feed/usePostReactions'
+import { getUserById } from '@/utils/users'
 import type { Comment } from '@/types/Post'
-import { useReactionConfig } from '@/composables/useReactionConfig'
+import { useReactionConfig } from '@/composables/feed/useReactionConfig'
 
 const props = defineProps<{
-  comment: Comment,
-  totalLikes: number,
+  comment: Comment
+  totalLikes: number
   userReaction: string | null
 }>()
 
@@ -36,19 +36,21 @@ const { getReactionConfig } = useReactionConfig()
       <div class="">
         <template v-if="totalLikes < 5">
           <div v-for="(userIds, reaction) in comment.reactions" :key="reaction">
-            <div v-if="userIds.length > 0" class="flex items-center gap-2 ">
-                <div
-        class="rounded-full p-0.5 flex items-center justify-center w-[18px] h-[18px]"
-        :class="getReactionConfig(userReaction || 'like').wrapperClass"
-      >
-        <component
-          v-if="getReactionConfig(userReaction || 'like').mode === 'icon'"
-          :is="getReactionConfig(userReaction || 'like').component"
-          :size="10"
-          :fillColor="getReactionConfig(userReaction || 'like').color"
-        />
-        <span v-else class="text-[13px]">{{ getReactionConfig(userReaction || 'like').char }}</span>
-      </div>
+            <div v-if="userIds.length > 0" class="flex items-center gap-2">
+              <div
+                class="rounded-full p-0.5 flex items-center justify-center w-[18px] h-[18px]"
+                :class="getReactionConfig(userReaction || 'like').wrapperClass"
+              >
+                <component
+                  v-if="getReactionConfig(userReaction || 'like').mode === 'icon'"
+                  :is="getReactionConfig(userReaction || 'like').component"
+                  :size="10"
+                  :fillColor="getReactionConfig(userReaction || 'like').color"
+                />
+                <span v-else class="text-[13px]">{{
+                  getReactionConfig(userReaction || 'like').char
+                }}</span>
+              </div>
               <div class="text-sm">
                 <div v-for="userId in userIds" :key="userId">
                   {{ getUserById(userId)?.name }}
