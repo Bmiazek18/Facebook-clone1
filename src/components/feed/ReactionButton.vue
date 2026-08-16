@@ -7,7 +7,7 @@
   >
     <div
       v-if="hasDarkBackground"
-      class="p-2 md:p-3 bg-[#3a3b3c] hover:bg-[#4e4f50] rounded-full transition-colors cursor-pointer"
+      class="p-2 md:p-3  rounded-full transition-colors cursor-pointer"
       @click="toggleReaction('like')"
     >
       <component

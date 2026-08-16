@@ -146,7 +146,7 @@ const reactionsList = computed<ReactionUser[]>(() => {
               userId: Number(u.id),
               userName: [u.firstName, u.lastName].filter(Boolean).join(' ') || 'Użytkownik',
               emoji,
-              avatarUrl: u.avatarId ? `http://localhost:8080/api/users/avatar/${u.avatarId}` : undefined,
+              avatarUrl: u.avatar || '/default-avatar.png',
               mutualFriends: u.mutualFriendsCount // Upewnij się, że backend to zwraca, w przeciwnym razie usuń lub zmockuj
             })
           }

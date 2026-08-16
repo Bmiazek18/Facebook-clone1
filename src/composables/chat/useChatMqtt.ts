@@ -1,7 +1,9 @@
 import { ref } from 'vue'
 import mqtt from 'mqtt'
+import { useGenerateTicket } from '@/composables/shared/useGenerateTicket'
 
 export function useChatMqtt() {
+  const { generateTicket } = useGenerateTicket()
   const isMqttConnected = ref(false)
   const mqttClientId = ref('')
   let mqttClient: mqtt.MqttClient | null = null
@@ -73,30 +75,20 @@ export function useChatMqtt() {
     }
 
     try {
-      const headers: Record<string, string> = {}
-      if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('keycloak-token')
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`
-        }
+      const ticket = await generateTicket(userId)
+      if (!ticket || !ticket.trim()) {
+        throw new Error('Empty MQTT ticket')
       }
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
-      const res = await fetch(`${apiUrl}/api/tickets/generate?userId=${userId}`, {
-        method: 'POST',
-        headers
-      })
-      if (!res.ok) throw new Error('Failed to generate ticket')
-      const data = await res.json()
-      const ticket = data.ticket
-
-      const brokerUrl = `${import.meta.env.VITE_MQTT_URL || 'ws://localhost:8080/mqtt'}?ticket=${ticket}`
-      console.log(`Connecting directly to MQTT broker with ticket: ${ticket}`)
+      const brokerUrl = import.meta.env.VITE_MQTT_URL || 'ws://localhost:8080/mqtt'
+      console.log('Connecting directly to MQTT broker with one-time ticket')
 
       const cId = 'client-id-' + Math.random().toString(36).substring(7)
       mqttClientId.value = cId
       const client = mqtt.connect(brokerUrl, {
         clientId: cId,
+        username: ticket,
+        password: ticket,
         reconnectPeriod: 0,
       })
 
@@ -105,7 +97,7 @@ export function useChatMqtt() {
       client.on('connect', () => {
         isMqttConnected.value = true
         console.log('Frontend MQTT: Connected directly to broker.')
-        client.subscribe('chat/messages/inbound')
+        client.subscribe('chat/messages/user/' + userId)
       })
 
       client.on('offline', () => {
@@ -139,28 +131,14 @@ export function useChatMqtt() {
   async function reconnectWorker(userId: string) {
     if (!workerPort) return
     try {
-      const headers: Record<string, string> = {}
-      if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('keycloak-token')
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`
-        }
-      }
+      const ticket = await generateTicket(userId)
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
-      const res = await fetch(`${apiUrl}/api/tickets/generate?userId=${userId}`, {
-        method: 'POST',
-        headers
-      })
-      if (!res.ok) throw new Error('Failed to generate ticket')
-      const data = await res.json()
-      const ticket = data.ticket
-
-      const brokerUrl = `${import.meta.env.VITE_MQTT_URL || 'ws://localhost:8080/mqtt'}?ticket=${ticket}`
+      const brokerUrl = import.meta.env.VITE_MQTT_URL || 'ws://localhost:8080/mqtt'
       workerPort.postMessage({
         type: 'CONNECT',
         userId,
-        brokerUrl
+        brokerUrl,
+        ticket,
       })
     } catch (err) {
       console.error('Frontend MQTT: Failed to generate ticket for SharedWorker:', err)

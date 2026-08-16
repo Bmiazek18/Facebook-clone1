@@ -32,7 +32,7 @@
               />
             </svg>
           </div>
-          <p class="mt-0.5 text-base text-theme-text-secondary">{{ subtitle }}</p>
+          <p class="mt-0.5 text-base text-theme-text-secondary">{{ displayData.source === 'Platforma' ? 'Strona na platformie' : subtitle }}</p>
         </div>
       </header>
 
@@ -52,7 +52,23 @@
         </p>
       </section>
 
-      <footer class="flex items-center border-t border-theme-border pt-4">
+      <footer v-if="displayData.source === 'Platforma'" class="flex items-start border-t border-theme-border pt-4">
+        <div class="mr-3 flex h-9 w-9 items-center justify-center rounded-full bg-theme-bg-tertiary text-theme-text-secondary shrink-0">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="text-[13px] flex-1">
+          <h3 class="font-medium text-[15px] text-theme-text mb-1">
+            Biogram strony:
+          </h3>
+          <p class="text-theme-text-secondary italic leading-relaxed">
+            "{{ displayData.description || 'Ta strona nie posiada jeszcze biogramu.' }}"
+          </p>
+        </div>
+      </footer>
+
+      <footer v-else class="flex items-center border-t border-theme-border pt-4">
         <div
           class="mr-3 flex h-9 w-9 items-center justify-center rounded-full bg-theme-bg-tertiary text-theme-text-secondary"
         >

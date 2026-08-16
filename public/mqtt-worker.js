@@ -37,7 +37,7 @@ self.onconnect = function (e) {
 
     switch (data.type) {
       case 'CONNECT':
-        handleConnect(data.userId, data.brokerUrl);
+        handleConnect(data.userId, data.brokerUrl, data.ticket);
         break;
 
       case 'PUBLISH':
@@ -57,9 +57,15 @@ self.onconnect = function (e) {
   port.start();
 };
 
-function handleConnect(userId, brokerUrl) {
+function handleConnect(userId, brokerUrl, ticket) {
   currentUserId = userId;
   currentBrokerUrl = brokerUrl;
+
+  if (!ticket || typeof ticket !== 'string' || ticket.trim() === '') {
+    connectionState = 'OFFLINE';
+    broadcast({ type: 'STATUS', state: connectionState, userId });
+    return;
+  }
 
   if (mqttClient && mqttClient.connected) {
     connectionState = 'CONNECTED';
@@ -79,7 +85,9 @@ function handleConnect(userId, brokerUrl) {
   try {
     const client = self.mqtt.connect(brokerUrl, {
       clientId: 'worker-id-' + Math.random().toString(36).substring(7),
-      reconnectPeriod: 0, // Disable auto-reconnect, we handle it with tickets
+      username: ticket,
+      password: ticket,
+      reconnectPeriod: 0,
     });
 
     mqttClient = client;
@@ -87,7 +95,7 @@ function handleConnect(userId, brokerUrl) {
     client.on('connect', () => {
       connectionState = 'CONNECTED';
       console.log('[MQTT Worker] Connected to broker.');
-      client.subscribe('chat/messages/inbound');
+      client.subscribe('chat/messages/user/' + userId);
       broadcast({ type: 'STATUS', state: connectionState, userId });
     });
 

@@ -1,4 +1,6 @@
 import { ref } from 'vue'
+import { useApolloClient } from '@vue/apollo-composable'
+import { gql } from 'graphql-tag'
 import { useChatStore } from '@/stores/chat'
 
 export interface ChatSettings {
@@ -9,9 +11,10 @@ export interface ChatSettings {
   activeEffects?: string[]
 }
 
-export function useChatSettings() {
-  const settings = ref<ChatSettings[]>([])
+// Shared across all callers (composable must not create a fresh ref each time)
+const settings = ref<ChatSettings[]>([])
 
+export function useChatSettings() {
   function _getOrCreateSettings(chatId: string | number) {
     let s = settings.value.find((x) => String(x.chatId) === String(chatId))
     if (!s) {
@@ -42,42 +45,58 @@ export function useChatSettings() {
     return s.mutedUntil > Date.now()
   }
 
-  function saveCustomization(apiUrl: string, headers: Record<string, string>, conversationId: string, emoji?: string, themeId?: number) {
-    const query: Record<string, any> = { conversationId }
-    if (emoji !== undefined) query.emoji = emoji
-    if (themeId !== undefined) query.themeId = themeId
+  function saveCustomization(apiUrl: string, headers: Record<string, string>, conversationId: string, emoji?: string, themeId?: number, participantIds?: string[]) {
+    const apolloClient = useApolloClient().resolveClient()
+    const senderId = String(headers['X-User-Id'] || headers['x-user-id'] || '').replace('user_', '')
+    const cleanConversationId = String(conversationId).replace('user_', '')
+    const cleanParticipantIds = participantIds ? participantIds.map(pid => String(pid).replace('user_', '')) : []
 
-    return $fetch(`${apiUrl}/api/chat/settings/customization`, {
-      method: 'POST',
-      headers,
-      query
-    }).catch(err => console.error('Failed to save customization to ScyllaDB:', err))
-  }
-
-  function saveNickname(apiUrl: string, headers: Record<string, string>, conversationId: string, userId: string, nickname: string) {
-    return $fetch(`${apiUrl}/api/chat/settings/nickname`, {
-      method: 'POST',
-      headers,
-      query: {
-        conversationId,
-        userId,
-        nickname
+    return apolloClient.mutate({
+      mutation: gql`
+        mutation UpdateChatCustomization($senderId: ID!, $conversationId: ID!, $themeId: Int, $emoji: String, $participantIds: [ID!]!) {
+          updateChatCustomization(senderId: $senderId, conversationId: $conversationId, themeId: $themeId, emoji: $emoji, participantIds: $participantIds)
+        }
+      `,
+      variables: {
+        senderId,
+        conversationId: cleanConversationId,
+        themeId: themeId !== undefined ? themeId : null,
+        emoji: emoji || null,
+        participantIds: cleanParticipantIds
       }
-    }).catch(err => console.error('Failed to save nickname to ScyllaDB:', err))
+    }).then(res => res.data?.updateChatCustomization)
+      .catch(err => console.error('Failed to save customization via GraphQL:', err))
   }
 
-  function saveGroupNicknames(apiUrl: string, headers: Record<string, string>, conversationId: string, nicknames: Record<string, string>) {
-    const formData = new URLSearchParams()
-    formData.append('conversationId', conversationId)
-    Object.entries(nicknames).forEach(([uId, nick]) => {
-      formData.append(`nicknames[${uId}]`, nick)
-    })
+  function saveNickname(apiUrl: string, headers: Record<string, string>, conversationId: string, userId: string, nickname: string, participantIds?: string[]) {
+    const apolloClient = useApolloClient().resolveClient()
+    const senderId = String(headers['X-User-Id'] || headers['x-user-id'] || '').replace('user_', '')
+    const cleanConversationId = String(conversationId).replace('user_', '')
+    const cleanUserId = String(userId).replace('user_', '')
+    const cleanParticipantIds = participantIds ? participantIds.map(pid => String(pid).replace('user_', '')) : []
 
-    return $fetch(`${apiUrl}/api/chat/settings/nickname`, {
-      method: 'POST',
-      headers,
-      body: formData
-    }).catch(err => console.error('Failed to save group nicknames to ScyllaDB:', err))
+    return apolloClient.mutate({
+      mutation: gql`
+        mutation UpdateChatNickname($senderId: ID!, $conversationId: ID!, $userId: ID!, $nickname: String, $participantIds: [ID!]!) {
+          updateChatNickname(senderId: $senderId, conversationId: $conversationId, userId: $userId, nickname: $nickname, participantIds: $participantIds)
+        }
+      `,
+      variables: {
+        senderId,
+        conversationId: cleanConversationId,
+        userId: cleanUserId,
+        nickname: nickname || "",
+        participantIds: cleanParticipantIds
+      }
+    }).then(res => res.data?.updateChatNickname)
+      .catch(err => console.error('Failed to save nickname via GraphQL:', err))
+  }
+
+  function saveGroupNicknames(apiUrl: string, headers: Record<string, string>, conversationId: string, nicknames: Record<string, string>, participantIds?: string[]) {
+    const promises = Object.entries(nicknames).map(([userId, nickname]) => {
+      return saveNickname(apiUrl, headers, conversationId, userId, nickname, participantIds)
+    })
+    return Promise.all(promises)
   }
 
   return {
