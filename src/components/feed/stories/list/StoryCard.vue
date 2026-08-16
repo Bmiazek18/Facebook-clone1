@@ -52,9 +52,10 @@ const isOwner = computed(() => props.userStory.userId === storiesStore.currentUs
 const firstStory = computed(() => props.userStory.stories[0])
 
 const storyBackground = computed(() => {
-  if (firstStory.value?.imageUrl) {
+  const bgUrl = firstStory.value?.thumbnailUrl || firstStory.value?.imageUrl
+  if (bgUrl) {
     return {
-      backgroundImage: `url(${firstStory.value.imageUrl})`,
+      backgroundImage: `url(${bgUrl})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
     }

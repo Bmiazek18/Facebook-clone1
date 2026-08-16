@@ -10,6 +10,7 @@ export const GET_HOME_DATA = graphql(`
         firstName
         lastName
         avatarId
+        avatar
       }
       content
       date
@@ -20,10 +21,28 @@ export const GET_HOME_DATA = graphql(`
       commentCount
       shareCount
       visibility
+      authorGroupRole
       allowedUserIds
+      taggedUsers {
+        id
+        firstName
+        lastName
+      }
       media {
         src
         altText
+        backgroundColor
+        tags {
+          id
+          x
+          y
+          userId
+          user {
+            id
+            firstName
+            lastName
+          }
+        }
       }
       reactions {
         reactionType
@@ -34,6 +53,27 @@ export const GET_HOME_DATA = graphql(`
           lastName
         }
       }
+      context {
+        feeling {
+          emoji
+          label
+        }
+        location {
+          title
+          subtitle
+          type
+          lat
+          lon
+        }
+        poll {
+          question
+          options {
+            id
+            text
+            votes
+          }
+        }
+      }
       sharedPost {
         id
         authorId
@@ -42,14 +82,53 @@ export const GET_HOME_DATA = graphql(`
           firstName
           lastName
           avatarId
+          avatar
         }
         content
         date
         timestamp
         isAnonymous
+        taggedUsers {
+          id
+          firstName
+          lastName
+        }
         media {
           src
           altText
+          backgroundColor
+          tags {
+            id
+            x
+            y
+            userId
+            user {
+              id
+              firstName
+              lastName
+            }
+          }
+        }
+        context {
+          feeling {
+            emoji
+            label
+          }
+          location {
+            title
+            subtitle
+            type
+            lat
+            lon
+          }
+          poll {
+            question
+            options {
+              id
+              text
+              votes
+            }
+          }
         }
       }
     }
@@ -61,8 +140,10 @@ export const GET_HOME_DATA = graphql(`
         firstName
         lastName
         avatarId
+        avatar
       }
       mediaUrl
+      thumbMediaUrl
       mediaType
       text
       createdAt
@@ -82,6 +163,7 @@ export const GET_HOME_DATA = graphql(`
       firstName
       lastName
       avatarId
+      avatar
     }
   }
 `)

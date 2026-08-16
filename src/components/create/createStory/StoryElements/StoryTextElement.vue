@@ -56,14 +56,14 @@ watch(
 
 <template>
   <!-- Display Mode -->
-  <div
+ <div
     v-if="!isEditing"
     @dblclick="onEnableEdit(element.id)"
-    class="text-center min-w-[50px] whitespace-pre-wrap leading-tight drop-shadow-lg p-2 border-2 border-transparent group-hover:border-white/40 rounded-lg w-full h-full"
+    class="flex flex-col items-center justify-center text-center min-w-[50px] whitespace-pre-wrap leading-tight drop-shadow-lg p-2 rounded-lg w-full h-full"
     :style="element.styles"
   >
     <span v-if="element.content" v-html="formattedContent"></span>
-    <span v-else class="opacity-50">Zacznij pisać...</span>
+    <span v-else class="opacity-50">Zacznij pisać</span>
   </div>
 
   <!-- Edit Mode -->
@@ -73,9 +73,9 @@ watch(
     v-model="localText"
     @keydown.enter.stop="onDisableEdit"
     @mousedown.stop
-    :inputClass="'bg-transparent text-center resize-none outline-none overflow-visible min-w-[200px] p-2 border-2 border-transparent rounded-lg placeholder:text-white/60 w-full h-full'"
+    :inputClass="'bg-transparent text-center resize-none outline-none border-none ring-0 focus:ring-0 focus:outline-none overflow-visible min-w-[200px] p-2 rounded-lg placeholder:text-white/60 w-full h-full'"
     placeholderClass="w-full text-center p-2 text-white/60"
     :style="element.styles"
-    placeholder="Zacznij pisać..."
+    placeholder="Zacznij pisać"
   />
 </template>

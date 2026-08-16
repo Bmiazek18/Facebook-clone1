@@ -19,6 +19,7 @@ export interface StoryItem {
   userId: string
   type: 'image' | 'text' | 'video' | 'birthday'
   imageUrl?: string
+  thumbnailUrl?: string
   backgroundColor?: string
   backgroundGradient?: string
   musicUrl?: string
@@ -37,6 +38,13 @@ export interface StoryItem {
     width: number
     height: number
   }
+  userTags?: {
+    userId: string
+    x: number
+    y: number
+    width: number
+    height: number
+  }[]
   createdAt: number
   expiresAt: number
   viewCount?: number

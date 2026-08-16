@@ -27,6 +27,7 @@ export function useUserTagging() {
               firstName
               lastName
               avatarId
+              avatar
             }
           }
         `,
@@ -35,13 +36,10 @@ export function useUserTagging() {
       })
 
       if (res.data && res.data.searchUsers) {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
         matchingUsers.value = res.data.searchUsers.map((u: any) => ({
           id: u.id,
           name: `${u.firstName} ${u.lastName}`,
-          avatar: u.avatarId
-            ? `${apiUrl}/api/users/avatar/${u.avatarId}`
-            : `${apiUrl}/api/users/avatar/default-avatar.svg`
+          avatar: u.avatar || '/default-avatar.png'
         }))
       }
     } catch (e) {

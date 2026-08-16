@@ -3,6 +3,18 @@ import { useAuthStore } from '@/stores/auth'
 import { useMutation } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
 import type { Story } from '@/types/Story'
+import { getLocalViewedStories } from '@/utils/stories'
+
+function saveStoryToLocalViewed(storyId: string) {
+  if (typeof window === 'undefined') return
+  try {
+    const viewed = getLocalViewedStories()
+    if (!viewed.includes(storyId)) {
+      viewed.push(storyId)
+      localStorage.setItem('viewed_stories', JSON.stringify(viewed))
+    }
+  } catch (e) {}
+}
 
 const MARK_STORY_VIEWED = gql`
   mutation MarkStoryAsViewed($storyId: ID!, $viewerId: ID!) {
@@ -169,10 +181,13 @@ export function useStoryPlayback(
     await nextTick()
 
     if (currentStoryItem.value) {
-      markStoryViewed({
-        storyId: String(currentStoryItem.value.id),
-        viewerId: String(authStore.currentUserId),
-      })
+      saveStoryToLocalViewed(String(currentStoryItem.value.id))
+      try {
+        markStoryViewed({
+          storyId: String(currentStoryItem.value.id),
+          viewerId: String(authStore.currentUserId),
+        })
+      } catch (e) {}
     }
 
     if (isVideo.value) {

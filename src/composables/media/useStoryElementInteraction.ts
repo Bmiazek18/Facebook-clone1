@@ -1,4 +1,4 @@
-import { ref, reactive, type Ref } from 'vue'
+import { ref, reactive, onUnmounted, type Ref } from 'vue'
 import type { StoryElement as StoryElementType } from '@/types/StoryElement'
 import { calculateSnaps, type Guide } from '@/utils/snapping'
 
@@ -9,10 +9,28 @@ export function useStoryElementInteraction(
   const activeDragId = ref<string | null>(null)
   const activeResizeId = ref<string | null>(null)
   const activeRotateId = ref<string | null>(null)
+  const activeScaleId = ref<string | null>(null)
   const editingId = ref<string | null>(null)
   const croppingId = ref<string | null>(null)
+
   const dragStart = reactive({ x: 0, y: 0 })
-  const elementStart = reactive({ x: 0, y: 0, w: 0, h: 0, rotation: 0, cropX: 0, cropY: 0 })
+  const elementStart = reactive({
+    x: 0,
+    y: 0,
+    w: 0,
+    h: 0,
+    rotation: 0,
+    cropX: 0,
+    cropY: 0,
+    scale: 1,
+    // Dodatkowe stany do zaawansowanego skalowania i rotacji
+    dirX: 1,
+    dirY: 1,
+    centerX: 0,
+    centerY: 0,
+    initialAngle: 0
+  })
+
   const activeGuides = ref<Guide[]>([])
   const SNAP_THRESHOLD = 12
   const selectedElementId = ref<string | null>(null)
@@ -22,7 +40,8 @@ export function useStoryElementInteraction(
       disableEdit()
     }
     selectedElementId.value = element.id
-    if (editingId.value === element.id || activeResizeId.value || activeRotateId.value) return
+
+    if (editingId.value === element.id || activeResizeId.value || activeRotateId.value || activeScaleId.value) return
 
     if (croppingId.value === element.id && element.type === 'image') {
       activeDragId.value = 'CROP_MOVE'
@@ -60,7 +79,52 @@ export function useStoryElementInteraction(
     window.addEventListener('mouseup', stopInteraction)
   }
 
+  const startScale = (event: MouseEvent, element: StoryElementType) => {
+    event.stopPropagation()
+    event.preventDefault()
+    activeScaleId.value = element.id
+    selectedElementId.value = element.id
+    dragStart.x = event.clientX
+    dragStart.y = event.clientY
+    elementStart.scale = element.scale ?? 1
+
+    // Pobieramy kliknięty element (uchwyt) i sprawdzamy jego klasy,
+    // aby wiedzieć, w którym rogu się znajdujemy (-1 dla lewej/górnej krawędzi, 1 dla prawej/dolnej)
+    const target = event.target as HTMLElement
+    elementStart.dirX = target.className.includes('-left-') ? -1 : 1
+    elementStart.dirY = target.className.includes('-top-') ? -1 : 1
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', stopInteraction)
+  }
+
+  const startRotate = (event: MouseEvent, element: StoryElementType) => {
+    event.stopPropagation()
+    event.preventDefault()
+    activeRotateId.value = element.id
+    selectedElementId.value = element.id
+
+    // Próbujemy wyznaczyć środek elementu na ekranie, by obrót był płynny
+    const target = (event.target as HTMLElement).closest('.group') as HTMLElement
+    if (target) {
+      const rect = target.getBoundingClientRect()
+      elementStart.centerX = rect.left + rect.width / 2
+      elementStart.centerY = rect.top + rect.height / 2
+    } else {
+      elementStart.centerX = event.clientX
+      elementStart.centerY = event.clientY
+    }
+
+    // Obliczamy początkowy kąt kliknięcia względem środka
+    elementStart.initialAngle = Math.atan2(event.clientY - elementStart.centerY, event.clientX - elementStart.centerX) * (180 / Math.PI)
+    elementStart.rotation = element.rotation || 0
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', stopInteraction)
+  }
+
   const onMouseMove = (event: MouseEvent) => {
+    // ---- PRZESUWANIE CROP'A ----
     if (activeDragId.value === 'CROP_MOVE' && croppingId.value) {
       const element = storyElements.value.find((el: StoryElementType) => el.id === croppingId.value)
       if (element && element.type === 'image') {
@@ -70,10 +134,9 @@ export function useStoryElementInteraction(
       return
     }
 
+    // ---- PRZESUWANIE ELEMENTU ----
     if (activeDragId.value && activeDragId.value !== 'CROP_MOVE') {
-      const element = storyElements.value.find(
-        (el: StoryElementType) => el.id === activeDragId.value,
-      )
+      const element = storyElements.value.find((el: StoryElementType) => el.id === activeDragId.value)
       if (element) {
         let newX = elementStart.x + (event.clientX - dragStart.x)
         let newY = elementStart.y + (event.clientY - dragStart.y)
@@ -83,6 +146,7 @@ export function useStoryElementInteraction(
           width: elementStart.w || element.width || 100,
           height: elementStart.h || element.height || 100,
         }
+
         const { snappedX, snappedY, guides } = calculateSnaps(
           elementWithDimensions,
           newX,
@@ -100,32 +164,23 @@ export function useStoryElementInteraction(
         )
         activeGuides.value = guides
 
-        // If element is text or music image, apply specific clamping, otherwise apply snapping
         if (element.type === 'text' || (element.type === 'image' && element.musicArtist)) {
-          const mainImage = storyElements.value.find(
-            (el: StoryElementType) => el.id === 'main-image',
-          )
+          const mainImage = storyElements.value.find((el: StoryElementType) => el.id === 'main-image')
           if (mainImage) {
-            // Clamp horizontally to main image boundaries
             const minX = mainImage.x
             const maxX = mainImage.x + mainImage.width - elementStart.w
             newX = Math.max(minX, Math.min(newX, maxX))
 
-            // Clamp vertically to above main image boundaries
             const minY = 0
-            const maxY = Math.max(minY, mainImage.y - elementStart.h) // Ensure maxY is not negative
+            const maxY = Math.max(minY, mainImage.y - elementStart.h)
             newY = Math.max(minY, Math.min(newY, maxY))
           } else {
-            // Fallback to clamping within bgDimensions if main image is not found
             if (newX < 0) newX = 0
-            else if (newX + elementStart.w > bgDimensions.width)
-              newX = bgDimensions.width - elementStart.w
+            else if (newX + elementStart.w > bgDimensions.width) newX = bgDimensions.width - elementStart.w
             if (newY < 0) newY = 0
-            else if (newY + elementStart.h > bgDimensions.height)
-              newY = bgDimensions.height - elementStart.h
+            else if (newY + elementStart.h > bgDimensions.height) newY = bgDimensions.height - elementStart.h
           }
         } else {
-          // For non-text elements, apply snapping
           newX = snappedX
           newY = snappedY
         }
@@ -134,10 +189,9 @@ export function useStoryElementInteraction(
       }
     }
 
+    // ---- ZMIANA SZEROKOŚCI (RESIZE) ----
     if (activeResizeId.value) {
-      const element = storyElements.value.find(
-        (el: StoryElementType) => el.id === activeResizeId.value,
-      )
+      const element = storyElements.value.find((el: StoryElementType) => el.id === activeResizeId.value)
       if (element) {
         const newWidth = Math.max(50, elementStart.w + (event.clientX - dragStart.x))
         const ratio = elementStart.w / (elementStart.h || 1)
@@ -149,13 +203,27 @@ export function useStoryElementInteraction(
       }
     }
 
+    // ---- SWOBODNY OBRÓT (ROTATE) ----
     if (activeRotateId.value) {
-      const element = storyElements.value.find(
-        (el: StoryElementType) => el.id === activeRotateId.value,
-      )
+      const element = storyElements.value.find((el: StoryElementType) => el.id === activeRotateId.value)
       if (element) {
-        const angleRad = Math.atan2(event.clientY - dragStart.y, event.clientX - dragStart.x)
-        element.rotation = (angleRad * 180) / Math.PI + 90
+        // Wyliczamy obecny kąt myszy i porównujemy go z kątem początkowym z momentu kliknięcia
+        const currentAngle = Math.atan2(event.clientY - elementStart.centerY, event.clientX - elementStart.centerX) * (180 / Math.PI)
+        element.rotation = elementStart.rotation + (currentAngle - elementStart.initialAngle)
+      }
+    }
+
+    // ---- SKALOWANIE (SCALE - ZA ROGI) ----
+    if (activeScaleId.value) {
+      const element = storyElements.value.find((el: StoryElementType) => el.id === activeScaleId.value)
+      if (element) {
+        // Dzięki uwzględnieniu dirX i dirY kierunek "na zewnątrz" niezależnie od rogu daje wektor dodatni,
+        // a "do wewnątrz" - wektor ujemny.
+        const deltaX = (event.clientX - dragStart.x) * elementStart.dirX
+        const deltaY = (event.clientY - dragStart.y) * elementStart.dirY
+
+        const scaleDelta = (deltaX + deltaY) * 0.005
+        element.scale = Math.max(0.1, elementStart.scale + scaleDelta)
       }
     }
   }
@@ -164,6 +232,7 @@ export function useStoryElementInteraction(
     activeDragId.value = null
     activeResizeId.value = null
     activeRotateId.value = null
+    activeScaleId.value = null
     activeGuides.value = []
     window.removeEventListener('mousemove', onMouseMove)
     window.removeEventListener('mouseup', stopInteraction)
@@ -173,14 +242,17 @@ export function useStoryElementInteraction(
     editingId.value = id
     activeDragId.value = null
   }
+
   const disableEdit = () => {
     editingId.value = null
   }
+
   const onBackgroundClick = () => {
     disableEdit()
     croppingId.value = null
     selectedElementId.value = null
   }
+
   const toggleCrop = (id: string) => {
     if (croppingId.value === id) croppingId.value = null
     else {
@@ -190,6 +262,7 @@ export function useStoryElementInteraction(
     }
   }
 
+  // Funkcja obrotu sztywnego o 90 stopni (np. podpięta pod przycisk na toolbarze)
   const rotateElement90 = () => {
     const selectedElement = storyElements.value.find(
       (el: StoryElementType) => el.id === selectedElementId.value,
@@ -197,10 +270,16 @@ export function useStoryElementInteraction(
     if (selectedElement) selectedElement.rotation = (selectedElement.rotation + 90) % 360
   }
 
+  // Sprzątanie procesów na wypadek zniszczenia komponentu
+  onUnmounted(() => {
+    stopInteraction()
+  })
+
   return {
     activeDragId,
     activeResizeId,
     activeRotateId,
+    activeScaleId,
     editingId,
     croppingId,
     dragStart,
@@ -209,6 +288,8 @@ export function useStoryElementInteraction(
     selectedElementId,
     startDrag,
     startResize,
+    startScale,
+    startRotate, // Wyeksportowana funkcja do swobodnego obracania myszką
     onMouseMove,
     stopInteraction,
     enableEdit,

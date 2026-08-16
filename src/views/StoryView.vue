@@ -34,8 +34,10 @@ const GET_ACTIVE_STORIES = gql`
         firstName
         lastName
         avatarId
+        avatar
       }
       mediaUrl
+      thumbMediaUrl
       mediaType
       text
       createdAt
@@ -258,6 +260,19 @@ onMounted(() => {
                 height: `${currentStoryItem.sharedPostInfo.height}%`,
               }"
               @click.stop="router.push(`/post/${currentStoryItem.sharedPostInfo.postId}`)"
+            ></div>
+
+            <div
+              v-for="(tag, idx) in currentStoryItem?.userTags || []"
+              :key="`user-tag-${tag.userId}-${idx}`"
+              class="absolute cursor-pointer z-30 border-2 border-transparent hover:border-white/60 rounded-full transition"
+              :style="{
+                top: `${tag.y}%`,
+                left: `${tag.x}%`,
+                width: `${tag.width}%`,
+                height: `${tag.height}%`,
+              }"
+              @click.stop="router.push(`/profile/${tag.userId}`)"
             ></div>
 
             <a

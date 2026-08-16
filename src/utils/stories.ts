@@ -1,5 +1,5 @@
 import type { UserStories, StoryItem } from '@/types/Story'
-import { getUserById } from '@/utils/users'
+import { parseStoryMetadata } from '@/utils/storyMetadata'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
@@ -12,6 +12,15 @@ export function getMediaUrl(src: string) {
   return src.startsWith('/') ? `${API_URL}${src}` : `${API_URL}/${src}`
 }
 
+export function getLocalViewedStories(): string[] {
+  if (typeof window === 'undefined') return []
+  try {
+    return JSON.parse(localStorage.getItem('viewed_stories') || '[]')
+  } catch (e) {
+    return []
+  }
+}
+
 export function processActiveStories(fetchedStories: any[], currentUserId: string): UserStories[] {
   const groupedStoriesMap = new Map<string, StoryItem[]>()
 
@@ -20,23 +29,22 @@ export function processActiveStories(fetchedStories: any[], currentUserId: strin
     const createdMs = Date.parse(s.createdAt) || Date.now()
     const expiresMs = Date.parse(s.expiresAt) || createdMs + 24 * 60 * 60 * 1000
 
+    const meta = parseStoryMetadata(s.text)
+
     const storyItem: StoryItem = {
       id: s.id,
       userId: authorId,
       type: (s.mediaType || 'IMAGE').toLowerCase() as 'image' | 'video',
       imageUrl: getMediaUrl(s.mediaUrl),
+      thumbnailUrl: s.thumbMediaUrl ? getMediaUrl(s.thumbMediaUrl) : undefined,
       createdAt: createdMs,
       expiresAt: expiresMs,
       viewCount: 0,
       interactions: s.interactions || [],
-      elements: s.text ? [{
-        id: `text_${s.id}`,
-        type: 'text',
-        content: s.text,
-        color: '#ffffff',
-        fontSize: 24,
-        x: 50, y: 50, scale: 1, rotation: 0,
-      }] : [],
+      elements: [],
+      sharedPostInfo: meta?.sharedPostInfo || undefined,
+      sharedLinkInfo: meta?.sharedLinkInfo || undefined,
+      userTags: meta?.userTags || undefined,
     }
 
     if (!groupedStoriesMap.has(authorId)) groupedStoriesMap.set(authorId, [])
@@ -57,17 +65,16 @@ export function processActiveStories(fetchedStories: any[], currentUserId: strin
     const userName = authorInfo
       ? [authorInfo.firstName, authorInfo.lastName].filter(Boolean).join(' ')
       : `User ${authorId}`
-    const userAvatar = authorInfo?.avatarId
-      ? `http://localhost:8080/api/users/avatar/${authorInfo.avatarId}`
-      : 'http://localhost:8080/api/users/avatar/default-avatar.svg'
+    const userAvatar = authorInfo?.avatar || '/default-avatar.png'
 
+    const localViewed = typeof window !== 'undefined' ? getLocalViewedStories() : []
     activeUserStories.push({
       userId: authorId,
       userName,
       userAvatar,
       stories: validStories.sort((a, b) => a.createdAt - b.createdAt),
       hasUnviewedStories: validStories.some(
-        (st) => !st.interactions?.some((i: any) => i.userId === currentUserId) && st.userId !== currentUserId
+        (st) => !st.interactions?.some((i: any) => i.userId === currentUserId) && !localViewed.includes(String(st.id)) && st.userId !== currentUserId
       ),
     })
   })
@@ -89,8 +96,9 @@ export function processActiveStories(fetchedStories: any[], currentUserId: strin
       return true
     })
 
+    const localViewed = typeof window !== 'undefined' ? getLocalViewedStories() : []
     userStory.hasUnviewedStories = nonBirthdayStories.some(
-      (s) => !s.interactions?.some((i: any) => i.userId === currentUserId) && s.userId !== currentUserId
+      (s) => !s.interactions?.some((i: any) => i.userId === currentUserId) && !localViewed.includes(String(s.id)) && s.userId !== currentUserId
     )
     userStory.stories = nonBirthdayStories
   })
@@ -98,13 +106,14 @@ export function processActiveStories(fetchedStories: any[], currentUserId: strin
   let finalUserStories = processedUserStories.filter((us) => us.stories.length > 0)
 
   if (birthdayStories.length > 0) {
+    const localViewed = typeof window !== 'undefined' ? getLocalViewedStories() : []
     finalUserStories.push({
       userId: 'birthdays',
       userName: 'Urodziny',
       userAvatar: 'https://emojicdn.elk.sh/🎂?style=twitter',
       stories: birthdayStories.sort((a, b) => b.createdAt - a.createdAt),
       hasUnviewedStories: birthdayStories.some(
-        (story) => !story.interactions?.some((i: any) => i.userId === currentUserId) && story.userId !== currentUserId
+        (story) => !story.interactions?.some((i: any) => i.userId === currentUserId) && !localViewed.includes(String(story.id)) && story.userId !== currentUserId
       ),
     })
   }
@@ -124,11 +133,12 @@ export function processActiveStories(fetchedStories: any[], currentUserId: strin
   })
 
   // Filter out stories that have already been viewed for non-current-user in feed view
+  const localViewedFinal = typeof window !== 'undefined' ? getLocalViewedStories() : []
   return finalUserStories
     .map((userStory) => {
       if (userStory.userId !== currentUserId) {
         userStory.stories = userStory.stories.filter(
-          (story) => !story.interactions?.some((i: any) => i.userId === currentUserId)
+          (story) => !story.interactions?.some((i: any) => i.userId === currentUserId) && !localViewedFinal.includes(String(story.id))
         )
       }
       return userStory

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-[500px] mx-auto bg-theme-bg-secondary rounded-xl shadow-lg border border-theme-border   overflow-hidden"
+    class="w-[500px] mx-auto    overflow-hidden"
   >
     <div class="transition-wrapper" ref="wrapperRef">
       <Transition :name="transitionName" mode="out-in" @before-enter="updateHeight()">
@@ -13,12 +13,12 @@
         >
           <div class="p-4 flex items-start gap-3">
             <img
-              :src="postsStore.currentUser.avatar"
+              :src="authStore.currentUser.avatar"
               class="w-10 h-10 rounded-full"
               alt="Profile"
             />
             <div class="flex-1">
-              <h3 class="font-bold text-theme-text">{{ postsStore.currentUser.name }}</h3>
+              <h3 class="font-bold text-theme-text">{{ authStore.currentUser.name }}</h3>
               <div class="flex gap-2 mt-1 text-[13px] font-semibold text-theme-text-secondary">
                 <button class="bg-theme-bg-tertiary px-3 py-1 rounded-md">Aktualności</button>
                 <button
@@ -156,7 +156,7 @@ import { useCarousel } from '@/composables/media/useCarousel'
 import { useSlideTransition } from '@/composables/ui/useSlideTransition'
 import { getAllUsers } from '@/utils/users'
 import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue'
-import { usePostsStore } from '@/composables/feed/useAppState'
+import { useAuthStore } from '~/stores/auth'
 import type { Reel } from '@/types/Reel'
 import type { Post } from '@/types/Post'
 import '@/assets/animations/slideTransition.css'
@@ -196,7 +196,7 @@ const emit = defineEmits<{
   (e: 'update:title', value: string): void
 }>()
 
-const postsStore = usePostsStore()
+const authStore = useAuthStore()
 const router = useRouter()
 
 const { wrapperRef, currentView, previousView, updateHeight, transitionName } = useSlideTransition()

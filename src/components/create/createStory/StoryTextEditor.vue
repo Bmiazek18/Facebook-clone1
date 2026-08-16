@@ -4,6 +4,7 @@ import { useStoryExport } from '@/composables/media/useStoryExport'
 import type { StoryElement as StoryElementType, TextElement } from '@/types/StoryElement'
 import { Dropdown as VDropdown } from 'floating-vue'
 import { useContentEditable } from '@/composables/ui/useContentEditable'
+import { extractMentionUserIds } from '@/utils/storyMetadata'
 
 // --- IMPORT KOMPONENTÓW ---
 import StorySidebar from './StorySidebar/StorySidebar.vue'
@@ -174,18 +175,28 @@ const exportStory = async () => {
   if (!storyContainerRef.value) return
 
   try {
-    const currentUser = authStore.currentUser
-    if (!currentUser) {
+    const authorId = String(authStore.currentUserId || '')
+    if (!authorId) {
       alert('Musisz być zalogowany aby dodać story')
       return
     }
     const dataUrl = await renderStoryToImage(storyContainerRef.value, storyElements.value, false)
-    await storiesStore.addStory(currentUser.id.toString(), {
-      type: 'text',
-      imageUrl: dataUrl, // Używamy wyrenderowanego obrazu
-      elements: storyElements.value,
+
+    // Mentions in text stories → clickable profile hotspots (center area of story)
+    const mentionedIds = extractMentionUserIds(textContent.value)
+    const userTags = mentionedIds.map((userId) => ({
+      userId,
+      x: 15,
+      y: 35,
+      width: 70,
+      height: 30,
+    }))
+
+    await storiesStore.addStory(authorId, {
+      imageUrl: dataUrl,
+      userTags,
     })
-    router.push('/')
+    window.location.href = '/'
   } catch (error) {
     console.error('Failed to export story:', error)
     alert('Błąd podczas eksportowania story')

@@ -10,6 +10,7 @@ export interface PostMedia {
   altText?: string
   tags?: ImageTagType[]
   audioUrl?: string
+  backgroundColor?: string
 }
 export interface PostData {
   id: string
@@ -92,5 +93,5 @@ export type StoryElement = TextElement | ImageElement | LinkElement | PostElemen
 // --- Background Settings ---
 export interface BackgroundSettings {
   type: 'gradient' | 'image'
-  value: string
+  value: string | string[]
 }
