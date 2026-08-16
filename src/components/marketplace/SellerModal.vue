@@ -10,128 +10,210 @@ const props = defineProps({
 })
 const emit = defineEmits(['close'])
 
-// Import ikon
-import Close from 'vue-material-design-icons/Close.vue'
-import FacebookMessenger from 'vue-material-design-icons/FacebookMessenger.vue'
-import StarOutline from 'vue-material-design-icons/StarOutline.vue'
-import HomeVariant from 'vue-material-design-icons/HomeVariant.vue'
-import Magnify from 'vue-material-design-icons/Magnify.vue'
-import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
-import Telescope from 'vue-material-design-icons/Telescope.vue' // Ikona zastępcza dla ilustracji braku wyników
+// Import ikon z vue-material-design-icons
+import CloseIcon from 'vue-material-design-icons/Close.vue'
+import AccountPlusIcon from 'vue-material-design-icons/AccountPlus.vue'
+import FacebookMessengerIcon from 'vue-material-design-icons/FacebookMessenger.vue'
+import AccountOutlineIcon from 'vue-material-design-icons/AccountOutline.vue'
+import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue'
+import HomeIcon from 'vue-material-design-icons/Home.vue'
+import FacebookIcon from 'vue-material-design-icons/Facebook.vue'
+import MagnifyIcon from 'vue-material-design-icons/Magnify.vue'
+import MenuDownIcon from 'vue-material-design-icons/MenuDown.vue'
 
-// Dane profilowe (można przekazać przez props.profile)
+// Połączone dane profilowe (mockowane na podstawie zrzutów ekranu)
 const defaultProfile = {
-  name: 'Bartosz Miazek',
-  joinedText: 'Na Facebooku od 2020',
-  location: 'Mieszka w: Łukow, Siedlce, Poland',
-  avatarUrl: 'https://via.placeholder.com/150',
+  name: 'Igor Kucharski',
+  joinedYear: '2017',
+  activeListingsCount: 4, // Zaktualizowana liczba
+  location: 'Radom',
+  avatarUrl: 'https://placehold.co/400x400/111/fff?text=IK',
+  coverUrl: 'https://placehold.co/800x300/333/111?text=BMW+Cover',
 }
 
-const profile = { ...defaultProfile, ...props.profile }
+const userProfile = { ...defaultProfile, ...props.profile }
 
-// Stan dla inputów (opcjonalny)
+// Stan dla inputów
 const searchQuery = ref('')
+
+// Dodane 4 ogłoszenia (zgodnie z prośbą)
+const listings = ref([
+  {
+    id: 1,
+    price: 'PLN5,500',
+    title: '2007 BMW seria 1',
+    location: 'Radom',
+    imageUrl: 'https://placehold.co/400x400/222/555?text=BMW+1'
+  },
+  {
+    id: 2,
+    price: 'PLN6,000',
+    title: '2007 BMW seria 1',
+    location: 'Radom',
+    imageUrl: 'https://placehold.co/400x400/222/555?text=BMW+2'
+  },
+  {
+    id: 3,
+    price: 'PLN4,800',
+    title: '2005 BMW seria 1',
+    location: 'Radom',
+    imageUrl: 'https://placehold.co/400x400/222/555?text=BMW+3'
+  },
+  {
+    id: 4,
+    price: 'PLN7,200',
+    title: '2009 BMW seria 1',
+    location: 'Radom',
+    imageUrl: 'https://placehold.co/400x400/222/555?text=BMW+4'
+  }
+])
 </script>
 
 <template>
-  <div class="bg-white w-full max-w-[600px] rounded-lg shadow-lg relative overflow-hidden">
-    <button
-      @click="emit('close')"
-      class="absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 rounded-full p-2 z-10 transition"
-    >
-      <Close class="text-gray-600" :size="20" />
-    </button>
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 font-sans">
+    <div class="bg-white w-full max-w-[680px] rounded-xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
 
-    <div class="p-4 pt-10">
-      <div class="flex flex-col items-center text-center mb-6">
-        <div class="relative mb-4">
-          <div
-            class="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-sm bg-gray-200"
+      <!-- Kontener przewijany (Scroll) -->
+      <div class="overflow-y-auto custom-scrollbar flex-1">
+
+        <!-- Okładka (Cover Photo) -->
+        <div class="relative w-full h-[220px] bg-gray-200">
+          <img
+            :src="userProfile.coverUrl"
+            alt="Zdjęcie w tle"
+            class="w-full h-full object-cover"
+          />
+          <!-- Przycisk zamykania na zdjęciu -->
+          <button
+            @click="emit('close')"
+            class="absolute top-3 right-3 bg-white/95 hover:bg-white rounded-full w-9 h-9 flex items-center justify-center text-gray-700 z-10 transition shadow-sm"
           >
-            <img :src="profile.avatarUrl" alt="Avatar" class="w-full h-full object-cover" />
-          </div>
+            <CloseIcon :size="20" />
+          </button>
         </div>
 
-        <h1 class="text-3xl font-bold text-gray-900 mb-1">{{ profile.name }}</h1>
-        <p class="text-gray-500 text-sm mb-4">{{ profile.joinedText }}</p>
+        <div class="px-4 pb-6">
 
-        <button
-          class="w-full bg-[#E4E6EB] hover:bg-[#D8DADF] text-gray-400 font-semibold py-2 px-4 rounded-md flex items-center justify-center transition cursor-not-allowed"
-        >
-          <FacebookMessenger class="mr-2" :size="18" />
-          Wyślij wiadomość
-        </button>
-      </div>
-
-      <hr class="border-gray-200 my-4" />
-
-      <div class="mb-4">
-        <h2 class="text-lg font-bold text-gray-900 mb-2">Oceny sprzedawcy</h2>
-        <div class="flex space-x-1 mb-1 text-blue-500">
-          <StarOutline v-for="i in 5" :key="i" :size="24" />
-        </div>
-        <p class="text-sm text-gray-900 font-medium">Brak ocen</p>
-        <p class="text-xs text-gray-500 mt-1">
-          (Widoczne publicznie po 5 ocenach.
-          <span class="font-semibold cursor-pointer hover:underline">Dowiedz się więcej</span>)
-        </p>
-      </div>
-
-      <hr class="border-gray-200 my-4" />
-
-      <div class="mb-4">
-        <h2 class="text-lg font-bold text-gray-900 mb-3">Informacje</h2>
-        <div class="flex items-center text-gray-900">
-          <HomeVariant class="text-gray-500 mr-3" :size="24" />
-          <span class="text-[15px] font-medium">{{ profile.location }}</span>
-        </div>
-      </div>
-
-      <hr class="border-gray-200 my-4" />
-
-      <div>
-        <h2 class="text-lg font-bold text-gray-900 mb-1">Ogłoszenia Bartosz</h2>
-        <p class="text-xs text-gray-500 mb-4 leading-snug">
-          Ogłoszeniami możesz zarządzać na stronie
-          <a href="#" class="text-blue-500 hover:underline">Twoje ogłoszenia</a>. Ogłoszenia w
-          grupach prywatnych mogą nie...
-        </p>
-
-        <div class="flex flex-col sm:flex-row gap-2 mb-8">
-          <div class="relative flex-grow">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Magnify class="text-gray-500" />
+          <!-- Avatar (nachodzący na zdjęcie w tle) -->
+          <div class="relative -mt-20 mb-3">
+            <div class="w-[152px] h-[152px] rounded-full bg-white p-1">
+              <img
+                :src="userProfile.avatarUrl"
+                alt="Avatar"
+                class="w-full h-full rounded-full object-cover border border-gray-100"
+              />
             </div>
-            <input
-              type="text"
-              placeholder="Wyszukaj ogłoszenia"
-              class="w-full bg-[#F0F2F5] text-gray-900 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-1 focus:ring-gray-300 placeholder-gray-500"
-              v-model="searchQuery"
-            />
           </div>
 
-          <button
-            class="bg-[#E4E6EB] hover:bg-[#D8DADF] text-black font-semibold py-2 px-3 rounded-md text-sm flex items-center justify-between whitespace-nowrap"
-          >
-            Dostępne i na stanie
-            <ChevronDown class="ml-1" :size="20" />
-          </button>
+          <!-- Nagłówek profilu -->
+          <h1 class="text-[28px] font-bold text-[#050505] leading-tight">{{ userProfile.name }}</h1>
+          <p class="text-[15px] text-[#65676B] mt-1">Na Facebooku od {{ userProfile.joinedYear }}</p>
+          <p class="text-[15px] text-[#65676B] mb-5">
+            <span class="font-bold text-[#050505]">{{ userProfile.activeListingsCount }}</span> aktywne ogłoszenia
+          </p>
 
-          <button
-            class="bg-[#E4E6EB] hover:bg-[#D8DADF] text-black font-semibold py-2 px-3 rounded-md text-sm flex items-center justify-between whitespace-nowrap"
-          >
-            Sortuj według
-            <ChevronDown class="ml-1" :size="20" />
-          </button>
-        </div>
-
-        <div class="flex flex-col items-center justify-center pb-10">
-          <div class="mb-4 text-gray-400">
-            <Telescope :size="120" class="opacity-80 text-blue-400" />
+          <!-- Główny panel przycisków akcji -->
+          <div class="flex gap-2 mb-2">
+            <button class="flex-1 bg-[#0866FF] hover:bg-blue-600 text-white font-semibold py-1.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors h-10 text-[15px]">
+              <AccountPlusIcon :size="20" /> Obserwuj
+            </button>
+            <button class="flex-1 bg-[#E4E6EB] text-[#BCC0C4] cursor-not-allowed font-semibold py-1.5 px-4 rounded-lg flex items-center justify-center gap-2 h-10 text-[15px]">
+              <FacebookMessengerIcon :size="18" /> Wyślij wiadomość
+            </button>
           </div>
-          <p class="text-gray-500 text-lg">Nie znaleziono ogłoszeń</p>
+
+          <div class="flex gap-2 mb-4">
+            <button class="flex-1 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold py-1.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors h-10 text-[15px]">
+              <AccountOutlineIcon :size="20" /> Wyświetl profil
+            </button>
+            <button class="bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold px-4 rounded-lg flex items-center justify-center transition-colors h-10">
+              <DotsHorizontalIcon :size="20" />
+            </button>
+          </div>
+
+          <hr class="border-[#E4E6EB] my-4" />
+
+          <!-- Sekcja: Informacje -->
+          <div class="mb-4">
+            <h2 class="text-[17px] font-bold text-[#050505] mb-3">Informacje</h2>
+            <div class="space-y-3">
+              <div class="flex items-center text-[#050505]">
+                <HomeIcon class="text-[#8A8D91] mr-3" :size="24" />
+                <span class="text-[15px]">Mieszka w: <span class="font-bold">{{ userProfile.location }}</span></span>
+              </div>
+              <div class="flex items-center text-[#050505]">
+                <FacebookIcon class="text-[#8A8D91] mr-3" :size="24" />
+                <span class="text-[15px]">Dołączenie do Facebooka: {{ userProfile.joinedYear }}</span>
+              </div>
+            </div>
+          </div>
+
+          <hr class="border-[#E4E6EB] my-4" />
+
+          <!-- Sekcja: Ogłoszenia -->
+          <div>
+            <h2 class="text-[17px] font-bold text-[#050505] mb-4">Ogłoszenia {{ userProfile.name.split(' ')[0] }}</h2>
+
+            <!-- Pasek filtrów (Wyszukiwarka + Selecty) -->
+            <div class="flex flex-col sm:flex-row gap-2 mb-4">
+              <!-- Wyszukiwarka -->
+              <div class="relative flex-1">
+                <MagnifyIcon class="absolute left-3 top-1/2 -translate-y-1/2 text-[#65676B]" :size="20" />
+                <input
+                  type="text"
+                  placeholder="Wyszukaj ogłoszenia"
+                  class="w-full bg-[#F0F2F5] text-[15px] text-[#050505] rounded-full py-2 pl-9 pr-4 focus:outline-none placeholder-[#65676B]"
+                  v-model="searchQuery"
+                />
+              </div>
+
+              <!-- Filtry -->
+              <button class="bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold py-2 px-3.5 rounded-lg flex items-center justify-between gap-1 text-[15px] transition-colors shrink-0">
+                Dostępne i na stanie <MenuDownIcon class="text-[#65676B]" :size="20" />
+              </button>
+              <button class="bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold py-2 px-3.5 rounded-lg flex items-center justify-between gap-1 text-[15px] transition-colors shrink-0">
+                Sortuj według <MenuDownIcon class="text-[#65676B]" :size="20" />
+              </button>
+            </div>
+
+            <!-- Zaktualizowany Grid z 4 ogłoszeniami -->
+            <div class="grid grid-cols-2 sm:grid-cols-2 gap-3 pb-4">
+              <div
+                v-for="item in listings"
+                :key="item.id"
+                class="flex flex-col cursor-pointer group"
+              >
+                <!-- Miniatura -->
+                <div class="w-full aspect-square rounded-xl overflow-hidden bg-gray-100 mb-2 border border-gray-200">
+                  <img
+                    :src="item.imageUrl"
+                    :alt="item.title"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <!-- Informacje -->
+                <h3 class="font-bold text-[17px] text-[#050505] leading-tight">{{ item.price }}</h3>
+                <p class="text-[15px] text-[#050505] truncate mt-0.5">{{ item.title }}</p>
+                <p class="text-[13px] text-[#65676B] mt-0.5">{{ item.location }}</p>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #CED0D4;
+  border-radius: 20px;
+}
+</style>

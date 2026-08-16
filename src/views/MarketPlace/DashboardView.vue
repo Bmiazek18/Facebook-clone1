@@ -1,11 +1,25 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import Star from 'vue-material-design-icons/Star.vue'
+
+// Import ikon z vue-material-design-icons
+import StarOutline from 'vue-material-design-icons/StarOutline.vue'
+import RocketLaunchOutline from 'vue-material-design-icons/RocketLaunchOutline.vue'
+import SquareEditOutline from 'vue-material-design-icons/SquareEditOutline.vue'
+import AlertCircleOutline from 'vue-material-design-icons/AlertCircleOutline.vue'
+import TagOutline from 'vue-material-design-icons/TagOutline.vue'
+import TagOffOutline from 'vue-material-design-icons/TagOffOutline.vue'
+import FileDocumentOutline from 'vue-material-design-icons/FileDocumentOutline.vue'
+import Refresh from 'vue-material-design-icons/Refresh.vue'
+import SwapHorizontalCircleOutline from 'vue-material-design-icons/SwapHorizontalCircleOutline.vue'
+import EyeOutline from 'vue-material-design-icons/EyeOutline.vue'
+import BookmarkOutline from 'vue-material-design-icons/BookmarkOutline.vue'
+import ShareOutline from 'vue-material-design-icons/ShareOutline.vue'
+import AccountGroupOutline from 'vue-material-design-icons/AccountGroupOutline.vue'
+import ImageOutline from 'vue-material-design-icons/ImageOutline.vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
-import EyeOutline from 'vue-material-design-icons/EyeOutline.vue' // Oko
-import BookmarkOutline from 'vue-material-design-icons/BookmarkOutline.vue' // Zapisane
-import ShareVariant from 'vue-material-design-icons/ShareVariant.vue' // Udostępnienie
-import AccountGroup from 'vue-material-design-icons/AccountGroup.vue' // Obserwujący
+import Delete from 'vue-material-design-icons/Delete.vue'
+import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
+
 import CustomDropdown from '@/components/common/CustomDropdown.vue'
 
 const timeOptions = [
@@ -16,105 +30,139 @@ const timeOptions = [
 
 const selectedTimeOption = ref('last_7_days')
 
-// Dane do menu bocznego
+// Dane do menu "Twoje ogłoszenia" z przypisanymi ikonami
 const listingStats = [
-  { label: 'Wymagane działanie', value: 0 },
-  { label: 'Aktywne i oczekujące', value: 0 },
-  { label: 'Sprzedane lub brak na stanie', value: 0 },
-  { label: 'Wersje robocze', value: 0 },
-  { label: 'Do odnowienia', value: 0 },
-  { label: 'Do usunięcia i ponownego zamieszczenia', value: 0 },
+  { label: 'Wymagane działanie', value: 0, icon: AlertCircleOutline },
+  { label: 'Aktywne i oczekujące', value: 0, icon: TagOutline },
+  { label: 'Sprzedane lub brak na stanie', value: 0, icon: TagOffOutline },
+  { label: 'Wersje robocze', value: 1, icon: FileDocumentOutline },
+  { label: 'Do odnowienia', value: 0, icon: Refresh },
+  { label: 'Do usunięcia i ponownego zamieszczenia', value: 0, icon: SwapHorizontalCircleOutline },
 ]
 
 // Dane do sekcji "Statystyki dotyczące Marketplace"
 const marketStats = [
   { label: 'Kliknięcia w ogłoszeniach', value: 0, icon: EyeOutline },
   { label: 'Zdarzenia zapisania ogłoszenia', value: 0, icon: BookmarkOutline },
-  { label: 'Udostępnienia ogłoszenia', value: 0, icon: ShareVariant },
-  { label: 'Obserwujący w Marketplace', value: 0, icon: AccountGroup },
+  { label: 'Udostępnienia ogłoszenia', value: 0, icon: ShareOutline },
+  { label: 'Obserwujący w Marketplace', value: 0, icon: AccountGroupOutline },
 ]
 </script>
 
 <template>
-  <div class="max-w-5xl mx-auto mt-10 space-y-6">
-    <section class="bg-theme-bg-secondary rounded-lg shadow-sm border border-theme-border p-4">
-      <h2 class="text-lg font-bold mb-3">Podsumowanie</h2>
-      <div class="border border-theme-border rounded-lg p-4 w-full md:w-1/2">
-        <div class="flex items-center mb-1">
-          <span class="text-2xl font-bold mr-2">0</span>
-          <Star class="text-theme-text" />
+  <div class="max-w-5xl mx-auto mt-10 space-y-4">
+    <!-- SEKCJA: Podsumowanie -->
+    <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+      <h2 class="text-[20px] font-bold text-gray-900 mb-4">Podsumowanie</h2>
+      <div class="border border-gray-200 rounded-xl p-4 w-full md:w-[48%] flex flex-col justify-between">
+        <div class="mb-2 text-gray-800">
+          <StarOutline :size="28" />
         </div>
-        <div class="text-sm text-theme-text-secondary">Ocena sprzedawcy</div>
-        <div class="text-xs text-theme-text-secondary mt-1">0 ocen</div>
+        <div class="text-[15px] font-medium text-gray-900">Ocena sprzedawcy</div>
+        <div class="text-[13px] text-gray-600 mt-0.5">0</div>
       </div>
     </section>
 
-    <section class="bg-theme-bg-secondary rounded-lg shadow-sm border border-theme-border p-4">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-bold">Twoje ogłoszenia</h2>
-        <div class="space-x-2">
+    <!-- SEKCJA: Twoje ogłoszenia -->
+    <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-3">
+        <h2 class="text-[20px] font-bold text-gray-900">Twoje ogłoszenia</h2>
+        <div class="flex flex-wrap gap-2">
           <button
-            class="px-3 py-1.5 text-theme-primary font-semibold bg-theme-bg-tertiary rounded hover:bg-theme-hover text-sm"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-[#0064D1] font-semibold bg-[#EBF5FF] rounded-lg hover:bg-blue-100 transition-colors text-[14px]"
           >
-            <Pencil class="inline-block mr-1 align-middle text-sm" /> Promuj ogłoszenia
+            <RocketLaunchOutline :size="18" /> Promuj ogłoszenia
           </button>
           <button
-            class="px-3 py-1.5 text-theme-primary font-semibold bg-theme-bg-tertiary rounded hover:bg-theme-hover text-sm"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-[#0064D1] font-semibold bg-[#EBF5FF] rounded-lg hover:bg-blue-100 transition-colors text-[14px]"
           >
-            <Pencil class="inline-block mr-1 align-middle text-sm" /> Utwórz nowe ogłoszenie
+            <SquareEditOutline :size="18" /> Utwórz nowe ogłoszenie
           </button>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      <!-- Kafelki statystyk ogłoszeń -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         <div
           v-for="(stat, index) in listingStats"
           :key="index"
-          class="border border-theme-border rounded-lg p-3 flex flex-col justify-center min-h-[80px]"
+          class="border border-gray-200 rounded-xl p-3.5 flex flex-col justify-between min-h-[110px]"
         >
-          <span class="text-xl font-bold">{{ stat.value }}</span>
-          <span class="text-sm text-theme-text-secondary leading-tight mt-1">{{ stat.label }}</span>
+          <div class="mb-2 text-gray-800">
+            <component :is="stat.icon" :size="24" />
+          </div>
+          <div>
+            <div class="text-[15px] font-medium text-gray-900 leading-tight mb-1">
+              {{ stat.label }}
+            </div>
+            <div class="text-[13px] text-gray-600 font-medium">
+              {{ stat.value }}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="mt-4 text-center border-t border-theme-border pt-3">
-        <a href="#" class="text-theme-primary font-medium text-sm hover:underline"
-          >Zobacz wszystkie ogłoszenia</a
-        >
+      <!-- Pojedyncze ogłoszenie (Wersja robocza) -->
+      <div class="border border-gray-200 rounded-xl p-4 mb-4">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-[100px] h-[100px] bg-[#E4E6EB] rounded-lg flex items-center justify-center text-gray-600">
+            <ImageOutline :size="32" />
+          </div>
+          <div class="flex flex-col justify-center">
+            <div class="font-bold text-gray-900 text-[16px]">ff</div>
+            <div class="text-gray-900 text-[14px]">PLN0</div>
+            <div class="text-gray-500 text-[13px]">Wersja robocza</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button class="flex-1 flex items-center justify-center gap-2 py-2 bg-[#EBF5FF] text-[#0064D1] font-semibold rounded-lg hover:bg-blue-100 transition-colors text-[15px]">
+            <Pencil :size="18" /> Kontynuuj
+          </button>
+          <button class="flex-1 flex items-center justify-center gap-2 py-2 bg-[#E4E6EB] text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors text-[15px]">
+            <Delete :size="18" /> Usuń wersję roboczą
+          </button>
+          <button class="px-4 py-2 bg-[#E4E6EB] text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors">
+            <DotsHorizontal :size="18" />
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-2 text-center border-t border-gray-200 pt-4">
+        <a href="#" class="text-[#0064D1] font-semibold text-[15px] hover:underline">
+          Zobacz wszystkie ogłoszenia
+        </a>
       </div>
     </section>
 
-    <section class="bg-theme-bg-secondary rounded-lg shadow-sm border border-theme-border p-4">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-bold">Statystyki dotyczące Marketplace</h2>
-        <CustomDropdown v-model="selectedTimeOption" :options="timeOptions" />
+    <!-- SEKCJA: Statystyki dotyczące Marketplace -->
+    <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+      <div class="flex justify-between items-center mb-5">
+        <h2 class="text-[20px] font-bold text-gray-900">Statystyki dotyczące Marketplace</h2>
+        <div class="bg-gray-100 rounded-lg">
+          <!-- Twój komponent dropdown -->
+          <CustomDropdown v-model="selectedTimeOption" :options="timeOptions" />
+        </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div
           v-for="(stat, index) in marketStats"
           :key="index"
-          class="border border-theme-border rounded-lg p-4 flex flex-col min-h-[100px]"
+          class="border border-gray-200 rounded-xl p-4 flex flex-col justify-center min-h-[100px]"
         >
-          <div class="mb-2">
-            <component :is="stat.icon" class="text-theme-text-secondary" />
+          <div class="flex items-center gap-2.5 mb-1.5">
+            <component :is="stat.icon" :size="24" class="text-gray-800" />
+            <span class="text-[24px] font-bold text-gray-900 leading-none">{{ stat.value }}</span>
           </div>
-          <span class="text-xl font-bold">{{ stat.value }}</span>
-          <span class="text-sm text-theme-text-secondary mt-1 leading-tight">{{ stat.label }}</span>
+          <span class="text-[15px] text-gray-900 leading-tight font-medium">{{ stat.label }}</span>
         </div>
       </div>
 
-      <div class="mt-4 text-center border-t border-theme-border pt-3">
-        <a href="#" class="text-theme-primary font-medium text-sm hover:underline"
-          >Zobacz więcej statystyk</a
-        >
+      <div class="mt-5 text-center">
+        <a href="#" class="text-[#0064D1] font-semibold text-[15px] hover:underline">
+          Zobacz więcej statystyk
+        </a>
       </div>
     </section>
-
-    <div
-      class="fixed bottom-6 right-6 bg-theme-bg-secondary p-3 rounded-full shadow-lg cursor-pointer hover:bg-theme-hover border border-theme-border"
-    >
-      <Pencil class="text-theme-text" />
-    </div>
   </div>
 </template>

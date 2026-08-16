@@ -132,6 +132,7 @@ const fetchSearchHistory = async () => {
               firstName
               lastName
               avatarId
+              avatar
               inHistory
               newPostsCount
             }
@@ -191,6 +192,7 @@ const fetchSearchResults = async (query: string) => {
               firstName
               lastName
               avatarId
+              avatar
               inHistory
               newPostsCount
             }
@@ -246,9 +248,7 @@ const formattedContacts = computed(() => {
       subtitle = isQueryEmpty ? 'Brak nowych postów' : ''
     }
 
-    const avatarUrl = user.avatarId
-      ? `http://localhost:8080/api/users/avatar/${user.avatarId}`
-      : `http://localhost:8080/api/users/avatar/default-avatar.svg`
+    const avatarUrl = user.avatar || '/default-avatar.png'
 
     return {
       id: user.id,
