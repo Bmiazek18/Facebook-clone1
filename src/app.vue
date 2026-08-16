@@ -1,46 +1,68 @@
 <template>
-  <MainNavLayout v-if="showMainLayout && !isPopupRoute" />
+  <div>
+    <!-- Używamy Suspense do automatycznego zarządzania stanem asynchronicznym -->
+    <Suspense>
+      <!-- SLOT DOMYŚLNY: Renderuje się gdy wszystkie zapytania `await` na stronie spłyną -->
+      <template #default>
+        <div>
+          <!-- Główny szablon nawigacji -->
+          <MainNavLayout v-if="showMainLayout && !isPopupRoute" />
 
-  <NuxtPage />
+          <!-- Główny widok podstron Nuxta -->
+          <NuxtLayout>
+            <NuxtPage />
+          </NuxtLayout>
 
-  <!-- Global Incoming Call Modal -->
-  <IncomingCallModal
-    v-if="conversationsStore.incomingCall"
-    :isOpen="true"
-    :callerName="conversationsStore.incomingCall.callerName"
-    :callerAvatar="conversationsStore.incomingCall.callerAvatar"
-    @close="conversationsStore.incomingCall = null"
-    @reject="handleIncomingCallReject"
-    @accept="handleIncomingCallAccept"
-  />
+          <!-- Globalny Modal Połączeń Przychodzących -->
+          <IncomingCallModal
+            v-if="conversationsStore.incomingCall"
+            :isOpen="true"
+            :callerName="conversationsStore.incomingCall.callerName"
+            :callerAvatar="conversationsStore.incomingCall.callerAvatar"
+            @close="conversationsStore.incomingCall = null"
+            @reject="handleIncomingCallReject"
+            @accept="handleIncomingCallAccept"
+          />
 
-  <!-- Kontener na dokowane okienka czatu -->
-  <div
-    v-if="!isInChatView && !isPopupRoute"
-    class="fixed flex flex-row-reverse items-end bottom-0 right-[80px] gap-2.5 z-40 pointer-events-none"
-  >
-    <!-- Główne okna czatu (MessageBox) z Pinii -->
-    <MessageBox
-      v-for="boxId in chatStore.getBoxIds"
-      :key="boxId"
-      :boxId="boxId"
-      class="pointer-events-auto"
-    />
+          <!-- Kontener na dokowane okienka czatu -->
+          <div
+            v-if="!isInChatView && !isPopupRoute"
+            class="fixed flex flex-row-reverse items-end bottom-0 right-[80px] gap-2.5 z-40 pointer-events-none"
+          >
+            <MessageBox
+              v-for="boxId in chatStore.getBoxIds"
+              :key="boxId"
+              :boxId="boxId"
+              class="pointer-events-auto"
+            />
 
-    <!-- Okno "Nowa wiadomość" (pojawia się obok czatów) -->
-    <NewChatBox
-      v-if="isNewChatBoxOpen"
-      @close="isNewChatBoxOpen = false"
-      @select-user="handleStartNewChat"
-      class="pointer-events-auto"
-    />
+            <NewChatBox
+              v-if="isNewChatBoxOpen"
+              @close="isNewChatBoxOpen = false"
+              @select-user="handleStartNewChat"
+              class="pointer-events-auto"
+            />
+          </div>
+
+          <!-- Przycisk profilu / nowego czatu -->
+          <ProfileIcon
+            v-if="showMainLayout && !isInChatView && !isPopupRoute"
+            @click="isNewChatBoxOpen = true"
+          />
+
+          <ClientOnly>
+            <FingerprintLoader />
+          </ClientOnly>
+        </div>
+      </template>
+
+      <!-- SLOT FALLBACK: Wyświetla się AUTOMATYCZNIE, dopóki zapytania SSR/API trwają -->
+      <template #fallback>
+        <div v-if="isCallRoute" class="fixed inset-0 bg-black z-[999999]"></div>
+        <FacebookSplash v-else />
+      </template>
+    </Suspense>
   </div>
-
-  <ProfileIcon v-if="showMainLayout && !isInChatView && !isPopupRoute" @click="isNewChatBoxOpen = true" />
-
-  <ClientOnly>
-    <FingerprintLoader />
-  </ClientOnly>
 </template>
 
 <script setup lang="ts">
@@ -54,6 +76,8 @@ import ProfileIcon from './components/profile/ProfileIcon.vue'
 import FingerprintLoader from './components/common/FingerprintLoader.vue'
 import MessageBox from '@/components/chat/messageBox/index.vue'
 import NewChatBox from '@/components/chat/NewChatBox.vue'
+import IncomingCallModal from '@/components/chat/IncomingCallModal.vue'
+import FacebookSplash from '@/components/FacebookSplash.vue'
 
 import 'floating-vue/dist/style.css'
 import { useTheme } from '@/composables/shared/useTheme'
@@ -61,21 +85,46 @@ import { useNotify } from '@/composables/shared/useNotify'
 import { useChatStore } from '@/stores/chat'
 import { useAuthStore } from '@/stores/auth'
 import { useConversationsStore } from '@/stores/conversations'
-import IncomingCallModal from '@/components/chat/IncomingCallModal.vue'
+import { useGenerateTicket } from '@/composables/shared/useGenerateTicket'
+import { useLinkGuard } from '@/composables/shared/useLinkGuard'
 
+// ==========================================
+// USUWANIE STATYCZNEGO HTML DLA ZEROWEGO MIGNIĘCIA
+// ==========================================
+const nuxtApp = useNuxtApp()
+
+nuxtApp.hook('app:suspense:resolve', () => {
+  if (import.meta.client) {
+    const staticSplash = document.getElementById('static-facebook-splash')
+    if (staticSplash) {
+      staticSplash.remove()
+    }
+  }
+})
+
+// Stores i composables
 const chatStore = useChatStore()
 const notify = useNotify()
 const isOnline = useOnline()
 const route = useRoute()
-const authStore = useAuthStore()
-const conversationsStore = useConversationsStore()
 const router = useRouter()
 
-// Endpoint dla tradycyjnych endpointów REST (np. bilety, logi rozmów)
+const isCallRoute = computed(() => {
+  return (
+    route?.path?.includes('video-call') ||
+    route?.name === 'video-call' ||
+    (typeof window !== 'undefined' && window.location.pathname.includes('video-call'))
+  )
+})
+const authStore = useAuthStore()
+const conversationsStore = useConversationsStore()
+const { generateTicket } = useGenerateTicket()
+
+// Endpoint REST
 const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 // ==========================================
-// APOLLO MUTATIONS (Zamiast surowego fetch)
+// APOLLO MUTATIONS
 // ==========================================
 const SET_USER_ACTIVE_MUTATION = gql`
   mutation SetUserActive($userId: ID!) {
@@ -84,12 +133,7 @@ const SET_USER_ACTIVE_MUTATION = gql`
 `
 const { mutate: setUserActive } = useMutation(SET_USER_ACTIVE_MUTATION)
 
-const RECORD_SEARCH_MUTATION = gql`
-  mutation RecordSearch($searchedUserId: ID!) {
-    recordSearch(searchedUserId: $searchedUserId)
-  }
-`
-const { mutate: recordSearch } = useMutation(RECORD_SEARCH_MUTATION)
+useTheme()
 
 // ==========================================
 // LOGIKA POŁĄCZEŃ I CZATU
@@ -108,11 +152,14 @@ const handleIncomingCallAccept = () => {
       conversationId: call.conversationId,
     },
   })
-  window.open(
-    routeData.href,
-    `Rozmowa_${call.conversationId}`,
-    'popup=yes,width=900,height=650,left=300,top=150,resizable=yes,location=no,toolbar=no,menubar=no',
-  )
+
+  if (import.meta.client) {
+    window.open(
+      routeData.href,
+      `Rozmowa_${call.conversationId}`,
+      'popup=yes,width=900,height=650,left=300,top=150,resizable=yes,location=no,toolbar=no,menubar=no',
+    )
+  }
 }
 
 const handleIncomingCallReject = async () => {
@@ -120,17 +167,19 @@ const handleIncomingCallReject = async () => {
   const call = conversationsStore.incomingCall
   conversationsStore.incomingCall = null
 
+  const currentUserId = authStore.currentUser?.id || authStore.currentUserId
+
   try {
     await $fetch(`${apiUrl}/api/chat/calls/log`, {
       method: 'POST',
       query: {
         conversationId: call.conversationId,
-        senderId: authStore.currentUser?.id || authStore.currentUserId,
+        senderId: currentUserId,
         callerId: call.callerId,
         duration: 0,
         status: 'rejected',
-        participantIds: [authStore.currentUser?.id || authStore.currentUserId, call.callerId].join(','),
-      }
+        participantIds: [currentUserId, call.callerId].join(','),
+      },
     })
   } catch (err) {
     console.error('Failed to log call rejection:', err)
@@ -140,17 +189,13 @@ const handleIncomingCallReject = async () => {
     const payload = {
       type: 'call_rejected',
       conversationId: call.conversationId,
-      senderId: authStore.currentUser?.id || authStore.currentUserId,
+      senderId: currentUserId,
       callerId: call.callerId,
-      participantIds: [authStore.currentUser?.id || authStore.currentUserId, call.callerId]
+      participantIds: [currentUserId, call.callerId],
     }
-    conversationsStore.publishMqtt('chat/messages/inbound', payload)
+    conversationsStore.publishMqtt('chat/messages/user/' + call.callerId, payload)
   }
 }
-
-watch(() => conversationsStore.incomingCall, (newVal) => {
-  console.log('app.vue: Global incomingCall state changed:', newVal)
-})
 
 // --- STAN OKNA NOWEJ WIADOMOŚCI ---
 const isNewChatBoxOpen = ref(false)
@@ -164,24 +209,6 @@ const openNewChatListener = () => {
   isNewChatBoxOpen.value = true
 }
 
-onMounted(() => {
-  if (typeof window !== 'undefined') {
-    window.addEventListener('open-new-chat', openNewChatListener)
-
-    // Set authenticated user from the jwt_token cookie set by BFF
-    const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('jwt_token='))
-    if (tokenCookie) {
-      const tokenVal = tokenCookie.split('=')[1]
-      if (tokenVal && authStore.currentUserId !== tokenVal) {
-        console.log('Setting authenticated user ID in store from cookie:', tokenVal)
-        authStore.setCurrentUser(tokenVal)
-      }
-    }
-  }
-})
-
-useTheme()
-
 // ==========================================
 // SSE NOTIFICATIONS LISTENER
 // ==========================================
@@ -193,57 +220,39 @@ const setupNotificationListener = async (userId: string | number) => {
     eventSource = null
   }
 
-  if (!userId) return
+  if (!userId || !import.meta.client) return
 
-  if (typeof window !== 'undefined') {
-    try {
-      const headers: Record<string, string> = {}
-      const token = localStorage.getItem('keycloak-token') || localStorage.getItem('auth-token')
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`
+  try {
+    const ticket = await generateTicket(String(userId))
+
+    console.log(`Connecting to SSE notifications stream for user ID: ${userId}`)
+    eventSource = new EventSource(`${apiUrl}/api/notifications/subscribe/${userId}?ticket=${ticket}`)
+
+    eventSource.addEventListener('notification', (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        notify.notification({
+          title: data.title || 'Powiadomienie',
+          header: data.message || '',
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.title)}&background=random&color=fff`,
+        })
+
+        window.dispatchEvent(new CustomEvent('new-notification', { detail: data }))
+      } catch (err) {
+        console.error('Failed to parse SSE notification data:', err)
       }
+    })
 
-      const res = await fetch(`${apiUrl}/api/tickets/generate?userId=${userId}`, {
-        method: 'POST',
-        headers
-      })
-      if (!res.ok) {
-        throw new Error('Failed to generate ticket')
-      }
-      const data = await res.json()
-      const ticket = data.ticket
-
-      console.log(`Connecting to SSE notifications stream for user ID: ${userId}`)
-      eventSource = new EventSource(`${apiUrl}/api/notifications/subscribe/${userId}?ticket=${ticket}`)
-
-      eventSource.addEventListener('notification', (event) => {
-        try {
-          const data = JSON.parse(event.data)
-          notify.notification({
-            title: data.title || 'Powiadomienie',
-            header: data.message || '',
-            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.title)}&background=random&color=fff`,
-          })
-
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('new-notification', { detail: data }))
-          }
-        } catch (err) {
-          console.error('Failed to parse SSE notification data:', err)
-        }
-      })
-
-      eventSource.onerror = (err) => {
-        console.warn('SSE EventSource error, will retry...', err)
-      }
-    } catch (err) {
-      console.error('Failed to initialize SSE connection:', err)
+    eventSource.onerror = (err) => {
+      console.warn('SSE EventSource error, will retry...', err)
     }
+  } catch (err) {
+    console.error('Failed to initialize SSE connection:', err)
   }
 }
 
 // ==========================================
-// HEARTBEAT & PROFILE TRACKING (Przez Apollo)
+// HEARTBEAT & PROFILE TRACKING
 // ==========================================
 let activeInterval: any = null
 
@@ -257,13 +266,11 @@ const sendActiveStatus = async () => {
   }
 }
 
-
-
 watch(
   () => authStore.currentUserId,
   (newId) => {
-    setupNotificationListener(newId)
-    if (typeof window !== 'undefined') {
+    if (import.meta.client && newId) {
+      setupNotificationListener(newId)
       if (activeInterval) clearInterval(activeInterval)
       sendActiveStatus()
       activeInterval = setInterval(sendActiveStatus, 30000)
@@ -271,18 +278,6 @@ watch(
   },
   { immediate: true },
 )
-
-onUnmounted(() => {
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('open-new-chat', openNewChatListener)
-  }
-  if (eventSource) {
-    eventSource.close()
-  }
-  if (activeInterval) {
-    clearInterval(activeInterval)
-  }
-})
 
 // Obsługa stanu sieci
 watch(
@@ -302,20 +297,63 @@ watch(
   { immediate: true },
 )
 
-// Logika widoków
-const isPopupRoute = computed(() => {
-  const metaVal = (route?.meta as Record<string, unknown>)?.isPopup
-  return metaVal === true
+// Globalny interceptor kliknięć w linki zewnętrzne
+const { verifyAndNavigate } = useLinkGuard()
+
+const handleGlobalLinkClick = async (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  const anchor = target.closest('a')
+  if (!anchor) return
+
+  const href = anchor.getAttribute('href')
+  if (!href) return
+
+  // Interceptujemy tylko zewnętrzne linki bezwzględne
+  if (href.startsWith('http://') || href.startsWith('https://')) {
+    // Pomijamy jeśli to już jest gotowy link przekierowujący (l.php)
+    if (href.includes('/l.php?')) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    await verifyAndNavigate(href)
+  }
+}
+
+// ==========================================
+// LIFECYCLE HOOKS
+// ==========================================
+onMounted(() => {
+  if (import.meta.client) {
+    window.addEventListener('open-new-chat', openNewChatListener)
+    document.addEventListener('click', handleGlobalLinkClick, true)
+
+    const tokenCookie = document.cookie.split('; ').find((row) => row.startsWith('jwt_token='))
+    if (tokenCookie) {
+      const tokenVal = tokenCookie.split('=')[1]
+      if (tokenVal && authStore.originalUserId !== tokenVal) {
+        authStore.setCurrentUser(tokenVal, true)
+      }
+    }
+  }
 })
 
-
-
-const showMainLayout = computed(() => {
-  const metaVal = (route?.meta as Record<string, unknown>)?.showMainLayout
-  return metaVal !== false
+onUnmounted(() => {
+  if (import.meta.client) {
+    window.removeEventListener('open-new-chat', openNewChatListener)
+    document.removeEventListener('click', handleGlobalLinkClick, true)
+  }
+  if (eventSource) {
+    eventSource.close()
+  }
+  if (activeInterval) {
+    clearInterval(activeInterval)
+  }
 })
 
-const isInChatView = computed(() => {
-  return (route?.path || '').startsWith('/chat')
-})
+// ==========================================
+// COMPUTED ROUTE VALUES
+// ==========================================
+const isPopupRoute = computed(() => route?.meta?.isPopup === true)
+const showMainLayout = computed(() => route?.meta?.showMainLayout !== false)
+const isInChatView = computed(() => (route?.path || '').startsWith('/chat'))
 </script>

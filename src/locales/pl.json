@@ -5,6 +5,7 @@
     "save": "Zapisz",
     "cancel": "Anuluj",
     "delete": "Usuń",
+    "share": "Udostępnij",
     "edit": "Edytuj",
     "loading": "Ładowanie...",
     "error": "Błąd",
@@ -79,6 +80,8 @@
     "showAll": "Pokaż wszystkich"
   },
   "post": {
+    "dropFilesHere": "Upuść zdjęcia lub filmy tutaj",
+    "dropFilesSubtext": "Zostaną dodane bezpośrednio do Twojego posta",
     "video": "Wideo",
     "image": "Zdjęcie",
     "createPost": "Utwórz post",
@@ -346,7 +349,37 @@
     "viewAll": "Wyświetl wszystko",
     "viewEarlier": "Zobacz wcześniejsze powiadomienia",
     "noNotifications": "Brak powiadomień",
-    "markedAsRead": "Oznaczono jako przeczytane"
+    "markedAsRead": "Oznaczono jako przeczytane",
+    "markAllAsRead": "Oznacz wszystkie jako przeczytane",
+    "settings": "Ustawienia powiadomień",
+    "openNotifications": "Otwórz powiadomienia",
+    "friendRequests": "Zaproszenia do grona znajomych",
+    "new": "Nowe",
+    "confirm": "Potwierdź",
+    "delete": "Usuń",
+    "markAsRead": "Oznacz jako przeczytane",
+    "removeNotification": "Usuń to powiadomienie",
+    "muteEveryone": "Wyłącz powiadomienia @everyone z tej grupy",
+    "mutePost": "Wyłącz powiadomienia dotyczące tego postu",
+    "reportBug": "Zgłoś problem do zespołu ds. powiadomień",
+    "time": {
+      "justNow": "Przed chwilą",
+      "recently": "Niedawno",
+      "minutesAgo": "{mins} min.",
+      "hoursAgo": "{hours} godz.",
+      "daysAgo": "{days} dni",
+      "weeksAgo": "{weeks} tyg."
+    },
+    "types": {
+      "friendRequest": "<strong>{name}</strong> wysłał(a) Ci zaproszenie do grona znajomych.",
+      "friendRequestAccepted": "<strong>{name}</strong> zaakceptował(a) Twoje zaproszenie.",
+      "mention": "<strong>{name}</strong> oznaczył(a) Cię w komentarzu w grupie <strong>{groupName}</strong>.",
+      "mentionGeneral": "<strong>{name}</strong> oznaczył(a) wszystkich w komentarzu w grupie <strong>{groupName}</strong>.",
+      "reaction": "<strong>{name}</strong> zareagował(a) na post: „{snippet}”.",
+      "reactionLiked": "<strong>{name}</strong> polubił(a) Twój post.",
+      "groupPost": "Teraz w grupie <strong>{groupName}</strong>: „{snippet}”",
+      "comment": "<strong>{name}</strong> skomentował(a) Twój post: „{snippet}”."
+    }
   },
   "profile_menu": {
     "myProfile": "Mój profil",
@@ -651,5 +684,19 @@
     "taggedOnly": "Tylko posty, na których mnie oznaczono",
     "clear": "Wyczyść",
     "done": "Gotowe"
+  },
+  "groups": {
+    "discussion": "Dyskusja",
+    "info": "Informacje",
+    "members": "Członkowie",
+    "events": "Wydarzenia",
+    "media": "Multimedia",
+    "files": "Pliki",
+    "joined": "Dołączono",
+    "invite": "Zaproś",
+    "groupName": "Nazwa grupy",
+    "public": "Grupa publiczna",
+    "private": "Grupa prywatna",
+    "noPosts": "Brak postów w tej grupie."
   }
 }

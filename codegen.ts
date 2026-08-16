@@ -5,7 +5,8 @@ const config: CodegenConfig = {
   schema: [
     '../feed-edge-service/src/main/resources/schema/schema.graphqls',
     '../user-edge-service/src/main/resources/schema/schema.graphqls',
-    '../socialgraph-edge-service/src/main/resources/schema/schema.graphqls'
+    '../socialgraph-edge-service/src/main/resources/schema/schema.graphqls',
+    '../chat-edge-service/src/main/resources/schema/schema.graphqls'
   ],
   documents: ['src/graphql/**/*.ts'],
   ignoreNoDocuments: true,

@@ -78,9 +78,7 @@ const fetchActiveStatuses = async () => {
 
     activeContacts.value = list.map((u: any) => {
       const isActive = activeStatusMap.get(String(u.id)) === true
-      const avatarUrl = u.avatarId
-        ? `http://localhost:8080/api/users/avatar/${u.avatarId}`
-        : `http://localhost:8080/api/users/avatar/default-avatar.svg`
+      const avatarUrl = u.avatar || '/default-avatar.png'
 
       return {
         id: isNaN(Number(u.id)) ? String(u.id) : Number(u.id),
@@ -94,9 +92,7 @@ const fetchActiveStatuses = async () => {
     activeContacts.value = list.map((u: any) => ({
       id: isNaN(Number(u.id)) ? String(u.id) : Number(u.id),
       name: `${u.firstName} ${u.lastName}`,
-      avatarUrl: u.avatarId
-        ? `http://localhost:8080/api/users/avatar/${u.avatarId}`
-        : `http://localhost:8080/api/users/avatar/default-avatar.svg`,
+      avatarUrl: u.avatar || '/default-avatar.png',
       status: false,
     }))
   }
@@ -130,7 +126,7 @@ watch(
 
 <template>
   <div
-    class="max-w-[360px] min-w-[280px] ml-auto fixed sticky top-[72px] h-[calc(100vh-72px)] overflow-hidden"
+    class="max-w-[360px] min-w-[280px] ml-auto fixed top-[56px] overflow-hidden"
   >
     <HoverScrollbar maxHeight="100%">
       <div class="pr-2 pl-2 mt-2 pb-4 select-none flex flex-col gap-3">

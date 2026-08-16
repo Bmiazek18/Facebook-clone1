@@ -39,8 +39,8 @@ onClickOutside(
     activeMenu.value = null
   },
   {
-    // Ignorujemy wszystkie elementy poppera/dropdownu wrzucane do <body>
-    ignore: ['.v-popper__popper', '.v-popper__wrapper']
+    // Ignorujemy wszystkie elementy poppera/dropdownu wrzucane do <body> oraz modale
+    ignore: ['.v-popper__popper', '.v-popper__wrapper', '.base-modal-overlay']
   }
 )
 // Zamykanie menu przy zmianie routingu

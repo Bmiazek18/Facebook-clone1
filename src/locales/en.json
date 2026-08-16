@@ -5,6 +5,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
+    "share": "Share",
     "edit": "Edit",
     "loading": "Loading...",
     "error": "Error",
@@ -79,6 +80,8 @@
     "showAll": "Show all"
   },
   "post": {
+    "dropFilesHere": "Drop photos or videos here",
+    "dropFilesSubtext": "They will be added directly to your post",
     "video": "Video",
     "image": "Image",
     "createPost": "Create post",
@@ -347,7 +350,37 @@
     "viewAll": "View all",
     "viewEarlier": "See earlier notifications",
     "noNotifications": "No notifications",
-    "markedAsRead": "Marked as read"
+    "markedAsRead": "Marked as read",
+    "markAllAsRead": "Mark all as read",
+    "settings": "Notification settings",
+    "openNotifications": "Open notifications",
+    "friendRequests": "Friend Requests",
+    "new": "New",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "markAsRead": "Mark as read",
+    "removeNotification": "Remove this notification",
+    "muteEveryone": "Mute @everyone notifications from this group",
+    "mutePost": "Turn off notifications for this post",
+    "reportBug": "Report issue to notifications team",
+    "time": {
+      "justNow": "Just now",
+      "recently": "Recently",
+      "minutesAgo": "{mins}m",
+      "hoursAgo": "{hours}h",
+      "daysAgo": "{days}d",
+      "weeksAgo": "{weeks}w"
+    },
+    "types": {
+      "friendRequest": "<strong>{name}</strong> sent you a friend request.",
+      "friendRequestAccepted": "<strong>{name}</strong> accepted your friend request.",
+      "mention": "<strong>{name}</strong> mentioned you in a comment in <strong>{groupName}</strong>.",
+      "mentionGeneral": "<strong>{name}</strong> mentioned everyone in a comment in <strong>{groupName}</strong>.",
+      "reaction": "<strong>{name}</strong> reacted to post: \"{snippet}\".",
+      "reactionLiked": "<strong>{name}</strong> liked your post.",
+      "groupPost": "New in group <strong>{groupName}</strong>: \"{snippet}\"",
+      "comment": "<strong>{name}</strong> commented on your post: \"{snippet}\""
+    }
   },
   "profile_menu": {
     "myProfile": "My Profile",
@@ -651,5 +684,19 @@
     "taggedOnly": "Only posts I'm tagged in",
     "clear": "Clear",
     "done": "Done"
+  },
+  "groups": {
+    "discussion": "Discussion",
+    "info": "About",
+    "members": "Members",
+    "events": "Events",
+    "media": "Media",
+    "files": "Files",
+    "joined": "Joined",
+    "invite": "Invite",
+    "groupName": "Group Name",
+    "public": "Public group",
+    "private": "Private group",
+    "noPosts": "No posts in this group yet."
   }
 }

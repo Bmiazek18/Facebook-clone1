@@ -1,4 +1,4 @@
-import { ref, type Ref, nextTick } from 'vue'
+import { ref, type Ref, nextTick, computed } from 'vue'
 
 export const useSlideTransition = (initialView: string = 'main') => {
   const currentView: Ref<string> = ref(initialView)
@@ -8,6 +8,17 @@ export const useSlideTransition = (initialView: string = 'main') => {
     initialView === 'lifeEvent' ? ['creator', 'lifeEvent'] : [initialView],
   )
   const transitionName = ref('slide-left')
+
+  const previousView = computed(() => {
+    return history.value.length > 1 ? history.value[history.value.length - 2] : null
+  })
+
+  const updateHeight = (el?: Element) => {
+    const element = (el || wrapperRef.value?.firstElementChild) as HTMLElement
+    if (element && wrapperRef.value) {
+      wrapperRef.value.style.height = `${element.offsetHeight}px`
+    }
+  }
 
   const onEnter = (el: Element) => {
     const element = el as HTMLElement
@@ -42,10 +53,12 @@ export const useSlideTransition = (initialView: string = 'main') => {
   return {
     wrapperRef,
     currentView,
+    previousView,
     transitionName,
     navigateTo,
     navigateBack,
-    onEnter, // Eksportujemy hook
-    onAfterEnter, // Eksportujemy hook
+    onEnter,
+    onAfterEnter,
+    updateHeight,
   }
 }

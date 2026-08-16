@@ -6,7 +6,7 @@ export function useStickySidebar(
   bottomOffset: number,
 ) {
   const stickyTop = ref(0)
-  let lastScrollY = window.scrollY
+  let lastScrollY = 0
 
   const updateStickyPosition = () => {
     if (!sectionRef.value) return

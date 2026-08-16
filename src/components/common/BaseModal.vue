@@ -30,7 +30,7 @@ onUnmounted(() => {
   <Teleport to="body">
     <div
       @click.self="closeModal"
-      class="fixed inset-0 z-55 flex items-center justify-center bg-gray-200/80 dark:bg-black/80 px-2"
+      class="base-modal-overlay fixed inset-0 z-9999 flex items-center justify-center bg-gray-200/80 dark:bg-black/80 px-2"
     >
       <div
         class="bg-theme-bg-secondary rounded-lg shadow-2xl relative flex flex-col max-h-[98vh] md:w-fit w-full min-w-[320px] max-w-full"

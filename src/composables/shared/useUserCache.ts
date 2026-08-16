@@ -2,11 +2,19 @@ import { ref } from 'vue'
 import { useApolloClient } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
 
-export const usersCache = ref<Record<string, { id: string, name: string, avatar: string }>>({})
+export const usersCache = ref<Record<string, { id: string, name: string, avatar: string, note?: string }>>({})
 
 export function useUserCache() {
   async function getOrFetchUser(userId: string) {
     const cleanId = String(userId).replace('user_', '')
+    // Nil / self-XOR conversation ids are never real users
+    if (!cleanId || cleanId === '00000000-0000-4000-8000-000000000000') {
+      return {
+        id: cleanId,
+        name: 'Użytkownik',
+        avatar: '/default-avatar.png'
+      }
+    }
     if (usersCache.value[cleanId]) {
       return usersCache.value[cleanId]
     }
@@ -20,35 +28,35 @@ export function useUserCache() {
               id
               firstName
               lastName
-              avatarId
+              avatar
+              note
             }
           }
         `,
-        variables: { userId: cleanId }
+        variables: { userId: cleanId },
+        errorPolicy: 'ignore'
       })
       if (res.data && res.data.getUserById) {
         const u = res.data.getUserById
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
-        const avatarUrl = u.avatarId
-          ? `${apiUrl}/api/users/avatar/${u.avatarId}`
-          : `${apiUrl}/api/users/avatar/default-avatar.svg`
+        const avatarUrl = u.avatar || '/default-avatar.png'
         const mapped = {
           id: u.id,
           name: `${u.firstName} ${u.lastName}`,
-          avatar: avatarUrl
+          avatar: avatarUrl,
+          note: u.note || ''
         }
         usersCache.value[cleanId] = mapped
         return mapped
       }
     } catch (e) {
-      console.error('Failed to fetch user via GraphQL:', e)
+      // Missing users (stale inbox rows, deleted accounts) are expected — use fallback.
+      console.warn('User not found or unreachable:', cleanId)
     }
 
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
     const fallback = {
       id: cleanId,
       name: 'Użytkownik',
-      avatar: `${apiUrl}/api/users/avatar/default-avatar.svg`
+      avatar: '/default-avatar.png'
     }
     usersCache.value[cleanId] = fallback
     return fallback

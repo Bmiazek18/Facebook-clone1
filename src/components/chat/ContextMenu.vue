@@ -3,12 +3,16 @@ import { markRaw, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Component } from 'vue'
 
+// Importy ikon
 import EmailOutlineIcon from 'vue-material-design-icons/EmailOutline.vue'
-import MessageTextOutlineIcon from 'vue-material-design-icons/MessageTextOutline.vue'
-import BellOffOutlineIcon from 'vue-material-design-icons/BellOffOutline.vue'
+import BellOutlineIcon from 'vue-material-design-icons/BellOutline.vue'
+import AccountCircleOutlineIcon from 'vue-material-design-icons/AccountCircleOutline.vue'
+import PhoneOutlineIcon from 'vue-material-design-icons/PhoneOutline.vue'
+import VideoOutlineIcon from 'vue-material-design-icons/VideoOutline.vue'
+import AccountCancelOutlineIcon from 'vue-material-design-icons/AccountCancelOutline.vue'
+import CloseBoxOutlineIcon from 'vue-material-design-icons/CloseBoxOutline.vue'
+import DeleteOutlineIcon from 'vue-material-design-icons/DeleteOutline.vue'
 import AlertOutlineIcon from 'vue-material-design-icons/AlertOutline.vue'
-import ArchiveOutlineIcon from 'vue-material-design-icons/ArchiveOutline.vue'
-import ExitToAppIcon from 'vue-material-design-icons/ExitToApp.vue'
 
 const { t } = useI18n()
 
@@ -18,6 +22,7 @@ interface MenuItemConfig {
   icon: Component
   action: string
   isDestructive?: boolean
+  divider?: boolean // Logika separatora pozostaje bez zmian
 }
 
 interface MenuItemData extends MenuItemConfig {
@@ -25,28 +30,21 @@ interface MenuItemData extends MenuItemConfig {
 }
 
 const menuItemsConfig: MenuItemConfig[] = [
-  { id: 1, labelKey: 'chat.markAsRead', icon: markRaw(EmailOutlineIcon), action: 'mark-as-read' },
-  {
-    id: 2,
-    labelKey: 'chat.openMacMessenger',
-    icon: markRaw(MessageTextOutlineIcon),
-    action: 'open-mac-messenger',
-  },
+  { id: 1, labelKey: 'chat.markAsUnread', icon: markRaw(EmailOutlineIcon), action: 'mark-as-unread' },
+  { id: 2, labelKey: 'chat.muteNotifications', icon: markRaw(BellOutlineIcon), action: 'mute-notifications' },
   {
     id: 3,
-    labelKey: 'chat.muteNotifications',
-    icon: markRaw(BellOffOutlineIcon),
-    action: 'mute-notifications',
+    labelKey: 'chat.viewProfile',
+    icon: markRaw(AccountCircleOutlineIcon),
+    action: 'view-profile',
+    divider: true // Generuje linię poniżej
   },
-  { id: 4, labelKey: 'chat.report', icon: markRaw(AlertOutlineIcon), action: 'report' },
-  { id: 5, labelKey: 'chat.archive', icon: markRaw(ArchiveOutlineIcon), action: 'archive' },
-  {
-    id: 6,
-    labelKey: 'chat.leaveChannel',
-    icon: markRaw(ExitToAppIcon),
-    action: 'leave-channel',
-    isDestructive: true,
-  },
+  { id: 4, labelKey: 'chat.voiceCall', icon: markRaw(PhoneOutlineIcon), action: 'voice-call' },
+  { id: 5, labelKey: 'chat.videoCall', icon: markRaw(VideoOutlineIcon), action: 'video-call' },
+  { id: 6, labelKey: 'chat.block', icon: markRaw(AccountCancelOutlineIcon), action: 'block' },
+  { id: 7, labelKey: 'chat.archive', icon: markRaw(CloseBoxOutlineIcon), action: 'archive' },
+  { id: 8, labelKey: 'chat.deleteChat', icon: markRaw(DeleteOutlineIcon), action: 'delete-chat' },
+  { id: 9, labelKey: 'chat.report', icon: markRaw(AlertOutlineIcon), action: 'report' },
 ]
 
 const menuItems = computed(() =>
@@ -67,31 +65,40 @@ const handleItemClick = (item: MenuItemData) => {
 </script>
 
 <template>
+  <!-- Lekko zwiększony padding głównego kontenera (py-2) -->
   <div
-    style="filter: drop-shadow(rgba(0, 0, 0, 0.2) 0px 0px 6px)"
-    class="w-72 bg-white rounded-xl z-30 p-2 font-[15px]  "
+    style="filter: drop-shadow(rgba(0, 0, 0, 0.1) 0px 4px 12px)"
+    class="w-[320px] bg-white rounded-2xl z-30 py-2 border border-gray-100"
   >
     <ul role="menu" class="list-none m-0 p-0">
-      <li
-        v-for="item in menuItems"
-        :key="item.id"
-        role="menuitem"
-        @click="handleItemClick(item)"
-        class="flex items-center p-3 rounded-lg cursor-pointer transition-colors text-base font-medium hover:bg-gray-100"
-        :class="{
-          'text-red-600': item.isDestructive,
-          'text-gray-900': !item.isDestructive,
-        }"
-      >
-        <span
-          class="mr-4"
-          :class="{ 'text-red-600': item.isDestructive, 'text-gray-600': !item.isDestructive }"
+      <template v-for="item in menuItems" :key="item.id">
+        <!-- Zbalansowane paddingi w elemencie (px-3 py-2) -->
+        <li
+          role="menuitem"
+          @click="handleItemClick(item)"
+          class="flex items-center px-3 py-2 mx-1.5 rounded-xl cursor-pointer transition-colors hover:bg-gray-100 active:bg-gray-200"
         >
-          <component :is="item.icon" :size="24" />
-        </span>
+          <!-- Zwiększony margines po prawej stronie ikony dla lepszego oddechu (mr-2.5) -->
+          <div
+            class="w-8 flex items-center justify-center mr-2.5 shrink-0"
+            :class="{ 'text-red-600': item.isDestructive, 'text-gray-900': !item.isDestructive }"
+          >
+            <!-- Ikona powraca do standardowych 24px -->
+            <component :is="item.icon" :size="24" />
+          </div>
 
-        <span class="grow">{{ item.label }}</span>
-      </li>
+          <!-- Rozmiar tekstu przywrócony do 15px -->
+          <span
+            class="text-[15px] font-medium grow leading-tight"
+            :class="{ 'text-red-600': item.isDestructive, 'text-gray-950': !item.isDestructive }"
+          >
+            {{ item.label }}
+          </span>
+        </li>
+
+        <!-- Zwiększony margines wokół separatora (my-1.5) -->
+        <hr v-if="item.divider" class="border-gray-200 mx-3 my-1.5" />
+      </template>
     </ul>
   </div>
 </template>

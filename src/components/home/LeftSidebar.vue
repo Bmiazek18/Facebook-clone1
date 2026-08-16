@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useGroupsStore } from '@/stores/groups'
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue'
 
 // Import ikon
@@ -29,25 +30,40 @@ const menuItems = [
   { icon: AccountGroup, label: 'Grupy', color: '#1B74E4', path: '/groups' },
 ]
 
-// Lista Skrótów (Przykładowe dane z obrazka)
-const shortcuts = [
-  { img: 'https://picsum.photos/40/40?random=1', label: 'Basketball FRVR' },
-  { img: 'https://picsum.photos/40/40?random=2', label: 'Kolegium Sędziów BOZPN' },
-  { img: 'https://picsum.photos/40/40?random=3', label: 'Praca dla początkujących...' },
-  { img: 'https://picsum.photos/40/40?random=4', label: 'Reprezentacja Polski...' },
-  { img: 'https://picsum.photos/40/40?random=5', label: 'Piłkarski Świat' },
-]
+const groupsStore = useGroupsStore()
+
+onMounted(() => {
+  groupsStore.fetchGroups()
+})
+
+// Lista Skrótów (Przykładowe dane z obrazka lub dynamicznie pobierane z grup)
+const shortcuts = computed(() => {
+  if (groupsStore.groups.length > 0) {
+    return groupsStore.groups.map(g => ({
+      id: g.id,
+      img: g.image || 'https://picsum.photos/40/40?random=1',
+      label: g.name
+    }))
+  }
+  return [
+    { id: '1', img: 'https://picsum.photos/40/40?random=1', label: 'Basketball FRVR' },
+    { id: '2', img: 'https://picsum.photos/40/40?random=2', label: 'Kolegium Sędziów BOZPN' },
+    { id: '3', img: 'https://picsum.photos/40/40?random=3', label: 'Praca dla początkujących...' },
+    { id: '4', img: 'https://picsum.photos/40/40?random=4', label: 'Reprezentacja Polski...' },
+    { id: '5', img: 'https://picsum.photos/40/40?random=5', label: 'Piłkarski Świat' },
+  ]
+})
 
 // Logika wyświetlania (pokaż 5 pierwszych lub wszystkie)
 const visibleMenuItems = computed(() => (showMoreMenu.value ? menuItems : menuItems.slice(0, 5)))
 const visibleShortcuts = computed(() =>
-  showMoreShortcuts.value ? shortcuts : shortcuts.slice(0, 5),
+  showMoreShortcuts.value ? shortcuts.value : shortcuts.value.slice(0, 5),
 )
 </script>
 
 <template>
   <div
-    class=" flex flex-col h-[calc(100vh-56px)] p-2 max-w-[360px] pr-2 sticky top-[56px] bg-theme-bg"
+    class=" flex flex-col h-[calc(100vh-56px)] py-2 max-w-[360px] pr-2 sticky top-[56px] bg-theme-bg"
   >
     <HoverScrollbar class="flex-1">
       <div class="pr-2">
@@ -119,10 +135,10 @@ const visibleShortcuts = computed(() =>
           </div>
 
           <div class="space-y-1">
-            <a
+            <NuxtLink
               v-for="shortcut in visibleShortcuts"
-              :key="shortcut.label"
-              href="#"
+              :key="shortcut.id"
+              :to="'/groups/' + shortcut.id"
               class="flex items-center w-full hover:bg-theme-hover rounded-lg p-2 transition-colors"
             >
               <img :src="shortcut.img" class="w-9 h-9 rounded-lg object-cover" alt="Shortcut" />
@@ -131,7 +147,7 @@ const visibleShortcuts = computed(() =>
               >
                 {{ shortcut.label }}
               </span>
-            </a>
+            </NuxtLink>
 
             <button
               v-if="shortcuts.length > 5"
@@ -154,11 +170,12 @@ const visibleShortcuts = computed(() =>
           </div>
         </div>
       </div>
-    </HoverScrollbar>
-
-    <div class="mt-auto py-4 text-[13px] text-theme-text-secondary">
+       <div class="mt-auto py-4 text-[13px] text-theme-text-secondary">
       <p>Prywatność · Regulamin · Reklama · Wybór reklam · Pliki cookie · Meta © 2026</p>
     </div>
+    </HoverScrollbar>
+
+
   </div>
 </template>
 

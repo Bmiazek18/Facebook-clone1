@@ -35,7 +35,7 @@
         @click="activeTab = 'all'"
         :class="[
           activeTab === 'all'
-            ? 'bg-[#E7F3FF] dark:bg-blue-900/40 text-[#1877F2] dark:text-blue-400'
+            ? 'bg-[#E7F3FF] dark:bg-blue-900/40 text-[#0866FF] dark:text-blue-400'
             : 'text-theme-text hover:bg-gray-100 dark:hover:bg-gray-800'
         ]"
         class="py-1.5 px-3.5 rounded-full text-[15px] font-semibold transition duration-150"
@@ -46,7 +46,7 @@
         @click="activeTab = 'unread'"
         :class="[
           activeTab === 'unread'
-            ? 'bg-[#E7F3FF] dark:bg-blue-900/40 text-[#1877F2] dark:text-blue-400'
+            ? 'bg-[#E7F3FF] dark:bg-blue-900/40 text-[#0866FF] dark:text-blue-400'
             : 'text-theme-text hover:bg-gray-100 dark:hover:bg-gray-800'
         ]"
         class="py-1.5 px-3.5 rounded-full text-[15px] font-semibold transition duration-150"
@@ -72,12 +72,12 @@
 
       <template v-else>
         <!-- Sekcja: Zaproszenia do grona znajomych -->
-        <div v-if="friendRequests.length > 0" class="mb-4">
+        <div v-if="friendRequests.length > 0" class="mb-2">
           <div class="flex justify-between items-center px-2 pt-3 pb-2">
             <h2 class="text-[17px] font-bold text-theme-text">
               {{ $t('notifications_page.friendRequests', 'Zaproszenia do grona znajomych') }}
             </h2>
-            <button class="text-[#1877F2] font-normal text-[15px] hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 rounded-md transition">
+            <button class="text-[#0866FF] font-normal text-[15px] hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 rounded-md transition">
               {{ $t('notifications_page.viewAll', 'Wyświetl wszystko') }}
             </button>
           </div>
@@ -96,12 +96,9 @@
                       alt="Awatar"
                       class="h-14 w-14 rounded-full object-cover bg-gray-200 border border-black/5 dark:border-white/5"
                     />
-                   <div
-  class="absolute -bottom-1 -right-1 h-7 w-7 flex items-center justify-center rounded-full ring-2 ring-white/10 text-white"
-  style="background-image: linear-gradient(to bottom, #18A0FB, #0C6AE7);"
->
-  <AccountPlus />
-</div>
+                    <div class="absolute -bottom-1 -right-1 h-7 w-7 flex items-center justify-center rounded-full ring-2 ring-white dark:ring-[#242526] bg-[#0866FF] text-white">
+                      <Account class="h-4 w-4" />
+                    </div>
                   </div>
 
                   <!-- Treść -->
@@ -111,25 +108,25 @@
                       v-html="notification.message"
                     ></p>
                     <span
-                      class="text-[13px] block mt-0.5 text-[#65686c] transition-colors duration-200"
-                      :class="{ 'text-[#1877F2] font-semibold': notification.unread }"
+                      class="text-[13px] block mt-0.5 transition-colors duration-200"
+                      :class="notification.unread ? 'text-[#0866FF] font-semibold' : 'text-[#65676B]'"
                     >
                       {{ notification.timeAgo }}
                     </span>
                   </div>
                 </div>
 
-                <!-- Przyciski akcji (Potwierdź / Usuń) -->
-                <div class="flex items-center gap-2 pl-[68px] mt-2" @click.stop>
+                <!-- Przyciski akcji na pełną szerokość (flex-1) -->
+                <div class="flex items-center gap-2 pl-[68px] mt-2 pr-2" @click.stop>
                   <button
                     @click="acceptFriendRequest(notification)"
-                    class="px-5 py-1.5 bg-[#1877F2] hover:bg-blue-600 text-white font-semibold rounded-lg text-[15px] transition duration-150"
+                    class="flex-1 py-1.5 bg-[#0866FF] hover:bg-blue-700 text-white font-semibold rounded-lg text-[15px] transition duration-150"
                   >
                     {{ $t('notifications_page.confirm', 'Potwierdź') }}
                   </button>
                   <button
                     @click="rejectFriendRequest(notification)"
-                    class="px-5 py-1.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-theme-text font-semibold rounded-lg text-[15px] transition duration-150"
+                    class="flex-1 py-1.5 bg-[#E4E6EB] hover:bg-[#D8DADF] dark:bg-gray-700 dark:hover:bg-gray-600 text-[#050505] dark:text-white font-semibold rounded-lg text-[15px] transition duration-150"
                   >
                     {{ $t('notifications_page.delete', 'Usuń') }}
                   </button>
@@ -145,7 +142,7 @@
             <h2 class="text-[17px] font-bold text-theme-text">
               {{ $t('notifications_page.new', 'Nowe') }}
             </h2>
-            <button class="text-[#1877F2] font-normal text-[15px] hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 rounded-md transition">
+            <button class="text-[#0866FF] font-normal text-[15px] hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 rounded-md transition">
               {{ $t('notifications_page.viewAll', 'Wyświetl wszystko') }}
             </button>
           </div>
@@ -175,22 +172,22 @@
                 <div class="grow min-w-0 pr-10">
                   <p
                     class="text-[15px] leading-[1.3] transition-colors duration-200"
-                    :class="notification.unread ? 'text-theme-text font-medium' : 'text-[#65686c]'"
+                    :class="notification.unread ? 'text-theme-text' : 'text-[#65676B]'"
                     v-html="notification.message"
                   ></p>
                   <span
                     class="text-[13px] block mt-0.5 transition-colors duration-200"
-                    :class="notification.unread ? 'text-[#1877F2] font-semibold' : 'text-[#65686c]'"
+                    :class="notification.unread ? 'text-[#0866FF] font-semibold' : 'text-[#65676B]'"
                   >
                     {{ notification.timeAgo }}
                   </span>
                 </div>
 
-                <!-- Wskaźnik nieprzeczytania i menu -->
+                <!-- Wskaźnik nieprzeczytania (niebieska kropka) i menu -->
                 <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-end h-9 w-9">
                   <div
                     v-if="notification.unread"
-                    class="w-3 h-3 bg-[#1877F2] rounded-full absolute right-1 transition-opacity duration-200"
+                    class="w-3 h-3 bg-[#0866FF] rounded-full absolute right-1 transition-opacity duration-200"
                     :class="openDropdowns[notification.id] ? 'opacity-0' : 'group-hover:opacity-0'"
                   ></div>
 
@@ -261,15 +258,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref, computed, type DefineComponent } from 'vue'
+import { ref, type Ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useNotificationsStore } from '@/stores/notifications'
 
+// Ikony powiadomień
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue'
 import BellIcon from 'vue-material-design-icons/Bell.vue'
 import MessageReplyText from 'vue-material-design-icons/MessageReplyText.vue'
-import AccountPlus from 'vue-material-design-icons/AccountPlus.vue'
+import Account from 'vue-material-design-icons/Account.vue'
+import Heart from 'vue-material-design-icons/Heart.vue'
+import AccountGroup from 'vue-material-design-icons/AccountGroup.vue' // Dodana ikona grupy
 
+// Ikony menu
 import Check from 'vue-material-design-icons/Check.vue'
 import CogOutline from 'vue-material-design-icons/CogOutline.vue'
 import Monitor from 'vue-material-design-icons/Monitor.vue'
@@ -288,7 +289,7 @@ const setDropdownOpen = (id: string, value: boolean) => {
 }
 
 const formatTimeAgo = (createdAtStr: string) => {
-  if (!createdAtStr) return 'Przed chwilą'
+  if (!createdAtStr) return t('notifications_page.time.justNow', 'Przed chwilą')
   try {
     const createdDate = new Date(createdAtStr)
     const now = new Date()
@@ -296,13 +297,15 @@ const formatTimeAgo = (createdAtStr: string) => {
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMins / 60)
     const diffDays = Math.floor(diffHours / 24)
+    const diffWeeks = Math.floor(diffDays / 7)
 
-    if (diffMins < 1) return 'Przed chwilą'
-    if (diffMins < 60) return `${diffMins} min.`
-    if (diffHours < 24) return `${diffHours} godz.`
-    return `${diffDays} tyg.`
+    if (diffMins < 1) return t('notifications_page.time.justNow', 'Przed chwilą')
+    if (diffMins < 60) return t('notifications_page.time.minutesAgo', { mins: diffMins })
+    if (diffHours < 24) return t('notifications_page.time.hoursAgo', { hours: diffHours })
+    if (diffDays < 7) return t('notifications_page.time.daysAgo', { days: diffDays })
+    return t('notifications_page.time.weeksAgo', { weeks: diffWeeks })
   } catch (e) {
-    return 'Niedawno'
+    return t('notifications_page.time.recently', 'Niedawno')
   }
 }
 
@@ -320,16 +323,14 @@ const mappedNotifications = computed(() => {
 
     let avatarUrl = ''
     if (n.sender) {
-      avatarUrl = n.sender.avatarId
-        ? `http://localhost:8080/api/users/avatar/${n.sender.avatarId}`
-        : `http://localhost:8080/api/users/avatar/default-avatar.svg`
+      avatarUrl = n.sender.avatar || '/default-avatar.png'
     } else {
       avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(n.title)}&background=random&color=fff`
     }
 
     let displayMessage = n.message
     let typeIcon: any = BellIcon
-    let typeIconBgClass = 'bg-[#1877F2]'
+    let typeIconBgClass = 'bg-[#0866FF]'
     let isFriendRequest = false
 
     if (n.sender) {
@@ -338,19 +339,37 @@ const mappedNotifications = computed(() => {
       // Obsługa zaproszenia do znajomych
       if (n.title === 'Friend Request' || n.type === 'FRIEND_REQUEST') {
         isFriendRequest = true
-        displayMessage = `<strong>${senderName}</strong> wysłał(a) Ci zaproszenie do grona znajomych.`
-        typeIcon = AccountPlus
-        typeIconBgClass = 'bg-[#1877F2]'
+        displayMessage = t('notifications_page.types.friendRequest', { name: senderName })
+        typeIcon = Account
+        typeIconBgClass = 'bg-[#0866FF]'
       }
-      // Obsługa wzmianki / komentarza
+      // Obsługa wzmianki / komentarza w grupie
       else if (n.title === 'Mention' || n.type === 'MENTION') {
-        displayMessage = `<strong>${senderName}</strong> wspomniał(a) o Tobie w komentarzu.`
+        const groupName = n.groupName || 'Grupa'
+        displayMessage = t('notifications_page.types.mentionGeneral', { name: senderName, groupName })
         typeIcon = MessageReplyText
-        typeIconBgClass = 'bg-[#45BD62]' // zielone tło ikony komentarza jak na zrzucie ekranu
+        typeIconBgClass = 'bg-[#31A24C]'
+      }
+      // Obsługa reakcji (serduszko)
+      else if (n.title === 'Reaction' || n.type === 'REACTION' || n.title === 'Polubienie') {
+        const postSnippet = n.postSnippet || 'post'
+        displayMessage = n.message && n.message.includes('polubił')
+          ? t('notifications_page.types.reactionLiked', { name: senderName })
+          : t('notifications_page.types.reaction', { name: senderName, snippet: postSnippet })
+        typeIcon = Heart
+        typeIconBgClass = 'bg-gradient-to-br from-[#FF4256] to-[#E3002A]'
+      }
+      // Obsługa nowego posta w grupie
+      else if (n.title === 'Group Post' || n.type === 'GROUP_POST') {
+        const groupName = n.groupName || 'Grupa'
+        const postSnippet = n.postSnippet || 'nowy post'
+        displayMessage = t('notifications_page.types.groupPost', { groupName, snippet: postSnippet })
+        typeIcon = AccountGroup
+        typeIconBgClass = 'bg-[#0866FF]'
       }
       // Zaakceptowane zaproszenie
-      else if (n.title === 'Friend Request Accepted') {
-        displayMessage = `<strong>${senderName}</strong> zaakceptował(a) Twoje zaproszenie.`
+      else if (n.title === 'Friend Request Accepted' || n.type === 'FRIEND_REQUEST_ACCEPTED') {
+        displayMessage = t('notifications_page.types.friendRequestAccepted', { name: senderName })
       }
     }
 
@@ -375,7 +394,6 @@ const filteredNotifications = computed(() => {
   return mappedNotifications.value
 })
 
-// Podział na kategorie
 const friendRequests = computed(() => {
   return filteredNotifications.value.filter((n) => n.isFriendRequest)
 })
@@ -390,14 +408,10 @@ const handleMarkAsRead = async (notification: any) => {
 }
 
 const acceptFriendRequest = async (notification: any) => {
-  // Wywołaj tutaj metodę z Twojego store do akceptacji zaproszenia
-  // np. await notifStore.acceptFriendRequest(notification.raw.sender.id)
   await handleMarkAsRead(notification)
 }
 
 const rejectFriendRequest = async (notification: any) => {
-  // Wywołaj tutaj metodę z Twojego store do odrzucenia zaproszenia
-  // np. await notifStore.rejectFriendRequest(notification.raw.sender.id)
   await handleMarkAsRead(notification)
 }
 </script>
