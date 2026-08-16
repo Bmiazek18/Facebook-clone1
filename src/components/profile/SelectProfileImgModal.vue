@@ -205,6 +205,7 @@
 <script setup lang="ts">
 import { ref, reactive, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useProfilePhotoPost } from '@/composables/feed/useProfilePhotoPost'
 
 import MinusIcon from 'vue-material-design-icons/Minus.vue'
 import PlusIcon from 'vue-material-design-icons/Plus.vue'
@@ -218,6 +219,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'updated'])
 const auth = useAuthStore()
+const { createProfilePhotoPost } = useProfilePhotoPost()
 
 // --- STAN ---
 const selectedImage = ref<string | null>(null)
@@ -425,6 +427,44 @@ const savePhoto = async () => {
 
       if (!uploadResponse.ok) {
         throw new Error('Upload failed')
+      }
+
+      // Utwórz post ze zdjęciem, żeby dało się komentować w /photo/
+      try {
+        let mediaSrc: string | null = null
+        const contentType = uploadResponse.headers.get('content-type') || ''
+        if (contentType.includes('json')) {
+          const userDto = await uploadResponse.json()
+          const mediaId = props.isCover
+            ? userDto.coverId || userDto.coverPhotoId || userDto.cover_photo_id
+            : userDto.avatarId || userDto.avatar_id
+          if (mediaId) {
+            mediaSrc = `http://localhost:8080/api/users/avatar/${mediaId}`
+          }
+        }
+
+        // Fallback: odśwież profil GraphQL i weź aktualny URL
+        if (!mediaSrc) {
+          const profileRes = await fetch('http://localhost:8080/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: `query($userId: ID!) { getUserById(userId: $userId) { avatar cover avatarId coverId } }`,
+              variables: { userId: String(auth.currentUserId) },
+            }),
+          })
+          const profileJson = await profileRes.json()
+          const u = profileJson.data?.getUserById
+          mediaSrc = props.isCover
+            ? u?.cover || (u?.coverId ? `http://localhost:8080/api/users/avatar/${u.coverId}` : null)
+            : u?.avatar || (u?.avatarId ? `http://localhost:8080/api/users/avatar/${u.avatarId}` : null)
+        }
+
+        if (mediaSrc) {
+          await createProfilePhotoPost(props.isCover ? 'cover' : 'avatar', mediaSrc)
+        }
+      } catch (postErr) {
+        console.warn('Nie udało się utworzyć posta ze zdjęciem profilowym:', postErr)
       }
 
       emit('updated')

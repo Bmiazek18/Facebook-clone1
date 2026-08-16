@@ -37,15 +37,20 @@ const toggleUserSelection = (userId: string | number) => {
 }
 
 const handleSend = () => {
-  const finalMessage = [
-    message.value,
-    props.shareUrl ? (window.location.origin + props.shareUrl) : null
-  ]
-    .filter(Boolean)
-    .join('\n')
+  const shareUrl = props.shareUrl
+    ? (props.shareUrl.startsWith('http') ? props.shareUrl : window.location.origin + props.shareUrl)
+    : null
+  const postIdMatch = props.shareUrl?.match(/\/post\/([^/?#]+)/)
+  const sharedPostId = postIdMatch?.[1]
 
   selectedUsers.value.forEach((userId) => {
-    convStore.addMessage(userId, { content: finalMessage })
+    convStore.addMessage(userId, {
+      content: message.value.trim(),
+      type: 'feed-link',
+      linkUrl: shareUrl || undefined,
+      url: shareUrl || undefined,
+      sharedPostId,
+    } as any)
   })
 
   notify.success('Wysłano wiadomości w Messengerze!')

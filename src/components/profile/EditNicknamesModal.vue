@@ -1,10 +1,10 @@
 <template>
   <BaseModal title="Nicki" @close="emit('close')">
-    <div class="p-2 flex flex-col space-y-1">
+    <div class="p-2 w-[550px] flex flex-col space-y-1">
       <div
         v-for="user in participants"
         :key="user.id"
-        class="flex items-center justify-between p-2.5 hover:bg-theme-bg-hover rounded-xl transition group"
+        class="flex items-center justify-between p-2.5  rounded-xl transition group"
       >
         <!-- AVATAR + TEKST / INPUT -->
         <div class="flex items-center space-x-3.5 min-w-0 flex-1 mr-3">
@@ -118,14 +118,14 @@ if (props.chatType === ChatType.Group) {
   const otherUserId = props.chatId || 1
   const currentUserId = authStore.currentUser?.id || authStore.currentUserId || 2
   const currentUserName = authStore.currentUser?.name || 'Ja'
-  const currentUserAvatar = authStore.currentUser?.avatar || 'http://localhost:8080/api/users/avatar/default-avatar.svg'
+  const currentUserAvatar = authStore.currentUser?.avatar || '/default-avatar.png'
 
   participants.value = [
     {
       id: otherUserId,
       name: props.chatName || 'Rozmówca',
       nickname: props.currentPrivateNickname || props.chatName || 'Rozmówca',
-      avatarUrl: props.avatarUrl || 'http://localhost:8080/api/users/avatar/default-avatar.svg'
+      avatarUrl: props.avatarUrl || '/default-avatar.png'
     },
     {
       id: currentUserId,

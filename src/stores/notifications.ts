@@ -23,6 +23,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
           firstName
           lastName
           avatarId
+          avatar
         }
       }
     }

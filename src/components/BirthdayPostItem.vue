@@ -1,9 +1,9 @@
 <template>
-  <div class="py-2 border border-theme-border rounded-2xl bg-white">
-    <PostItem :post />
+  <div v-if="post" class="py-2 border border-theme-border rounded-2xl bg-white">
+    <PostItem :post="post" />
     <div class="px-2 pb-2">
       <CommentItem
-        v-for="comment in post.comments"
+        v-for="comment in (post.comments || [])"
         :key="comment.id"
         :comment="comment"
         :postAvatarSrc="currentUserAvatar"
@@ -42,11 +42,14 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import LinkModal from '@/components/feed/LinkModal.vue'
 import PostItem from './feed/post/PostItem.vue'
 
-const currentUserAvatar = 'https://i.pravatar.cc/150?u=me'
-
-const props = defineProps<{
-  post: Post
-}>()
+const props = withDefaults(
+  defineProps<{
+    post?: Post
+  }>(),
+  {
+    post: () => ({} as any),
+  }
+)
 
 const postsStore = usePostsStore()
 const commentsStore = useCommentsStore()
@@ -57,6 +60,7 @@ const handleCommentReaction = (event: {
   reaction: string | null
   oldReaction: string | null
 }) => {
+  if (!props.post?.id) return
   postsStore.handleCommentReaction(
     props.post.id,
     event.commentId,
@@ -77,7 +81,7 @@ const handleOpenLinkModal = (url: string) => {
   showLinkModal(url)
 }
 
-const author = computed(() => getUserById(props.post.authorId))
+const author = computed(() => (props.post?.authorId ? getUserById(props.post.authorId) : null))
 </script>
 
 <style scoped>

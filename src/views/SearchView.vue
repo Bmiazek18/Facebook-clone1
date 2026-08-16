@@ -57,6 +57,7 @@ const performSearch = async () => {
               firstName
               lastName
               avatarId
+              avatar
               inHistory
               newPostsCount
               mutualFriendsCount(currentUserId: $currentUserId)
@@ -75,7 +76,7 @@ const performSearch = async () => {
       searchResults.value = result.data.searchUsers.map((user: any) => ({
         id: user.id,
         name: `${user.firstName} ${user.lastName}`,
-        avatar: `http://localhost:8080/api/users/avatar/${user.avatarId || 'default-avatar.svg'}`,
+        avatar: user.avatar || '/default-avatar.png',
         inHistory: user.inHistory,
         newPostsCount: user.newPostsCount,
         mutualFriendsCount: user.mutualFriendsCount,

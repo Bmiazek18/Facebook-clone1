@@ -157,6 +157,7 @@ const GET_POST_QUERY = gql`
       media {
         src
         altText
+        backgroundColor
       }
       reactions {
         userIds

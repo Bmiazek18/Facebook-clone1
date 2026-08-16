@@ -26,7 +26,10 @@ const hasCoverImage = computed(() => !!props.imageUrl)
 
 const imageLoaded: Ref<boolean> = ref(false)
 
-const emit = defineEmits(['upload-cover'])
+const emit = defineEmits<{
+  'upload-cover': []
+  'view-cover': []
+}>()
 </script>
 
 <template>
@@ -55,6 +58,7 @@ const emit = defineEmits(['upload-cover'])
       <template v-if="hasCoverImage">
         <div
           class="relative h-full flex items-center hover:brightness-95 cursor-pointer justify-center overflow-hidden rounded-b-xl shadow-xl w-full"
+          @click="emit('view-cover')"
         >
           <img
             :src="props.imageUrl!"

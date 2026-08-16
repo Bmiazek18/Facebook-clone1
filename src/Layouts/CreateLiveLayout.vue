@@ -39,7 +39,23 @@ const liveScheduleOptions = ref([
 ])
 const selectedLiveSchedule = ref('now') // Default to 'now'
 
-onUnmounted(() => {
+const handleStartLive = async () => {
+  const currentUserId = String(auth.currentUser?.id || auth.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
+  try {
+    await liveStore.goLive(currentUserId)
+    router.push('/live/produce/dashboard')
+  } catch (err) {
+    console.error('Failed to go live:', err)
+  }
+}
+
+const handleStopLive = async () => {
+  await liveStore.stopLive()
+  router.push('/live/produce')
+}
+
+onUnmounted(async () => {
+  await liveStore.stopLive()
   liveStore.stopStream()
 })
 </script>
@@ -224,14 +240,28 @@ onUnmounted(() => {
         class="p-4 border-t border-theme-border flex items-center gap-3 bg-theme-bg-secondary z-30 mt-auto"
       >
         <button
+          @click="router.push('/live/produce')"
           class="px-5 py-2.5 bg-theme-bg-subtle hover:bg-theme-hover text-theme-text rounded-md font-semibold text-[15px] transition-colors"
         >
           Wstecz
         </button>
         <button
-          class="flex-1 px-4 py-2.5 bg-theme-bg-subtle text-theme-text-secondary rounded-md font-semibold text-[15px] cursor-not-allowed text-center truncate"
+          v-if="!liveStore.isLive"
+          @click="handleStartLive"
+          :disabled="!liveStore.activeStream"
+          class="flex-1 px-4 py-2.5 rounded-md font-semibold text-[15px] text-center truncate transition-colors"
+          :class="liveStore.activeStream 
+            ? 'bg-[#1877F2] hover:bg-[#166FE5] text-white cursor-pointer' 
+            : 'bg-theme-bg-subtle text-theme-text-secondary cursor-not-allowed'"
         >
           Rozpocznij transmisję na żywo
+        </button>
+        <button
+          v-else
+          @click="handleStopLive"
+          class="flex-1 px-4 py-2.5 bg-[#EA4335] hover:bg-[#D33426] text-white rounded-md font-semibold text-[15px] text-center truncate cursor-pointer transition-colors"
+        >
+          Zakończ transmisję
         </button>
       </div>
     </aside>

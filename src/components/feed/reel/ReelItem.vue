@@ -108,14 +108,14 @@
         <div class="flex flex-col items-center cursor-pointer group">
           <ReactionButton
             v-if="reel"
-            :post-id="reel.id"
-            :is-liked="reel.isLiked"
-            :likes-count="reel.likes"
+            :user-reaction="userReaction"
+            :is-liked="!!userReaction"
+            :likes-count="Number(likesCount)"
             :hide-text="true"
-            :has-dark-background="false"
-            post-type="reel"
+            :has-dark-background="true"
+            @react="handleReaction"
           />
-          <span class="text-[12px] font-semibold text-gray-200 mt-1 drop-shadow-md">{{ reel?.likes || 0 }}</span>
+          <span class="text-[12px] font-semibold text-gray-200 mt-1 drop-shadow-md">{{ likesCount }}</span>
         </div>
 
         <!-- Komentarze -->
@@ -298,6 +298,7 @@ import ShareIcon from 'vue-material-design-icons/Share.vue'
 import VolumeMuteIcon from 'vue-material-design-icons/VolumeMute.vue'
 import VolumeHighIcon from 'vue-material-design-icons/VolumeHigh.vue'
 import { Dropdown as VDropdown } from 'floating-vue'
+import { usePostReactions } from '@/composables/feed/usePostReactions'
 
 const props = defineProps<{
   reel: any
@@ -308,6 +309,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['toggle-comments', 'update-mute', 'update-volume', 'open-share'])
+
+const { userReaction, handleReaction } = usePostReactions(computed(() => props.reel?._originalPost))
 
 const videoRef = ref<HTMLVideoElement | null>(null)
 const isPaused = ref(true)
@@ -320,6 +323,24 @@ const isSpeedSubmenuOpen = ref(false)
 
 const processedCaption = computed(() => {
   return props.reel?.caption ? processContent(props.reel.caption) : []
+})
+
+const likesCount = computed(() => {
+  const post = props.reel?._originalPost
+  if (!post?.reactions) return props.reel?.likes || '0'
+  
+  if (Array.isArray(post.reactions)) {
+    return String(post.reactions.reduce(
+      (count: number, item: any) =>
+        count + (Array.isArray(item.userIds) ? item.userIds.length : 0),
+      0,
+    ))
+  }
+  let count = 0
+  Object.values(post.reactions).forEach((ids: any) => {
+    if (ids) count += ids.length
+  })
+  return String(count)
 })
 
 watch(

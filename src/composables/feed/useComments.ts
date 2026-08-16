@@ -2,6 +2,7 @@ import { useMutation, useApolloClient } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
 import type { Comment } from '@/types/Post'
 import { useAuthStore } from '@/stores/auth'
+import { usersCache } from '@/composables/shared/useUserCache'
 
 const ADD_COMMENT_MUTATION = gql`
   mutation AddComment($input: AddCommentInput!) {
@@ -26,6 +27,7 @@ const GET_COMMENTS_QUERY = gql`
         firstName
         lastName
         avatarId
+        avatar
       }
       parentId
       content
@@ -33,6 +35,13 @@ const GET_COMMENTS_QUERY = gql`
       reactions {
         reactionType
         userIds
+      }
+      mentionedUsers {
+        id
+        firstName
+        lastName
+        avatarId
+        avatar
       }
     }
   }
@@ -52,20 +61,35 @@ function findComment(comments: Comment[], commentId: number | string): Comment |
 function buildCommentTree(flatComments: any[], currentUserId: string): Comment[] {
   const map: Record<number, Comment> = {}
   const roots: Comment[] = []
-  const userId = Number(currentUserId)
+  const userId = currentUserId
 
   flatComments.forEach((c: any) => {
+    if (c.mentionedUsers && Array.isArray(c.mentionedUsers)) {
+      c.mentionedUsers.forEach((u: any) => {
+        if (u && u.id) {
+          usersCache.value[String(u.id)] = {
+            id: String(u.id),
+            name: `${u.firstName} ${u.lastName}`.trim() || 'Użytkownik',
+            avatar: u.avatar || '/default-avatar.png',
+          }
+        }
+      })
+    }
+    let formattedReactions: Record<string, string[]> = {}
     let userReaction: any = undefined
     if (c.reactions) {
       if (Array.isArray(c.reactions)) {
-        userReaction = c.reactions.find(
-          (reaction: any) =>
-            Array.isArray(reaction.userIds) &&
-            reaction.userIds.some((id: string | number) => String(id) === String(userId)),
-        )?.reactionType
+        c.reactions.forEach((r: any) => {
+          const type = r.reactionType
+          formattedReactions[type] = (r.userIds || []).map(String)
+          if (Array.isArray(r.userIds) && r.userIds.some((id: string | number) => String(id) === String(userId))) {
+            userReaction = type
+          }
+        })
       } else {
+        formattedReactions = c.reactions
         for (const [type, userIds] of Object.entries(c.reactions)) {
-          if (Array.isArray(userIds) && userIds.includes(userId)) {
+          if (Array.isArray(userIds) && userIds.map(String).includes(String(userId))) {
             userReaction = type
             break
           }
@@ -84,7 +108,7 @@ function buildCommentTree(flatComments: any[], currentUserId: string): Comment[]
       parentId: c.parentId ? Number(c.parentId) : null,
       replies: [],
       likesCount: 0,
-      reactions: c.reactions || {},
+      reactions: formattedReactions,
       userReaction: userReaction,
     }
   })
@@ -131,7 +155,51 @@ export function useComments() {
 
   async function addComment(post: any, commentInput: any, parentId: number | null) {
     if (!post) return
-    const userId = Number(authStore.currentUserId)
+    const userId = authStore.currentUserId
+
+    // Build the optimistic comment
+    const nameParts = (authStore.currentUser?.name || '').split(' ')
+    const firstName = nameParts[0] || ''
+    const lastName = nameParts.slice(1).join(' ') || ''
+
+    const tempId = commentInput.id || Date.now()
+    const optimisticComment: Comment = {
+      id: tempId,
+      authorId: userId,
+      author: authStore.currentUser
+        ? {
+            id: authStore.currentUser.id,
+            firstName,
+            lastName,
+            avatar: authStore.currentUser.avatar || null,
+          }
+        : null,
+      content: commentInput.content,
+      timestamp: commentInput.timestamp || Date.now(),
+      date: commentInput.date || new Date().toISOString(),
+      parentId: parentId,
+      replies: [],
+      likesCount: 0,
+      reactions: {},
+      image: commentInput.image || undefined,
+      userReaction: undefined,
+    }
+
+    // Add optimistic comment to the local UI immediately
+    if (parentId) {
+      const parentComment = findComment(post.comments || [], parentId)
+      if (parentComment) {
+        if (!parentComment.replies) parentComment.replies = []
+        parentComment.replies.push(optimisticComment)
+      }
+    } else {
+      if (!post.comments) post.comments = []
+      post.comments.push(optimisticComment)
+    }
+
+    if (post.stats) {
+      post.stats.comments = (post.stats.comments || 0) + 1
+    }
 
     try {
       const { data } = await addCommentMutation({
@@ -145,37 +213,39 @@ export function useComments() {
       })
       const savedComment = data?.addComment
       if (savedComment) {
-        const finalComment: Comment = {
-          id: Number(savedComment.id),
-          authorId: Number(savedComment.userId),
-          content: savedComment.content,
-          timestamp: new Date(savedComment.createdAt).getTime(),
-          date: savedComment.createdAt,
-          parentId: savedComment.parentId ? Number(savedComment.parentId) : null,
-          replies: [],
-          likesCount: 0,
-          reactions: {},
-          image: savedComment.mediaUrl || undefined,
-          userReaction: undefined,
-        }
+        // Find the optimistic comment we just added, and update its ID and other fields with actual server values
+        const targetList = parentId 
+          ? findComment(post.comments || [], parentId)?.replies 
+          : post.comments
 
-        if (parentId) {
-          const parentComment = findComment(post.comments || [], parentId)
-          if (parentComment) {
-            if (!parentComment.replies) parentComment.replies = []
-            parentComment.replies.push(finalComment)
+        if (targetList) {
+          const optIndex = targetList.findIndex(c => c.id === tempId)
+          if (optIndex !== -1) {
+            targetList[optIndex].id = Number(savedComment.id)
+            targetList[optIndex].date = savedComment.createdAt
+            targetList[optIndex].timestamp = new Date(savedComment.createdAt).getTime()
+            if (savedComment.mediaUrl) {
+              targetList[optIndex].image = savedComment.mediaUrl
+            }
           }
-        } else {
-          if (!post.comments) post.comments = []
-          post.comments.push(finalComment)
-        }
-
-        if (post.stats) {
-          post.stats.comments = (post.stats.comments || 0) + 1
         }
       }
     } catch (e) {
       console.error(`Failed to add comment to post ${post.id}:`, e)
+      // Rollback on error
+      const targetList = parentId 
+        ? findComment(post.comments || [], parentId)?.replies 
+        : post.comments
+
+      if (targetList) {
+        const optIndex = targetList.findIndex(c => c.id === tempId)
+        if (optIndex !== -1) {
+          targetList.splice(optIndex, 1)
+        }
+      }
+      if (post.stats) {
+        post.stats.comments = Math.max(0, (post.stats.comments || 0) - 1)
+      }
     }
   }
 

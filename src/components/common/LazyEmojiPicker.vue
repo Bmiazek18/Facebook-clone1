@@ -195,7 +195,7 @@ watch(isLoaded, async (loaded) => {
             :class="{ 'is-active': activeIndex === index }"
             @click="selectEditSlot(emoji, index)"
           >
-            <Emoji :data="emojiIndex" :emoji="emoji" set="facebook" :size="32" />
+            <Emoji v-if="emojiIndex" :data="emojiIndex" :emoji="emoji" set="facebook" :size="32" />
           </div>
         </div>
         <p class="text-[14px] text-gray-500 mt-4 text-center">
@@ -207,6 +207,7 @@ watch(isLoaded, async (loaded) => {
 
       <div class="modal-picker-container h-[350px]">
         <component
+          v-if="Picker && emojiIndex"
           :is="Picker"
           :data="emojiIndex"
           set="facebook"

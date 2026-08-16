@@ -40,6 +40,7 @@ const currentZoom = ref(1.0)
 const zoomStep = 0.2
 const maxZoom = 3.0
 const minZoom = 1.0
+const showTags = ref(false)
 
 // --- DRAG STATE ---
 const isDragging = ref(false)
@@ -281,6 +282,8 @@ onUnmounted(() => {
         }"
         @mousedown="startDrag"
         @touchstart="startDrag"
+        @mouseenter="showTags = true"
+        @mouseleave="showTags = false"
       >
         <img
           class="max-w-full max-h-full object-contain pointer-events-none block"
@@ -293,7 +296,8 @@ onUnmounted(() => {
             v-for="tag in props.media.tags"
             :key="tag.id"
             :tag="tag"
-            class="absolute -translate-x-1/2 -translate-y-1/2"
+            :force-show="showTags"
+            class="absolute"
             :style="{ left: `${tag.x}%`, top: `${tag.y}%` }"
           />
         </template>

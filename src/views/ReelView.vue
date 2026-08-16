@@ -126,7 +126,7 @@
 
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, provide } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useQuery } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
@@ -160,6 +160,7 @@ const GET_FEED = gql`
       media {
         src
         altText
+        backgroundColor
       }
       reactions {
         reactionType
@@ -173,9 +174,9 @@ const { result } = useQuery(GET_FEED, {
   currentUserId: String(authStore.currentUserId)
 })
 
-const reels = computed(() => {
+const allPosts = computed(() => {
   const feed = result.value?.getFeed ?? []
-  const formattedFeed = feed.map((post: any) => {
+  return feed.map((post: any) => {
     let formattedReactions: Record<string, number[]> = {}
     if (Array.isArray(post.reactions)) {
       post.reactions.forEach((r: any) => {
@@ -189,7 +190,12 @@ const reels = computed(() => {
       reactions: formattedReactions
     }
   })
-  return processPostsIntoReels(formattedFeed, String(authStore.currentUserId))
+})
+
+provide('allPosts', allPosts)
+
+const reels = computed(() => {
+  return processPostsIntoReels(allPosts.value, String(authStore.currentUserId))
 })
 
 const activeReelId = ref<string | null>(null)

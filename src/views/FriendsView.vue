@@ -89,6 +89,7 @@ const GET_FRIEND_REQUESTS = gql`
         firstName
         lastName
         avatarId
+        avatar
       }
     }
   }
@@ -104,6 +105,7 @@ const GET_FRIEND_SUGGESTIONS = gql`
         firstName
         lastName
         avatarId
+        avatar
       }
     }
   }
@@ -153,9 +155,8 @@ onRequestsResult((res) => {
   const reqList = res.data?.getFriendRequests || []
   friendRequests.value = reqList.map((item: any) => {
     const u = item.user
-    const avatarUrl = u?.avatarId
-      ? `http://localhost:8080/api/users/avatar/${u.avatarId}`
-      : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    const avatarUrl = u?.avatar
+      || `https://ui-avatars.com/api/?name=${encodeURIComponent(
           (u?.firstName || '') + ' ' + (u?.lastName || '')
         )}&background=EBF4FF&color=1877F2&bold=true`
 
@@ -180,9 +181,8 @@ onSuggestionsResult((res) => {
   const sugList = res.data?.getFriendSuggestions || []
   friendSuggestions.value = sugList.map((item: any) => {
     const u = item.user
-    const avatarUrl = u?.avatarId
-      ? `http://localhost:8080/api/users/avatar/${u.avatarId}`
-      : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    const avatarUrl = u?.avatar
+      || `https://ui-avatars.com/api/?name=${encodeURIComponent(
           (u?.firstName || '') + ' ' + (u?.lastName || '')
         )}&background=EBF4FF&color=1877F2&bold=true`
 

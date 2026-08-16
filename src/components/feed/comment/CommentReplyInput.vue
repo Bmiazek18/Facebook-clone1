@@ -152,9 +152,19 @@ const emit = defineEmits<{
 
 const submitComment = () => {
   if (authStore.currentUser) {
+    const nameParts = (authStore.currentUser.name || '').split(' ')
+    const firstName = nameParts[0] || ''
+    const lastName = nameParts.slice(1).join(' ') || ''
+
     const newComment = {
       id: Date.now(),
       authorId: authStore.currentUser.id,
+      author: {
+        id: authStore.currentUser.id,
+        firstName,
+        lastName,
+        avatar: authStore.currentUser.avatar || null,
+      },
       content: postContent.value,
       date: new Date().toISOString(),
       timestamp: Date.now(),
@@ -172,6 +182,12 @@ const submitComment = () => {
     emit('onCommentSubmitted')
   }
 }
+
+const focusInput = () => {
+  mentionInputRef.value?.focus()
+}
+
+defineExpose({ focusInput })
 </script>
 
 <template>

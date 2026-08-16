@@ -8,10 +8,16 @@ import { computed } from 'vue'
 
 const { t } = useI18n()
 
-const props = defineProps<{
-  isOpen: boolean
-  post: Post
-}>()
+const props = withDefaults(
+  defineProps<{
+    isOpen: boolean
+    post?: Post
+  }>(),
+  {
+    isOpen: false,
+    post: () => ({} as any),
+  }
+)
 
 const emit = defineEmits<{
   close: []
@@ -22,18 +28,19 @@ const close = () => {
 }
 
 const postData = computed(() => {
-  const author = getUserById(props.post.authorId)
+  if (!props.post || !props.post.id) return null
+  const author = props.post.authorId ? getUserById(props.post.authorId) : null
   return {
     id: props.post.id,
     author: {
-      name: author?.name || 'Unknown',
-      avatar: author?.avatar || '',
-      id: props.post.authorId,
+      name: author?.name || (props.post.author ? [props.post.author.firstName, props.post.author.lastName].filter(Boolean).join(' ') : 'Unknown'),
+      avatar: author?.avatar || props.post.author?.avatar || '',
+      id: props.post.authorId || props.post.author?.id,
     },
     content: props.post.content,
-    imageUrl: props.post.media?.images?.[0]?.src,
-    images: props.post.media?.images,
-    videoUrl: props.post.media?.videoUrl,
+    imageUrl: props.post.media?.[0]?.src || (props.post.media as any)?.images?.[0]?.src,
+    images: (props.post.media as any)?.images || props.post.media,
+    videoUrl: (props.post.media as any)?.videoUrl,
     timestamp: props.post.timestamp,
   }
 })

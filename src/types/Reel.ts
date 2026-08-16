@@ -22,4 +22,6 @@ export interface Reel {
   music: string
 
   comments?: Comment[]
+
+  _originalPost?: any
 }

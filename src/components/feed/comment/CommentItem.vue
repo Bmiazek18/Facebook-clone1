@@ -28,9 +28,7 @@ const authorName = computed(
   () => [author.value?.firstName, author.value?.lastName].filter(Boolean).join(' ') || 'Użytkownik',
 )
 const authorAvatar = computed(() =>
-  author.value?.avatarId
-    ? `http://localhost:8080/api/users/avatar/${author.value.avatarId}`
-    : undefined,
+  author.value?.avatar || '/default-avatar.png',
 )
 
 const { userReaction, handleReaction } = useCommentReactions(toRef(props, 'comment'))
@@ -114,7 +112,7 @@ const commentWrapperClass = computed(() => {
           :user="{
             id: author.id,
             name: authorName,
-            avatar: authorAvatar ? `http://localhost:8080/api/users/avatar/${author.avatarId}` : 'https://ui-avatars.com/api/?name=Piotr%20Kowalski&background=EBF4FF&color=1877F2&bold=true',
+            avatar: authorAvatar || 'https://ui-avatars.com/api/?name=Piotr%20Kowalski&background=EBF4FF&color=1877F2&bold=true',
           }"
           :size="isRootComment ? 32 : 24"
         />

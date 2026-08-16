@@ -18,31 +18,31 @@ export function processPostsIntoReels(posts: any[], currentUserId: string): Reel
       // Calculate reactions
       // Reactions structure in backend query: reactions { reactionType, userIds }
       // Reactions structure in frontend post object: reactions = { like: [userIds], ... }
-      let likesList: number[] = []
+      let likesList: string[] = []
       let userReactionType: string | null = null
       
       if (Array.isArray(post.reactions)) {
         post.reactions.forEach((r: any) => {
-          const ids = r.userIds.map(Number)
+          const ids = (r.userIds || []).map(String)
           if (r.reactionType === 'like' || r.reactionType === 'LIKE') {
             likesList = ids
           }
-          if (ids.includes(Number(currentUserId))) {
+          if (ids.includes(String(currentUserId))) {
             userReactionType = r.reactionType
           }
         })
       } else if (post.reactions) {
         // If already formatted as record
-        likesList = post.reactions.like || []
+        likesList = (post.reactions.like || []).map(String)
         for (const [type, userIds] of Object.entries(post.reactions)) {
-          if (Array.isArray(userIds) && userIds.includes(Number(currentUserId))) {
+          if (Array.isArray(userIds) && userIds.map(String).includes(String(currentUserId))) {
             userReactionType = type
             break
           }
         }
       }
       
-      const isLiked = likesList.includes(Number(currentUserId))
+      const isLiked = likesList.includes(String(currentUserId))
 
       return {
         id: String(post.id),
@@ -57,6 +57,7 @@ export function processPostsIntoReels(posts: any[], currentUserId: string): Reel
         music: 'Oryginalny dźwięk',
         comments: post.comments || [],
         isFollowing: false,
+        _originalPost: post,
       } as Reel
     })
 }

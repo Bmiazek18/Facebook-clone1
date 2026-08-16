@@ -45,17 +45,16 @@
           class="shrink-0 mr-3 relative w-[180px] aspect-[9/16] rounded-xl overflow-hidden cursor-pointer group snap-start shadow-md hover:shadow-lg transition-all duration-300 bg-black"
           @click="openReel(reel.id)"
         >
-          <video
-            class="w-full h-full object-cover"
-            :src="reel.videoSrc"
-            muted
-            loop
-            playsinline
-            preload="none"
-            :poster="reel.thumbnailUrl"
-            @mouseenter="handleMouseEnter"
-            @mouseleave="handleMouseLeave"
-          ></video>
+      <video
+  class="w-full h-full object-cover"
+  :src="`${reel.videoSrc}#t=0.001`"
+  muted
+  loop
+  playsinline
+  preload="metadata"
+  @mouseenter="handleMouseEnter"
+  @mouseleave="handleMouseLeave"
+></video>
           <div
             class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
           ></div>

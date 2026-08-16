@@ -12,6 +12,9 @@
           class="view-container bg-theme-bg-secondary p-0"
           @navigate="handleNavigation"
           @back="handleNavigationBack"
+          @view-all-profiles="handleViewAllProfiles"
+          @switch-account="handleSwitchAccount"
+          @selected="handleProfileSelected"
         />
       </Transition>
     </div>
@@ -21,17 +24,22 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue'
 import { useSlideTransition } from '@/composables/ui/useSlideTransition'
+import { useAuthStore } from '@/stores/auth'
 
 import MainMenu from '@/layouts/Navbar/menu/MainMenu.vue'
 import SubMenuDisplay from '@/layouts/Navbar/menu/SubMenu.vue'
 import LanguageSelector from '@/layouts/Navbar/menu/LanguageSelector.vue'
 import SettingsMenu from '@/layouts/Navbar/menu/SettingsMenu.vue'
+import ProfilesSelector from '@/layouts/Navbar/menu/ProfilesSelector.vue'
+
+const authStore = useAuthStore()
 
 const viewComponents: Record<string, Component> = {
   main: MainMenu,
   display: SubMenuDisplay,
   language: LanguageSelector,
   settings: SettingsMenu,
+  profiles: ProfilesSelector,
 }
 
 const { wrapperRef, currentView, transitionName, navigateTo, navigateBack, onEnter, onAfterEnter } =
@@ -43,6 +51,18 @@ const currentViewComponent = computed(() => {
 
 const handleNavigation = (viewName: string) => navigateTo(viewName)
 const handleNavigationBack = () => navigateBack()
+
+const handleViewAllProfiles = () => {
+  navigateTo('profiles')
+}
+
+const handleSwitchAccount = () => {
+  authStore.switchAccount()
+}
+
+const handleProfileSelected = () => {
+  navigateBack()
+}
 </script>
 
 <style scoped>
@@ -74,6 +94,7 @@ const handleNavigationBack = () => navigateBack()
 /* WCHODZENIE W GŁĄB (Next) */
 .slide-left-enter-from {
   transform: translateX(100%);
+  opacity: 0;
 }
 .slide-left-leave-to {
   transform: translateX(-100%);
@@ -83,6 +104,7 @@ const handleNavigationBack = () => navigateBack()
 /* POWRÓT (Back) */
 .slide-right-enter-from {
   transform: translateX(-100%);
+  opacity: 0;
 }
 .slide-right-leave-to {
   transform: translateX(100%);

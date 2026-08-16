@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full h-[calc(100vh-56px)] lg:max-w-122.5 flex flex-col lg:min-w-92.5 bg-white border-t lg:border-t-0 lg:border-l border-gray-200 h-full"
+    class="w-full h-[calc(100vh-56px)] lg:max-w-122.5 flex flex-col lg:min-w-92.5 theme-bg-theme-secondary[displayReadBy-FINAL-DEBUG-AFTER] border-t lg:border-t-0 lg:border-l border-gray-200 h-full"
   >
     <div class="flex-1 flex flex-row-reverse overflow-hidden">
       <div class="hidden md:block w-22.5 border-l border-gray-200"></div>
@@ -89,7 +89,7 @@
             <EmptyState v-if="!hasComments" />
             <CommentItem
               v-else
-              v-for="comment in reel.comments"
+              v-for="comment in reelComments"
               :key="comment.id"
               :comment="comment"
               :post-avatar-src="reelUser?.avatar"
@@ -119,7 +119,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { processContent, type ProcessedContent } from '@/utils/contentProcessor'
 import type { Reel } from '@/types/Reel'
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
@@ -137,12 +137,14 @@ import { useLinkModal } from '@/composables/ui/useLinkModal'
 import BaseModal from '@/components/common/BaseModal.vue'
 import LinkModal from '@/components/feed/LinkModal.vue'
 import EmptyState from '../comment/EmptyState.vue'
+import { useComments } from '@/composables/feed/useComments'
 
 const props = defineProps<{
   reel: Reel
 }>()
 
 const commentsStore = useCommentsStore()
+const { fetchCommentsForPost } = useComments()
 const { isLinkModalVisible, linkModalData, showLinkModal, closeLinkModal } = useLinkModal()
 
 const handleCommentReply = (event: { author: { id: number; name: string }; commentId: string }) => {
@@ -158,7 +160,10 @@ const handleOpenLinkModal = (url: string) => {
 }
 
 const commentInput = ref('')
-const hasComments = computed(() => props.reel.comments && props.reel.comments.length > 0)
+const reelComments = computed(() => {
+  return props.reel._originalPost?.comments || props.reel.comments || []
+})
+const hasComments = computed(() => reelComments.value.length > 0)
 
 const reelUser = computed(() => getUserById(props.reel.authorId))
 
@@ -172,9 +177,18 @@ const handleFollowToggle = () => {
   }
 }
 
+watch(
+  () => props.reel,
+  async (newReel) => {
+    if (newReel && newReel._originalPost) {
+      await fetchCommentsForPost(newReel._originalPost)
+    }
+  },
+  { immediate: true }
+)
+
 const submitComment = () => {
   if (commentInput.value.trim()) {
-    // Future: Add comment logic
     console.log('Comment:', commentInput.value)
     commentInput.value = ''
   }

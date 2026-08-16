@@ -26,11 +26,13 @@ import AccountCircleOutline from 'vue-material-design-icons/AccountCircleOutline
 
 // --- DANE I STORES ---
 import { useAuthStore } from '@/stores/auth'
+import { useProfilePhotoPost } from '@/composables/feed/useProfilePhotoPost'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const auth = useAuthStore()
+const { resolveProfilePhotoPost } = useProfilePhotoPost()
 
 // --- KONFIGURACJA ZAKŁADEK ---
 const tabs = [
@@ -117,7 +119,9 @@ const fetchUserProfile = async () => {
             firstName
             lastName
             avatarId
+            avatar
             coverId
+            cover
             city
             hometown
             education
@@ -136,11 +140,12 @@ const fetchUserProfile = async () => {
             partnerName
             partnerAvatar
             bioDetails
-            namePronounciation
+            namePronunciation
             otherNames
             favoriteQuotes
             createdAt
             updatedAt
+            note
           }
         }
       `,
@@ -153,8 +158,8 @@ const fetchUserProfile = async () => {
       graphqlProfileUser.value = {
         ...u,
         name: [u.firstName, u.lastName].filter(Boolean).join(' ') || 'Użytkownik',
-        avatar: u.avatarId ? `http://localhost:8080/api/users/avatar/${u.avatarId}` : 'http://localhost:8080/api/users/avatar/default-avatar.svg',
-        cover: u.coverId ? `http://localhost:8080/api/users/avatar/${u.coverId}` : 'https://picsum.photos/id/1018/1200/400',
+        avatar: u.avatar || '/default_avatar.png',
+        cover: u.cover || 'https://picsum.photos/id/1018/1200/400',
         location: u.city || u.hometown || '',
         school: u.education || '',
       }
@@ -168,16 +173,18 @@ provide('isOwner', isOwner)
 provide('profileUser', profileUser)
 provide('fetchUserProfile', fetchUserProfile)
 
+useHead({
+  title: computed(() => profileUser.value?.name ? `${profileUser.value.name} | Facebook` : 'Profil | Facebook')
+})
+
 onMounted(async () => {
   await fetchUserProfile()
-  if (profileUser.value) document.title = `${profileUser.value.name} | Facebook`
   window.addEventListener('scroll', handleScroll)
   fetchProfileFriends()
 })
 
 watch(userIdParam, async () => {
   await fetchUserProfile()
-  if (profileUser.value) document.title = `${profileUser.value.name} | Facebook`
   fetchProfileFriends()
 })
 
@@ -241,6 +248,47 @@ const triggerCoverUpload = () => {
   autoTriggerCover.value = true
 }
 
+const openProfilePhoto = async (type: 'avatar' | 'cover') => {
+  const user = profileUser.value
+  if (!user) return
+  const src = type === 'cover' ? user.cover : user.avatar
+  if (!src) return
+
+  try {
+    const post = await resolveProfilePhotoPost({
+      userId: user.id,
+      kind: type,
+      src,
+    })
+
+    if (post?.id) {
+      const mediaSrc = post.media?.[0]?.src || src
+      const fbid = String(mediaSrc).split('/').pop()?.split('?')[0] || '0'
+      router.push({
+        path: '/photo',
+        query: {
+          fbid,
+          set: `a.${post.id}`,
+        },
+      })
+      return
+    }
+  } catch (e) {
+    console.warn('Nie znaleziono posta dla zdjęcia profilowego:', e)
+  }
+
+  // Fallback: otwórz galerię (photo.vue spróbuje jeszcze raz rozwiązać post)
+  router.push({
+    path: '/photo',
+    query: {
+      src,
+      type,
+      userId: String(user.id),
+      name: user.name || '',
+    },
+  })
+}
+
 const friendsList = ref<any[]>([])
 const fetchProfileFriends = async () => {
   const userId = String(userIdParam.value || auth.currentUserId)
@@ -274,7 +322,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109]
     >
       <div class="max-w-[1200px] flex items-center justify-between w-full mx-auto lg:px-0">
         <div class="flex items-center space-x-3">
-          <UserAvatar :user="profileUser" :size="40" :hide-story-ring="true" />
+          <UserAvatar :user="profileUser" :size="40" :hide-story-ring="true" :is-owner="isOwner" />
           <div class="text-[17px] text-theme-text leading-5">
             {{ profileUser.name }}
           </div>
@@ -294,6 +342,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109]
         :image-url="profileUser.cover"
         class="rounded-b-xl"
         @upload-cover="triggerCoverUpload"
+        @view-cover="openProfilePhoto('cover')"
       />
 
       <div class="max-w-[1250px] mx-auto relative">
@@ -305,12 +354,15 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109]
                 <UserAvatar
                   :user="profileUser"
                   :size="168"
+                  :is-owner="isOwner"
+                  :view-photo-src="profileUser.avatar"
+                  view-photo-type="avatar"
                   class="relative block"
                 />
                 <button
                   v-if="isOwner"
-                  @click="isPickerOpen = true"
-                  class="absolute bottom-4 right-4 bg-gray-200 hover:bg-gray-300 text-black p-2 rounded-full cursor-pointer transition-colors"
+                  @click.stop="isPickerOpen = true"
+                  class="absolute bottom-4 right-4 bg-gray-200 hover:bg-gray-300 text-black p-2 rounded-full cursor-pointer transition-colors z-20"
                 >
                   <Camera :size="22" fillColor="currentColor" class="text-theme-text" />
                 </button>
@@ -481,7 +533,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109]
 
   <!-- MODAL 2: Informacje o bezpieczeństwie profilu (Aktywowany kliknięciem w H1) -->
   <BaseModal v-if="isInfoModalOpen" @close="isInfoModalOpen = false" :title="profileUser?.name || ''">
-    <div class="p-2   text-left">
+    <div class="p-3 w-[550px]  text-left">
       <!-- Główny opis informacyjny -->
       <p class="text-[#65676b] text-[15px] leading-[1.4] mb-5 tracking-normal">
         Aby zapewnić bezpieczeństwo Facebooka, wyświetlamy informacje o użytkownikach i ich
@@ -491,7 +543,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109]
       <!-- Lista z informacjami -->
       <div class="flex flex-col gap-4">
         <!-- Pozycja 1: Data dołączenia -->
-        <div class="flex items-center gap-3.5">
+        <div class="flex items-center gap-3.5 py-1">
           <div class="flex items-center justify-center text-[#050505] shrink-0">
             <CalendarMonthOutline :size="24" />
           </div>
@@ -501,7 +553,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109]
         </div>
 
         <!-- Pozycja 2: Ostatnia aktualizacja -->
-        <div class="flex items-center gap-3.5">
+        <div class="flex items-center gap-3.5 py-1 mb-1">
           <div class="flex items-center justify-center text-[#050505] shrink-0">
             <AccountCircleOutline :size="24" />
           </div>

@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApolloClient } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
-import { useAuthStore } from '@/stores/auth'
+import { useUserCache } from '@/composables/shared/useUserCache'
+import { useChatStore } from '@/stores/chat'
 
-// Import ikon z vue-material-design-icons zgodnie z makietą
+// Import ikon z vue-material-design-icons
 import AccountMultipleIcon from 'vue-material-design-icons/AccountMultiple.vue'
 import HomeVariantIcon from 'vue-material-design-icons/HomeVariant.vue'
+import BriefcaseVariantIcon from 'vue-material-design-icons/BriefcaseVariant.vue'
+import SchoolIcon from 'vue-material-design-icons/School.vue'
 import MessageTextIcon from 'vue-material-design-icons/MessageText.vue'
 import AccountCheckIcon from 'vue-material-design-icons/AccountCheck.vue'
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue'
 import CloseIcon from 'vue-material-design-icons/Close.vue'
-
-import { getUserById } from '@/utils/users'
 
 interface Props {
   userId?: number | string
@@ -32,74 +33,130 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const router = useRouter()
-const authStore = useAuthStore()
+const chatStore = useChatStore()
+const { getOrFetchUser, usersCache } = useUserCache()
+
 const isInteracted = ref(false)
-const fetchedUser = ref<any>(null)
+const fullUserData = ref<any>(null)
 const isLoading = ref(false)
 
-const user = computed(() => {
-  if (fetchedUser.value) return fetchedUser.value
+const cleanUserId = computed(() => {
   if (!props.userId) return null
-  const id = typeof props.userId === 'string' ? parseInt(props.userId) : props.userId
-  return getUserById(id)
+  return String(props.userId).replace(/^user_/, '')
 })
 
-const displayName = computed(() => props.name || user.value?.name || 'Użytkownik')
+const user = computed(() => {
+  if (fullUserData.value) return fullUserData.value
+  if (!cleanUserId.value) return null
+  const cached = usersCache.value[cleanUserId.value]
+  if (cached) {
+    return {
+      id: cached.id,
+      name: cached.name,
+      avatar: cached.avatar || '/default-avatar.png',
+      location: null,
+      work: null,
+      education: null,
+      mutualFriendsCount: 0,
+    }
+  }
+  return null
+})
+
+const displayName = computed(() => {
+  if (props.name) return props.name
+  if (user.value?.name) return user.value.name
+  if (cleanUserId.value && usersCache.value[cleanUserId.value]?.name) {
+    return usersCache.value[cleanUserId.value].name
+  }
+  return 'Użytkownik'
+})
 
 const handleViewProfile = () => {
-  if (props.userId) {
-    router.push(`/profile/${props.userId}`)
+  if (cleanUserId.value) {
+    router.push(`/profile/${cleanUserId.value}`)
   }
 }
 
-const onShow = async () => {
-  isInteracted.value = true
-  if (!props.userId) return
-
-  const id = typeof props.userId === 'string' ? parseInt(props.userId) : props.userId
-  const mockUser = getUserById(id)
-  if (mockUser) {
-    fetchedUser.value = mockUser
-    return
+const handleOpenChat = () => {
+  if (cleanUserId.value) {
+    chatStore.addMessageBox(cleanUserId.value)
   }
+}
 
-  if (fetchedUser.value) return
+const GET_USER_BY_ID_QUERY = gql`
+  query GetUserByIdForPopper($userId: ID!) {
+    getUserById(userId: $userId) {
+      id
+      firstName
+      lastName
+      avatar
+      city
+      location
+      hometown
+      work
+      job
+      company
+      education
+      school
+      bio
+    }
+  }
+`
+
+const fetchFullUserData = async () => {
+  if (!cleanUserId.value || cleanUserId.value === '0' || cleanUserId.value === '00000000-0000-4000-8000-000000000000') return
 
   isLoading.value = true
   try {
     const { client } = useApolloClient()
     const { data } = await client.query({
-      query: gql`
-        query GetUserByIdForPopper($userId: ID!) {
-          getUserById(userId: $userId) {
-            id
-            firstName
-            lastName
-            avatarId
-            city
-            hometown
-          }
-        }
-      `,
+      query: GET_USER_BY_ID_QUERY,
       variables: {
-        userId: String(props.userId),
+        userId: cleanUserId.value,
       },
+      fetchPolicy: 'cache-first',
     })
 
     const u = data?.getUserById
     if (u) {
-      fetchedUser.value = {
+      const fullName = [u.firstName, u.lastName].filter(Boolean).join(' ').trim() || 'Użytkownik'
+      const loc = u.city || u.location || u.hometown || null
+      const workInfo = u.job && u.company ? `${u.job} w: ${u.company}` : u.job || u.work || u.company || null
+      const eduInfo = u.school || u.education || null
+
+      fullUserData.value = {
         id: u.id,
-        name: [u.firstName, u.lastName].filter(Boolean).join(' ') || 'Użytkownik',
-        avatar: u.avatarId ? `http://localhost:8080/api/users/avatar/${u.avatarId}` : 'http://localhost:8080/api/users/avatar/default-avatar.svg',
-        location: u.city || u.hometown || 'Łuków',
+        name: fullName,
+        avatar: u.avatar || '/default-avatar.png',
+        location: loc,
+        work: workInfo,
+        education: eduInfo,
+        bio: u.bio || null,
         mutualFriendsCount: 0,
       }
     }
   } catch (err) {
-    console.error('Failed to fetch user for Popper:', err)
+    console.error('Failed to fetch full user for ProfilePopper:', err)
   } finally {
     isLoading.value = false
+  }
+}
+
+watch(
+  () => cleanUserId.value,
+  (newId) => {
+    if (newId) {
+      getOrFetchUser(newId)
+    }
+  },
+  { immediate: true }
+)
+
+const onShow = async () => {
+  isInteracted.value = true
+  if (!fullUserData.value) {
+    await fetchFullUserData()
   }
 }
 </script>
@@ -107,23 +164,23 @@ const onShow = async () => {
 <template>
   <VMenu
     placement="top-start"
-    :delay="{ show: 500, hide: 300 }"
+    :delay="{ show: 400, hide: 250 }"
     :distance="12"
     :skidding="0"
     container="body"
-    :disabled="disabled || !userId || userId === 0 || userId === '0'"
+    :disabled="disabled || !cleanUserId || cleanUserId === '0'"
     @show="onShow"
   >
     <slot>
       <div
         @click="handleViewProfile"
         :class="[
-          'cursor-pointer hover:underline inline-block leading-5 w-fit',
+          'cursor-pointer hover:underline inline-block leading-5 w-fit theme-text',
           comment
-            ? 'text-[15px] font-medium text-[#050505]'
+            ? 'text-[15px] font-medium'
             : mention
               ? 'text-[13px]'
-              : 'text-[17px] font-semibold text-[#050505]',
+              : 'text-[17px] font-semibold',
         ]"
       >
         {{ displayName }}
@@ -133,77 +190,100 @@ const onShow = async () => {
     <template #popper="{ hide }">
       <div
         v-if="isInteracted && user"
-        class="relative bg-white rounded-xl shadow-[0_12px_28px_0_rgba(0,0,0,0.2),0_2px_4px_0_rgba(0,0,0,0.1)] w-[400px] p-4 text-[#050505] border border-gray-200/50"
+        class="relative bg-white dark:bg-[#242526] rounded-2xl shadow-[0_12px_28px_0_rgba(0,0,0,0.2),0_2px_4px_0_rgba(0,0,0,0.1)] w-[380px] p-4 text-[#050505] dark:text-white border border-gray-200 dark:border-gray-700/80 antialiased"
       >
+        <!-- Przycisk zamknięcia -->
         <button
           @click="hide"
-          class="absolute top-3 right-3 p-1.5 bg-[#E4E6EB] hover:bg-[#D8DADF] transition-colors rounded-full text-[#050505]"
+          class="absolute top-3 right-3 p-1.5 bg-[#E4E6EB] dark:bg-[#3A3B3C] hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50] transition-colors rounded-full text-[#050505] dark:text-white"
         >
-          <CloseIcon :size="20" />
+          <CloseIcon :size="18" />
         </button>
 
-        <div class="flex gap-4 items-start">
-          <div class="shrink-0 w-[96px] h-[96px]">
+        <!-- Nagłówek ze zdjęciem i informacjami -->
+        <div class="flex gap-3.5 items-start">
+          <div class="shrink-0 w-[84px] h-[84px]">
             <img
-              :src="user.avatar || 'https://picsum.photos/id/400/96/96'"
+              :src="user.avatar || '/default-avatar.png'"
               :alt="user.name"
-              class="h-[96px] w-[96px] rounded-full object-cover"
+              class="h-[84px] w-[84px] rounded-full object-cover border border-black/5 dark:border-white/10"
             />
           </div>
 
-          <div class="grow min-w-0 pr-6">
+          <div class="grow min-w-0 pr-6 space-y-1">
             <h2
               @click="handleViewProfile"
-              class="text-[20px] font-bold text-[#050505] leading-6 hover:underline cursor-pointer truncate"
+              class="text-[19px] font-bold text-gray-900 dark:text-white leading-tight hover:underline cursor-pointer truncate"
             >
               {{ user.name }}
             </h2>
 
-            <div class="mt-1 flex items-start gap-2 text-[15px] text-[#050505] leading-5">
-              <AccountMultipleIcon :size="20" class="text-[#65676B] shrink-0 mt-0.5" />
-              <div>
-                <span class="font-normal text-[#65676B]"
-                  >{{ user.mutualFriendsCount || 0 }} wspólnych znajomych</span
-                >
-              </div>
+            <!-- Bio jeśli istnieje -->
+            <p v-if="user.bio" class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-snug">
+              {{ user.bio }}
+            </p>
+
+            <!-- Miejsce zamieszkania (tylko jeśli istnieje prawdziwe) -->
+            <div
+              v-if="user.location"
+              class="flex items-center gap-2 text-[13px] text-gray-600 dark:text-gray-300"
+            >
+              <HomeVariantIcon :size="16" class="text-gray-400 shrink-0" />
+              <span class="truncate">
+                <span>Mieszka w:</span>
+                <span class="font-semibold ml-1 text-gray-900 dark:text-white">{{ user.location }}</span>
+              </span>
             </div>
 
+            <!-- Praca (jeśli istnieje) -->
             <div
-              v-if="user.location || true"
-              class="mt-2 flex items-center gap-2 text-[15px] text-[#050505]"
+              v-if="user.work"
+              class="flex items-center gap-2 text-[13px] text-gray-600 dark:text-gray-300"
             >
-              <HomeVariantIcon :size="20" class="text-[#65676B] shrink-0" />
-              <span>
-                <span class="text-[#65676B]">Mieszka w:</span>
-                <span class="font-semibold ml-1">{{ user.location || 'Łuków' }}</span>
+              <BriefcaseVariantIcon :size="16" class="text-gray-400 shrink-0" />
+              <span class="truncate">
+                <span>Pracuje w:</span>
+                <span class="font-semibold ml-1 text-gray-900 dark:text-white">{{ user.work }}</span>
+              </span>
+            </div>
+
+            <!-- Edukacja (jeśli istnieje) -->
+            <div
+              v-if="user.education"
+              class="flex items-center gap-2 text-[13px] text-gray-600 dark:text-gray-300"
+            >
+              <SchoolIcon :size="16" class="text-gray-400 shrink-0" />
+              <span class="truncate">
+                <span>Szkoła:</span>
+                <span class="font-semibold ml-1 text-gray-900 dark:text-white">{{ user.education }}</span>
               </span>
             </div>
           </div>
         </div>
 
+        <!-- Przyciski akcji -->
         <div class="mt-4 flex items-center gap-2">
-          <!-- Zmieniono h-9 na h-[34px] -->
           <button
-            class="flex items-center justify-center gap-2 px-3 h-[34px] text-[15px] font-semibold rounded-md bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] transition active:scale-[0.98]"
+            @click="handleViewProfile"
+            class="flex items-center justify-center gap-1.5 px-3 h-[36px] text-sm font-semibold rounded-xl bg-[#E4E6EB] dark:bg-[#3A3B3C] hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50] text-[#050505] dark:text-white transition active:scale-[0.98]"
           >
             <AccountCheckIcon :size="16" />
-            <span>Znajomi</span>
+            <span>Profil</span>
           </button>
 
-          <!-- Zmieniono h-9 na h-[34px] -->
           <button
-            @click="router.push('/chat/' + String(props.userId))"
-            class="flex-1 flex items-center justify-center gap-2 px-4 h-[34px] text-[15px] font-semibold rounded-md bg-[#1877F2] hover:bg-[#1771E6] text-white transition active:scale-[0.98]"
+            @click="handleOpenChat"
+            class="flex-1 flex items-center justify-center gap-2 px-4 h-[36px] text-sm font-semibold rounded-xl bg-[#1877F2] hover:bg-[#1771E6] text-white transition shadow-sm active:scale-[0.98]"
           >
             <MessageTextIcon :size="16" />
             <span>Wyślij wiadomość</span>
           </button>
 
-          <!-- Zmieniono h-9 na h-[34px] -->
           <button
-            class="flex items-center justify-center px-3 h-[34px] rounded-md bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] transition active:scale-[0.98]"
+            @click="handleViewProfile"
+            class="flex items-center justify-center px-2.5 h-[36px] rounded-xl bg-[#E4E6EB] dark:bg-[#3A3B3C] hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50] text-[#050505] dark:text-white transition active:scale-[0.98]"
           >
-            <DotsHorizontalIcon :size="20" />
+            <DotsHorizontalIcon :size="18" />
           </button>
         </div>
       </div>
@@ -215,5 +295,4 @@ const onShow = async () => {
 .v-popper__popper {
   pointer-events: auto !important;
 }
-
 </style>
