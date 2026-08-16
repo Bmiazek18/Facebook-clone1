@@ -9,6 +9,7 @@ import Image from 'vue-material-design-icons/Image.vue'
 import EmoticonOutline from 'vue-material-design-icons/EmoticonOutline.vue'
 import Incognito from 'vue-material-design-icons/Incognito.vue'
 import Flag from 'vue-material-design-icons/Flag.vue' // Nowa ikona do wydarzenia z życia
+import Poll from 'vue-material-design-icons/Poll.vue'
 
 import BaseModal from '@/components/common/BaseModal.vue'
 import CreateModal from './CreateModal.vue'
@@ -32,6 +33,7 @@ const createPostStore = useCreatePostStore()
 const authStore = useAuthStore()
 const currentUser = computed(() => authStore.currentUser)
 const isGroupComputed = computed(() => props.targetType === 'Group')
+const isGroup2 = computed(() => props.targetType === 'Group' && props.targetId === '2')
 
 const targetUser = computed(() => {
   if (props.targetId && props.targetType === 'User') {
@@ -82,6 +84,10 @@ const openCreatePostWithFeeling = () => {
 }
 
 const openCreatePostPoll = () => {
+  createPostStore.postData.poll = {
+    question: '',
+    options: [{ text: '' }, { text: '' }]
+  }
   createPostStore.uiState.initialView = 'poll'
   openCreatePost()
 }
@@ -182,8 +188,17 @@ const closeCreatePost = () => {
 
       <!-- Dolna sekcja: Trzy równomiernie rozłożone przyciski akcji -->
       <div class="grid grid-cols-3 gap-1 pt-2.5">
-        <!-- 1. Transmisja wideo na żywo -->
+        <!-- 1. Transmisja wideo na żywo / Ankieta (tylko dla grupy 2) -->
+        <button
+          v-if="isGroupComputed"
+          @click="openCreatePostPoll"
+          class="flex items-center justify-center gap-2 hover:bg-theme-hover py-2 rounded-lg transition-colors text-theme-text-secondary font-semibold text-[14px] sm:text-[15px] cursor-pointer w-full"
+        >
+          <Poll :size="24" fillColor="#0866FF" />
+          <span class="truncate">Ankieta</span>
+        </button>
         <NuxtLink
+          v-else
           to="/live/produce"
           class="flex items-center justify-center gap-2 hover:bg-theme-hover py-2 rounded-lg transition-colors text-theme-text-secondary font-semibold text-[14px] sm:text-[15px] cursor-pointer"
         >

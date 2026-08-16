@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, inject, toRef, type Ref } from 'vue'
+import { ref, computed, inject, toRef, type Ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
@@ -20,8 +20,9 @@ import MapPreview from '@/components/MapPreview.vue'
 import { useStoryShareStore } from '@/stores/storyShare'
 import { useComments } from '@/composables/feed/useComments'
 import { usePostReactions } from '@/composables/feed/usePostReactions'
-import { useGroupsStore } from '@/stores/groups'
 import { useAuthStore } from '@/stores/auth'
+import { useGroupsStore } from '@/stores/groups'
+import { useImpressionTracker } from '@/composables/analytics/useImpressionTracker'
 import PostPoll from '@/components/common/PostPoll.vue'
 import Briefcase from 'vue-material-design-icons/Briefcase.vue'
 import School from 'vue-material-design-icons/School.vue'
@@ -55,7 +56,7 @@ import CommentReplyInput from '../comment/CommentReplyInput.vue'
 
 const getMediaUrl = (src: string) => {
   if (!src) return ''
-  if (src.startsWith('http://localhost/files/') || src.startsWith('http://localhost/videos/')) {
+  if (src.startsWith('http://localhost/files/') || src.startsWith('http://localhost/videos/') || src.startsWith('http://localhost/media/')) {
     src = src.replace('http://localhost/', 'http://localhost:8080/')
   }
   if (
@@ -75,8 +76,9 @@ const getMediaUrl = (src: string) => {
 const getPhotoId = (mediaItem: any, index: number): string => {
   if (!mediaItem || !mediaItem.src) return String(index)
   const src = mediaItem.src
-  if (src.includes('/files/')) {
-    const parts = src.split('/files/')
+  if (src.includes('/files/') || src.includes('/media/')) {
+    const marker = src.includes('/media/') ? '/media/' : '/files/'
+    const parts = src.split(marker)
     const filename = parts[parts.length - 1]
     const qIdx = filename.indexOf('?')
     if (qIdx !== -1) return filename.substring(0, qIdx)
@@ -87,7 +89,7 @@ const getPhotoId = (mediaItem: any, index: number): string => {
 }
 const props = withDefaults(
   defineProps<{
-    post: Post
+    post?: Post
     isShared?: boolean
     isGroup?: boolean
     hideCloseButton?: boolean
@@ -95,13 +97,14 @@ const props = withDefaults(
     shouldPostActionVisible?: boolean
   }>(),
   {
+    post: () => ({} as any),
     shouldPostActionVisible: true,
   }
 )
 
 const groupsStore = useGroupsStore()
 const group = computed(() =>
-  props.post.groupId ? groupsStore.getGroupById(props.post.groupId) : undefined,
+  props.post?.groupId ? groupsStore.getGroupById(props.post.groupId) : undefined,
 )
 
 defineEmits<{
@@ -114,8 +117,6 @@ const { fetchCommentsForPost } = useComments()
 const allPosts = inject<Ref<Post[]>>('allPosts', ref([]))
 const authStore = useAuthStore()
 
-
-
 const { userReaction, likesCount, topReactions } = usePostReactions(toRef(props, 'post'))
 
 const isModalOpen = ref(false)
@@ -126,7 +127,7 @@ const toggleModal = async () => {
   if (props.isInModal) return
   isModalOpen.value = !isModalOpen.value
 
-  if (isModalOpen.value) {
+  if (isModalOpen.value && props.post?.id) {
     await fetchCommentsForPost(props.post, 5)
   }
 }
@@ -170,7 +171,7 @@ const shareToStory = () => {
     id: postData.value.id,
     author: {
       name: [author?.firstName, author?.lastName].filter(Boolean).join(' ') || 'Unknown',
-      avatar: author?.avatarId ? `http://localhost:8080/api/users/avatar/${author.avatarId}` : '',
+      avatar: author?.avatar || '/default-avatar.png',
       id: postData.value.authorId,
     },
     content: postData.value.content,
@@ -210,14 +211,14 @@ const openMessenger = (itemId: string) => {
 }
 
 const originalPost = computed(() => {
-  if (props.post.sharedPost) {
+  if (props.post?.sharedPost) {
     return props.post.sharedPost
   }
-  if (props.post.sharedContent?.type === 'post' && props.post.sharedContent.originalId) {
-    return allPosts.value.find((p) => String(p.id) === String(props.post.sharedContent.originalId))
+  if (props.post?.sharedContent?.type === 'post' && props.post.sharedContent.originalId) {
+    return allPosts.value.find((p) => String(p.id) === String(props.post?.sharedContent?.originalId))
   }
-  if (props.post.targetType === 'post' && props.post.targetId) {
-    return allPosts.value.find((p) => String(p.id) === String(props.post.targetId))
+  if (props.post?.targetType === 'post' && props.post.targetId) {
+    return allPosts.value.find((p) => String(p.id) === String(props.post?.targetId))
   }
   return undefined
 })
@@ -226,24 +227,106 @@ const postToShare = computed(() => {
   return originalPost.value || props.post
 })
 
+const activePoll = computed(() => props.post?.poll || props.post?.context?.poll)
+
 const totalPollVotes = computed(() => {
-  if (props.post.poll) {
-    return props.post.poll.options.reduce((sum, option) => sum + option.votes.length, 0)
+  if (activePoll.value && activePoll.value.options) {
+    return activePoll.value.options.reduce((sum: number, option: any) => sum + (option.votes?.length || 0), 0)
   }
   return 0
+})
+
+const fetchedLinkPreview = ref<any>(null)
+const isLoadingPreview = ref(false)
+
+const detectAndFetchOgLink = async () => {
+  if (props.post?.linkPreview) return
+
+  const content = props.post?.content
+  if (!content) return
+
+  const urlMatch = content.match(/(https?:\/\/[^\s]+)/g)
+  if (urlMatch && urlMatch.length > 0) {
+    const url = urlMatch[0]
+    isLoadingPreview.value = true
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/linkguard/graphql`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `query ScrapeOg($url: String!) { scrapeOg(url: $url) { title description image siteName } }`,
+            variables: { url },
+          }),
+        },
+      )
+      const result = await response.json()
+      if (response.ok && !result.errors?.length) {
+        const data = result.data.scrapeOg
+        fetchedLinkPreview.value = {
+          url: url,
+          domain: data.domain || new URL(url).hostname,
+          title: data.title || 'Link Preview',
+          description: data.description || '',
+          image: data.image || undefined,
+        }
+      } else {
+        fetchedLinkPreview.value = {
+          url: url,
+          domain: new URL(url).hostname,
+          title: url,
+          description: '',
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch OG link preview for post:', error)
+      fetchedLinkPreview.value = {
+        url: url,
+        domain: new URL(url).hostname,
+        title: url,
+        description: '',
+      }
+    } finally {
+      isLoadingPreview.value = false
+    }
+  }
+}
+
+watch(
+  [() => props.post?.content, () => props.post?.id],
+  () => {
+    fetchedLinkPreview.value = null
+    detectAndFetchOgLink()
+  },
+  { immediate: true }
+)
+
+const postElementRef = ref<HTMLElement | null>(null)
+const { observePostElement } = useImpressionTracker()
+
+onMounted(() => {
+  if (postElementRef.value && props.post?.id) {
+    const authorId = props.post.author?.id || (props.post as any).authorId
+    const contentType = props.post.media && props.post.media.length > 0
+      ? ((props.post.media[0] as any)?.type === 'video' ? 'video' : 'photo')
+      : 'text'
+    observePostElement(postElementRef.value, String(props.post.id), authorId, contentType)
+  }
 })
 </script>
 
 <template>
   <div
-    class="w-full bg-theme-bg-secondary rounded-lg"
-    :class="{ 'border border-theme-border': isShared, 'shadow-sm dark:shadow-lg': !props.post }"
+    ref="postElementRef"
+    class="w-full bg-theme-bg-secondary rounded-lg shadow-sm"
+    :class="{ 'border border-theme-border': isShared, 's dark:shadow-lg': !props.post }"
   >
     <template v-if="!isShared">
       <PostHeader
         :post="post"
         :is-shared="isShared"
-        :group="isGroup ? undefined : group"
+        :is-group="isGroup"
         :is-anonymous="post.isAnonymous"
         :hide-close-button="hideCloseButton"
         @edit-post="handleEditPost"
@@ -307,8 +390,8 @@ const totalPollVotes = computed(() => {
       <template v-else>
         <!-- Post content and translation -->
         <PostContent :post="post" />
-        <PostLinkPreview v-if="post.linkPreview" :link-preview="post.linkPreview" />
-        <PostPoll v-if="post.poll" :poll="post.poll" :post-id="post.id" />
+        <PostLinkPreview v-if="post.linkPreview || fetchedLinkPreview" :link-preview="post.linkPreview || fetchedLinkPreview" />
+        <PostPoll v-if="activePoll" :poll="activePoll" :post-id="post.id" />
 
         <MapPreview
           v-if="post.context?.location && (!post.media || post.media.length === 0)"
@@ -341,7 +424,7 @@ const totalPollVotes = computed(() => {
 
       <!-- Post content - PO nagłówku -->
       <PostContent :post="post" />
-      <PostLinkPreview v-if="post.linkPreview" :link-preview="post.linkPreview" />
+      <PostLinkPreview v-if="post.linkPreview || fetchedLinkPreview" :link-preview="post.linkPreview || fetchedLinkPreview" />
 
       <!-- Marketplace data section dla udostępnionych postów -->
       <PostMarketplaceCard
@@ -366,8 +449,8 @@ const totalPollVotes = computed(() => {
         :reactions="post.reactions"
         :reaction-user-names="post.reactionUserNames"
         :comments-count="post.commentCount ?? post.stats?.comments ?? 0"
-        :shares-count="post.poll ? totalPollVotes : (post.shareCount ?? post.stats?.shares ?? 0)"
-        :has-poll="!!post.poll"
+        :shares-count="activePoll ? totalPollVotes : (post.shareCount ?? post.stats?.shares ?? 0)"
+        :has-poll="!!activePoll"
         @show-reaction-details="toggleReactionModal"
         @show-comments="toggleModal"
       />
@@ -416,7 +499,7 @@ const totalPollVotes = computed(() => {
       v-if="isShareAsMessageModalOpen"
       @close="isShareAsMessageModalOpen = false"
     >
-      <ShareAsMessageModal :share-url="'/post/' + props.post.id" @close="isShareAsMessageModalOpen = false" />
+      <ShareAsMessageModal :share-url="'/post/' + (props.post?.id || '')" @close="isShareAsMessageModalOpen = false" />
     </BaseModal>
 
     <ShareAsPostModal

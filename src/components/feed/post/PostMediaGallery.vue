@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import MediaItem from '@/components/feed/MediaItem.vue'
 import type { ImageTagType } from '@/types/Post'
 
@@ -8,18 +8,47 @@ const props = defineProps<{
     src: string
     altText?: string
     tags?: ImageTagType[]
+    backgroundColor?: string
   }[]
   postId: string | number
 }>()
 
-// Reaktywna zmienna przechowująca kolor tła (jako fallback ustawiony Twój #654)
-const dominantColor = ref('rgb(101, 85, 68)')
+const isHorizontal = ref(false)
+
+// Tło dla pojedynczego obrazka jest wyliczane na backendzie i przesyłane w właściwości backgroundColor
+const dominantColor = computed(() => {
+  if (props.media && props.media.length === 1 && props.media[0]?.backgroundColor) {
+    return props.media[0].backgroundColor
+  }
+  return 'transparent'
+})
+
+const getMediaUrl = (src: string) => {
+  if (!src) return ''
+  if (src.startsWith('http://localhost/files/') || src.startsWith('http://localhost/videos/') || src.startsWith('http://localhost/media/')) {
+    src = src.replace('http://localhost/', 'http://localhost:8080/')
+  }
+  if (
+    src.startsWith('http://') ||
+    src.startsWith('https://') ||
+    src.startsWith('blob:') ||
+    src.startsWith('data:')
+  ) {
+    return src
+  }
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+  if (src.startsWith('/')) {
+    return `${baseUrl}${src}`
+  }
+  return `${baseUrl}/${src}`
+}
 
 function getPhotoId(mediaItem: any, index: number): string {
   if (!mediaItem || !mediaItem.src) return String(index)
   const src = mediaItem.src
-  if (src.includes('/files/')) {
-    const parts = src.split('/files/')
+  if (src.includes('/files/') || src.includes('/media/')) {
+    const marker = src.includes('/media/') ? '/media/' : '/files/'
+    const parts = src.split(marker)
     const filename = parts[parts.length - 1]
     const qIdx = filename.indexOf('?')
     if (qIdx !== -1) return filename.substring(0, qIdx)
@@ -29,81 +58,57 @@ function getPhotoId(mediaItem: any, index: number): string {
   return segments[segments.length - 1] || src
 }
 
-// Funkcja analizująca pierwszy obrazek i wyciągająca kolor
-function analyzeDominantColor() {
-  // Blokada dla SSR (wykonuj tylko w przeglądarce) oraz gdy brak mediów
+function checkOrientation() {
   if (typeof window === 'undefined' || !props.media || props.media.length === 0) return
+  const rawSrc = props.media[0]?.src
+  if (!rawSrc) return
 
-  const firstMediaSrc = props.media[0]?.src
-  if (!firstMediaSrc) return
-
+  const firstMediaSrc = getMediaUrl(rawSrc)
   const img = new Image()
-  // Ważne dla zdjęć z zewnętrznych serwerów (CORS)
-  img.crossOrigin = 'Anonymous'
-  img.src = firstMediaSrc
-
   img.onload = () => {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    canvas.width = 1
-    canvas.height = 1
-
-    // Rysujemy obraz skurczony do 1x1 px – przeglądarka sama go uśredni
-    ctx.drawImage(img, 0, 0, 1, 1)
-
-    // Pobieramy dane o kolorze tego jednego piksela
-    const imgData = ctx.getImageData(0, 0, 1, 1).data
-    const r = imgData[0]
-    const g = imgData[1]
-    const b = imgData[2]
-
-    // Aktualizujemy kolor (możesz też dodać opacity, np. rgba)
-    dominantColor.value = `rgb(${r}, ${g}, ${b})`
+    isHorizontal.value = img.naturalWidth > img.naturalHeight
   }
-
-  img.onerror = () => {
-    // W razie błędu ładowania lub blokady CORS przywróć fallback
-    dominantColor.value = 'rgb(101, 85, 68)'
-  }
+  img.src = firstMediaSrc
 }
 
-// Obserwuj zmiany w propsach (np. gdy zmienia się post lub zestaw zdjęć)
 watch(
   () => props.media,
-  () => {
-    analyzeDominantColor()
-  },
-  { deep: true, immediate: true }
+  () => { checkOrientation() },
+  { deep: true }
 )
+
+onMounted(() => {
+  checkOrientation()
+})
 </script>
 
 <template>
-  <!-- Podmiana klasy bg-[#654] na dynamiczny styl z płynnym przejściem kolorów -->
   <div
-    :style="{ backgroundColor: media.length === 1 ? dominantColor : 'transparent' }"
-    class="transition-colors duration-500 ease-in-out"
+    :style="`background-color: ${ media.length === 1 ? dominantColor : 'transparent' };`"
+    class="transition-colors duration-500 ease-in-out relative"
   >
     <div
       :class="[
-        'w-full mx-auto h-[680px]',
-        media.length === 1 ? 'max-w-[max(412.5px,_calc(-243.75px_+_75vh))]' : ''
+        'w-full mx-auto overflow-hidden flex items-center justify-center relative z-10 h-[680px]',
+
+        media.length === 1 && !isHorizontal && !media[0].src.includes('mp4') ? 'max-w-[max(412.5px,_calc(-243.75px_+_75vh))]' : ''
       ]"
     >
-      <!-- 1 media -->
-      <div v-if="media.length === 1" class="w-full h-full">
+      <div
+        v-if="media.length === 1"
+        class="w-full h-full flex items-center justify-center overflow-hidden"
+      >
         <MediaItem
           v-if="media[0]"
           :media="media[0]"
           :post-id="postId"
+          :is-single-video="media[0].src.includes('mp4')"
           :index="0"
-          class="block w-full h-full bg-black/5 relative"
+          class="block w-full h-full relative object-contain object-center"
         />
       </div>
 
-      <!-- 2 media -->
-      <div v-else-if="media.length === 2" class="grid grid-cols-2 gap-1 h-full">
+      <div v-else-if="media.length === 2" class="grid grid-cols-2 gap-1 w-full h-full">
         <MediaItem
           v-for="(item, idx) in media"
           :key="idx"
@@ -114,8 +119,7 @@ watch(
         />
       </div>
 
-      <!-- 3 media -->
-      <div v-else-if="media.length === 3" class="flex flex-col gap-1 h-full">
+      <div v-else-if="media.length === 3" class="flex flex-col gap-1 w-full h-full">
         <MediaItem
           v-if="media[0]"
           :media="media[0]"
@@ -141,8 +145,7 @@ watch(
         </div>
       </div>
 
-      <!-- 4 media -->
-      <div v-else-if="media.length === 4" class="flex flex-col gap-1 h-full">
+      <div v-else-if="media.length === 4" class="flex flex-col gap-1 w-full h-full">
         <MediaItem
           v-if="media[0]"
           :media="media[0]"
@@ -162,8 +165,7 @@ watch(
         </div>
       </div>
 
-      <!-- 5+ media -->
-      <div v-else class="grid grid-cols-2 gap-1 h-full">
+      <div v-else class="grid grid-cols-2 gap-1 w-full h-full">
         <div class="flex flex-col gap-1 h-full">
           <MediaItem
             v-if="media[0]"

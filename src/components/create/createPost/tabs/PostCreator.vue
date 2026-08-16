@@ -44,8 +44,6 @@ const router = useRouter()
 // --- STAN UŻYTKOWNIKA (Przed mutacją) ---
 const currentUser = computed(() => authStore.currentUser)
 
-
-
 const {
   content: postContent,
   privacy: selectedPrivacy,
@@ -55,7 +53,7 @@ const {
   postVideoUrl,
 } = toRefs(createPostStore.postData)
 
-const { initialView } = toRefs(createPostStore.uiState)
+const { initialView, isSubmitting } = toRefs(createPostStore.uiState)
 
 // --- LOGIKA LINK PREVIEW ---
 const { linkPreview, isLoadingPreview, fetchLinkMetadata, removeLinkPreview, resetLinkPreview } =
@@ -67,7 +65,6 @@ const sharedEvent = computed(() =>
 )
 const sharedPost = computed(() => createPostStore.postData.sharedPost)
 const sharedPostAsPost = computed<Post | null>(() => {
-  console.log('Mapping sharedPost to Post:', sharedPost.value)
   if (!sharedPost.value) return null
 
   return {
@@ -83,19 +80,11 @@ const sharedPostAsPost = computed<Post | null>(() => {
   } as Post
 })
 
-const displayAvatar = computed(() => {
-  if (createPostStore.postData.isAnonymous) return '/img/anonymous-avatar.png'
-  return currentUser.value?.avatar || (currentUser.value as any)?.avatarId || '/default-avatar.png'
-})
-
-const displayName = computed(() => {
-  return createPostStore.postData.isAnonymous
-    ? t('post.anonymousUser') || 'Anonim'
-    : currentUser.value?.name || `${(currentUser.value as any)?.firstName || ''} ${(currentUser.value as any)?.lastName || ''}`.trim()
-})
-
 // --- VALIDATION ---
 const isPublishButtonDisabled = computed(() => {
+  // Zablokuj przycisk, gdy trwa publikowanie!
+  if (isSubmitting.value) return true
+
   if (sharedPost.value || props.sharedEventId) return false
 
   const isUploading = selectedImages.value.some(
@@ -108,28 +97,25 @@ const isPublishButtonDisabled = computed(() => {
     selectedImages.value.length > 0 || !!selectedGif.value || !!(postVideoUrl && postVideoUrl.value)
   const hasLocation = !!selectedLocation.value
   const hasLink = !!linkPreview.value
+  const hasPoll = !!createPostStore.postData.poll &&
+    createPostStore.postData.poll.options.filter(opt => opt.text.trim().length > 0).length >= 2
 
-  return !(hasContent || hasMedia || hasLocation || hasLink)
+  return !(hasContent || hasMedia || hasLocation || hasLink || hasPoll)
 })
 
 // --- METODY ---
 
-const handlePublish = async () => {
+const handlePublish = () => {
   if (isPublishButtonDisabled.value) return
 
-  const isShare = !!sharedPost.value
+  // Przekazujemy zdarzenie do `CreatePostModal.vue`,
+  // który wyświetli loader i zajmie się wywołaniem `publishPost`
+  emit('publish', postContent.value)
 
-  try {
-    await createPostStore.publishPost()
-    if (isShare) {
-      router.push('/profile')
-    }
-  } catch (err) {
-    console.error('Failed to publish post:', err)
+  if (sharedPost.value) {
+    router.push('/profile')
   }
 
-  emit('close')
-  createPostStore.reset()
   resetLinkPreview()
 }
 
@@ -142,7 +128,7 @@ const handleImageSelect = (event: Event) => {
   if (files) {
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
-      if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
+      if (file) {
         createPostStore.uploadVideoInChunks(file)
       }
     }
@@ -161,7 +147,10 @@ const handleDetectUrl = (url: string) => {
   }
 }
 
-
+const cancelPoll = () => {
+  createPostStore.postData.poll = null
+  createPostStore.navigateBack()
+}
 </script>
 
 <template>
@@ -193,7 +182,7 @@ const handleDetectUrl = (url: string) => {
         @detect-url="handleDetectUrl"
       />
 
-      <CreatePoll v-if="initialView == 'poll'" />
+      <CreatePoll v-if="initialView == 'poll'" @back="cancelPoll" />
 
       <LinkPreviewCard
         :preview="linkPreview as any"
@@ -212,7 +201,7 @@ const handleDetectUrl = (url: string) => {
       <input
         ref="fileInput"
         type="file"
-        accept="image/*,video/mp4"
+        accept="*/*"
         class="hidden"
         @change="handleImageSelect"
         multiple
@@ -227,9 +216,10 @@ const handleDetectUrl = (url: string) => {
 
     <PostCreatorToolbar />
 
+
     <button
       :disabled="isPublishButtonDisabled"
-      class="w-full py-2 rounded-lg font-[15px] text-base transition-colors duration-200"
+      class="w-full py-2 rounded-lg font-[15px] text-base transition-colors duration-200 flex items-center justify-center gap-2"
       :class="
         isPublishButtonDisabled
           ? 'bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
@@ -237,7 +227,8 @@ const handleDetectUrl = (url: string) => {
       "
       @click="handlePublish"
     >
-      {{ t('post.publish') }}
+      <span v-if="isSubmitting" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+      {{ isSubmitting ? (t('post.publishing') || 'Publikowanie...') : t('post.publish') }}
     </button>
   </div>
 </template>

@@ -5,6 +5,8 @@ export type ImageTagType = {
   id: string
   x: number
   y: number
+  /** Tagged user id (UUID). Prefer this over user.id when persisting. */
+  userId?: string
   name?: string
   user?: Person
   isTemp?: boolean
@@ -55,6 +57,7 @@ export interface PostMedia {
   altText?: string
   tags?: ImageTagType[]
   audioUrl?: string
+  backgroundColor?: string
 }
 
 /** Dane autora zwracane razem z postem przez API. */
@@ -125,6 +128,9 @@ export interface Post {
   visibility?: string
   commentCount?: number
   shareCount?: number
+  status?: string
+  scheduledPublishTime?: number
+  authorGroupRole?: string
   allowedUserIds?: Array<string | number>
   poll?: Poll
   isBirthday?: boolean

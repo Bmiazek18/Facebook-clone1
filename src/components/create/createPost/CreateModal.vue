@@ -12,9 +12,11 @@ import FeelingModal from './tabs/FeelingModal.vue'
 import LifeEventCreator from './tabs/LifeEventCreator.vue'
 import '@/assets/animations/slideTransition.css'
 import { useI18n } from 'vue-i18n'
+import { useChatDrop } from '@/composables/chat/useChatDrop'
 
 // --- Typy ---
 import type { PostData } from '@/types/StoryElement'
+import LoadingSpinner from '~/components/common/LoadingSpinner.vue'
 
 type ViewKey =
   | 'creator'
@@ -26,6 +28,7 @@ type ViewKey =
   | 'videoEditor'
   | 'feeling'
   | 'lifeEvent'
+  | 'poll'
 
 const props = defineProps<{
   sharedPost?: PostData | null
@@ -94,6 +97,11 @@ const VIEW_CONFIG: Record<
     titleKey: 'profile.addLifeEvent',
     widthClass: 'w-full sm:w-125 p-2 sm:p-4',
   },
+  poll: {
+    component: PostCreator,
+    titleKey: 'post.createPoll',
+    widthClass: 'w-full sm:w-125 p-2 sm:p-4',
+  },
 }
 
 // --- Konfiguracja Widoku Początkowego ---
@@ -133,23 +141,18 @@ const isTransitioning = ref(false)
 
 const onEnterWithObserver = (el: Element) => {
   isTransitioning.value = true
-  // 1. Najpierw ustawiamy wysokość startową (tak jak wcześniej)
   baseOnEnter(el)
 
-  // 2. Czyścimy stary observer
   if (resizeObserver.value) resizeObserver.value.disconnect()
 
-  // 3. Tworzymy nowy observer dla aktywnego widoku
   resizeObserver.value = new ResizeObserver((entries) => {
     for (const entry of entries) {
       if (wrapperRef.value) {
-        // Aktualizujemy wysokość wrappera, gdy zmieni się wysokość dziecka (np. załadowanie obrazka)
         wrapperRef.value.style.height = `${entry.contentRect.height}px`
       }
     }
   })
 
-  // 4. Zaczynamy obserwować element, który właśnie wchodzi
   resizeObserver.value.observe(el)
 }
 
@@ -158,7 +161,6 @@ const onAfterEnterWithObserver = () => {
   onAfterEnter()
 }
 
-// Sprzątanie observera przy odmontowaniu komponentu
 onBeforeUnmount(() => {
   if (resizeObserver.value) resizeObserver.value.disconnect()
 })
@@ -169,8 +171,11 @@ const activeViewConfig = computed(
 )
 const activeComponent = computed(() => activeViewConfig.value.component)
 
+// Pobieranie stanu wysyłania ze store (reaktywne!)
+const isSubmitting = computed(() => createPostStore.uiState.isSubmitting || false)
+
 const dynamicProps = computed(() => {
-  if (currentView.value === 'creator') {
+  if (currentView.value === 'creator' || currentView.value === 'poll') {
     return {
       sharedPost: props.sharedPost,
       sharedEventId: props.sharedEventId,
@@ -218,6 +223,24 @@ const handleClose = () => {
   emit('close')
 }
 
+// --------------------------------------------------------
+// NOWA FUNKCJA DO PUBLIKOWANIA - ZATRZYMUJE ZAMKNIĘCIE OKNA
+// --------------------------------------------------------
+const handlePublish = async (content: string) => {
+  try {
+    // 1. Odpala się akcja w sklepie Pinia (loader się włącza)
+    await createPostStore.publishPost()
+
+emit('publish', content)
+    handleClose()
+
+  } catch (error) {
+    console.error('Błąd podczas publikacji:', error)
+    // Loader zniknie automatycznie dzięki blokowi 'finally' w sklepie Pinia,
+    // a modal pozostanie otwarty, by użytkownik mógł spróbować jeszcze raz.
+  }
+}
+
 const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
   createPostStore.postData.privacy = payload.id
   if (payload.setDefault) {
@@ -225,6 +248,17 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
   }
   navigateBack()
 }
+
+const { isDragging, handleDrop } = useChatDrop((files) => {
+  if (currentView.value === 'creator') {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      if (file) {
+        createPostStore.uploadVideoInChunks(file)
+      }
+    }
+  }
+})
 
 // --- Init ---
 onMounted(() => {
@@ -240,10 +274,54 @@ onMounted(() => {
   <div
     :class="[
       activeViewConfig.widthClass,
-      ' mx-auto rounded-xl relative overflow-hidden',
+      'mx-auto rounded-xl relative overflow-hidden',
       { 'transition-[width] duration-300 ease-in-out': isTransitioning },
     ]"
   >
+    <!-- Nakładka Ładowania (Loader Overlay) -->
+    <Transition name="fade">
+      <div
+        v-if="isSubmitting"
+        class="absolute inset-0 z-50 bg-gray-100/70  flex flex-col items-center justify-center gap-3 select-none"
+      >
+        <LoadingSpinner :size="40" color="#000" />
+        <span class="text-base font-semibold text-theme-text-primary">
+          {{ t('post.publishing') || 'Publikowanie...' }}
+        </span>
+      </div>
+    </Transition>
+
+    <!-- Przeciąganie pliku (Drag Overlay) -->
+    <Transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
+    >
+      <div
+        v-if="isDragging && currentView === 'creator'"
+        @drop.prevent="handleDrop"
+        @dragover.prevent
+        class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 bg-theme-bg-secondary/90 backdrop-blur-md text-center pointer-events-auto border-2 border-dashed border-[#0866FF] rounded-xl m-2 transition-all shadow-2xl"
+      >
+        <div class="flex flex-col items-center justify-center pointer-events-none select-none">
+          <div class="w-16 h-16 rounded-full bg-[#0866FF]/10 flex items-center justify-center mb-4 text-[#0866FF] animate-bounce">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+          </div>
+          <h3 class="text-[17px] font-bold text-theme-text mb-1">
+            {{ t('post.dropFilesHere') || 'Upuść zdjęcia lub filmy tutaj' }}
+          </h3>
+          <p class="text-sm text-theme-text-secondary">
+            {{ t('post.dropFilesSubtext') || 'Zostaną dodane bezpośrednio do Twojego posta' }}
+          </p>
+        </div>
+      </div>
+    </Transition>
+
     <div
       class="relative"
       :class="{ 'transition-[height] duration-300 ease-in-out': isTransitioning }"
@@ -261,12 +339,7 @@ onMounted(() => {
           :key="currentView"
           class="view-container bg-theme-bg-secondary"
           v-bind="dynamicProps"
-          @publish="
-            (content) => {
-              emit('publish', content)
-              createPostStore.reset()
-            }
-          "
+          @publish="handlePublish"
           @close="handleClose"
           @back="goBack"
           @confirm="handlePrivacyConfirm"
@@ -281,6 +354,16 @@ onMounted(() => {
   width: 100%;
   top: 0;
   left: 0;
+}
+
+/* Animacja przejścia Loadera */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 /* Animacje Slide */

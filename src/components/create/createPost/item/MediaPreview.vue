@@ -4,12 +4,27 @@ import { useCreatePostStore } from '@/stores/createPost'
 import PencilIcon from 'vue-material-design-icons/Pencil.vue'
 import CloseIcon from 'vue-material-design-icons/Close.vue'
 import PlayIcon from 'vue-material-design-icons/Play.vue'
+import FileIcon from 'vue-material-design-icons/FileDocument.vue'
+import { useFileSize } from '@/composables/shared/useFileSize'
 
 const createPostStore = useCreatePostStore()
 
 // Wykrywanie wideo (fallback)
 const isVideo = (url: string) =>
   /\.(mp4|webm|ogg)$/i.test(url) || url.startsWith('blob:') || url.startsWith('data:video')
+
+const parseFileMetadata = (altText: string) => {
+  if (!altText || !altText.startsWith('file:')) {
+    return { name: 'Plik', size: 0 }
+  }
+  const parts = altText.split('|')
+  const namePart = parts[0]?.replace('file:', '') || 'Plik'
+  const sizePart = parts[1]?.replace('size:', '') || '0'
+  return {
+    name: namePart,
+    size: parseInt(sizePart) || 0
+  }
+}
 
 // Wspólny format dla wszystkich mediów
 const mediaItems = computed(() => {
@@ -20,17 +35,19 @@ const mediaItems = computed(() => {
       url: createPostStore.postData.postVideoUrl,
       index: -1,
       progress: null,
+      altText: '',
     })
   }
 
   createPostStore.postData.images.forEach((img, index) => {
-    // Używamy zdefiniowanego typu, jeśli istnieje, w przeciwnym razie sprawdzamy po regexie
     const isVid = img.type === 'video' || (img.type === undefined && isVideo(img.url))
+    const isFile = img.type === 'file'
     items.push({
-      type: isVid ? 'video' : 'image',
+      type: isFile ? 'file' : (isVid ? 'video' : 'image'),
       url: img.url,
       index,
       progress: img.progress ?? null,
+      altText: img.altText || '',
     })
   })
 
@@ -141,6 +158,34 @@ const getVideoPosterUrl = (url: string) => {
         </div>
       </div>
 
+      <!-- ================= PLIK ================= -->
+      <div
+        v-else-if="item.type === 'file'"
+        class="p-4 bg-theme-bg-secondary border border-theme-border rounded-xl flex items-center justify-between gap-3 group relative w-full"
+      >
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 shrink-0">
+            <FileIcon :size="24" class="text-theme-text" />
+          </div>
+          <div class="flex flex-col min-w-0">
+            <span class="font-semibold text-[15px] leading-snug truncate pr-6 text-theme-text">
+              {{ parseFileMetadata(item.altText).name }}
+            </span>
+            <span class="text-xs text-theme-text-secondary mt-0.5">
+              {{ useFileSize(parseFileMetadata(item.altText).size) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Nakładka w trakcie uploadu -->
+        <div
+          v-if="item.progress !== null && item.progress !== undefined && item.progress < 100"
+          class="flex items-center justify-center shrink-0 w-10 h-10 rounded-full bg-theme-bg-subtle text-theme-text text-xs font-bold border border-theme-border"
+        >
+          {{ Math.round(item.progress) }}%
+        </div>
+      </div>
+
       <!-- ================= ZDJĘCIE / GIF ================= -->
       <div v-else class="relative w-full">
         <img :src="item.url" class="w-full h-auto block" />
@@ -182,7 +227,7 @@ const getVideoPosterUrl = (url: string) => {
 
       <!-- Przycisk "Edytuj" (Dokładnie jak na Zrzucie Ekranu) -->
       <button
-        v-if="item.type !== 'gif'"
+        v-if="item.type !== 'gif' && item.type !== 'file'"
         @click.stop="handleEdit(item)"
         class="absolute top-3 left-3 bg-white hover:bg-gray-100 text-gray-900 text-sm font-semibold px-3 py-1.5 rounded-lg shadow-md flex items-center gap-1.5 transition z-10 cursor-pointer"
       >

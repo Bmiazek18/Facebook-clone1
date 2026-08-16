@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// --- FLOATING VUE ---
+// --- IMPORTY ---
 import { Dropdown as VDropdown } from 'floating-vue'
 import 'floating-vue/dist/style.css'
 
@@ -9,20 +9,23 @@ import TagIcon from 'vue-material-design-icons/Tag.vue'
 import FormatLetterCaseIcon from 'vue-material-design-icons/FormatLetterCase.vue'
 import FileImageIcon from 'vue-material-design-icons/FileImage.vue'
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue'
-import { watchEffect } from 'vue'
+
 import { ref, reactive, onMounted, onUnmounted, computed, nextTick, watch } from 'vue'
 import VueCropper from 'vue-cropperjs'
 import 'cropperjs/dist/cropper.css'
+import { storeToRefs } from 'pinia'
 
 import { useStoryElementInteraction } from '@/composables/media/useStoryElementInteraction'
 import StoryElement from '@/components/create/createStory/StoryElement.vue'
 import ImageTag from '@/components/media/ImageTag.vue'
 import EditorSidebar from '../item/EditorSidebar.vue'
+
 import type { StoryElement as StoryElementType } from '@/types/StoryElement'
 import type { ImageTagType } from '@/types/Post'
-
 import { useCreatePostStore } from '@/stores/createPost'
-import { storeToRefs } from 'pinia'
+import type { User } from '@/utils/users'
+import type { Person } from '@/types/Person'
+import { useFriendSearch } from '@/composables/shared/useFriendSearch'
 
 // --- TYPY DANYCH ---
 type CropData = {
@@ -33,92 +36,45 @@ type CropData = {
   rotate: number
 }
 
-import { getAllUsers, type User } from '@/utils/users'
-import type { Person } from '@/types/Person'
-
-const REAL_USERS = getAllUsers()
+const { users: searchableUsers, isLoading: isUserSearchLoading, loadSuggestions, searchUsers } =
+  useFriendSearch()
 
 const userToPerson = (user: User): Person => ({
   id: user.id,
   name: user.name,
   imageUrl: user.avatar,
   commonFriends: user.mutualFriendsCount || 0,
-  isFriend: true, // Assuming all users in this context are friends
+  isFriend: true,
 })
 
-// --- PROPS ---
-// Removed initialImage prop as it's now fetched from store
-
-
-
-// --- STATE ---
+// ==========================================
+// 1. PINIA STORE
+// ==========================================
 const createPostStore = useCreatePostStore()
-const { imageToEdit, taggedUsers } = storeToRefs(createPostStore) // Get imageToEdit from store
+const { uiState, postData } = storeToRefs(createPostStore)
+
+// ==========================================
+// 2. REFS I REACTIVE
+// ==========================================
+const cropperRef = ref<InstanceType<typeof VueCropper> | null>(null)
+const imageWrapperRef = ref<HTMLElement | null>(null)
+const newTagInputRef = ref<HTMLInputElement | null>(null)
+
+const imageUrl = ref(uiState.value.imageToEdit?.url || '')
+const altText = ref(uiState.value.imageToEdit?.altText || '')
+
 const imageRotation = ref(0)
 const taggingMode = ref(false)
-
-const selectedImage = computed(() => {
-  const idx = createPostStore.uiState.imageIndexToEdit
-  if (idx !== null && createPostStore.postData.images[idx]) {
-    return createPostStore.postData.images[idx]
-  }
-  return createPostStore.uiState.imageToEdit
-})
-
-const tags = ref<ImageTagType[]>(selectedImage.value?.tags || [])
-
-watch(
-  tags,
-  (newTags) => {
-    if (selectedImage.value) {
-      selectedImage.value.tags = newTags
-    }
-  },
-  { deep: true },
-)
-
-const newTag = ref<{ x: number; y: number; name: string; isCreating: boolean; user?: User } | null>(
-  null,
-)
-const newTagInputRef = ref<HTMLInputElement | null>(null)
-const searchQuery = ref('')
-
-const cropperRef = ref<InstanceType<typeof VueCropper> | null>(null)
 const isCroppingMode = ref(false)
-
-const currentCropData = ref<CropData>({
-  x: 0,
-  y: 0,
-  width: 0,
-  height: 0,
-  rotate: 0,
-})
-const imageUrl = ref(imageToEdit.value?.url || '') // Initialize from store
-const altText = ref(imageToEdit.value?.altText || '') // Initialize from store
-watch(
-  imageToEdit,
-  (newImageToEdit) => {
-    imageUrl.value = newImageToEdit?.url || ''
-    altText.value = newImageToEdit?.altText || ''
-    if (cropperRef.value && imageUrl.value) {
-      cropperRef.value.replace(imageUrl.value)
-    }
-  },
-  { immediate: true },
-)
-watch(altText, (newAltText) => {
-  if (selectedImage.value) {
-    selectedImage.value.altText = newAltText
-  } else if (imageToEdit.value) {
-    // Update imageToEdit if selectedImage is not set
-    createPostStore.setImageToEdit({
-      url: imageToEdit.value.url,
-      altText: newAltText,
-      tags: imageToEdit.value.tags || [],
-    })
-  }
-})
 const showAltTextInput = ref(false)
+const searchQuery = ref('')
+const newTag = ref<{ x: number; y: number; name: string; isCreating: boolean; user?: User } | null>(null)
+
+const currentCropData = ref<CropData>({ x: 0, y: 0, width: 0, height: 0, rotate: 0 })
+const storyElements = ref<StoryElementType[]>([])
+const bgDimensions = reactive({ width: 0, height: 0 })
+
+let resizeObserver: ResizeObserver | null = null
 
 const cropperOptions = reactive({
   viewMode: 1,
@@ -131,41 +87,89 @@ const cropperOptions = reactive({
   zoomable: true,
 })
 
-// --- WATCHERS & COMPUTED ---
-watchEffect(() => {
-  if (imageUrl.value && cropperRef.value) {
-    cropperRef.value.replace(imageUrl.value)
+// ==========================================
+// 3. COMPUTED VARIABLES
+// ==========================================
+const taggedUsers = computed(() => postData.value.taggedUsers)
+
+const selectedImage = computed(() => {
+  const idx = uiState.value.imageIndexToEdit
+  if (idx !== null && postData.value.images[idx]) {
+    return postData.value.images[idx]
+  }
+  return uiState.value.imageToEdit
+})
+
+const tags = ref<ImageTagType[]>(selectedImage.value?.tags ? [...selectedImage.value.tags] : [])
+
+const filteredUsers = computed(() => searchableUsers.value)
+
+watch(searchQuery, (q) => {
+  if (newTag.value?.isCreating) {
+    searchUsers(q)
   }
 })
 
-const filteredUsers = computed(() => {
-  if (!searchQuery.value) return REAL_USERS
-  const lowerQuery = searchQuery.value.toLowerCase()
-  return REAL_USERS.filter((user) => user.name.toLowerCase().includes(lowerQuery))
+const transformedTags = computed(() => {
+  if (!bgDimensions.width || !bgDimensions.height) return []
+
+  const allTags = tags.value.map((t) => ({ ...t, isTemp: false }))
+  if (newTag.value && newTag.value.isCreating) {
+    allTags.push({
+      id: 'temp_new',
+      x: newTag.value.x,
+      y: newTag.value.y,
+      name: newTag.value.name,
+      isTemp: true,
+    })
+  }
+
+  const w = bgDimensions.width
+  const h = bgDimensions.height
+
+  return allTags.map((tag) => {
+    return {
+      ...tag,
+      x: (tag.x / 100) * w,
+      y: (tag.y / 100) * h,
+    }
+  })
 })
 
-// --- TOOLBAR ---
-const tools = [
-  { id: 1, label: 'Przytnij', icon: CropIcon, action: 'toggleCropMode' },
-  { id: 2, label: 'Obróć', icon: RotateRightIcon, action: 'rotateImage' },
-  { id: 3, label: 'Oznacz zdjęcie', icon: TagIcon, action: 'addTag' },
-  { id: 4, label: 'Narzędzie tekstowe', icon: FormatLetterCaseIcon, action: 'addTextElement' },
-  { id: 5, label: 'Tekst alternatywny', icon: FileImageIcon, action: 'toggleAltText' },
-]
+// ==========================================
+// 4. WATCHERS
+// ==========================================
+watch(
+  () => uiState.value.imageToEdit?.url,
+  (newUrl) => {
+    if (newUrl && newUrl !== imageUrl.value) {
+      imageUrl.value = newUrl
+    }
+  }
+)
 
-const handleToolAction = (action: string | undefined) => {
-  if (action === 'addTextElement') addTextElement()
-  else if (action === 'rotateImage') rotateImage()
-  else if (action === 'toggleCropMode') toggleCropMode()
-  else if (action === 'addTag') taggingMode.value = true
-  else if (action === 'toggleAltText') showAltTextInput.value = !showAltTextInput.value
-}
+watch(
+  () => uiState.value.imageToEdit?.altText,
+  (newAltText) => {
+    if (newAltText !== undefined && newAltText !== altText.value) {
+      altText.value = newAltText
+    }
+  }
+)
 
-// --- LOGIKA STORY ELEMENTS ---
-const storyElements = ref<StoryElementType[]>([])
-const imageWrapperRef = ref<HTMLElement | null>(null)
-const bgDimensions = reactive({ width: 0, height: 0 })
+watch(
+  tags,
+  (newTags) => {
+    if (selectedImage.value) {
+      selectedImage.value.tags = newTags
+    }
+  },
+  { deep: true },
+)
 
+// ==========================================
+// 5. COMPOSABLES
+// ==========================================
 const {
   activeDragId,
   activeResizeId,
@@ -181,29 +185,44 @@ const {
   toggleCrop,
 } = useStoryElementInteraction(storyElements, bgDimensions)
 
+
+// ==========================================
+// 6. LIFECYCLE HOOKS & FUNKCJE
+// ==========================================
 onMounted(() => {
+  loadSuggestions()
   if (imageWrapperRef.value) {
-    const observer = new ResizeObserver((entries) => {
+    resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         bgDimensions.width = entry.contentRect.width
         bgDimensions.height = entry.contentRect.height
       }
     })
-    observer.observe(imageWrapperRef.value)
+    resizeObserver.observe(imageWrapperRef.value)
   }
   window.addEventListener('mouseup', stopInteraction)
 })
 
 onUnmounted(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+    resizeObserver = null
+  }
   window.removeEventListener('mouseup', stopInteraction)
 })
 
-// --- LOGIKA CROPPERA ---
+const handleAltTextUpdate = (newText: string) => {
+  altText.value = newText
+  if (selectedImage.value) {
+    selectedImage.value.altText = newText
+  }
+}
+
 const toggleCropMode = () => {
   isCroppingMode.value = !isCroppingMode.value
   if (isCroppingMode.value && cropperRef.value) {
     nextTick(() => {
-      cropperRef.value.rotateTo(imageRotation.value)
+      cropperRef.value?.rotateTo?.(imageRotation.value)
     })
   }
 }
@@ -231,61 +250,34 @@ const handleCropConfirm = () => {
 
   if (!canvas) return
 
-  canvas.toBlob((blob: Blob | null) => {
-    if (!blob) return
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      if (e.target && e.target.result) {
-        const imageData = cropperRef.value.getImageData()
-        const nw = imageData.naturalWidth
-        const nh = imageData.naturalHeight
-        const rotation = ((crop.rotate % 360) + 360) % 360
+  const imageData = cropperRef.value.getImageData()
+  const nw = imageData.naturalWidth
+  const nh = imageData.naturalHeight
+  const rotation = ((crop.rotate % 360) + 360) % 360
 
-        const newTags = tags.value
-          .map((tag) => {
-            const oldX = (tag.x / 100) * nw
-            const oldY = (tag.y / 100) * nh
+  tags.value = tags.value.map((tag) => {
+    let oldX = (tag.x / 100) * nw
+    let oldY = (tag.y / 100) * nh
+    let rotatedX = oldX, rotatedY = oldY
 
-            let rotatedX = oldX
-            let rotatedY = oldY
+    if (rotation === 90) { rotatedX = nh - oldY; rotatedY = oldX }
+    else if (rotation === 180) { rotatedX = nw - oldX; rotatedY = nh - oldY }
+    else if (rotation === 270) { rotatedX = oldY; rotatedY = nw - oldX }
 
-            if (rotation === 90) {
-              rotatedX = nh - oldY
-              rotatedY = oldX
-            } else if (rotation === 180) {
-              rotatedX = nw - oldX
-              rotatedY = nh - oldY
-            } else if (rotation === 270) {
-              rotatedX = oldY
-              rotatedY = nw - oldX
-            }
-
-            if (
-              rotatedX >= crop.x &&
-              rotatedX <= crop.x + crop.width &&
-              rotatedY >= crop.y &&
-              rotatedY <= crop.y + crop.height
-            ) {
-              const localX = rotatedX - crop.x
-              const localY = rotatedY - crop.y
-              return {
-                ...tag,
-                x: (localX / crop.width) * 100,
-                y: (localY / crop.height) * 100,
-              }
-            }
-            return null
-          })
-          .filter((t): t is ImageTagType => t !== null)
-
-        imageUrl.value = e.target.result as string
-        tags.value = newTags
-        isCroppingMode.value = false
-        imageRotation.value = 0
+    if (rotatedX >= crop.x && rotatedX <= crop.x + crop.width &&
+        rotatedY >= crop.y && rotatedY <= crop.y + crop.height) {
+      return {
+        ...tag,
+        x: ((rotatedX - crop.x) / crop.width) * 100,
+        y: ((rotatedY - crop.y) / crop.height) * 100,
       }
     }
-    reader.readAsDataURL(blob)
-  }, 'image/png')
+    return null
+  }).filter((t): t is ImageTagType => t !== null)
+
+  imageUrl.value = canvas.toDataURL('image/png')
+  isCroppingMode.value = false
+  imageRotation.value = 0
 }
 
 const handleCropCancel = () => {
@@ -296,9 +288,10 @@ const handleDone = () => {
   createPostStore.saveEditedMedia(imageUrl.value)
 }
 
-const handleCancel = () => console.log('Anuluj')
+const handleCancel = () => {
+  createPostStore.navigateBack()
+}
 
-// --- LOGIKA OBROTU ---
 const rotateImage = () => {
   if (isCroppingMode.value && cropperRef.value) {
     cropperRef.value.rotate(90)
@@ -309,23 +302,20 @@ const rotateImage = () => {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
 
-      if (!ctx) return
-
-      const rotationAngle = 90
+      if (!ctx) {
+        console.warn('Nie udało się uzyskać kontekstu 2D dla obrotu obrazu.')
+        return
+      }
 
       const width = img.width
       const height = img.height
 
-      // Przy obrocie o 90/270 stopni zamieniamy szerokość z wysokością
-      const rotatedWidth = height
-      const rotatedHeight = width
-
-      canvas.width = rotatedWidth
-      canvas.height = rotatedHeight
+      canvas.width = height
+      canvas.height = width
 
       ctx.save()
-      ctx.translate(rotatedWidth / 2, rotatedHeight / 2)
-      ctx.rotate((rotationAngle * Math.PI) / 180)
+      ctx.translate(canvas.width / 2, canvas.height / 2)
+      ctx.rotate((90 * Math.PI) / 180)
       ctx.drawImage(img, -width / 2, -height / 2, width, height)
       ctx.restore()
 
@@ -336,8 +326,6 @@ const rotateImage = () => {
       }))
 
       tags.value = rotatedTags
-      // --------------------------------------
-
       imageUrl.value = canvas.toDataURL('image/png')
       imageRotation.value = 0
     }
@@ -348,46 +336,20 @@ const handleImageClickForTagging = async (event: MouseEvent) => {
   if (!taggingMode.value) return
 
   const img = event.target as HTMLImageElement
-  // Pobieramy wymiary wizualne (bounding box po obrocie)
   const rect = img.getBoundingClientRect()
 
-  // 1. Znajdujemy środek obrazka na ekranie
-  const cx = rect.left + rect.width / 2
-  const cy = rect.top + rect.height / 2
+  const clickX = event.clientX - rect.left
+  const clickY = event.clientY - rect.top
 
-  // 2. Obliczamy kliknięcie względem środka
-  const clickX = event.clientX - cx
-  const clickY = event.clientY - cy
+  const finalXPerc = (clickX / rect.width) * 100
+  const finalYPerc = (clickY / rect.height) * 100
 
-  // 3. Konwertujemy kąt na radiany i odwracamy go (minus), żeby "cofnąć" obrót
-  const angleRad = -imageRotation.value * (Math.PI / 180)
-
-  // 4. Matematyczny obrót punktu 2D
-  // To nam daje pozycję X/Y względem środka, tak jakby zdjęcie nie było obrócone
-  const unrotatedX = clickX * Math.cos(angleRad) - clickY * Math.sin(angleRad)
-  const unrotatedY = clickX * Math.sin(angleRad) + clickY * Math.cos(angleRad)
-
-  // 5. Pobieramy ORYGINALNE wymiary elementu w DOM (przed obrotem CSS)
-  // To jest kluczowe - nie używamy rect.width, tylko img.offsetWidth
-  const originalWidth = img.offsetWidth
-  const originalHeight = img.offsetHeight
-
-  if (originalWidth === 0 || originalHeight === 0) return
-
-  // 6. Przesuwamy punkt odniesienia ze środka (0,0) na lewy górny róg
-  const localX = unrotatedX + originalWidth / 2
-  const localY = unrotatedY + originalHeight / 2
-
-  // 7. Zamieniamy na procenty
-  const finalXPerc = (localX / originalWidth) * 100
-  const finalYPerc = (localY / originalHeight) * 100
-
-  // Walidacja czy nie kliknięto poza obszar (np. na zaokrągleniach)
   if (finalXPerc < 0 || finalXPerc > 100 || finalYPerc < 0 || finalYPerc > 100) return
 
   newTag.value = { x: finalXPerc, y: finalYPerc, name: '', isCreating: true }
   searchQuery.value = ''
   taggingMode.value = false
+  await loadSuggestions()
 
   await nextTick()
   if (newTagInputRef.value) newTagInputRef.value.focus()
@@ -402,10 +364,11 @@ const createTag = () => {
       id: `tag_${Date.now()}`,
       x: newTag.value.x,
       y: newTag.value.y,
-      name: nameToSave,
+      name: nameToSave.trim(),
       isTemp: false,
     }
     if (user) {
+      tag.userId = String(user.id)
       tag.user = userToPerson(user)
     }
     tags.value.push(tag)
@@ -420,7 +383,8 @@ const selectUser = (user: User) => {
     newTag.value.user = user
     searchQuery.value = user.name
     createTag()
-    if (!taggedUsers.value.some((taggedUser) => taggedUser.id === user.id)) {
+
+    if (!taggedUsers.value.some((tu) => String(tu.id) === String(user.id))) {
       createPostStore.addTaggedUser(user)
     }
   }
@@ -430,43 +394,6 @@ const removeTag = (id: string) => {
   tags.value = tags.value.filter((tag) => tag.id !== id)
 }
 
-// --- WIZUALIZACJA TAGÓW ---
-const transformedTags = computed(() => {
-  if (!bgDimensions.width || !bgDimensions.height) return []
-
-  const allTags = tags.value.map((t) => ({ ...t, isTemp: false }))
-  if (newTag.value && newTag.value.isCreating) {
-    allTags.push({
-      id: 'temp_new',
-      x: newTag.value.x,
-      y: newTag.value.y,
-      name: newTag.value.name,
-      isTemp: true,
-    })
-  }
-
-  const w = bgDimensions.width
-  const h = bgDimensions.height
-  const cx = w / 2
-  const cy = h / 2
-  const angleRad = imageRotation.value * (Math.PI / 180)
-
-  return allTags.map((tag) => {
-    const pxX = (tag.x / 100) * w
-    const pxY = (tag.y / 100) * h
-
-    const newX = (pxX - cx) * Math.cos(angleRad) - (pxY - cy) * Math.sin(angleRad) + cx
-    const newY = (pxX - cx) * Math.sin(angleRad) + (pxY - cy) * Math.cos(angleRad) + cy
-
-    return {
-      ...tag,
-      x: newX,
-      y: newY,
-    }
-  })
-})
-
-// --- TEKST ---
 const addTextElement = () => {
   const newId = `el_${Date.now()}`
   storyElements.value.push({
@@ -501,13 +428,27 @@ const updateElementContent = (id: string, value: string) => {
   const target = storyElements.value.find((el) => el.id === id)
   if (target) target.content = value
 }
+
+const tools = [
+  { id: 1, label: 'Przytnij', icon: CropIcon, action: 'toggleCropMode' },
+  { id: 2, label: 'Obróć', icon: RotateRightIcon, action: 'rotateImage' },
+  { id: 3, label: 'Oznacz zdjęcie', icon: TagIcon, action: 'addTag' },
+  { id: 4, label: 'Narzędzie tekstowe', icon: FormatLetterCaseIcon, action: 'addTextElement' },
+  { id: 5, label: 'Tekst alternatywny', icon: FileImageIcon, action: 'toggleAltText' },
+]
+
+const handleToolAction = (action: string | undefined) => {
+  if (action === 'addTextElement') addTextElement()
+  else if (action === 'rotateImage') rotateImage()
+  else if (action === 'toggleCropMode') toggleCropMode()
+  else if (action === 'addTag') taggingMode.value = true
+  else if (action === 'toggleAltText') showAltTextInput.value = !showAltTextInput.value
+}
 </script>
 
 <template>
-  <div
-    class="flex h-[80vh] w-full flex-col lg:flex-row bg-black overflow-hidden   relative"
-  >
-    <!-- Sidebar - ukryty na mobile, po lewej na desktop -->
+  <div class="flex h-[80vh] w-full flex-col lg:flex-row bg-black overflow-hidden relative">
+    <!-- Sidebar -->
     <EditorSidebar
       class="hidden lg:flex"
       :tools="tools"
@@ -521,13 +462,13 @@ const updateElementContent = (id: string, value: string) => {
       @cancel-crop="handleCropCancel"
       @done="handleDone"
       @cancel-edit="handleCancel"
-      @update:altText="(value) => (altText = value)"
+      @update:altText="handleAltTextUpdate"
     />
 
     <main class="flex-1 bg-[#18191a] relative flex flex-col h-full">
       <div
         class="absolute inset-0 z-0 blur-background"
-        :style="{ backgroundImage: imageToEdit.url ? `url(${imageToEdit.url})` : 'none' }"
+        :style="{ backgroundImage: imageUrl ? `url(${imageUrl})` : 'none' }"
       ></div>
 
       <div
@@ -580,7 +521,7 @@ const updateElementContent = (id: string, value: string) => {
                   ></div>
 
                   <template #popper>
-                    <div class="w-[340px] flex flex-col   bg-white text-left" @click.stop>
+                    <div class="w-[340px] flex flex-col bg-white text-left" @click.stop>
                       <div class="p-3 border-b border-gray-100 flex items-center gap-3">
                         <MagnifyIcon :size="20" class="text-gray-400 shrink-0" />
                         <input
@@ -595,9 +536,9 @@ const updateElementContent = (id: string, value: string) => {
                       </div>
 
                       <div class="max-h-[320px] overflow-y-auto py-1 scrollbar-thin">
-                        <div
+        <div
                           v-for="user in filteredUsers"
-                          :key="user.id"
+                          :key="String(user.id)"
                           @click="selectUser(user)"
                           class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer transition-colors group"
                         >
@@ -618,7 +559,13 @@ const updateElementContent = (id: string, value: string) => {
                         </div>
 
                         <div
-                          v-if="filteredUsers.length === 0"
+                          v-if="isUserSearchLoading"
+                          class="px-4 py-4 text-sm text-gray-500 text-center"
+                        >
+                          Szukam...
+                        </div>
+                        <div
+                          v-else-if="filteredUsers.length === 0"
                           class="px-4 py-4 text-sm text-gray-500 text-center"
                         >
                           Brak wyników dla "{{ searchQuery }}".<br />Naciśnij Enter, aby dodać nowy
@@ -667,60 +614,41 @@ const updateElementContent = (id: string, value: string) => {
         </template>
       </div>
 
-      <!-- Mobile Toolbar - widoczny tylko na mobile -->
-      <div
-        class="lg:hidden absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 z-20"
-      >
-        <!-- Przyciski akcji w trybie crop -->
-        <div v-if="isCroppingMode" class="flex gap-2 p-3">
+      <!-- Zoptymalizowany Mobile Toolbar -->
+      <div class="lg:hidden absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 z-20">
+
+        <!-- Narzędzia wyświetlane tylko gdy NIE kadrujemy -->
+        <div v-if="!isCroppingMode" class="flex items-center justify-around p-2 border-b border-gray-200">
           <button
-            @click="handleCropConfirm"
-            class="flex-1 py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg text-sm transition-colors"
+            v-for="tool in tools.slice(0, 5)"
+            :key="tool.id"
+            @click="handleToolAction(tool.action)"
+            class="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 active:scale-95 transition-all"
           >
-            Przytnij
+            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+              <component :is="tool.icon" :size="20" />
+            </div>
+            <span class="text-xs text-gray-700 text-center leading-tight max-w-[60px]">
+              {{ tool.label }}
+            </span>
+          </button>
+        </div>
+
+        <!-- Dynamiczne przyciski akcji (Zapisz / Anuluj) -->
+        <div class="flex gap-2 p-3">
+          <button
+            @click="isCroppingMode ? handleCropConfirm() : handleDone()"
+            :class="isCroppingMode ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'"
+            class="flex-1 py-3 px-4 text-white font-semibold rounded-lg text-sm transition-colors"
+          >
+            {{ isCroppingMode ? 'Przytnij' : 'Gotowe' }}
           </button>
           <button
-            @click="handleCropCancel"
+            @click="isCroppingMode ? handleCropCancel() : handleCancel()"
             class="flex-1 py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold rounded-lg text-sm transition-colors"
           >
             Anuluj
           </button>
-        </div>
-
-        <!-- Narzędzia i akcje w normalnym trybie -->
-        <div v-else>
-          <!-- Narzędzia -->
-          <div class="flex items-center justify-around p-2 border-b border-gray-200">
-            <button
-              v-for="tool in tools.slice(0, 5)"
-              :key="tool.id"
-              @click="handleToolAction(tool.action)"
-              class="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-gray-100 active:scale-95 transition-all"
-            >
-              <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                <component :is="tool.icon" :size="20" />
-              </div>
-              <span class="text-xs text-gray-700 text-center leading-tight max-w-[60px]">
-                {{ tool.label }}
-              </span>
-            </button>
-          </div>
-
-          <!-- Przyciski akcji -->
-          <div class="flex gap-2 p-3">
-            <button
-              @click="handleDone"
-              class="flex-1 py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg text-sm transition-colors"
-            >
-              Gotowe
-            </button>
-            <button
-              @click="handleCancel"
-              class="flex-1 py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold rounded-lg text-sm transition-colors"
-            >
-              Anuluj
-            </button>
-          </div>
         </div>
       </div>
     </main>
@@ -759,6 +687,6 @@ const updateElementContent = (id: string, value: string) => {
 }
 
 :deep(.v-popper__arrow-container) {
-  display: none; /* Opcjonalnie: ukryj strzałkę jeśli chcesz "płaski" wygląd */
+  display: none;
 }
 </style>

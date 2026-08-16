@@ -150,9 +150,14 @@ import { useAuthStore } from '@/stores/auth'
 // Import PostItem for recursive rendering
 const PostItem = defineAsyncComponent(() => import('./PostItem.vue'))
 
-const props = defineProps<{
-  post: Post
-}>()
+const props = withDefaults(
+  defineProps<{
+    post?: Post
+  }>(),
+  {
+    post: () => ({} as any),
+  }
+)
 
 const router = useRouter()
 const eventsStore = useEventsStore()
@@ -161,31 +166,31 @@ const allPosts = inject<Ref<Post[]>>('allPosts', ref([]))
 
 // Shared content computed properties
 const originalPost = computed(() => {
-  if (props.post.sharedPost) {
+  if (props.post?.sharedPost) {
     return props.post.sharedPost
   }
-  if (props.post.sharedContent?.type === 'post' && props.post.sharedContent.originalId) {
-    return allPosts.value.find((p) => String(p.id) === String(props.post.sharedContent.originalId))
+  if (props.post?.sharedContent?.type === 'post' && props.post.sharedContent.originalId) {
+    return allPosts.value.find((p) => String(p.id) === String(props.post?.sharedContent?.originalId))
   }
-  if (props.post.targetType === 'post' && props.post.targetId) {
-    return allPosts.value.find((p) => String(p.id) === String(props.post.targetId))
+  if (props.post?.targetType === 'post' && props.post.targetId) {
+    return allPosts.value.find((p) => String(p.id) === String(props.post?.targetId))
   }
   return undefined
 })
 
 const sharedEvent = computed(() => {
-  if (props.post.sharedContent?.type === 'event' && props.post.sharedContent.originalId) {
+  if (props.post?.sharedContent?.type === 'event' && props.post.sharedContent.originalId) {
     return eventsStore.getEventById(props.post.sharedContent.originalId)
   }
-  if (props.post.targetType === 'event' && props.post.targetId) {
+  if (props.post?.targetType === 'event' && props.post.targetId) {
     return eventsStore.getEventById(props.post.targetId)
   }
   return undefined
 })
 
 const sharedReel = computed(() => {
-  if (props.post.sharedContent?.type === 'reel' && props.post.sharedContent.originalId) {
-    const originalPostObj = allPosts.value.find((p) => String(p.id) === String(props.post.sharedContent.originalId))
+  if (props.post?.sharedContent?.type === 'reel' && props.post.sharedContent.originalId) {
+    const originalPostObj = allPosts.value.find((p) => String(p.id) === String(props.post?.sharedContent?.originalId))
     if (originalPostObj) {
       const processed = processPostsIntoReels([originalPostObj], String(authStore.currentUserId))
       return processed[0] || null

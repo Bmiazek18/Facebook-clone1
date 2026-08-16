@@ -145,4 +145,6 @@ const updateStore = () => {
     options: options.value,
   }
 }
+
+updateStore()
 </script>

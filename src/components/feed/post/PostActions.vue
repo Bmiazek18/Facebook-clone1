@@ -12,12 +12,19 @@ import ChevronRight from 'vue-material-design-icons/ChevronRight.vue'
 import ReactionButton from '@/components/feed/ReactionButton.vue'
 import { useI18n } from 'vue-i18n'
 import { usePostReactions } from '@/composables/feed/usePostReactions'
+import { useImpressionTracker } from '@/composables/analytics/useImpressionTracker'
 
-const props = defineProps<{
-  post: any
-}>()
+const props = withDefaults(
+  defineProps<{
+    post?: any
+  }>(),
+  {
+    post: () => ({}),
+  }
+)
 
 const { userReaction, handleReaction } = usePostReactions(toRef(props, 'post'))
+const { trackCopyLink } = useImpressionTracker()
 const { t } = useI18n()
 
 const emit = defineEmits<{
@@ -73,7 +80,12 @@ const shareMenuItems = [
     labelKey: 'post.copyLink',
     defaultLabel: 'Kopiuj link',
     icon: LinkVariant,
-    emitEvent: () => emit('copyLink'),
+    emitEvent: () => {
+      emit('copyLink')
+      if (props.post?.id) {
+        trackCopyLink(String(props.post.id), props.post.author?.id || (props.post as any).authorId)
+      }
+    },
   },
   {
     key: 'embed',

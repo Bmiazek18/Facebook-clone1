@@ -1,7 +1,7 @@
 <template>
   <!-- Original content display -->
   <div
-    v-if="post.content && (!isTranslated || isOriginalVisible)"
+    v-if="post.content && (!isTranslated || isOriginalVisible) && post.targetType !== 'GroupCreated'"
     class="px-4 py-1 text-[15px] leading-normal whitespace-pre-line"
     :class="{
       [(currentBackground as CardBackground).class ?? '']: (post?.selectedCardBgId ?? 0) !== 0,
@@ -24,20 +24,20 @@
       >
         {{ part.value }}
       </NuxtLink>
-      <NuxtLink
+      <ProfilePopper
+        mention
         v-else-if="part.type === 'mention'"
-        :to="`/profile/${part.userId}`"
-        class="text-blue-500 hover:underline"
+        :user-id="part.userId"
+        class="text-blue-500 hover:underline inline-flex"
         :class="{ 'text-white': (post.selectedCardBgId ?? 0) > 0 }"
-      >
-        @{{ getUserById(part.userId)?.name }}
-      </NuxtLink>
+      />
       <a
         v-else-if="part.type === 'link'"
         :href="part.url"
         target="_blank"
         class="text-blue-500 hover:underline"
         :class="{ 'text-white': (post.selectedCardBgId ?? 0) > 0 }"
+        @click="handleLinkClick(part.url)"
       >
         {{ part.value }}
       </a>
@@ -47,7 +47,7 @@
     </template>
     <button
       v-if="showReadMore"
-      @click="isExpanded = true"
+      @click="handleExpandText"
       class="text-theme-text hover:underline font-semibold"
     >
       Czytaj więcej
@@ -150,10 +150,29 @@ import { useMutation } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
 
 import TranslationRatingDropdown from './TranslationRatingDropdown.vue'
+import ProfilePopper from '@/components/profile/ProfilePopper.vue'
 
 import { getUserById } from '@/utils/users'
 import { processContent } from '@/utils/contentProcessor'
 import type { Post } from '@/types/Post'
+import { useImpressionTracker } from '@/composables/analytics/useImpressionTracker'
+
+const { trackExpandText, trackLinkClick } = useImpressionTracker()
+
+const handleExpandText = () => {
+  isExpanded.value = true
+  if (props.post?.id) {
+    const authorId = props.post.author?.id || (props.post as any).authorId
+    trackExpandText(String(props.post.id), authorId)
+  }
+}
+
+const handleLinkClick = (url: string) => {
+  if (props.post?.id) {
+    const authorId = props.post.author?.id || (props.post as any).authorId
+    trackLinkClick(String(props.post.id), authorId, url)
+  }
+}
 
 const TRANSLATE_TEXT_MUTATION = gql`
   mutation TranslateText($text: String!, $targetLanguage: String!) {
@@ -167,57 +186,67 @@ interface CardBackground {
   textClass?: string
 }
 
-const props = defineProps<{
-  post: Post
-}>()
+const props = withDefaults(
+  defineProps<{
+    post?: Post
+    isShared?: boolean
+  }>(),
+  {
+    post: () => ({} as any),
+    isShared: false,
+  }
+)
 
 const isExpanded = ref(false)
-
-// Translation state
 const isTranslated = ref(false)
-const translatedContent = ref<string>('')
+const translatedContent = ref('')
 const isTranslating = ref(false)
 const translationError = ref(false)
-const isOriginalVisible = ref(false)
+const isOriginalVisible = ref(true)
 
 // Rating state
 const rating = ref(0)
 const hoverRating = ref(0)
 
-// Card backgrounds configuration - merged from both files
+// Card backgrounds definition
 const cardBackgrounds: CardBackground[] = [
-  { id: 0, class: 'bg-white', textClass: 'text-black' },
-  { id: 1, class: 'bg-gradient-to-b from-blue-500 to-blue-700', textClass: 'text-white' },
+  {
+    id: 1,
+    class: 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700',
+    textClass: 'text-white',
+  },
   {
     id: 2,
-    class: 'bg-gradient-to-tr from-pink-500 via-red-500 to-yellow-500',
+    class: 'bg-gradient-to-r from-emerald-500 via-teal-600 to-cyan-700',
     textClass: 'text-white',
   },
   {
     id: 3,
-    class: 'bg-gradient-to-br from-purple-900 via-indigo-800 to-blue-900',
+    class: 'bg-gradient-to-r from-rose-500 via-pink-600 to-purple-600',
     textClass: 'text-white',
   },
-  { id: 4, class: 'bg-gradient-to-r from-green-400 to-blue-500', textClass: 'text-white' },
-  { id: 5, class: 'bg-gradient-to-br from-orange-400 to-pink-600', textClass: 'text-white' },
+  {
+    id: 4,
+    class: 'bg-gradient-to-r from-amber-400 via-orange-500 to-red-500',
+    textClass: 'text-white',
+  },
+  {
+    id: 5,
+    class: 'bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500',
+    textClass: 'text-white',
+  },
   {
     id: 6,
-    class: 'bg-gradient-to-r from-purple-400 via-pink-500 to-red-500',
+    class: 'bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900',
     textClass: 'text-white',
   },
-  { id: 7, class: 'bg-gradient-to-br from-teal-400 to-blue-500', textClass: 'text-white' },
+  {
+    id: 7,
+    class: 'bg-gradient-to-r from-violet-600 via-purple-700 to-indigo-800',
+    textClass: 'text-white',
+  },
   {
     id: 8,
-    class: 'bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500',
-    textClass: 'text-white',
-  },
-  {
-    id: 9,
-    class: 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500',
-    textClass: 'text-white',
-  },
-  {
-    id: 10,
     class: 'bg-gradient-to-r from-gray-700 via-gray-900 to-black',
     textClass: 'text-white',
   },
@@ -229,11 +258,11 @@ const currentBackground = computed(() => {
 })
 
 const needsTranslation = computed(() => {
-  return props.post.detectedLanguage && props.post.detectedLanguage !== 'pl'
+  return props.post?.detectedLanguage && props.post.detectedLanguage !== 'pl'
 })
 
 const processedOriginalContent = computed(() => {
-  return processContent(props.post.content)
+  return processContent(props.post?.content || '')
 })
 
 const processedTranslatedContent = computed(() => {
@@ -241,14 +270,12 @@ const processedTranslatedContent = computed(() => {
 })
 
 const showReadMore = computed(() => {
-  return props.post.content.length > 137 && !isExpanded.value
+  return (props.post?.content?.length || 0) > 137 && !isExpanded.value
 })
 
 const contentToShow = computed(() => {
   if (showReadMore.value) {
-    // Truncate the content
-    const truncated = props.post.content.substring(0, 200)
-    // We need to process the truncated content to get the parts
+    const truncated = (props.post?.content || '').substring(0, 200)
     const processed = processContent(truncated)
     // Add ellipsis at the end
     if (processed.length > 0) {
@@ -274,7 +301,7 @@ const translatePost = async () => {
     translationError.value = false
 
     const { data } = await translateTextMutation({
-      text: props.post.content,
+      text: props.post?.content || '',
       targetLanguage: 'pl',
     })
     console.log('Otrzymane dane tłumaczenia:', data)

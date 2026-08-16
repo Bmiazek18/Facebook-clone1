@@ -17,14 +17,19 @@ import { useComments } from '@/composables/feed/useComments'
 // Import szkieletu komentarzy
 import CommentsSkeleton from '@/components/common/CommentsSkeleton.vue'
 
-const props = defineProps<{
-  post: Post
-}>()
+const props = withDefaults(
+  defineProps<{
+    post?: Post
+  }>(),
+  {
+    post: () => ({} as any),
+  }
+)
 
 const commentsStore = useCommentsStore()
 const { isLinkModalVisible, linkModalData, showLinkModal, closeLinkModal } = useLinkModal()
 
-const author = computed(() => getUserById(props.post.authorId))
+const author = computed(() => (props.post?.authorId ? getUserById(props.post.authorId) : null))
 
 const handleCommentReply = (event: { author: { id: number; name: string }; commentId: string }) => {
   if (commentsStore.activeReplyInput === event.commentId) {
@@ -42,6 +47,7 @@ const { fetchCommentsForPost } = useComments()
 const isLoadingMore = ref(false)
 
 const loadAllComments = async () => {
+  if (!props.post?.id) return
   isLoadingMore.value = true
   try {
     await fetchCommentsForPost(props.post)
@@ -49,21 +55,23 @@ const loadAllComments = async () => {
     isLoadingMore.value = false
   }
 }
+
+loadAllComments()
 </script>
 
 <template>
   <div class="flex flex-col w-full lg:w-[700px] h-[90vh] lg:h-[90vh] bg-theme-bg-secondary overflow-hidden">
 
     <HoverScrollbar class="flex-1 min-h-0 w-full">
-      <PostItem :post="props.post" :hide-close-button="true" :is-in-modal="true" :shouldPostActionVisible="false" />
+      <PostItem v-if="post && post.id" :post="props.post" :hide-close-button="true" :is-in-modal="true" :shouldPostActionVisible="false" />
 
       <div class="p-2 sm:p-3 md:p-4">
 
-        <template v-if="true">
+        <template v-if="!props.post?.comments">
           <CommentsSkeleton />
         </template>
 
-        <template v-else-if="props.post.comments.length > 0">
+        <template v-else-if="props.post?.comments && props.post.comments.length > 0">
           <CommentFilter />
 
           <CommentItem
@@ -72,7 +80,7 @@ const loadAllComments = async () => {
             :comment="comment"
             :postAutor="author?.id"
             :depth="0"
-            :postId="props.post.id"
+            :postId="props.post?.id"
             @reply="handleCommentReply"
             @open-link="handleOpenLinkModal"
           />
@@ -90,7 +98,7 @@ const loadAllComments = async () => {
       </div>
     </HoverScrollbar>
 
-    <div class="p-2 sm:p-3 md:p-4 shrink-0 bg-theme-bg-secondary z-10">
+    <div v-if="props.post?.id" class="p-2 sm:p-3 md:p-4 shrink-0 bg-theme-bg-secondary z-10">
       <CommentReplyInput :post-id="props.post.id" />
     </div>
 

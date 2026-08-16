@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-3 mb-3 mt-2 rounded-lg overflow-hidden">
+  <div class="mx-3 mb-3 mt-2 rounded-lg overflow-hidden" v-if="likesCount > 0 || commentsCount > 0 || sharesCount > 0">
     <div class="flex items-center justify-between text-theme-text-secondary text-[15px]">
       <div
         class="flex items-center gap-1.5 cursor-pointer group"

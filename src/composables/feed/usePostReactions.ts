@@ -54,6 +54,7 @@ const POST_REACTIONS_FRAGMENT = gql`
         firstName
         lastName
         avatarId
+        avatar
       }
     }
   }
@@ -79,7 +80,7 @@ export function usePostReactions(postInput: any) {
           Array.isArray(item.userIds) &&
           item.userIds.some((id: string | number) => String(id) === userId),
       )
-      return (reaction?.reactionType as ReactionType) || null
+      return (reaction?.reactionType?.toLowerCase() as ReactionType) || null
     }
 
     for (const [type, userIds] of Object.entries(post.reactions)) {
@@ -143,17 +144,45 @@ export function usePostReactions(postInput: any) {
 
     const userId = String(currentUserId.value)
     let previousReactionType: string | null = null
+
+    const currentReactions: Record<string, string[]> = {}
+    const currentReactionUserNames: Record<string, string[]> = {}
+
     if (post.reactions) {
-      for (const [rType, userIds] of Object.entries(post.reactions)) {
-        if (Array.isArray(userIds) && userIds.includes(userId)) {
-          previousReactionType = rType
-          break
+      if (Array.isArray(post.reactions)) {
+        for (const item of post.reactions) {
+          const typeLower = item.reactionType?.toLowerCase()
+          if (typeLower) {
+            const uIds = (item.userIds || []).map(String)
+            currentReactions[typeLower] = uIds
+            currentReactionUserNames[typeLower] = (item.users || []).map((u: any) =>
+              [u.firstName, u.lastName].filter(Boolean).join(' ') || 'Użytkownik'
+            )
+            if (uIds.includes(userId)) {
+              previousReactionType = typeLower
+            }
+          }
+        }
+      } else {
+        for (const [rType, userIds] of Object.entries(post.reactions)) {
+          if (Array.isArray(userIds)) {
+            const uIds = userIds.map(String)
+            currentReactions[rType] = uIds
+            if (uIds.includes(userId)) {
+              previousReactionType = rType
+            }
+          }
+        }
+        if (post.reactionUserNames) {
+          for (const [rType, names] of Object.entries(post.reactionUserNames)) {
+            if (Array.isArray(names)) {
+              currentReactionUserNames[rType] = names.map(String)
+            }
+          }
         }
       }
     }
 
-    const currentReactions = { ...post.reactions }
-    const currentReactionUserNames = post.reactionUserNames ? { ...post.reactionUserNames } : {}
     const currentRawReactions = post.rawReactions ? [...post.rawReactions] : []
     const nextReactions: Record<string, string[]> = {}
     const nextReactionUserNames: Record<string, string[]> = {}
@@ -199,10 +228,12 @@ export function usePostReactions(postInput: any) {
         const namePart = names[index] || 'Użytkownik'
         const split = namePart.split(' ')
         return {
+          __typename: 'User',
           id: String(id),
           firstName: split[0] || 'Użytkownik',
           lastName: split.slice(1).join(' ') || '',
-          avatarId: null
+          avatarId: null,
+          avatar: String(id) === userId ? (authStore.currentUser?.avatar || null) : null,
         }
       })
       
@@ -214,8 +245,12 @@ export function usePostReactions(postInput: any) {
       })
     })
 
-    post.reactions = nextReactions
-    post.reactionUserNames = nextReactionUserNames
+    if (Array.isArray(post.reactions)) {
+      post.reactions = nextRawReactions
+    } else {
+      post.reactions = nextReactions
+      post.reactionUserNames = nextReactionUserNames
+    }
     post.rawReactions = nextRawReactions
 
     // Optimistically update Apollo Cache

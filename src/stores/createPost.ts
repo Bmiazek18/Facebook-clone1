@@ -51,6 +51,7 @@ const createInitialPostData = () => ({
   poll: null as Poll | null,
   postVideoUrl: null as string | null,
   sharedPost: null as PostData | null,
+  scheduledPublishTime: null as number | null,
 })
 
 const createInitialUiState = () => ({
@@ -58,6 +59,7 @@ const createInitialUiState = () => ({
   imageToEdit: null as SelectedImage | null,
   imageIndexToEdit: null as number | null,
   videoToEdit: null as string | null,
+  isSubmitting: false, // <-- DODANE: Flaga ładowania dodana do stanu początkowego
 })
 
 export const useCreatePostStore = defineStore('createPost', () => {
@@ -76,7 +78,7 @@ export const useCreatePostStore = defineStore('createPost', () => {
   function setInitialView(viewName: string) {
     uiState.value.initialView = viewName
     currentView.value = viewName
-    history.value = viewName === 'lifeEvent' ? ['creator', 'lifeEvent'] : [viewName]
+    history.value = (viewName === 'lifeEvent' || viewName === 'poll') ? ['creator', viewName] : [viewName]
   }
 
   function navigateTo(viewName: string) {
@@ -191,17 +193,19 @@ export const useCreatePostStore = defineStore('createPost', () => {
 
   function uploadVideoInChunks(file: File) {
     const localBlobUrl = URL.createObjectURL(file)
+    const isImg = file.type.startsWith('image/')
     const isVid = file.type.startsWith('video/')
+    const type = isImg ? 'image' : (isVid ? 'video' : 'file')
 
     postData.value.images.push({
       url: localBlobUrl,
-      altText: '',
+      altText: type === 'file' ? `file:${file.name}|size:${file.size}` : '',
       progress: 0,
-      type: isVid ? 'video' : 'image',
+      type: type,
     })
 
     const upload = new tus.Upload(file, {
-      endpoint: `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/files`,
+      endpoint: `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/files/`,
       retryDelays: [0, 3000, 5000, 10000],
       chunkSize: 2 * 1024 * 1024,
       metadata: {
@@ -282,12 +286,52 @@ export const useCreatePostStore = defineStore('createPost', () => {
         media {
           src
           altText
+          backgroundColor
+          tags {
+            id
+            x
+            y
+            userId
+            user {
+              id
+              firstName
+              lastName
+            }
+          }
+        }
+        taggedUsers {
+          id
+          firstName
+          lastName
         }
         commentCount
         shareCount
+        status
+        scheduledPublishTime
         reactions {
           reactionType
           userIds
+        }
+        context {
+          feeling {
+            emoji
+            label
+          }
+          location {
+            title
+            subtitle
+            type
+            lat
+            lon
+          }
+          poll {
+            question
+            options {
+              id
+              text
+              votes
+            }
+          }
         }
       }
     }
@@ -382,19 +426,34 @@ export const useCreatePostStore = defineStore('createPost', () => {
   })
 
   async function publishPost() {
+    uiState.value.isSubmitting = true // <-- DODANE: Włączenie loadera
+
     const authStore = useAuthStore()
     const postsStore = usePostsStore()
 
-    const mediaList: any[] = postData.value.images.map((img) => ({
-      src: img.serverPath || img.url,
-      altText: img.altText || '',
-    }))
+    const mediaList: any[] = postData.value.images.map((img) => {
+      const tags = Array.isArray(img.tags)
+        ? img.tags
+            .filter((t: any) => t.userId || t.user?.id)
+            .map((t: any) => ({
+              id: String(t.id),
+              x: Number(t.x),
+              y: Number(t.y),
+              userId: String(t.userId || t.user?.id || ''),
+            }))
+        : []
+      return {
+        src: img.serverPath || img.url,
+        altText: img.altText || '',
+        tags,
+      }
+    })
 
     if (postData.value.postVideoUrl) {
-      mediaList.push({ src: postData.value.postVideoUrl, altText: '' })
+      mediaList.push({ src: postData.value.postVideoUrl, altText: '', tags: [] })
     }
     if (postData.value.gif) {
-      mediaList.push({ src: postData.value.gif, altText: '' })
+      mediaList.push({ src: postData.value.gif, altText: '', tags: [] })
     }
 
     const currentUser = authStore.currentUser
@@ -402,22 +461,56 @@ export const useCreatePostStore = defineStore('createPost', () => {
     const isSharing = !!postData.value.sharedPost
     const originalPost = postData.value.sharedPost
 
+    const taggedUsersIds = Array.isArray(postData.value.taggedUsers)
+      ? postData.value.taggedUsers.map((u: any) => String(u.id))
+      : []
+
     try {
       const result = await createPost({
         input: {
           content: postData.value.content,
           authorId,
-          media: isSharing ? [] : mediaList.map(m => ({ src: m.src, altText: m.altText || '' })),
+          media: isSharing ? [] : mediaList,
           isAnonymous: !!postData.value.isAnonymous,
           targetId: isSharing ? originalPost!.id : (postData.value.targetId || undefined),
           targetType: isSharing ? 'post' : (postData.value.targetType || undefined),
           visibility: postData.value.privacy || 'PUBLIC',
-          allowedUserIds: []
+          allowedUserIds: [],
+          taggedUsersIds,
+          context: postData.value.feeling || postData.value.location || postData.value.poll ? {
+            feeling: postData.value.feeling ? {
+              emoji: postData.value.feeling.emoji,
+              label: postData.value.feeling.label,
+            } : null,
+            location: postData.value.location ? {
+              title: postData.value.location.title,
+              subtitle: postData.value.location.subtitle || '',
+              type: postData.value.location.type || '',
+              lat: postData.value.location.lat || '',
+              lon: postData.value.location.lon || '',
+            } : null,
+            poll: postData.value.poll ? {
+              question: postData.value.poll.question || postData.value.content,
+              options: postData.value.poll.options
+                .filter(opt => opt.text.trim().length > 0)
+                .map((opt, idx) => ({
+                  id: `opt_${Date.now()}_${idx}`,
+                  text: opt.text,
+                  votes: []
+                }))
+            } : null,
+          } : null,
+          scheduledPublishTime: postData.value.scheduledPublishTime || undefined,
         }
       })
 
       const created = result?.data?.createPost
       if (created) {
+        if (created.status === 'SCHEDULED') {
+          console.log('Post został pomyślnie zaplanowany w kolejce Redis na czas:', created.scheduledPublishTime)
+          return
+        }
+
         const formattedReactions: Record<string, number[]> = {}
         if (Array.isArray(created.reactions)) {
           created.reactions.forEach((r: any) => {
@@ -487,6 +580,8 @@ export const useCreatePostStore = defineStore('createPost', () => {
     } catch (err) {
       console.error('Failed to create post in DB:', err)
       throw err
+    } finally {
+      uiState.value.isSubmitting = false
     }
   }
 

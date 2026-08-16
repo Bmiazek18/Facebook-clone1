@@ -28,24 +28,77 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { usePostsStore } from '@/composables/feed/useAppState'
 import PostItem from '@/components/feed/post/PostItem.vue'
 import { useI18n } from 'vue-i18n'
-import type { Post } from '@/types/Post'
+import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { useQuery } from '@vue/apollo-composable'
+import { gql } from 'graphql-tag'
+
 const { t } = useI18n()
 const route = useRoute()
-const postsStore = usePostsStore()
+const authStore = useAuthStore()
 
 const hashtag = computed(() => route.params.hashtag)
 
+const GET_FEED_BY_HASHTAG = gql`
+  query GetFeedByHashtag($currentUserId: ID!, $hashtag: String!) {
+    getFeed(currentUserId: $currentUserId, hashtag: $hashtag) {
+      id
+      authorId
+      author {
+        id
+        firstName
+        lastName
+        avatarId
+        avatar
+      }
+      content
+      date
+      timestamp
+      isAnonymous
+      commentCount
+      shareCount
+      media {
+        src
+        altText
+        backgroundColor
+      }
+      reactions {
+        reactionType
+        userIds
+      }
+    }
+  }
+`
+
+const { result } = useQuery(GET_FEED_BY_HASHTAG, () => ({
+  currentUserId: String(authStore.currentUserId),
+  hashtag: String(hashtag.value)
+}), {
+  fetchPolicy: 'network-only'
+})
+
 const filteredPosts = computed(() => {
-  return postsStore.posts.filter((post: Post) => {
-    return post.content.includes(`#${hashtag.value}`)
+  const rawPosts = result.value?.getFeed ?? []
+  return rawPosts.map((post: any) => {
+    let formattedReactions: Record<string, number[]> = {}
+    if (Array.isArray(post.reactions)) {
+      post.reactions.forEach((r: any) => {
+        formattedReactions[r.reactionType.toLowerCase()] = r.userIds.map(Number)
+      })
+    } else if (post.reactions) {
+      formattedReactions = post.reactions
+    }
+    return {
+      ...post,
+      reactions: formattedReactions
+    }
   })
 })
 
 const formatCount = (count: number) => {
-  if (count === 0) return `525 ${t('hashtag.thousand')}` // Placeholder dla wyglądu jak na screenie, gdy brak danych
+  if (count === 0) return `525 ${t('hashtag.thousand')}`
   if (count > 1000) {
     return (count / 1000).toFixed(0) + ` ${t('hashtag.thousand')}`
   }
