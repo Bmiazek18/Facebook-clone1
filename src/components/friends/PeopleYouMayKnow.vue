@@ -117,6 +117,7 @@ const fetchSuggestions = async () => {
               firstName
               lastName
               avatarId
+              avatar
             }
           }
         }
@@ -130,7 +131,7 @@ const fetchSuggestions = async () => {
       return {
         id: s.userId,
         name: u ? [u.firstName, u.lastName].filter(Boolean).join(' ') : 'Użytkownik',
-        imageUrl: u?.avatarId ? `http://localhost:8080/api/users/avatar/${u.avatarId}` : 'http://localhost:8080/api/users/avatar/default-avatar.svg',
+        imageUrl: u?.avatar || '/default-avatar.png',
         commonFriends: s.mutualFriendsCount || 0,
         isFriend: false,
       }

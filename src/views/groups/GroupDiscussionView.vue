@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import CreateBox from '@/components/create/createPost/CreateBox.vue'
 import PostItem from '@/components/feed/post/PostItem.vue'
 import { usePostsStore } from '@/composables/feed/useAppState'
 import { useI18n } from 'vue-i18n'
 import CommentFilter from '@/components/profile/CommentFilter.vue'
 import type { Group } from '@/types/Group'
+
+import { useQuery } from '@vue/apollo-composable'
+import { gql } from 'graphql-tag'
+import { watch } from 'vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -16,9 +21,41 @@ defineProps<{
   stickyTop?: number
 }>()
 
+import { GET_GROUP_FEED } from '@/graphql/groups'
+
+const groupId = computed(() => route.params.id as string)
+const { result: feedResult, refetch } = useQuery(GET_GROUP_FEED, () => ({
+  groupId: groupId.value,
+  limit: 20,
+  offset: 0
+}), {
+  fetchPolicy: 'network-only'
+})
+
 const groupPosts = computed(() => {
-  const groupId = route.params.id as string
-  return postsStore.posts.filter((post) => post.targetType === 'Group' && post.targetId === groupId)
+  const queryPosts = feedResult.value?.getGroupFeed ?? []
+  const localPosts = postsStore.posts.filter(
+    (p) => p.targetType === 'Group' && String(p.targetId) === String(groupId.value)
+  )
+
+  const merged = [...localPosts]
+  queryPosts.forEach((qp) => {
+    if (!merged.some((mp) => String(mp.id) === String(qp.id))) {
+      merged.push(qp)
+    }
+  })
+
+  return merged.sort((a, b) => {
+    const timeA = typeof a.timestamp === 'number' ? a.timestamp : new Date(a.timestamp).getTime()
+    const timeB = typeof b.timestamp === 'number' ? b.timestamp : new Date(b.timestamp).getTime()
+    return timeB - timeA
+  })
+})
+
+watch(groupId, (newId) => {
+  if (newId) {
+    refetch({ groupId: newId, limit: 20, offset: 0 })
+  }
 })
 
 const handleDeletePost = (postId: string) => {

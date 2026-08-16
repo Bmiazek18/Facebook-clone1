@@ -1,87 +1,107 @@
 <template>
-  <div class="min-h-screen bg-theme-bg-secondary text-theme-text p-6  ">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-xl font-bold text-theme-text">Pliki</h1>
-      <div class="flex items-center space-x-4">
-        <div class="relative">
-          <span class="absolute inset-y-0 left-3 flex items-center text-theme-text-secondary">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-              />
+  <div class="min-h-screen bg-transparent p-4 flex justify-center">
+    <!-- Główny kontener (karta) -->
+    <div class="w-full max-w-[1000px] bg-white dark:bg-[#242526] rounded-lg shadow-sm p-4">
+
+      <!-- Nagłówek (Tytuł, Wyszukiwarka, Przycisk) -->
+      <div class="flex justify-between items-center mb-4">
+        <h1 class="text-[20px] font-bold text-[#050505] dark:text-[#E4E6EB]">Pliki</h1>
+
+        <div class="flex items-center gap-4">
+          <!-- Wyszukiwarka -->
+          <div class="relative flex items-center bg-[#F0F2F5] dark:bg-[#3A3B3C] rounded-full px-3 py-1.5 h-9 w-[240px]">
+            <svg class="w-4 h-4 text-[#65676B] dark:text-[#B0B3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-          </span>
-          <input
-            type="text"
-            placeholder="Szukaj plików"
-            class="bg-theme-bg-subtle border-none rounded-full py-1.5 pl-10 pr-4 text-sm w-72 focus:ring-1 focus:ring-blue-500 outline-none text-theme-text placeholder-theme-text-secondary"
-          />
-        </div>
-        <button class="text-theme-primary font-medium hover:underline text-sm">
-          Prześlij plik
-        </button>
-      </div>
-    </div>
-
-    <div
-      class="grid grid-cols-12 gap-4 px-4 py-2 bg-theme-bg-subtle-opacity-50 rounded-md text-[11px] font-bold text-theme-text-secondary uppercase tracking-wider mb-2"
-    >
-      <div class="col-span-6">Nazwa pliku</div>
-      <div class="col-span-2 text-center">Typ</div>
-      <div class="col-span-3">Ostatnia modyfikacja</div>
-      <div class="col-span-1"></div>
-    </div>
-
-    <div class="space-y-[2px]">
-      <div
-        v-for="(file, index) in files"
-        :key="index"
-        class="grid grid-cols-12 gap-4 px-4 py-3 hover:bg-theme-hover transition-colors rounded-md items-center group cursor-pointer"
-      >
-        <div class="col-span-6 flex items-center space-x-3">
-          <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center">
-            <img
-              v-if="file.type === 'PDF'"
-              src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg"
-              class="w-6 h-6"
-            />
-            <img
-              v-else
-              src="https://upload.wikimedia.org/wikipedia/commons/7/73/Microsoft_Excel_2013-2019_logo.svg"
-              class="w-6 h-6"
+            <input
+              type="text"
+              placeholder="Szukaj plików"
+              class="bg-transparent border-none outline-none w-full ml-2 text-[15px] text-[#050505] dark:text-[#E4E6EB] placeholder-[#65676B] dark:placeholder-[#B0B3B8]"
             />
           </div>
-          <span
-            class="text-[14px] font-medium truncate group-hover:text-theme-primary transition-colors"
-          >
-            {{ file.name }}
-          </span>
-        </div>
 
-        <div class="col-span-2 text-[13px] text-theme-text-secondary text-center">
-          {{ file.type === 'PDF' ? 'PDF' : 'Arkusz kalkulacyjny' }}
-        </div>
-
-        <div class="col-span-3 text-[13px] text-theme-text-secondary">
-          <div class="text-theme-text-opacity-90">{{ file.date }}</div>
-          <div class="text-[11px] text-theme-text-secondary">
-            przez: <span class="hover:underline text-theme-text-secondary">{{ file.author }}</span>
-          </div>
-        </div>
-
-        <div class="col-span-1 text-right opacity-0 group-hover:opacity-100 transition-opacity">
-          <button class="p-2 hover:bg-theme-hover-strong rounded-full text-theme-text-secondary">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
-              />
-            </svg>
+          <!-- Przycisk przesyłania -->
+          <button class="text-[#0866FF] dark:text-[#2D88FF] font-semibold text-[15px] hover:underline px-2 py-1 rounded-md transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20">
+            Prześlij plik
           </button>
         </div>
       </div>
+
+      <!-- Delikatna linia oddzielająca -->
+      <hr class="mb-4 border-[#CED0D4] dark:border-[#3E4042]" />
+
+      <!-- Nagłówki tabeli (z szarymi tłami) -->
+      <!-- Używamy Grid, by zachować idealne proporcje z wierszami -->
+      <div class="grid grid-cols-[minmax(0,1fr)_150px_200px_40px] gap-3 mb-2 px-2">
+        <div class="bg-[#F0F2F5] dark:bg-[#3A3B3C] rounded-md py-2 flex items-center justify-center text-[13px] font-bold text-black dark:text-[#B0B3B8] tracking-wide">
+          NAZWA PLIKU
+        </div>
+        <div class="bg-[#F0F2F5] dark:bg-[#3A3B3C] rounded-md py-2 flex items-center justify-center text-[13px] font-bold text-black dark:text-[#B0B3B8] tracking-wide">
+          TYP
+        </div>
+        <div class="bg-[#F0F2F5] dark:bg-[#3A3B3C] rounded-md py-2 flex items-center justify-center gap-1 text-[13px] font-bold text-[#050505] dark:text-[#E4E6EB] tracking-wide cursor-pointer">
+          OSTATNIA MODYFIKAC...
+          <svg class="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
+            <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" />
+          </svg>
+        </div>
+        <div><!-- Puste miejsce nad przyciskami opcji --></div>
+      </div>
+
+      <!-- Lista plików -->
+      <div class="flex flex-col">
+        <div
+          v-for="(file, index) in files"
+          :key="index"
+          class="grid grid-cols-[minmax(0,1fr)_150px_200px_40px] gap-3 items-center px-2 py-2 hover:bg-[#F2F2F2] dark:hover:bg-[#3A3B3C] transition-colors rounded-lg group cursor-pointer"
+        >
+          <!-- Kolumna: Ikona + Nazwa -->
+          <div class="flex items-center space-x-3 overflow-hidden">
+            <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-md bg-white border border-gray-200 shadow-sm p-1">
+              <img
+                v-if="file.type === 'PDF'"
+                src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg"
+                class="w-full h-full object-contain"
+                alt="PDF"
+              />
+              <img
+                v-else
+                src="https://upload.wikimedia.org/wikipedia/commons/7/73/Microsoft_Excel_2013-2019_logo.svg"
+                class="w-full h-full object-contain"
+                alt="Excel"
+              />
+            </div>
+            <span class="text-[15px] font-bold text-[#050505] dark:text-[#E4E6EB] truncate hover:underline">
+              {{ file.name }}
+            </span>
+          </div>
+
+          <!-- Kolumna: Typ -->
+          <div class="text-[13px] text-[#050505] dark:text-[#E4E6EB] pl-4">
+            {{ file.type === 'PDF' ? 'PDF' : 'Arkusz kalkulacyjny' }}
+          </div>
+
+          <!-- Kolumna: Ostatnia modyfikacja -->
+          <div class="flex flex-col pl-4">
+            <div class="text-[13px] text-[#050505] dark:text-[#E4E6EB] leading-tight">
+              {{ file.date }}
+            </div>
+            <div class="text-[13px] text-[#65676B] dark:text-[#B0B3B8] leading-tight mt-0.5">
+              przez: <span class="hover:underline">{{ file.author }}</span>
+            </div>
+          </div>
+
+          <!-- Kolumna: Opcje (...) -->
+          <div class="flex justify-end">
+            <button class="w-9 h-9 bg-[#E4E6EB] dark:bg-[#3A3B3C] hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50] rounded-md flex items-center justify-center text-[#050505] dark:text-[#E4E6EB] transition-colors">
+              <svg class="w-5 h-5 fill-currentColor" viewBox="0 0 24 24">
+                <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>

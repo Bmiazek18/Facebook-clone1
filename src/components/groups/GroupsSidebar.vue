@@ -49,8 +49,13 @@ import NewspaperVariantOutlineIcon from 'vue-material-design-icons/NewspaperVari
 import InformationOutlineIcon from 'vue-material-design-icons/InformationOutline.vue'
 import AccountGroupOutlineIcon from 'vue-material-design-icons/AccountGroupOutline.vue'
 import { useGroupsStore } from '@/stores/groups'
+import { onMounted } from 'vue'
 
 const groupsStore = useGroupsStore()
+
+onMounted(() => {
+  groupsStore.fetchGroups()
+})
 
 const sidebarItems = ref([
   {

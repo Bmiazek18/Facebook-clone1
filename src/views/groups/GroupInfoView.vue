@@ -2,6 +2,9 @@
 import { ref } from 'vue'
 import type { Group } from '@/types/Group'
 import GroupInfoSidebar from '@/components/groups/GroupInfoSidebar.vue'
+import MemberInfo from '~/components/groups/MemberInfo.vue';
+import GroupRulesList from '~/components/groups/GroupRulesList.vue';
+import ActivityInfo from '~/components/groups/ActivityInfo.vue';
 
 defineProps<{
   groupDetails?: Group
@@ -12,19 +15,10 @@ const rightSectionRef = ref<HTMLDivElement | null>(null)
 </script>
 
 <template>
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-    <div class="lg:col-span-7 space-y-4">
-      <div class="p-4 bg-theme-bg-secondary rounded-lg">
-        <h1 class="text-xl font-bold">Group Information</h1>
-        <p>This page will contain detailed information about the group.</p>
-      </div>
-    </div>
-    <div
-      ref="rightSectionRef"
-      class="lg:col-span-5 space-y-4 sticky self-start"
-      :style="{ top: `${stickyTop}px` }"
-    >
-      <GroupInfoSidebar :group-details="groupDetails" />
-    </div>
+  <div class="w-full max-w-[680px] mx-auto flex flex-col gap-3">
+    <GroupInfoSidebar :group-details="groupDetails" />
+    <MemberInfo :group-details="groupDetails" />
+    <ActivityInfo :group-details="groupDetails" />
+    <GroupRulesList />
   </div>
 </template>
