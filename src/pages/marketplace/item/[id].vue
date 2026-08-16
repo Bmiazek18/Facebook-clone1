@@ -20,7 +20,7 @@ import MultiMediaLightbox from '@/components/chat/messageBox/MediaLightbox.vue'
 import StoryShareModal from '@/components/feed/stories/StoryShareModal.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import SellerModal from '@/components/marketplace/SellerModal.vue'
-import NavbarRight from '@/layouts/Navbar/NavbarRight.vue'
+import NavbarRight from '~/layouts/navbar/NavbarRight.vue'
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue'
 import CustomTextarea from '~/components/common/CustomTextarea.vue'
 

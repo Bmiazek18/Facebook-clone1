@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useStoryShareStore } from '@/stores/storyShare'
 import type { PostData, ReelData } from '@/types/StoryElement'
-import NavbarRight from '@/layouts/Navbar/NavbarRight.vue'
+import NavbarRight from '~/layouts/navbar/NavbarRight.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
 

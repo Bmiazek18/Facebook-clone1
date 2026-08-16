@@ -9,7 +9,7 @@ import { useStoryPlayback } from '@/composables/media/useStoryPlayback'
 import { formatTimeAgo } from '@/utils/timeFormatter'
 
 // Importy komponentów UI
-import NavbarRight from '@/layouts/Navbar/NavbarRight.vue'
+import NavbarRight from '~/layouts/navbar/NavbarRight.vue'
 import StorySidebar from '@/components/feed/stories/StorySidebar.vue'
 import StoryMediaRenderer from '@/components/feed/stories/StoryMediaRenderer.vue'
 import StoryOverlays from '@/components/feed/stories/StoryOverlays.vue'
