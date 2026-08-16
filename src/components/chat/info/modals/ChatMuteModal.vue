@@ -1,33 +1,55 @@
 <!-- components/chat/modals/ChatMuteModal.vue -->
 <template>
   <BaseModal title="Wycisz powiadomienia" @close="emit('close')">
-    <div class="px-4 py-3 flex flex-col space-y-4">
-      <div class="space-y-3">
-        <label v-for="option in muteOptions" :key="option.value" class="flex items-center space-x-3 cursor-pointer">
-          <input
-            type="radio"
-            :value="option.value"
-            v-model="muteDuration"
-            class="w-4 h-4 text-blue-600 focus:ring-blue-500"
-          />
-          <span class="text-sm font-medium text-gray-900">{{ option.label }}</span>
-        </label>
+    <div class="px-5 py-3 flex flex-col gap-4">
+      <!-- Lista opcji radio -->
+      <div class="flex flex-col gap-1 my-1">
+        <button
+          v-for="option in muteOptions"
+          :key="option.value"
+          @click="muteDuration = option.value"
+          class="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-theme-hover transition duration-150 text-left cursor-pointer"
+        >
+          <!-- Radio Indicator (teraz po lewej) -->
+          <div
+            :class="[
+              'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0',
+              muteDuration === option.value
+                ? 'border-[#0064e0]'
+                : 'border-gray-400 dark:border-gray-500',
+            ]"
+          >
+            <div
+              v-if="muteDuration === option.value"
+              class="w-2.5 h-2.5 bg-[#0064e0] rounded-full"
+            ></div>
+          </div>
+
+          <!-- Tekst opcji -->
+          <div class="flex flex-col">
+            <span class="text-[15px] font-semibold text-theme-text leading-tight">
+              {{ option.label }}
+            </span>
+          </div>
+        </button>
       </div>
 
-      <p class="text-xs text-gray-500 leading-relaxed">
+      <!-- Opis informacyjny -->
+      <p class="text-[13px] text-gray-600 dark:text-gray-400 leading-snug px-1">
         Okna czatu będą zamknięte i nie będziesz otrzymywać powiadomień push na urządzeniach.
       </p>
 
+      <!-- Przyciski akcji -->
       <div class="flex space-x-3 pt-2">
         <button
           @click="emit('close')"
-          class="flex-1 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-semibold text-gray-700 transition"
+          class="flex-1 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-[15px] font-semibold text-gray-900 dark:text-white transition cursor-pointer"
         >
           Anuluj
         </button>
         <button
           @click="handleSave"
-          class="flex-1 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-sm font-semibold text-white transition"
+          class="flex-1 py-2 rounded-xl bg-[#0064e0] hover:bg-[#0053ba] text-[15px] font-semibold text-white transition cursor-pointer"
         >
           Wycisz
         </button>

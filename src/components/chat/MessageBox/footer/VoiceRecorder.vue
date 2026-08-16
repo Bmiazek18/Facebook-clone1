@@ -60,7 +60,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'audio-recorded': [payload: { audioUrl: string; duration: number }]
+  'audio-recorded': [payload: { audioUrl: string; duration: number; mimeType: string }]
   'recording-start': []
   'recording-stop': []
 }>()
@@ -80,7 +80,16 @@ const progressTimer = ref<ReturnType<typeof setInterval> | null>(null)
 const mediaRecorder = ref<MediaRecorder | null>(null)
 const audioChunks = ref<Blob[]>([])
 const isRecordingInitialized = ref(false)
+const recordingMimeType = ref('audio/webm')
 let mediaStream: MediaStream | null = null
+
+const resolveRecordingMimeType = (): string => {
+  if (typeof MediaRecorder === 'undefined') return ''
+  if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) return 'audio/webm;codecs=opus'
+  if (MediaRecorder.isTypeSupported('audio/webm')) return 'audio/webm'
+  if (MediaRecorder.isTypeSupported('audio/mp4')) return 'audio/mp4'
+  return ''
+}
 
 const formatDuration = (totalSeconds: number): string => {
   const minutes = Math.floor(totalSeconds / 60)
@@ -97,9 +106,12 @@ const startNewRecording = async () => {
   try {
     if (!isRecordingInitialized.value) {
       mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      // Używamy mimeType 'audio/webm' (wspierane przez Chrome/Firefox).
-      // Safari może wymagać 'audio/mp4' w nowszych wersjach, ale webm jest bezpiecznym domysłem dla logicznych komponentów Vue.
-      mediaRecorder.value = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' })
+      const mimeType = resolveRecordingMimeType()
+      if (!mimeType) {
+        throw new Error('Przeglądarka nie obsługuje nagrywania audio')
+      }
+      recordingMimeType.value = mimeType
+      mediaRecorder.value = new MediaRecorder(mediaStream, { mimeType })
 
       mediaRecorder.value.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -159,11 +171,15 @@ const finishAndSend = () => {
       return
     }
 
-    const blob = new Blob(audioChunks.value, { type: 'audio/webm' })
+    const blob = new Blob(audioChunks.value, { type: recordingMimeType.value })
     const audioUrl = URL.createObjectURL(blob)
-    const durationSeconds = Math.floor(recordingDuration.value)
+    const durationSeconds = Math.max(Math.floor(recordingDuration.value), 1)
 
-    emit('audio-recorded', { audioUrl, duration: durationSeconds })
+    emit('audio-recorded', {
+      audioUrl,
+      duration: durationSeconds,
+      mimeType: recordingMimeType.value,
+    })
     fullReset()
     emit('recording-stop')
   }

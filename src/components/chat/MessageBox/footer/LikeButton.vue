@@ -48,20 +48,16 @@ const handlePressStart = (event: MouseEvent | TouchEvent) => {
   // Płynne zwiększanie skali co 100ms
   animationTimer.value = setInterval(() => {
     const elapsed = Date.now() - (pressStartTime.value || 0)
-    if (elapsed < 1000)
+    if (elapsed < 1000) {
       currentScale.value = 1.0 // default
-    else if (elapsed < 2000)
+    } else if (elapsed < 2000) {
       currentScale.value = 1.2 // small
-    else if (elapsed < 3000)
+    } else if (elapsed < 3000) {
       currentScale.value = 1.4 // medium
-    else if (elapsed < 4000)
-      currentScale.value = 1.8 // large
-    else {
-      // Maksymalny rozmiar osiągnięty
-      if (animationTimer.value) {
+    } else {
+      currentScale.value = 1.8 // large (max size)
+      if (elapsed > 4500 && animationTimer.value) {
         clearInterval(animationTimer.value)
-        clearInterval(animationTimer.value)
-        currentScale.value = 1.0
       }
     }
   }, 100)
@@ -75,7 +71,7 @@ const handlePressEnd = () => {
   // Zatrzymujemy timer
   if (animationTimer.value) clearInterval(animationTimer.value)
 
-  let sizeState: 'default' | 'small' | 'medium' | 'large' = 'default'
+  let sizeState: 'default' | 'small' | 'medium' | 'large' = 'large'
 
   if (durationMs < 1000) sizeState = 'default'
   else if (durationMs < 2000) sizeState = 'small'

@@ -7,7 +7,7 @@ export interface GroupMember {
   id: string | number
   name: string
   nickname?: string
-  addedByUserId?: number
+  addedByUserId?: string | number
   avatarUrl?: string
 }
 

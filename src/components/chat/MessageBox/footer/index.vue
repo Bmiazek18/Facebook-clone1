@@ -13,18 +13,21 @@ import SendIcon from 'vue-material-design-icons/Send.vue'
 import MicrophoneIcon from 'vue-material-design-icons/Microphone.vue'
 import ImageMultipleIcon from 'vue-material-design-icons/ImageMultiple.vue'
 import FileIcon from 'vue-material-design-icons/File.vue'
+import PollIcon from 'vue-material-design-icons/Poll.vue'
 import { useFileSize } from '@/composables/shared/useFileSize'
 
 import GifBox from '@/components/common/GifBox.vue'
 import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue'
 import VoiceRecorder from './VoiceRecorder.vue'
 import LikeButton from './LikeButton.vue'
+import CreateChatPollModal from '../modals/CreateChatPollModal.vue'
 
 import type { Message } from '@/types/Message'
 import type { Theme } from '@/types/Theme'
 
 // --- TYPY I STAŁE ---
-const API_UPLOAD_URL = 'http://localhost:8080/api/users/upload'
+const apiUrl = import.meta.env.VITE_BFF_API_URL || ''
+const API_UPLOAD_URL = `${apiUrl}/api/chat/upload`
 
 const EMOJI_REGEX_SPLIT = /(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|[\u2600-\u27bf])/g
 const EMOJI_REGEX_TEST = /(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|[\u2600-\u27bf])/
@@ -81,11 +84,13 @@ let isCurrentlyTyping = false
 
 const sendTypingStatus = (isTyping: boolean) => {
   if (!props.boxId) return
+  const cleanId = String(props.boxId).replace(/^user_/, '')
   const conversationId = convStore.getSymmetricConversationId(props.boxId)
-  convStore.publishMqtt('chat/messages/inbound', {
+  const cleanSenderId = String(convStore.currentUserUuid).replace(/^user_/, '')
+  convStore.publishMqtt('chat/messages/user/' + cleanId, {
     type: 'typing',
     conversationId,
-    senderId: convStore.currentUserUuid,
+    senderId: cleanSenderId,
     isTyping,
   }, { qos: 0 })
 }
@@ -110,6 +115,26 @@ watch(newMessage, (newVal) => {
   }
 })
 
+const onFocus = () => {
+  if (!isCurrentlyTyping) {
+    isCurrentlyTyping = true
+    sendTypingStatus(true)
+  }
+  if (typingTimeout) clearTimeout(typingTimeout)
+  typingTimeout = setTimeout(() => {
+    isCurrentlyTyping = false
+    sendTypingStatus(false)
+  }, 4000)
+}
+
+const onBlur = () => {
+  if (isCurrentlyTyping) {
+    isCurrentlyTyping = false
+    if (typingTimeout) clearTimeout(typingTimeout)
+    sendTypingStatus(false)
+  }
+}
+
 onUnmounted(() => {
   if (typingTimeout) clearTimeout(typingTimeout)
   if (isCurrentlyTyping) {
@@ -124,10 +149,13 @@ const showVoiceRecorder = ref(false)
 
 // --- COMPUTED ---
 
-// Naprawiony błąd z testowaniem Regexa (bez flagi /g)
 const parsedTokens = computed(() => {
   if (!newMessage.value) return []
-  return newMessage.value
+  const text = newMessage.value.replace(/\[@([a-zA-Z0-9-]+)\]/g, (match, uId) => {
+    const member = groupMembersList.value.find((m) => String(m.id) === String(uId))
+    return member ? `@${member.name}` : `@${uId}`
+  })
+  return text
     .split(EMOJI_REGEX_SPLIT)
     .filter(Boolean)
     .map((part) => ({
@@ -163,19 +191,32 @@ const uploadFile = async (file: File): Promise<string> => {
   const formData = new FormData()
   formData.append('file', file)
 
-  const headers: Record<string, string> = {}
-  const token = localStorage.getItem('keycloak-token')
-  if (token) headers['Authorization'] = `Bearer ${token}`
-
-  const res = await fetch(API_UPLOAD_URL, {
+  const data = await $fetch<{
+    url?: string
+    presignedUrl?: string
+    stableUrl?: string
+    objectKey?: string
+  }>(API_UPLOAD_URL, {
     method: 'POST',
-    headers,
     body: formData,
   })
 
-  if (!res.ok) throw new Error('Błąd wgrywania pliku na serwer')
-  const data = await res.json()
-  return data.url
+  // Prefer stable server URL so messages keep working after presigned URLs expire
+  const resolvedUrl = data?.stableUrl || data?.url || data?.presignedUrl
+  if (!resolvedUrl) throw new Error('Błąd wgrywania pliku na serwer')
+  return resolvedUrl
+}
+
+const uploadGifFromUrl = async (gifUrl: string): Promise<string> => {
+  const response = await fetch(gifUrl)
+  if (!response.ok) {
+    throw new Error(`Nie udało się pobrać GIF-a (${response.status})`)
+  }
+  const blob = await response.blob()
+  const contentType = blob.type || 'image/gif'
+  const extension = contentType.includes('webp') ? 'webp' : 'gif'
+  const file = new File([blob], `gif-${Date.now()}.${extension}`, { type: contentType })
+  return uploadFile(file)
 }
 
 // --- METODY ---
@@ -184,6 +225,176 @@ const handleScroll = (e: Event) => {
   if (visualLayer.value) {
     visualLayer.value.scrollLeft = (e.target as HTMLInputElement).scrollLeft
   }
+}
+
+const showPollModal = ref(false)
+
+const openPollModal = () => {
+  plusDropdown.value?.hide()
+  showPollModal.value = true
+}
+
+const handlePollSubmit = (pollData: any) => {
+  const pollId = `poll_${Date.now()}`
+  const pollMessage: any = {
+    id: pollId,
+    chatId: String(props.boxId || convStore.activeChatId),
+    type: 'poll',
+    sender: 'me',
+    content: pollData.question,
+    time: Date.now(),
+    timestamp: new Date().toISOString(),
+    pollData: {
+      question: pollData.question,
+      options: pollData.options,
+      allowMultiple: pollData.allowMultiple,
+      allowAddOption: pollData.allowAddOption,
+    },
+  }
+
+  emit('add-message', pollMessage)
+
+  // Broadcast poll creation to participants via MQTT
+  const chatId = props.boxId || convStore.activeChatId
+  if (chatId) {
+    const chat = convStore.chats.find((c) => String(c.id) === String(chatId))
+    const cleanSenderId = String(convStore.currentUserUuid).replace(/^user_/, '')
+    const participantIds: string[] = []
+    if (chat && chat.groupMembers) {
+      chat.groupMembers.forEach((m: any) => {
+        const pId = String(m.userId || m.id).replace(/^user_/, '')
+        if (pId) participantIds.push(pId)
+      })
+    } else {
+      const cleanChatId = String(chatId).replace(/^user_/, '')
+      participantIds.push(cleanChatId)
+    }
+    if (!participantIds.includes(cleanSenderId)) {
+      participantIds.push(cleanSenderId)
+    }
+
+    const convId = convStore.getSymmetricConversationId(chatId)
+    participantIds.forEach((pId) => {
+      convStore.publishMqtt(`chat/messages/user/${pId}`, {
+        type: 'poll',
+        conversationId: convId,
+        messageId: pollId,
+        senderId: cleanSenderId,
+        text: pollData.question,
+        pollData: pollMessage.pollData,
+        participantIds: participantIds,
+      }, { qos: 1 })
+    })
+  }
+}
+
+const inputRef = ref<HTMLInputElement | null>(null)
+const mentionQuery = ref<string | null>(null)
+const mentionStartIndex = ref<number>(-1)
+const selectedMentionIndex = ref<number>(0)
+
+const currentChat = computed(() => {
+  const cId = props.boxId || convStore.activeChatId
+  return convStore.chats.find((c) => String(c.id) === String(cId))
+})
+
+const isGroupChat = computed(() => {
+  return currentChat.value?.type === 'group' || (currentChat.value?.groupMembers && currentChat.value.groupMembers.length > 0)
+})
+
+const groupMembersList = computed(() => {
+  const members = currentChat.value?.groupMembers || []
+  return members.map((m: any) => ({
+    id: String(m.id || m.userId).replace(/^user_/, ''),
+    name: m.name || m.username || 'Użytkownik',
+    avatar: m.avatar || m.avatarUrl || '/default-avatar.png',
+  }))
+})
+
+const matchingMentionMembers = computed(() => {
+  if (mentionQuery.value === null) return []
+  const q = mentionQuery.value.trim().toLowerCase()
+  const list = groupMembersList.value.filter((m) => {
+    return m.name.toLowerCase().includes(q)
+  })
+
+  const res = [...list]
+  if (!q || 'wszyscy'.includes(q) || 'everyone'.includes(q) || 'all'.includes(q)) {
+    res.unshift({
+      id: 'all',
+      name: 'Wszyscy (@wszyscy)',
+      avatar: '/default-avatar.png',
+    })
+  }
+  return res
+})
+
+function handleInputKeydown(e: KeyboardEvent) {
+  if (mentionQuery.value !== null && matchingMentionMembers.value.length > 0) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      selectedMentionIndex.value = (selectedMentionIndex.value + 1) % matchingMentionMembers.value.length
+      return
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      selectedMentionIndex.value = (selectedMentionIndex.value - 1 + matchingMentionMembers.value.length) % matchingMentionMembers.value.length
+      return
+    }
+    if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault()
+      selectMention(matchingMentionMembers.value[selectedMentionIndex.value])
+      return
+    }
+    if (e.key === 'Escape') {
+      mentionQuery.value = null
+      return
+    }
+  }
+
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault()
+    sendMessage(newMessage.value)
+  }
+}
+
+function handleInputUpdate(e: Event) {
+  const target = e.target as HTMLInputElement
+  const val = target.value
+  const cursor = target.selectionStart || val.length
+  const textBefore = val.slice(0, cursor)
+  const lastAt = textBefore.lastIndexOf('@')
+
+  if (lastAt !== -1) {
+    const textAfterAt = textBefore.slice(lastAt + 1)
+    if (!textAfterAt.includes(' ') && !textAfterAt.includes('\n')) {
+      mentionQuery.value = textAfterAt
+      mentionStartIndex.value = lastAt
+      selectedMentionIndex.value = 0
+      return
+    }
+  }
+  mentionQuery.value = null
+}
+
+function selectMention(member: { id: string; name: string }) {
+  if (mentionStartIndex.value === -1) return
+  const val = newMessage.value
+  const before = val.slice(0, mentionStartIndex.value)
+  const queryLen = mentionQuery.value ? mentionQuery.value.length : 0
+  const after = val.slice(mentionStartIndex.value + 1 + queryLen)
+
+  const token = member.id === 'all' ? '@wszyscy ' : `[@${member.id}] `
+  newMessage.value = before + token + after
+  mentionQuery.value = null
+
+  setTimeout(() => {
+    if (inputRef.value) {
+      inputRef.value.focus()
+      const newPos = before.length + token.length
+      inputRef.value.setSelectionRange(newPos, newPos)
+    }
+  }, 20)
 }
 
 const openGifFromPlus = () => {
@@ -221,6 +432,22 @@ const handleImageUpload = (event: Event) => {
   })
 }
 
+const handleExposedFiles = (files: FileList | File[]) => {
+  selectedGifUrl.value = null
+  Array.from(files).forEach((file) => {
+    if (file.type.startsWith('image/')) {
+      selectedImageUrls.value.push(URL.createObjectURL(file))
+      selectedImageFiles.value.push(file)
+    } else {
+      selectedDocumentFiles.value.push(file)
+    }
+  })
+}
+
+defineExpose({
+  handleExposedFiles
+})
+
 // Fabryka wiadomości
 const createAndEmitMessage = (payload: Partial<Message>) => {
   const baseMessage: Message = {
@@ -235,29 +462,39 @@ const createAndEmitMessage = (payload: Partial<Message>) => {
   emit('add-message', baseMessage)
 }
 
-const handleGifSelect = (gifUrl: string) => {
+const handleGifSelect = async (gifUrl: string) => {
   clearMediaSelection()
-  createAndEmitMessage({
-    type: 'gif',
-    content: 'Wysłano GIF',
-    imageUrl: gifUrl,
-  })
   gifDropdown.value?.hide()
+  try {
+    const serverUrl = await uploadGifFromUrl(gifUrl)
+    createAndEmitMessage({
+      type: 'gif',
+      content: 'Wysłano GIF',
+      imageUrl: serverUrl,
+    })
+  } catch (err) {
+    console.error('Błąd podczas przesyłania GIF-a:', err)
+  }
 }
 
-const handleAudioRecorded = async (payload: { audioUrl: string; duration: number }) => {
+const handleAudioRecorded = async (payload: { audioUrl: string; duration: number; mimeType: string }) => {
   try {
     const response = await fetch(payload.audioUrl)
     const blob = await response.blob()
-    const file = new File([blob], `voice-recording-${Date.now()}.wav`, { type: 'audio/wav' })
+    const extension = payload.mimeType.includes('mp4') ? 'm4a' : 'webm'
+    const file = new File(
+      [blob],
+      `voice-recording-${Date.now()}.${extension}`,
+      { type: payload.mimeType },
+    )
 
     const minioUrl = await uploadFile(file)
 
     createAndEmitMessage({
       type: 'audio',
-      content: `Wiadomość głosowa (${payload.duration}s)`,
+      content: `Wiadomość głosowa (${Math.max(payload.duration, 1)}s)`,
       audioUrl: minioUrl,
-      duration: payload.duration,
+      duration: Math.max(payload.duration, 1),
     })
   } catch (err) {
     console.error('Błąd podczas przesyłania wiadomości głosowej:', err)
@@ -269,6 +506,7 @@ const handleSendLike = (sizeState: 'default' | 'small' | 'medium' | 'large') => 
     createAndEmitMessage({
       content: localSelectedEmoji.value,
       iconSizeState: sizeState,
+      duration: sizeState === 'small' ? 2 : (sizeState === 'medium' ? 3 : (sizeState === 'large' ? 4 : 1))
     })
   }
 }
@@ -298,10 +536,11 @@ const sendMessage = async (content: string) => {
         fileSize: file.size,
       })
     } else if (selectedGifUrl.value) {
+      const serverUrl = await uploadGifFromUrl(selectedGifUrl.value)
       createAndEmitMessage({
         type: 'gif',
-        content: finalContent,
-        imageUrl: selectedGifUrl.value,
+        content: finalContent || 'Wysłano GIF',
+        imageUrl: serverUrl,
       })
     } else if (isLink(finalContent)) {
       const urlStr = finalContent.startsWith('http://') || finalContent.startsWith('https://')
@@ -314,9 +553,23 @@ const sendMessage = async (content: string) => {
         url: urlStr,
       })
     } else {
+      let sizeState: 'default' | 'small' | 'medium' | 'large' = 'default'
+      const emojiRegex = /[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g
+      const cleanContent = finalContent.replace(/\s+/g, '')
+      const nonEmoji = cleanContent.replace(emojiRegex, '')
+      if (nonEmoji.length === 0 && cleanContent.length > 0) {
+        const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+        const emojiCount = Array.from(segmenter.segment(cleanContent)).length
+        if (emojiCount === 1) sizeState = 'large'
+        else if (emojiCount === 2) sizeState = 'medium'
+        else if (emojiCount === 3) sizeState = 'small'
+      }
+
       createAndEmitMessage({
         type: 'text',
         content: finalContent,
+        iconSizeState: sizeState,
+        duration: sizeState === 'small' ? 2 : (sizeState === 'medium' ? 3 : (sizeState === 'large' ? 4 : 1))
       })
     }
   } catch (err) {
@@ -334,7 +587,7 @@ onUnmounted(() => {
 
 <template>
   <footer
-    class="p-2 shrink-0 rounded-b-xl shadow-md relative"
+    class="p-2 shrink-0  shadow-md relative"
     :style="{ backgroundColor: props.themes?.footerColor }"
   >
     <Transition
@@ -392,161 +645,153 @@ onUnmounted(() => {
       </div>
 
       <template v-if="!isVoiceRecording">
+        <!-- Przycisk Więcej akcji (+) - TYLKO DLA GRUP -->
+        <VDropdown
+          v-if="isGroupChat"
+          ref="plusDropdown"
+          placement="top-start"
+          :distance="12"
+          :triggers="['click']"
+          :autoHide="true"
+        >
+          <button
+            v-tooltip.top="'Więcej opcji (Ankieta, Pliki)'"
+            type="button"
+            class="h-[36px] w-[36px] mb-0.5 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer transition-colors shrink-0"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="12" cy="12" r="11" :fill="props.themes?.iconColor || '#3b82f6'" />
+              <path
+                d="M12 7V17M7 12H17"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+
+          <template #popper>
+            <div
+              class="flex flex-col py-2 min-w-[260px] rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden bg-white dark:bg-[#242526]"
+            >
+              <button
+                @click="openPollModal"
+                class="flex items-center gap-3.5 w-full px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group text-left cursor-pointer"
+              >
+                <div class="w-8 h-8 rounded-full flex items-center justify-center bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                  <poll-icon :size="20" />
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-gray-900 dark:text-gray-100 font-semibold text-[14px]">Utwórz ankietę</span>
+                  <span class="text-gray-500 dark:text-gray-400 text-[12px]">Zbierz opinie członków grupy</span>
+                </div>
+              </button>
+
+              <button
+                @click="selectDocumentFile"
+                class="flex items-center gap-3.5 w-full px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group text-left cursor-pointer"
+              >
+                <div class="w-8 h-8 rounded-full flex items-center justify-center bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                  <file-icon :size="20" />
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-gray-900 dark:text-gray-100 font-semibold text-[14px]">Załącz plik</span>
+                  <span class="text-gray-500 dark:text-gray-400 text-[12px]">Do 100 MB</span>
+                </div>
+              </button>
+
+              <button
+                @click="showVoiceRecorder = true; plusDropdown?.hide()"
+                class="flex items-center gap-3.5 w-full px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group text-left cursor-pointer"
+              >
+                <div class="w-8 h-8 rounded-full flex items-center justify-center bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                  <microphone-icon :size="20" />
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-gray-900 dark:text-gray-100 font-semibold text-[14px]">Wiadomość głosowa</span>
+                  <span class="text-gray-500 dark:text-gray-400 text-[12px]">Nagraj i wyślij audio</span>
+                </div>
+              </button>
+
+              <button
+                @click="selectImage(); plusDropdown?.hide()"
+                class="flex items-center gap-3.5 w-full px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group text-left cursor-pointer"
+              >
+                <div class="w-8 h-8 rounded-full flex items-center justify-center bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400">
+                  <image-outline-icon :size="20" />
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-gray-900 dark:text-gray-100 font-semibold text-[14px]">Zdjęcia i wideo</span>
+                  <span class="text-gray-500 dark:text-gray-400 text-[12px]">Udostępnij multimedia</span>
+                </div>
+              </button>
+            </div>
+          </template>
+        </VDropdown>
+
+        <!-- Nagrywanie głosu (w czatach prywatnych gdy brak wpisanego tekstu) -->
         <button
-          v-if="!hasMedia"
+          v-if="!isGroupChat && !hasMedia"
           v-tooltip.top="'Wiadomość głosowa'"
           @click="showVoiceRecorder = true"
-          class="p-1 rounded-full hover:bg-black/5 mb-1 cursor-pointer"
+          class="p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 mb-1 cursor-pointer"
           :style="{ color: props.themes?.iconColor }"
         >
           <MicrophoneIcon :size="22" />
         </button>
-        <div class="flex items-center gap-1 shrink-0 pb-1 mr-1">
+
+        <!-- Szybkie ikony akcji (widoczne gdy pole jest puste) -->
+        <div v-show="!hasMedia" class="flex items-center gap-0.5 shrink-0 pb-1">
           <div
-            class="flex items-center gap-1 mr-1 transition-all duration-300 shrink-0"
-            :class="hasMedia ? 'w-[32px]' : 'w-[104px]'"
+            v-tooltip.top="'Zdjęcia'"
+            class="p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
           >
-            <div v-show="!hasMedia" class="flex items-center gap-1">
-              <div
-                v-tooltip.top="'Zdjęcia'"
-                class="p-1 rounded-full hover:bg-black/5 cursor-pointer"
-              >
-                <ImageOutlineIcon
-                  :size="24"
-                  :style="{ color: props.themes?.iconColor }"
-                  @click="selectImage"
+            <ImageOutlineIcon
+              :size="22"
+              :style="{ color: props.themes?.iconColor }"
+              @click="selectImage"
+            />
+          </div>
+          <div
+            v-tooltip.top="'Naklejki'"
+            class="p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+          >
+            <StickerEmojiIcon :size="22" :fillColor="props.themes?.iconColor" />
+          </div>
+
+          <VDropdown
+            ref="gifDropdown"
+            placement="top"
+            :distance="10"
+            :skidding="0"
+            :triggers="['click']"
+            :autoHide="true"
+            class="relative"
+          >
+            <div
+              v-tooltip.top="'GIF'"
+              :style="{ backgroundColor: props.themes?.iconColor || '#3b82f6' }"
+              class="text-white text-[10px] font-black p-1 rounded flex ml-1 items-center justify-center h-[19px] w-[23px] leading-none hover:opacity-90 cursor-pointer"
+            >
+              GIF
+            </div>
+
+            <template #popper>
+              <div class="max-w-[320px] max-h-[420px] overflow-hidden">
+                <GifBox
+                  :theme-color="props.themes?.iconColor"
+                  @handleGifSelection="handleGifSelect"
                 />
               </div>
-              <div
-                v-tooltip.top="'Naklejki'"
-                class="p-1 rounded-full hover:bg-black/5 cursor-pointer"
-              >
-                <StickerEmojiIcon :size="24" :fillColor="props.themes?.iconColor" />
-              </div>
-
-              <VDropdown
-                ref="gifDropdown"
-                placement="top"
-                :distance="10"
-                :skidding="0"
-                :triggers="['click']"
-                :autoHide="true"
-                class="relative"
-              >
-                <div
-                  v-tooltip.top="'GIF'"
-                  :style="{ backgroundColor: props.themes?.iconColor || '#3b82f6' }"
-                  class="text-white text-[10px] font-black p-1 rounded flex ml-1 items-center justify-center h-[20px] w-[24px] leading-none hover:bg-black/5 cursor-pointer"
-                >
-                  GIF
-                </div>
-
-                <template #popper>
-                  <div class="max-w-[320px] max-h-[420px] overflow-hidden">
-                    <GifBox
-                      :theme-color="props.themes?.iconColor"
-                      @handleGifSelection="handleGifSelect"
-                    />
-                  </div>
-                </template>
-              </VDropdown>
-            </div>
-
-            <div v-show="hasMedia" class="flex items-center">
-              <VDropdown
-                ref="gifDropdown"
-                placement="top-start"
-                :distance="12"
-                :triggers="[]"
-                :autoHide="true"
-                class="relative"
-              >
-                <VDropdown
-                  ref="plusDropdown"
-                  placement="top-start"
-                  :distance="12"
-                  :triggers="['click']"
-                  :autoHide="true"
-                >
-                  <div
-                    v-tooltip.top="'Więcej opcji'"
-                    class="h-[40px] w-[40px] flex items-center justify-center cursor-pointer hover:opacity-85 transition-opacity pt-[5px]"
-                  >
-                    <svg
-                      width="22"
-                      height="22"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle cx="12" cy="12" r="12" :fill="props.themes?.iconColor || '#3b82f6'" />
-                      <path
-                        d="M12 7V17M7 12H17"
-                        stroke="white"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                      />
-                    </svg>
-                  </div>
-
-                  <template #popper>
-                    <div
-                      class="flex flex-col py-2 min-w-[280px] rounded-xl shadow-2xl border border-gray-100 overflow-hidden bg-white"
-                    >
-                      <button
-                        @click="showVoiceRecorder = true"
-                        class="flex items-center gap-4 w-full px-4 py-2 hover:bg-gray-100 transition-colors group text-left"
-                      >
-                        <microphone-icon :size="24" :fillColor="props.themes?.iconColor" />
-                        <span class="text-gray-800 font-medium text-[15px]"
-                          >Prześlij nagranie głosowe</span
-                        >
-                      </button>
-
-                      <button
-                        @click="selectDocumentFile"
-                        class="flex items-center gap-4 w-full px-4 py-2 hover:bg-gray-100 transition-colors group text-left"
-                      >
-                        <file-icon :size="24" :fillColor="props.themes?.iconColor" />
-                        <span class="text-gray-800 font-medium text-[15px]"
-                          >Załącz plik o wielkości do 100 MB</span
-                        >
-                      </button>
-
-                      <button
-                        class="flex items-center gap-4 w-full px-4 py-2 hover:bg-gray-100 transition-colors group text-left"
-                      >
-                        <sticker-emoji-icon :size="24" :fillColor="props.themes?.iconColor" />
-                        <span class="text-gray-800 font-medium text-[15px]">Wybierz naklejkę</span>
-                      </button>
-
-                      <button
-                        @click="openGifFromPlus"
-                        class="flex items-center gap-4 w-full px-4 py-2 hover:bg-gray-100 transition-colors group text-left"
-                      >
-                        <div
-                          :style="{ backgroundColor: props.themes?.iconColor || '#3b82f6' }"
-                          class="text-white text-[10px] font-black px-1 rounded flex items-center justify-center h-[20px] w-[24px] leading-none"
-                        >
-                          GIF
-                        </div>
-                        <span class="text-gray-800 font-medium text-[15px]">Wybierz GIF</span>
-                      </button>
-                    </div>
-                  </template>
-                </VDropdown>
-
-                <template #popper>
-                  <div class="max-w-[320px] max-h-[420px] overflow-hidden">
-                    <GifBox
-                      :theme-color="props.themes?.iconColor"
-                      @handleGifSelection="handleGifSelect"
-                    />
-                  </div>
-                </template>
-              </VDropdown>
-            </div>
-          </div>
+            </template>
+          </VDropdown>
+        </div>
 
           <input
             type="file"
@@ -563,7 +808,6 @@ onUnmounted(() => {
             class="hidden"
             multiple
           />
-        </div>
 
         <div
           class="relative flex flex-col grow rounded-[20px] overflow-hidden transition-all duration-200"
@@ -687,7 +931,35 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <div class="flex items-center relative min-h-[40px] grow overflow-hidden">
+          <div class="flex items-center relative min-h-[40px] grow overflow-visible">
+            <!-- Autocomplete wzmianek w grupie (@) -->
+            <div
+              v-if="mentionQuery !== null && matchingMentionMembers.length > 0"
+              class="absolute bottom-full left-0 mb-2 z-50 bg-white dark:bg-[#242526] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden w-64 max-h-60 overflow-y-auto py-1 animate-in fade-in slide-in-from-bottom-2 duration-150"
+            >
+              <div class="px-3 py-1.5 text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                Oznacz w grupie
+              </div>
+              <div
+                v-for="(member, idx) in matchingMentionMembers"
+                :key="member.id"
+                @mousedown.prevent="selectMention(member)"
+                @mouseenter="selectedMentionIndex = idx"
+                class="flex items-center gap-2.5 px-3 py-2 cursor-pointer transition-colors"
+                :class="selectedMentionIndex === idx ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200'"
+              >
+                <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-200 shrink-0 flex items-center justify-center">
+                  <img
+                    v-if="member.id !== 'all'"
+                    :src="member.avatar"
+                    class="w-full h-full object-cover"
+                  />
+                  <span v-else class="text-xs font-bold text-gray-600">@</span>
+                </div>
+                <span class="text-sm font-semibold truncate">{{ member.name }}</span>
+              </div>
+            </div>
+
             <div
               ref="visualLayer"
               class="absolute inset-0 px-4 pr-10 py-2 text-[15px] whitespace-pre flex items-center overflow-hidden pointer-events-none [&_.emoji-mart-emoji]:!inline-flex [&_.emoji-mart-emoji]:items-center [&_.emoji-mart-emoji]:justify-center [&_.emoji-mart-emoji]:align-text-bottom [&_.emoji-mart-emoji]:leading-none"
@@ -712,9 +984,13 @@ onUnmounted(() => {
             </div>
 
             <input
+              ref="inputRef"
               v-model="newMessage"
-              @keyup.enter="sendMessage(newMessage)"
+              @keydown="handleInputKeydown"
+              @input="handleInputUpdate"
               @scroll="handleScroll"
+              @focus="onFocus"
+              @blur="onBlur"
               type="text"
               class="absolute inset-0 w-full h-full px-4 pr-10 py-2 bg-transparent focus:outline-none text-[15px] z-10 !text-transparent selection:bg-blue-500/40 selection:!text-transparent placeholder:!text-transparent"
               :style="{ caretColor: props.themes?.timestampColor || '#000' }"
@@ -773,4 +1049,11 @@ onUnmounted(() => {
       </template>
     </div>
   </footer>
+
+  <CreateChatPollModal
+    :show="showPollModal"
+    :theme-color="props.themes?.iconColor || '#1877F2'"
+    @close="showPollModal = false"
+    @submit="handlePollSubmit"
+  />
 </template>

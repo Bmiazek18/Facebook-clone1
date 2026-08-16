@@ -43,7 +43,7 @@ const props = defineProps<{
 const chatActions = inject<{
   openLightbox: (url: string) => void
   reply: (message: Message) => void
-  addReaction: (payload: { messageId: number; emoji: string }) => void
+  addReaction: (payload: { messageId: number | string; emoji: string }) => void
   scrollToMessage: (messageId: number) => void
   pin: (messageId: number) => void
 }>('chatActions')
@@ -92,14 +92,14 @@ const getUserAvatar = (userId: string) => {
   const user = convStore.usersCache[cleanId]
   if (user?.avatar) return user.avatar
   convStore.getOrFetchUser(cleanId)
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
-  return `${apiUrl}/api/users/avatar/default-avatar.svg`
+  return '/default-avatar.png'
 }
 
 const getUserName = (userId: string) => {
   const cleanId = userId.replace('user_', '')
   const convStore = useConversationsStore()
   const user = convStore.usersCache[cleanId]
+  console.warn('[getUserName-FINAL-DEBUG]', { userId, cleanId, name: user?.name })
   if (user) return user.name
   convStore.getOrFetchUser(cleanId)
   return 'Użytkownik'
@@ -112,13 +112,22 @@ const getTooltipText = (userId: string) => {
 }
 
 const displayReadBy = computed(() => {
+  if (!isMe.value) return { visible: [], hiddenCount: 0 }
   if (!props.lastReadMap) return { visible: [], hiddenCount: 0 }
 
   let readersHere = Object.entries(props.lastReadMap)
     .filter(([, msgId]) => msgId == props.message.id)
     .map(([userId]) => userId)
 
-  readersHere = readersHere.filter((userId) => userId !== myUserId.value)
+  const cleanMyId = String(myUserId.value).replace(/^user_/, '').toLowerCase()
+
+
+  readersHere = readersHere.filter((userId) => {
+    const cleanReaderId = String(userId).replace(/^user_/, '').toLowerCase()
+    return cleanReaderId !== cleanMyId
+  })
+
+
 
   if (readersHere.length === 0) return { visible: [], hiddenCount: 0 }
 
@@ -176,12 +185,24 @@ const isFileMessage = (msg: Message): msg is FileMessage => msg.type === 'file'
 const isVideoMessage = (msg: Message): msg is VideoMessage => msg.type === 'video'
 const isGifMessage = (msg: Message): msg is GifMessage => msg.type === 'gif'
 const isAudioMessage = (msg: Message): msg is AudioMessage => msg.type === 'audio'
-const isCallMessage = (msg: Message): boolean => msg.type === 'call'
-const isCallRejectedMessage = (msg: Message): boolean => msg.type === 'call_rejected'
+const isCallMessage = (msg: Message): boolean => {
+  return (
+    msg.type === 'call' ||
+    (msg.type === 'action' && ((msg as any).subType === 'call_ended' || (msg as any).subType === 'call')) ||
+    (typeof msg.content === 'string' && msg.content.includes('SYSTEM_ACTION:call_ended'))
+  )
+}
+const isCallRejectedMessage = (msg: Message): boolean => {
+  return (
+    msg.type === 'call_rejected' ||
+    (msg.type === 'action' && (msg as any).subType === 'call_rejected') ||
+    (typeof msg.content === 'string' && msg.content.includes('SYSTEM_ACTION:call_rejected'))
+  )
+}
 const isLinkMessage = (msg: Message): msg is LinkMessage => msg.type === 'link'
 const isAnyCallType = (msg: Message): boolean => isCallMessage(msg) || isCallRejectedMessage(msg)
-const isTextMessage = (msg: Message): boolean => msg.type === 'text' && !isEmojiOnly(msg.content)
-const isPostLinkMessage = (msg: Message): boolean => msg.type === 'post_link'
+const isTextMessage = (msg: Message): boolean => msg.type === 'text'
+const isPostLinkMessage = (msg: Message): boolean => msg.type === 'feed-link' || msg.type === 'post_link'
 const isMe = computed(() => props.message.sender === 'me')
 
 const bubbleRadiusClass = computed(() => {
@@ -210,7 +231,7 @@ const textColor = computed(() => {
 
 const shouldDisplayAvatar = computed(() => {
   return (
-    props.message.sender === 'other' &&
+    props.message.sender === 'them' &&
     ['single', 'last'].includes(props.metadata.position) &&
     !isEmojiOnly(props.message.content || '')
   )
@@ -220,8 +241,41 @@ const showReactionsPanel = ref(false)
 const openReactionsPanel = () => (showReactionsPanel.value = true)
 const handleReply = () => chatActions?.reply(props.message)
 const handleAddReaction = (payload: { messageId: number | string; emoji: string }) =>
-  chatActions?.addReaction({ messageId: Number(payload.messageId), emoji: payload.emoji })
+  chatActions?.addReaction(payload)
 const handlePin = (messageId: number) => chatActions?.pin(messageId)
+
+const handleCallAgain = () => {
+  const router = useRouter()
+  const convStore = useConversationsStore()
+  const currentUserId = String(convStore.currentUserUuid || '').replace(/^user_/, '')
+  const convId = String(props.message.chatId || (props.message as any).conversationId || '').replace(/^user_/, '')
+
+  let targetChannel = convId
+  const rawPayload = String((props.message as any).payload || (props.message as any).systemActionPayload || '')
+  if (rawPayload.startsWith('channel:')) {
+    targetChannel = rawPayload.replace('channel:', '').trim()
+  } else if ((props.message as any).channelName) {
+    targetChannel = String((props.message as any).channelName)
+  }
+
+  const routeData = router.resolve({
+    name: 'video-call',
+    query: {
+      type: 'video',
+      boxId: convId,
+      callerId: currentUserId,
+      conversationId: targetChannel || convId,
+    },
+  })
+
+  if (typeof window !== 'undefined') {
+    window.open(
+      routeData.href,
+      `Rozmowa_${convId}`,
+      'popup=yes,width=900,height=650,left=300,top=150,resizable=yes,location=no,toolbar=no,menubar=no',
+    )
+  }
+}
 
 const reactionEmojis = computed(() => {
   if (!props.message.reactions) return []
@@ -236,6 +290,10 @@ const totalReactions = computed(() => {
     return acc
   }, 0)
 })
+
+defineOptions({
+  inheritAttrs: false
+})
 </script>
 
 <template>
@@ -247,6 +305,7 @@ const totalReactions = computed(() => {
 
   <div
     ref="messageWrapperRef"
+    v-bind="$attrs"
     class="relative flex flex-col group duration-200"
     :class="{
       'items-start': !isMe,
@@ -260,7 +319,12 @@ const totalReactions = computed(() => {
         v-if="shouldDisplayAvatar"
         class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2 shrink-0 overflow-hidden shadow-sm"
       >
-        <img src="https://ui-avatars.com/api/?name=User&background=random" alt="Avatar" class="w-full h-full object-cover" />
+        <img
+          :src="getUserAvatar(String(message.chatId || ''))"
+          v-tooltip="getUserName(String(message.chatId || ''))"
+          alt="Avatar"
+          class="w-full h-full object-cover cursor-pointer"
+        />
       </div>
       <div v-else-if="!isMe" class="w-10"></div>
 
@@ -273,8 +337,7 @@ const totalReactions = computed(() => {
           <span v-if="message.isPinned" class="text-[10px] absolute -top-5 right-0" :style="{ color: theme.timestampColor }">Przypięta</span>
           <PinIcon v-if="message.isPinned" :size="20" class="absolute z-99 rotate-45 top-0 right-0 text-red-500 transform translate-x-1/4 -translate-y-1/4" />
 
-          <ChatMessageEmoji v-if="isEmojiOnly(message.content)" :message="message" />
-          <ChatMessageCall v-else-if="isAnyCallType(message)" :message="message" :is-me="isMe" />
+          <ChatMessageCall v-if="isAnyCallType(message)" :message="message" :is-me="isMe" @call-again="handleCallAgain" />
           <ChatMessageImage v-else-if="isImageMessage(message) || isGifMessage(message)" :message="message" :is-me="isMe" @open-lightbox="chatActions?.openLightbox($event)" />
           <ChatMessageAudio v-else-if="isAudioMessage(message)" :message="message" :box-id="message.chatId" :bubble-color="bubbleColor" />
           <ChatMessageFile v-else-if="isFileMessage(message)" :message="message" :is-me="isMe" :box-id="message.chatId" />
@@ -318,7 +381,7 @@ const totalReactions = computed(() => {
         <div v-if="displayReadBy.hiddenCount > 0" key="counter" class="w-3.5 h-3.5 rounded-full ring-2 ring-white bg-gray-200 text-[8px] flex items-center justify-center text-gray-500 font-bold relative z-0">
           +{{ displayReadBy.hiddenCount }}
         </div>
-        <img v-for="(userId, i) in displayReadBy.visible" :key="userId" :data-avatar-userid="userId" :src="getUserAvatar(userId)" v-tooltip="getTooltipText(userId)" class="w-3.5 h-3.5 rounded-full ring-2 ring-white relative object-cover shadow-sm select-none border-white bg-gray-200" :style="{ zIndex: i + 1 }" alt="seen" />
+        <img v-for="(userId, i) in displayReadBy.visible" :key="message.id + '-' + userId" :data-avatar-userid="userId" :src="getUserAvatar(userId)" v-tooltip="'Wyświetlona przez ' + getUserName(userId) + ' o ' + getDisplayTime(message.time)" class="w-3.5 h-3.5 rounded-full ring-2 ring-white relative object-cover shadow-sm select-none border-white bg-gray-200" :style="{ zIndex: i + 1 }" alt="seen" />
       </TransitionGroup>
     </div>
   </div>

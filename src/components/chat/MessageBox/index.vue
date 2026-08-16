@@ -51,29 +51,15 @@ const isLoadingOlder = ref(false)
 const showStartHeader = computed(() => messagesList.value.length > 0)
 const msgIndex = (virtualIndex: number) => showStartHeader.value ? virtualIndex - 1 : virtualIndex
 
+const footerRef = ref<any>(null)
+
 // ==========================================
 // DRAG & DROP COMPOSABLE (GLOBAL + TARGET)
 // ==========================================
 const { isDragging, reset: resetDrag, handleDrop } = useChatDrop((files) => {
-  Array.from(files).forEach((file) => {
-    const url = URL.createObjectURL(file)
-    const baseMsg = { sender: 'me', time: Date.now() }
-
-    const pushMsg = (msg: Message) => {
-      if (props.boxId) convStore.addMessage(props.boxId, msg)
-      else localMessages.value.push({ id: Date.now() + Math.random(), ...msg })
-    }
-
-    if (file.type.startsWith('image/')) {
-      pushMsg({ ...baseMsg, type: 'image', content: 'Wysłano obraz', imageUrl: url } as ImageMessage)
-    } else if (file.type.startsWith('video/')) {
-      pushMsg({ ...baseMsg, type: 'video', content: file.name, videoUrl: url } as VideoMessage)
-    } else {
-      pushMsg({ ...baseMsg, type: 'file', content: `Plik: ${file.name}`, fileUrl: url, fileName: file.name, fileSize: file.size } as Message)
-    }
-  })
-
-  scrollToBottom('smooth')
+  if (footerRef.value?.handleExposedFiles) {
+    footerRef.value.handleExposedFiles(files)
+  }
 })
 
 // ==========================================
@@ -82,29 +68,32 @@ const { isDragging, reset: resetDrag, handleDrop } = useChatDrop((files) => {
 const chatContainer = ref<HTMLElement | null>(null)
 const showScrollToBottomBtn = ref(false)
 
-const virtualizerOptions = computed(() => ({
-  count: messagesList.value.length + (showStartHeader.value ? 1 : 0),
-  getScrollElement: () => chatContainer.value,
-  estimateSize: (index: number) => (showStartHeader.value && index === 0 ? 240 : 80),
-  overscan: 30,
-  getItemKey: (index: number) => {
-    if (showStartHeader.value) {
-      if (index === 0) return 'chat-start-header'
-      return messagesList.value[index - 1]?.id ?? index
-    }
-    return messagesList.value[index]?.id ?? index
-  },
-  shouldAdjustScrollPositionOnItemSizeChange: (item) => {
-    if (!chatContainer.value) return false
-    const vItems = virtualizer.value.getVirtualItems()
-    if (!vItems.length) return false
+const virtualizerOptions = computed(() => {
+  const container = chatContainer.value
+  return {
+    count: messagesList.value.length + (showStartHeader.value ? 1 : 0),
+    getScrollElement: () => container,
+    estimateSize: (index: number) => (showStartHeader.value && index === 0 ? 240 : 80),
+    overscan: 30,
+    getItemKey: (index: number) => {
+      if (showStartHeader.value) {
+        if (index === 0) return 'chat-start-header'
+        return messagesList.value[index - 1]?.id ?? index
+      }
+      return messagesList.value[index]?.id ?? index
+    },
+    shouldAdjustScrollPositionOnItemSizeChange: (item) => {
+      if (!container) return false
+      const vItems = virtualizer.value.getVirtualItems()
+      if (!vItems.length) return false
 
-    const firstVisible = vItems.find((i) => i.start + i.size > chatContainer.value!.scrollTop)
-    if (!firstVisible) return false
+      const firstVisible = vItems.find((i) => i.start + i.size > container.scrollTop)
+      if (!firstVisible) return false
 
-    return item.index <= firstVisible.index
-  },
-}))
+      return item.index <= firstVisible.index
+    },
+  }
+})
 
 const virtualizer = useVirtualizer(virtualizerOptions)
 
@@ -137,6 +126,21 @@ onMounted(() => {
     if (e.key === 'Escape' && isLightboxOpen.value) isLightboxOpen.value = false
   })
 })
+
+// Okna wiadomości na stronie głównej nie przechodzą przez widok /chat/[id],
+// dlatego same pobierają historię swojej konwersacji.
+watch(
+  [() => props.boxId, () => currentUserUuid.value],
+  ([boxId, userId]) => {
+    if (!boxId || !userId || userId === '0' || userId === '1') return
+    // Natychmiastowe pobranie motywu i ustawień w tle
+    convStore.fetchChatSettings(String(boxId))
+    if (props.mode === 'card') {
+      convStore.fetchMessagesForBox(String(boxId))
+    }
+  },
+  { immediate: true },
+)
 
 watch(
   () => props.messages,
@@ -213,11 +217,29 @@ const handlePin = (messageId: number | string) => {
   }
 }
 
+const pinnedMessages = computed(() => {
+  return messagesList.value.filter((m) => m.isPinned)
+})
+
+const isHasPinned = computed(() => pinnedMessages.value.length > 0)
+
+const lastPinnedMessage = computed(() => {
+  if (pinnedMessages.value.length === 0) return undefined
+  const msg = pinnedMessages.value[pinnedMessages.value.length - 1]
+  const senderName = msg.sender === 'me' ? 'Ty' : (headerTitle.value || 'Rozmówca')
+  return {
+    id: msg.id,
+    sender: senderName,
+    content: msg.content,
+  }
+})
+
 const replyTarget = ref<Message | null>(null)
 
 const isRecipientTyping = computed(() => {
   if (!props.boxId) return false
-  return !!convStore.typingUsers[String(props.boxId)]
+  const cleanId = String(props.boxId).replace(/^user_/, '')
+  return !!convStore.typingUsers[cleanId]
 })
 
 watch(isRecipientTyping, (typing) => {
@@ -244,7 +266,7 @@ const handleAddMessage = (msg: Message) => {
   nextTick(() => scrollToBottom('smooth'))
 }
 
-const handleAddReaction = (messageId: number, emoji: string) => {
+const handleAddReaction = (messageId: number | string, emoji: string) => {
   if (props.boxId) {
     convStore.addReaction(props.boxId, messageId, emoji)
   } else {
@@ -261,7 +283,7 @@ provide('chatActions', {
   reply: (message: Message) => {
     replyTarget.value = message
   },
-  addReaction: (payload: { messageId: number; emoji: string }) => {
+  addReaction: (payload: { messageId: number | string; emoji: string }) => {
     handleAddReaction(payload.messageId, payload.emoji)
   },
   openModal: (type: 'CHANGE_E' | 'CHANGE_NICKNAME' | 'CHANGE_THEME') => {
@@ -285,11 +307,17 @@ const GET_USER_HEADER_INFO = gql`
   }
 `
 
+const isGroupChat = computed(() => {
+  if (!props.boxId) return false
+  const chat = convStore.chats.find((c: any) => String(c.id) === String(props.boxId))
+  return chat ? chat.type === 'group' : false
+})
+
 const { result: apolloUserResult } = useQuery(
   GET_USER_HEADER_INFO,
   () => ({ userId: String(props.boxId) }),
   () => ({
-    enabled: !!props.boxId,
+    enabled: !!props.boxId && !isGroupChat.value,
     fetchPolicy: 'cache-first'
   })
 )
@@ -317,12 +345,144 @@ const headerAvatar = computed(() => {
   const chat = convStore.chats.find((c) => String(c.id) === boxIdStr)
   if (chat && chat.avatarUrl) return chat.avatarUrl
 
-  if (fetchedUser.value && fetchedUser.value.avatarId) {
-    return fetchedUser.value.avatarId
+  if (fetchedUser.value && fetchedUser.value.avatar) {
+    return fetchedUser.value.avatar
   }
 
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-  return `${baseUrl}/api/users/avatar/default-avatar.svg`
+  return '/default-avatar.png'
+})
+
+const userActiveStatus = ref<{ active: boolean; lastActiveText?: string } | null>(null)
+const groupActiveMembers = ref<string[]>([])
+
+const fetchUserActiveStatus = async () => {
+  if (!props.boxId) return
+  const boxIdStr = String(props.boxId)
+  let chat = convStore.chats.find((c) => String(c.id) === boxIdStr)
+
+  if (!chat?.groupMembers || chat.groupMembers.length === 0) {
+    try {
+      await convStore.fetchChatSettings(boxIdStr)
+      chat = convStore.chats.find((c) => String(c.id) === boxIdStr)
+    } catch {}
+  }
+
+  if (isGroupChat.value || (chat && chat.type === 'group')) {
+    const currentUserId = String(convStore.currentUserUuid).replace(/^user_/, '')
+    const otherMembers = (chat?.groupMembers || [])
+      .map((m: any) => ({
+        id: String(m.id || m.userId).replace(/^user_/, ''),
+        name: m.name || m.username || `${m.firstName || ''} ${m.lastName || ''}`.trim() || 'Użytkownik'
+      }))
+      .filter((m: any) => m.id && m.id !== currentUserId)
+
+    if (otherMembers.length === 0) {
+      groupActiveMembers.value = []
+      return
+    }
+
+    try {
+      const res = await fetch('http://localhost:8080/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: `
+            query GetActiveStatuses($userIds: [ID!]!) {
+              getActiveStatuses(userIds: $userIds) {
+                userId
+                active
+              }
+            }
+          `,
+          variables: { userIds: otherMembers.map((m) => m.id) },
+        }),
+      })
+      const json = await res.json()
+      const statuses = json.data?.getActiveStatuses || []
+      const activeIds = new Set(statuses.filter((s: any) => s.active).map((s: any) => String(s.userId)))
+      groupActiveMembers.value = otherMembers
+        .filter((m) => activeIds.has(m.id))
+        .map((m) => m.name.split(' ')[0] || m.name)
+    } catch {
+      groupActiveMembers.value = []
+    }
+    return
+  }
+
+  const cleanId = String(props.boxId).replace(/^user_/, '')
+  try {
+    const res = await fetch('http://localhost:8080/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: `
+          query GetActiveStatuses($userIds: [ID!]!) {
+            getActiveStatuses(userIds: $userIds) {
+              userId
+              active
+              lastActiveText
+            }
+          }
+        `,
+        variables: { userIds: [cleanId] },
+      }),
+    })
+    const json = await res.json()
+    const statuses = json.data?.getActiveStatuses || []
+    if (statuses.length > 0) {
+      userActiveStatus.value = statuses[0]
+    }
+  } catch {}
+}
+
+let activeStatusInterval: any = null
+
+onMounted(() => {
+  fetchUserActiveStatus()
+  activeStatusInterval = setInterval(fetchUserActiveStatus, 15000)
+})
+
+onUnmounted(() => {
+  if (activeStatusInterval) clearInterval(activeStatusInterval)
+})
+
+watch(() => props.boxId, () => {
+  userActiveStatus.value = null
+  groupActiveMembers.value = []
+  fetchUserActiveStatus()
+})
+
+const headerSubtitle = computed(() => {
+  if (!props.boxId) return ''
+  const boxIdStr = String(props.boxId)
+  const chat = convStore.chats.find((c) => String(c.id) === boxIdStr)
+
+  if (isGroupChat.value) {
+    if (groupActiveMembers.value.length === 0) {
+      return ''
+    }
+    if (groupActiveMembers.value.length === 1) {
+      return `${groupActiveMembers.value[0]} jest aktywny(a)`
+    }
+    if (groupActiveMembers.value.length === 2) {
+      return `${groupActiveMembers.value[0]} i ${groupActiveMembers.value[1]} są aktywni`
+    }
+    return `${groupActiveMembers.value.slice(0, 2).join(', ')} i ${groupActiveMembers.value.length - 2} innych aktywnych`
+  }
+
+  if (userActiveStatus.value?.active) {
+    return 'Aktywny(a) teraz'
+  }
+
+  if (userActiveStatus.value?.lastActiveText) {
+    return `Aktywny(a) ${userActiveStatus.value.lastActiveText}`
+  }
+
+  if (chat?.lastActiveText) {
+    return `Aktywny(a) ${chat.lastActiveText}`
+  }
+
+  return ''
 })
 
 const isFull = computed(() => props.mode === 'full')
@@ -346,17 +506,21 @@ defineExpose({ scrollToMessage })
       :class="[
         isFull
           ? 'w-full h-full rounded-t-xl shadow-none'
-          : 'w-full max-w-[328px] h-[455px] rounded-xl shadow-2xl',
+          : 'w-full max-w-[328px] h-[455px] rounded-t-xl shadow-2xl',
         'bg-theme-bg-secondary flex flex-col relative transition-all duration-300 overflow-hidden',
       ]"
     >
       <MessageBoxHeader
         :title="headerTitle"
+        :subtitle="headerSubtitle"
+        :is-online="isGroupChat ? groupActiveMembers.length > 0 : userActiveStatus?.active"
         :avatar-url="headerAvatar"
         :users="[headerTitle]"
         :boxId="boxId ?? 1"
         :hideIcons="hideHeaderIcons"
         :themes="boxTheme"
+        :isHasPinned="isHasPinned"
+        :pinnedMessage="lastPinnedMessage"
         @back="emit('back-to-list')"
         @show-info="emit('show-info')"
       />
@@ -415,8 +579,9 @@ defineExpose({ scrollToMessage })
               </div>
 
               <div v-else class="px-2">
+                <!-- ZMODYFIKOWANY WARUNEK: Czas nie pojawia się nad wiadomościami typu action -->
                 <div
-                  v-if="getDisplayTime(msgIndex(virtualItem.index))"
+                  v-if="getDisplayTime(msgIndex(virtualItem.index)) && messagesList[msgIndex(virtualItem.index)].type !== 'action'"
                   class="text-[11px] font-medium text-center my-3 select-none uppercase tracking-wide opacity-80"
                   :style="{ color: boxTheme.timestampColor }"
                 >
@@ -442,6 +607,7 @@ defineExpose({ scrollToMessage })
         </main>
 
         <MessageBoxFooter
+          ref="footerRef"
           :reply="replyTarget"
           :boxId="boxId"
           :themes="boxTheme"

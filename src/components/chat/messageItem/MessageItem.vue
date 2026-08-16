@@ -27,6 +27,7 @@ const chatActions = inject<{
   <!-- 1. ANKIETY - na środku -->
   <div v-if="message.type === 'poll'" class="flex justify-center mb-4">
     <ChatMessagePool
+      :message-id="String(message.id)"
       :question="message.pollData.question"
       :initial-options="message.pollData.options"
       :allow-multiple="message.pollData.allowMultiple"

@@ -160,7 +160,7 @@ export const useChatThemeStore = defineStore('chatTheme', {
         timestampColor: '#6B7280',
       },
     ] as Theme[],
-    selectedThemeId: 'candy' as string,
+    selectedThemeId: 'winter' as string,
     selectedEmoji: '👍' as string,
   }),
   getters: {

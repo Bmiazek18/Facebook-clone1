@@ -4,7 +4,7 @@
     <!-- Avatar -->
     <div class="relative mb-3 hover:opacity-90 cursor-pointer transition">
       <img
-        :src="avatarUrl || 'https://i.pravatar.cc/150?img=12'"
+        :src="avatarUrl "
         class="w-20 h-20 rounded-full object-cover shadow-sm"
         alt="Avatar"
       />
@@ -29,27 +29,27 @@
     <!-- Szybkie akcje -->
     <div class="flex mt-5 space-x-6 w-full justify-center px-4">
       <!-- Profil -->
-      <div class="flex flex-col items-center cursor-pointer group" @click="emit('openProfile')">
+      <NuxtLink v-tooltip.top="'Profil'" to="/profile" class="flex flex-col items-center cursor-pointer group" >
         <div class="w-9 h-9 bg-gray-200/70 rounded-full flex items-center justify-center group-hover:bg-gray-300/80 transition mb-1.5">
           <AccountCircleIcon :size="22" class="text-black" />
         </div>
-        <span class="text-[13px]  text-theme-text text-center">Profil</span>
-      </div>
+        <span  class="text-[13px]  text-theme-text text-center">Profil</span>
+      </NuxtLink>
 
       <!-- Wycisz -->
-      <div class="flex flex-col items-center cursor-pointer group" @click="emit('openMute')">
+      <div v-tooltip.top="'Wycisz'" class="flex flex-col items-center cursor-pointer group" @click="emit('openMute')">
         <div class="w-9 h-9 bg-gray-200/70 rounded-full flex items-center justify-center group-hover:bg-gray-300/80 transition mb-1.5">
           <BellIcon :size="22" class="text-black" />
         </div>
-        <span class="text-[13px]  text-theme-text text-center">Wycisz</span>
+        <span  class="text-[13px]  text-theme-text text-center">Wycisz</span>
       </div>
 
       <!-- Szukaj -->
-      <div class="flex flex-col items-center cursor-pointer group" @click="emit('openSearch')">
+      <div v-tooltip.top="'Szukaj'" class="flex flex-col items-center cursor-pointer group" @click="emit('openSearch')">
         <div class="w-9 h-9 bg-gray-200/70 rounded-full flex items-center justify-center group-hover:bg-gray-300/80 transition mb-1.5">
           <MagnifyIcon :size="22" class="text-black" />
         </div>
-        <span class="text-[13px]  text-theme-text text-center">Szukaj</span>
+        <span  class="text-[13px]  text-theme-text text-center">Szukaj</span>
       </div>
     </div>
   </div>

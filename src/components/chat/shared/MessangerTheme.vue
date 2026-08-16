@@ -1,202 +1,210 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useConversationsStore } from '@/stores/conversations'
 
 const emit = defineEmits<{
   (e: 'apply'): void
+  (e: 'cancel'): void
 }>()
 
 const conv = useConversationsStore()
 
-const themes = conv.themes
+// Zapisujemy ID motywu, który był włączony w momencie otwarcia modala
+const initialThemeId = ref(conv.selectedThemeId)
+
 const selectedThemeId = computed({
   get: () => conv.selectedThemeId,
   set: (v: string) => conv.setSelectedTheme(v),
 })
+
 const selectedTheme = computed(() => conv.selectedTheme)
 const setSelectedTheme = (id: string) => conv.setSelectedTheme(id)
+
+// Sortowanie używa teraz "initialThemeId" - dzięki temu lista jest zamrożona,
+// a wybrany początkowo motyw jest zawsze przypięty do samej góry.
+const sortedThemes = computed(() => {
+  const themes = [...conv.themes]
+  const initialIndex = themes.findIndex(t => t.id === initialThemeId.value)
+
+  if (initialIndex > 0) {
+    const [activeTheme] = themes.splice(initialIndex, 1)
+    themes.unshift(activeTheme)
+  }
+
+  return themes
+})
 
 const selectTheme = (id: string) => setSelectedTheme(id)
 
 const applyTheme = () => {
-  // selectedTheme is already reactive in conversations store
   emit('apply')
 }
+
+const cancelTheme = () => {
+  // Jeśli użytkownik anuluje, przywracamy początkowy motyw w store
+  if (selectedThemeId.value !== initialThemeId.value) {
+    setSelectedTheme(initialThemeId.value)
+  }
+  emit('cancel')
+}
+
+// Sprawdzamy, czy użytkownik wybrał nowy motyw (inny niż początkowy)
+const hasUnsavedChanges = computed(() => selectedThemeId.value !== initialThemeId.value)
 </script>
 
 <template>
-  <div
-    class="bg-white rounded-xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col h-[750px] md:h-[650px] border border-gray-200"
-  >
-    <div class="flex flex-1 overflow-hidden">
-      <div class="w-full md:w-5/12 lg:w-1/3 border-r border-gray-100 flex flex-col z-20 bg-white">
-        <div class="p-4 border-b border-gray-100 bg-white z-10">
-          <h2 class="text-xl font-bold text-gray-800">Galeria Motywów</h2>
-          <p class="text-xs text-gray-500 mt-1">Wybierz jeden z {{ themes.length }} stylów</p>
-        </div>
+  <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-4xl p-4 flex flex-col h-[700px]">
 
-        <div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
-          <div
-            v-for="theme in themes"
-            :key="theme.id"
-            @click="selectTheme(theme.id)"
-            class="flex items-center p-3 rounded-xl cursor-pointer transition-all duration-200 group border border-transparent"
-            :class="
-              selectedThemeId === theme.id
-                ? 'bg-slate-50 border-slate-200 shadow-sm'
-                : 'hover:bg-gray-50'
-            "
-          >
+    <!-- Główna zawartość (Kolumny) -->
+    <div class="flex flex-1 overflow-hidden gap-4 mb-4">
+
+      <!-- Lewa kolumna: Lista motywów -->
+      <div class="w-1/2 flex flex-col overflow-y-auto custom-scrollbar pr-2">
+        <div class="space-y-0.5">
+          <template v-for="(theme, index) in sortedThemes" :key="theme.id">
             <div
-              class="relative w-12 h-12 shrink-0 mr-4 transition-transform duration-200"
-              :class="selectedThemeId === theme.id ? 'scale-110' : ''"
+              @click="selectTheme(theme.id)"
+              class="flex items-center p-3 rounded-[14px] cursor-pointer transition-colors duration-200"
+              :class="selectedThemeId === theme.id ? 'bg-[#f0f4f9]' : 'hover:bg-gray-50'"
             >
-              <img
-                :src="theme.image"
-                alt=""
-                class="w-full h-full rounded-full object-cover shadow-sm ring-2 ring-offset-2 ring-transparent"
-                :class="selectedThemeId === theme.id ? 'ring-blue-400' : ''"
-              />
-            </div>
+              <!-- Ikona motywu -->
+              <div class="relative w-[50px] h-[50px] shrink-0 mr-4">
+                <img
+                  :src="theme.image"
+                  alt=""
+                  class="w-full h-full rounded-full object-cover"
+                />
+              </div>
 
-            <div class="flex-1 min-w-0">
-              <h3 class="font-semibold text-gray-900 truncate text-[15px]">
-                {{ theme.title }}
-              </h3>
-              <p v-if="theme.subtitle" class="text-xs text-gray-500 truncate mt-0.5">
-                {{ theme.subtitle }}
-              </p>
-            </div>
+              <!-- Teksty -->
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-gray-950 truncate text-[16px] leading-tight">
+                  {{ theme.title }}
+                </h3>
+                <p v-if="theme.subtitle" class="text-[13px] text-gray-500 truncate mt-[3px]">
+                  {{ theme.subtitle }}
+                </p>
+              </div>
 
-            <div class="ml-2 w-6 h-6 flex items-center justify-center">
-              <div
-                v-if="selectedThemeId === theme.id"
-                class="text-blue-500 transform scale-100 transition-transform"
-              >
+              <!-- Znacznik wyboru (Checkmark) -->
+              <div class="ml-2 w-7 h-7 flex items-center justify-center shrink-0">
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
+                  v-if="selectedThemeId === theme.id"
+                  class="w-[26px] h-[26px] text-[#0064e0]"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
                   viewBox="0 0 24 24"
-                  fill="currentColor"
-                  class="w-6 h-6"
                 >
-                  <path
-                    fill-rule="evenodd"
-                    d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
-                    clip-rule="evenodd"
-                  />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <div
-                v-else
-                class="w-5 h-5 rounded-full border-2 border-gray-300 group-hover:border-gray-400"
-              ></div>
             </div>
-          </div>
-        </div>
 
-        <div class="p-4 border-t border-gray-100 bg-gray-50">
-          <button
-            class="w-full py-2.5 px-4 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold rounded-lg transition-colors text-sm shadow-sm"
-          >
-            Anuluj zmiany
-          </button>
+            <!-- Separator pod pierwszym (początkowym) elementem -->
+            <hr v-if="index === 0" class="border-gray-200 mx-2 my-2" />
+          </template>
         </div>
       </div>
 
-      <div class="hidden md:flex md:w-7/12 lg:w-2/3 flex-col relative overflow-hidden bg-gray-900">
+      <!-- Prawa kolumna: Podgląd czatu -->
+      <div class="w-1/2 relative rounded-[32px] overflow-hidden bg-gray-100 flex flex-col border border-gray-100">
+        <!-- Tło motywu -->
         <div class="absolute inset-0 z-0">
           <img
             :src="selectedTheme?.backgroundImage"
             alt="Theme Background"
-            class="w-full h-full object-cover transform"
+            class="w-full h-full object-cover"
           />
         </div>
 
-        <div class="absolute inset-0 z-0 transition-all duration-500"></div>
+        <!-- Zawartość czatu (dymki od góry) -->
+        <div class="relative z-10 flex flex-col justify-start h-full p-4 pt-6 space-y-1">
 
-        <div class="relative z-10 flex-1 flex flex-col justify-center p-8 space-y-4">
-          <div
-            class="self-end max-w-[80%] rounded-2xl rounded-tr-sm p-3.5 text-white text-[15px] leading-snug shadow-lg transition-colors duration-300 border border-white/10"
-            :style="{ backgroundColor: selectedTheme?.sentBubbleColor }"
-          >
-            Testujemy motyw: <strong>{{ selectedTheme?.title }}</strong
-            >. Jak Ci się podoba ten klimat?
-          </div>
-
-          <div class="flex items-end justify-end gap-2">
+          <div class="flex justify-end">
             <div
-              class="w-6 h-6 rounded-full overflow-hidden shrink-0 order-2 bg-gray-200 shadow-sm border border-white/30"
+              class="px-4 py-2.5 text-white text-[15px] leading-snug rounded-2xl rounded-br-[4px] max-w-[75%] shadow-sm transition-colors duration-300"
+              :style="{ backgroundColor: selectedTheme?.sentBubbleColor || '#0064e0' }"
             >
-              <img
-                src="https://ui-avatars.com/api/?name=Ty&background=random&color=fff"
-                alt=""
-                class="w-full h-full object-cover"
-              />
-            </div>
-            <div
-              class="order-1 max-w-[80%] rounded-2xl rounded-br-sm p-3.5 text-white text-[15px] leading-snug shadow-lg transition-colors duration-300 border border-white/10"
-              :style="{ backgroundColor: selectedTheme?.sentBubbleColor }"
-            >
-              Kolor dymków idealnie pasuje do tła!
+              Masz wiele motywów do wyboru, a każdy jest nieco inny.
             </div>
           </div>
 
-          <div
-            class="self-start max-w-[70%] rounded-2xl rounded-tl-sm bg-white/90 backdrop-blur-md p-3.5 text-gray-900 text-[15px] leading-snug shadow-lg mt-6 border border-white/50"
-          >
-            Jest super! Zostawiamy ten, czy szukamy dalej? 👀
-          </div>
-
-          <div
-            class="w-full text-center text-xs font-medium"
-            :style="{ color: selectedTheme?.timestampColor || 'rgba(255, 255, 255, 0.7)' }"
-          >
-            10:45
-          </div>
-
-          <div class="flex items-end justify-end gap-2">
+          <div class="flex justify-end mb-3">
             <div
-              class="order-1 max-w-[80%] rounded-2xl rounded-br-sm p-3.5 text-white text-[15px] leading-snug shadow-lg transition-colors duration-300 border border-white/10 font-medium"
-              :style="{ backgroundColor: selectedTheme?.sentBubbleColor }"
+              class="px-4 py-2.5 text-white text-[15px] leading-snug rounded-2xl rounded-tr-[4px] max-w-[75%] shadow-sm transition-colors duration-300"
+              :style="{ backgroundColor: selectedTheme?.sentBubbleColor || '#0064e0' }"
             >
-              Kliknij przycisk poniżej, aby zatwierdzić.
+              Wiadomości przesyłane do innych osób będą oznaczane tym kolorem.
             </div>
           </div>
-        </div>
 
-        <div class="relative z-10 p-4 border-t border-white/10 bg-black/20 backdrop-blur-md">
-          <button
-            class="w-full py-3 px-4 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.01]"
-            :style="{ backgroundColor: selectedTheme?.sentBubbleColor }"
-            @click="applyTheme"
+          <div class="flex justify-start">
+            <div
+              class="bg-white text-gray-900 px-4 py-2.5 text-[15px] leading-snug rounded-2xl rounded-bl-[4px] max-w-[75%] shadow-sm mt-3"
+            >
+              Wiadomości od znajomych będą tak wyglądać.
+            </div>
+          </div>
+
+          <div
+            class="w-full text-center text-[12px] font-medium my-3"
+            :style="{ color: selectedTheme?.timestampColor || '#000000' }"
           >
-            Ustaw motyw: {{ selectedTheme?.title }}
-          </button>
+            20:52
+          </div>
+
+          <div class="flex justify-end">
+            <div
+              class="px-4 py-2.5 text-white text-[15px] leading-snug rounded-2xl rounded-br-[4px] max-w-[75%] shadow-sm transition-colors duration-300"
+              :style="{ backgroundColor: selectedTheme?.sentBubbleColor || '#0064e0' }"
+            >
+              Kliknij przycisk Wybierz, aby wybrać ten motyw.
+            </div>
+          </div>
+
         </div>
       </div>
+
     </div>
+
+    <!-- Przyciski akcji (Dół) -->
+    <div class="flex gap-3 pt-2 shrink-0">
+      <button
+        @click="cancelTheme"
+        class="flex-1 bg-[#e4e6eb] hover:bg-[#d8dadf] text-gray-900 font-semibold text-[15px] py-2.5 rounded-xl transition-colors cursor-pointer"
+      >
+        Anuluj
+      </button>
+
+      <!-- Przycisk "Wybierz" uaktywnia się dopiero po kliknięciu nowego motywu -->
+      <button
+        @click="applyTheme"
+        class="flex-1 font-semibold text-[15px] py-2.5 rounded-xl transition-colors"
+        :class="hasUnsavedChanges
+          ? 'bg-[#0064e0] hover:bg-[#0053ba] text-white cursor-pointer'
+          : 'bg-[#e4e6eb] text-[#bcc0c4] cursor-not-allowed'"
+      >
+        Wybierz
+      </button>
+    </div>
+
   </div>
 </template>
 
 <style scoped>
-/* Stylizacja Scrollbara */
+/* Stylizacja grubszego, pigułkowego Scrollbara ze zrzutu ekranu */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
+  width: 8px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #e2e8f0;
-  border-radius: 20px;
+  background-color: #8c8c8c;
+  border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #cbd5e1;
-}
-
-/* Płynne przejścia kolorów */
-.transition-colors {
-  transition-property: background-color, border-color, color, opacity;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: #737373;
 }
 </style>

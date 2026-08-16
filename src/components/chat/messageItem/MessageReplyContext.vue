@@ -34,7 +34,7 @@ const labelText = computed(() => {
     <div
       class="flex flex-col"
       :class="{
-        'items-start ml-10': reply.sender === 'other' || reply.sender === 'them',
+        'items-start ml-10': reply.sender === 'them',
         'items-end': reply.sender === 'me',
       }"
     >

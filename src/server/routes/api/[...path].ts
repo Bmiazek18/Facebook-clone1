@@ -4,8 +4,8 @@ import { getValidAccessToken } from '../../utils/session'
 export default defineEventHandler(async (event) => {
   const path = event.context.params?.path || ''
   
-  // Skip proxying for auth callback
-  if (path.startsWith('auth/')) {
+  // Skip proxying for local Nitro handlers (auth + OPAQUE HSM vault)
+  if (path.startsWith('auth/') || path.startsWith('hsm/')) {
     return
   }
 
@@ -18,20 +18,12 @@ export default defineEventHandler(async (event) => {
   }
 
   event.node.req.headers['authorization'] = `Bearer ${accessToken}`
-  try {
-    const payloadPart = accessToken.split('.')[1]
-    const payload = JSON.parse(Buffer.from(payloadPart, 'base64').toString('utf8'))
-    if (payload && payload.sub) {
-      event.node.req.headers['x-user-id'] = payload.sub
-    }
-  } catch (err) {
-    console.warn('BFF: Failed to parse JWT for X-User-Id:', err)
-  }
 
-  // Forward the request to Kong gateway on http://localhost:8000/api/<path> with original query string
+  // Nginx forwards the JWT to Kong. Kong extracts `sub` and adds X-User-Id
+  // for the downstream service; the BFF never supplies that identity header.
   const requestUrl = event.node.req.url || ''
   const queryIndex = requestUrl.indexOf('?')
   const queryString = queryIndex !== -1 ? requestUrl.slice(queryIndex) : ''
-  const targetUrl = `http://localhost:8000/api/${path}${queryString}`
+  const targetUrl = `http://localhost:8080/api/${path}${queryString}`
   return proxyRequest(event, targetUrl)
 })

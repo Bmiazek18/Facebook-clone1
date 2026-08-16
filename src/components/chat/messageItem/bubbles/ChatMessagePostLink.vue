@@ -1,55 +1,151 @@
 <script setup lang="ts">
+import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { useApolloClient } from '@vue/apollo-composable'
+import { gql } from 'graphql-tag'
 import type { Message } from '@/types/Message'
 
 const props = defineProps<{
   message: Message
 }>()
+
+const router = useRouter()
+const { client } = useApolloClient()
+
+const postData = ref<any>(null)
+const loading = ref(false)
+
+const GET_POST_BY_ID = gql`
+  query GetPostById($postId: ID!) {
+    getPostById(postId: $postId) {
+      id
+      authorId
+      author {
+        id
+        firstName
+        lastName
+        avatar
+      }
+      content
+      date
+      timestamp
+      media {
+        src
+        altText
+      }
+    }
+  }
+`
+
+const extractedPostId = computed<string | null>(() => {
+  const msg = props.message as any
+  if (msg.sharedPostId) return String(msg.sharedPostId)
+
+  const url = msg.url || msg.linkUrl || msg.content || ''
+  const match = url.match(/\/posts?\/([a-zA-Z0-9-]+)/i)
+  if (match && match[1]) return match[1]
+
+  const uuidMatch = url.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/)
+  if (uuidMatch) return uuidMatch[0]
+
+  return null
+})
+
+async function fetchPost(postId: string) {
+  loading.value = true
+  try {
+    const { data } = await client.query({
+      query: GET_POST_BY_ID,
+      variables: { postId },
+      fetchPolicy: 'cache-first',
+    })
+    if (data?.getPostById) {
+      postData.value = data.getPostById
+    }
+  } catch (e) {
+    console.error('Failed to load shared post in chat:', e)
+  } finally {
+    loading.value = false
+  }
+}
+
+watch(
+  () => extractedPostId.value,
+  (newId) => {
+    if (newId) {
+      fetchPost(newId)
+    }
+  },
+  { immediate: true }
+)
+
+const authorName = computed(() => {
+  if (postData.value?.author) {
+    const { firstName, lastName } = postData.value.author
+    return `${firstName || ''} ${lastName || ''}`.trim() || 'Post użytkownika'
+  }
+  return 'Post'
+})
+
+const postImage = computed(() => {
+  if (postData.value?.media && postData.value.media.length > 0) {
+    return postData.value.media[0].src
+  }
+  return null
+})
+
+const postContent = computed(() => {
+  return postData.value?.content || (props.message as any).content || ''
+})
+
+const postUrl = computed(() => {
+  const msg = props.message as any
+  if (extractedPostId.value) return `/posts/${extractedPostId.value}`
+  return msg.url || msg.linkUrl || '#'
+})
+
+function handleClick(e: MouseEvent) {
+  if (extractedPostId.value) {
+    e.preventDefault()
+    router.push(`/posts/${extractedPostId.value}`)
+  }
+}
 </script>
 
 <template>
-  <div
-    class="flex flex-col overflow-hidden rounded-2xl shadow-sm min-w-[280px] max-w-full border border-gray-100 bg-gray-200"
+  <a
+    :href="postUrl"
+    @click="handleClick"
+    class="flex flex-col overflow-hidden rounded-[24px] shadow-sm min-w-[280px] max-w-full bg-[#f2f4f7] no-underline transition-opacity hover:opacity-95 cursor-pointer"
   >
-    <div class="flex items-center px-4 py-3">
-      <div class="w-10 h-10 rounded-full overflow-hidden mr-3 border border-gray-200 bg-black">
-        <img
-          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80"
-          class="w-full h-full object-cover opacity-90"
-          alt="Author"
-        />
-      </div>
-      <div class="flex flex-col">
-        <span class="font-bold text-gray-900 text-[15px] leading-tight"> Coding Tips </span>
-      </div>
+    <!-- Nagłówek (Autor / Tytuł posta) -->
+    <div class="px-5 py-4">
+      <span class="font-bold text-gray-900 text-[20px] tracking-tight">
+        {{ authorName }}
+      </span>
     </div>
 
-    <div class="w-full relative bg-gray-800">
+    <!-- Sekcja obrazka -->
+    <div v-if="postImage" class="w-full bg-gray-800">
       <img
-        src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+        :src="postImage"
         class="w-full h-auto object-cover max-h-[250px]"
-        alt="Code example"
+        alt="Post media"
+        loading="lazy"
       />
-      <div
-        class="absolute bottom-0 w-full bg-yellow-100/90 text-center py-1 text-xs font-bold text-gray-800 border-t border-yellow-200"
-      >
-        Takeaway: Unused Code Create Confusion.
-      </div>
     </div>
 
-    <div class="px-4 py-3 flex flex-col justify-between min-h-[80px]">
-      <h3 class="font-bold text-gray-900 text-[17px] leading-tight mb-1">
-        Golden Rules of Writing Good Code.
+    <!-- Dolna sekcja z opisem -->
+    <div class="px-5 py-4 pb-5 flex flex-col">
+      <h3 v-if="postContent" class="font-semibold text-gray-900 text-[18px] leading-snug mb-4 line-clamp-3">
+        {{ postContent }}
       </h3>
 
-      <div class="flex items-center justify-between mt-auto pt-1">
-        <div class="flex items-center text-gray-500 text-sm font-medium">
-          <span>Facebook</span>
-        </div>
-        <span
-          class="text-gray-400 font-bold text-xl leading-none pb-2 cursor-pointer hover:text-gray-600"
-          >...</span
-        >
+      <div class="flex flex-col mt-auto gap-0.5">
+        <span class="text-gray-500 text-[15px]">
+          Facebook
+        </span>
       </div>
     </div>
-  </div>
+  </a>
 </template>

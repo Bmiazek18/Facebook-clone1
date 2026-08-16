@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { useConversationsStore } from '@/stores/conversations'
 
 export interface PollOption {
   id: string | number
   text: string
   votes: number
   votedByMe: boolean
+  voterIds?: string[]
   avatars?: string[]
 }
 
@@ -14,12 +16,16 @@ interface Props {
   initialOptions?: PollOption[]
   allowMultiple?: boolean
   allowAddOption?: boolean
+  messageId?: string | number
+  chatId?: string | number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   initialOptions: () => [],
   allowMultiple: true,
   allowAddOption: true,
+  messageId: '',
+  chatId: '',
 })
 
 const emit = defineEmits<{
@@ -27,14 +33,25 @@ const emit = defineEmits<{
   (e: 'vote', optionIds: (string | number)[]): void
 }>()
 
+const convStore = useConversationsStore()
 const options = ref<PollOption[]>(JSON.parse(JSON.stringify(props.initialOptions)))
 const newOptionText = ref('')
 const isAddingOption = ref(false)
 const selectedIds = ref<Set<string | number>>(new Set())
 
-options.value.forEach((opt) => {
-  if (opt.votedByMe) selectedIds.value.add(opt.id)
-})
+watch(
+  () => props.initialOptions,
+  (newOpts) => {
+    if (newOpts) {
+      options.value = JSON.parse(JSON.stringify(newOpts))
+      selectedIds.value.clear()
+      options.value.forEach((opt) => {
+        if (opt.votedByMe) selectedIds.value.add(opt.id)
+      })
+    }
+  },
+  { deep: true, immediate: true }
+)
 
 const totalVotes = computed(() => {
   return options.value.reduce((acc, opt) => acc + opt.votes, 0)
@@ -60,28 +77,38 @@ const submitVote = () => {
       opt.votes++
       opt.votedByMe = true
     } else if (!isSelected && wasVoted) {
-      opt.votes--
+      opt.votes = Math.max(0, opt.votes - 1)
       opt.votedByMe = false
     }
   })
 
   emit('vote', Array.from(selectedIds.value))
   emit('update:options', options.value)
+
+  if (props.messageId) {
+    const activeChatId = props.chatId || convStore.activeChatId || ''
+    convStore.voteChatPoll(activeChatId, props.messageId, Array.from(selectedIds.value))
+  }
 }
 
 const addNewOption = () => {
   if (!newOptionText.value.trim()) return
 
   const newOption: PollOption = {
-    id: Date.now(),
-    text: newOptionText.value,
+    id: `opt_${Date.now()}`,
+    text: newOptionText.value.trim(),
     votes: 0,
     votedByMe: false,
+    voterIds: [],
   }
 
   options.value.push(newOption)
-
   selectedIds.value.add(newOption.id)
+
+  const activeChatId = props.chatId || convStore.activeChatId || ''
+  if (props.messageId) {
+    convStore.addChatPollOption(activeChatId, props.messageId, newOption)
+  }
 
   newOptionText.value = ''
   isAddingOption.value = false

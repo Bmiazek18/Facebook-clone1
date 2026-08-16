@@ -104,7 +104,7 @@
                     <span class="text-[12px] text-theme-text-muted">Wł.</span>
                   </div>
                 </div>
-                <div class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
+                <div @click="openVerifyEncryptionModal" class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                   <LockIcon :size="20" class="text-theme-text mr-3" />
                   <span class="text-[14px] font-medium text-theme-text">Zweryfikuj pełne szyfrowanie</span>
                 </div>
@@ -122,6 +122,16 @@
                     <span class="text-[14px] font-medium text-theme-text">Zgłoś</span>
                     <span class="text-[12px] text-theme-text-muted">Przekaż opinię i zgłoś konwersację</span>
                   </div>
+                </div>
+                <div
+                  v-if="chatMeta.type === ChatType.Group"
+                  @click="handleLeaveGroup"
+                  class="px-4 py-2.5 flex items-center hover:bg-red-50 dark:hover:bg-red-950/20 text-red-500 cursor-pointer transition rounded-md mx-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  <span class="text-[14px] font-medium">Opuść grupę</span>
                 </div>
               </div>
             </AccordionSection>
@@ -146,6 +156,17 @@
                   <div class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-theme-bg-hover transition">
                     <DotsHorizontalIcon :size="20" class="text-theme-text-muted" />
                   </div>
+                </div>
+                <div
+                  @click="openAddMemberModal"
+                  class="px-3 py-2 flex items-center hover:bg-theme-bg-hover cursor-pointer rounded-md mx-2 group border border-dashed border-theme-border mt-2"
+                >
+                  <div class="w-9 h-9 rounded-full bg-theme-bg flex items-center justify-center mr-3 border border-theme-border text-theme-text-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                  </div>
+                  <span class="text-[14px] font-medium text-theme-text-secondary">Dodaj uczestnika</span>
                 </div>
               </div>
             </AccordionSection>
@@ -182,7 +203,9 @@
   <BaseModal v-if="activeModal === 'theme'" title="Wybierz motyw czatu" @close="closeModal">
     <MessangerTheme @apply="closeThemeModalAndSave" />
   </BaseModal>
-
+ <BaseModal v-if="activeModal === 'encryption'" title="Zweryfikuj pełne szyfrowanie" @close="closeModal">
+   <VerifyEncryptionModal :chat-id="props.chatId"/>
+  </BaseModal>
 <BaseModal v-if="activeModal === 'emoji'" title="Ikona emoji" @close="closeModal">
   <!-- Górny panel: Bieżące emoji + przycisk Usuń -->
   <div class="px-5 pt-4 pb-3">
@@ -192,7 +215,7 @@
 
     <div class="flex items-center justify-between">
       <div class="text-3xl">
-        {{ convStore.selectedEmoji || '👍' }}
+        {{ currentChatEmoji }}
       </div>
 
       <button
@@ -218,6 +241,13 @@
     :members="chatMeta.type === ChatType.Group ? chatMeta.groupMembers || [] : []"
     :current-private-nickname="chatMeta.type === ChatType.Private ? chatMeta.otherUserNickname || chatMeta.name : undefined"
     @update-nicknames="handleUpdateNicknames"
+    @close="closeModal"
+  />
+
+  <AddGroupMemberModal
+    v-if="activeModal === 'add-member'"
+    :existing-member-ids="(chatMeta.groupMembers || []).map(m => String(m.id))"
+    @select-user="handleSelectUser"
     @close="closeModal"
   />
 </template>
@@ -258,12 +288,15 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import MessangerTheme from '@/components/chat/shared/MessangerTheme.vue'
 import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue'
 import EditNicknamesModal from '@/components/profile/EditNicknamesModal.vue'
+import AddGroupMemberModal from './modals/AddGroupMemberModal.vue'
 
 // Store & Data
 import { useConversationsStore } from '@/stores/conversations'
 import { useAuthStore } from '@/stores/auth'
+import { useChatSettings } from '@/composables/chat/useChatSettings'
 import { ChatType, type GroupMember } from '@/types/Chat'
 import { getUserById } from '@/utils/users'
+import VerifyEncryptionModal from './modals/VerifyEncryptionModal.vue'
 
 const props = defineProps<{ chatId: string | number }>()
 const emit = defineEmits<{
@@ -273,6 +306,7 @@ const emit = defineEmits<{
 
 const convStore = useConversationsStore()
 const authStore = useAuthStore()
+const chatSettings = useChatSettings()
 const showInfoPanel = ref(true)
 const panelView = ref<'home' | 'media' | 'search'>('home')
 
@@ -289,8 +323,13 @@ const chatMeta = computed(() => {
   }
 })
 
+const currentChatEmoji = computed(() => {
+  const setting = convStore.settings.find((x) => String(x.chatId) === String(props.chatId))
+  return setting?.emoji || convStore.selectedEmoji || '👍'
+})
+
 // Modale
-type ModalType = 'rename' | 'theme' | 'emoji' | 'nicknames' | 'mute' | null
+type ModalType = 'rename' | 'theme' | 'emoji' | 'nicknames' | 'mute' | 'encryption' | 'add-member' | null
 const activeModal = ref<ModalType>(null)
 
 const closeModal = () => { activeModal.value = null }
@@ -299,7 +338,28 @@ const openEmojiModal = () => { activeModal.value = 'emoji' }
 const openEditNicknamesModal = () => { activeModal.value = 'nicknames' }
 const openMuteModal = () => { activeModal.value = 'mute' }
 const openRenameModal = () => { activeModal.value = 'rename' }
-
+const openVerifyEncryptionModal = () => { activeModal.value = 'encryption' }
+const openAddMemberModal = () => { activeModal.value = 'add-member' }
+const handleSelectUser = async (user: any) => {
+  try {
+    await convStore.addGroupMember(props.chatId, user)
+  } catch (err) {
+    console.error('Failed to add group member:', err)
+  }
+  closeModal()
+}
+const handleLeaveGroup = async () => {
+  if (confirm('Czy na pewno chcesz opuścić tę grupę? Nie będziesz mieć dostępu do nowych wiadomości.')) {
+    try {
+      await convStore.leaveGroup(props.chatId)
+      const router = useRouter()
+      router.push('/chat')
+      emit('back')
+    } catch (err) {
+      console.error('Failed to leave group:', err)
+    }
+  }
+}
 const closeThemeModalAndSave = () => {
   try {
     const themeId = convStore.selectedThemeId as string
@@ -307,14 +367,19 @@ const closeThemeModalAndSave = () => {
     const theme = convStore.themes.find((t) => t.id === themeId)
     if (theme) {
       convStore.messages.push({
-        chatId: props.chatId,
+        id: `local-action-${Date.now()}`,
+        chatId: String(props.chatId),
+        sender: 'me',
         type: 'action',
-        time: new Date(),
+        time: Date.now(),
+        content: `SYSTEM_ACTION:CHANGE_THEME:${theme.id}`,
         subType: 'CHANGE_THEME',
-        payload: theme.title,
-      })
+        payload: theme.id,
+      } as any)
     }
-  } catch {}
+  } catch (e) {
+    console.error('Failed to save chat theme:', e)
+  }
   closeModal()
 }
 
@@ -322,12 +387,18 @@ const onEmojiSelect = (e: { native: string }) => {
   try {
     convStore.setChatEmoji(props.chatId, e.native)
     convStore.messages.push({
-      chatId: props.chatId,
+      id: `local-action-${Date.now()}`,
+      chatId: String(props.chatId),
+      sender: 'me',
       type: 'action',
+      time: Date.now(),
+      content: `SYSTEM_ACTION:CHANGE_E:${e.native}`,
       subType: 'CHANGE_E',
       payload: e.native,
-    })
-  } catch {}
+    } as any)
+  } catch (e) {
+    console.error('Failed to save chat emoji:', e)
+  }
   closeModal()
 }
 
@@ -352,24 +423,31 @@ function handleUpdateNicknames(updatedData: any) {
         // Other user
         convStore.updatePrivateChatNickname(props.chatId, updatedData.nickname)
       } else {
-        // Logged-in user self nickname
         const currentUserId = authStore.currentUser?.id || authStore.currentUserId
-        $fetch('http://localhost:8080/api/chat/settings/nickname', {
-          method: 'POST',
-          query: {
-            conversationId: conversationId,
-            userId: String(currentUserId),
-            nickname: updatedData.nickname
-          }
-        }).catch(err => console.error('Failed to save self nickname to ScyllaDB:', err))
+        const token = typeof window !== 'undefined' ? localStorage.getItem('keycloak-token') : null
+        const headers: Record<string, string> = {}
+        if (token) headers['Authorization'] = `Bearer ${token}`
+        headers['X-User-Id'] = String(currentUserId)
+
+        chatSettings.saveNickname(
+          'http://localhost:8080',
+          headers,
+          conversationId,
+          String(currentUserId),
+          updatedData.nickname,
+          [String(currentUserId).replace('user_', ''), String(props.chatId).replace('user_', '')]
+        )
 
         convStore.messages.push({
-          chatId: props.chatId,
+          id: `local-action-${Date.now()}`,
+          chatId: String(props.chatId),
+          sender: 'me',
           type: 'action',
           subType: 'CHANGE_NICKNAME',
           payload: updatedData.nickname,
-          time: new Date()
-        })
+          content: `SYSTEM_ACTION:CHANGE_NICKNAME:${updatedData.nickname}`,
+          time: Date.now()
+        } as any)
       }
     } else if (typeof updatedData === 'string') {
       convStore.updatePrivateChatNickname(props.chatId, updatedData)

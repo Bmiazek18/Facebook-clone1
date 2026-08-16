@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch, nextTick } from 'vue'
 import PlayIcon from 'vue-material-design-icons/Play.vue'
 import PauseIcon from 'vue-material-design-icons/Pause.vue'
 import type { Message, AudioState } from '@/types/Message'
@@ -10,7 +10,7 @@ const props = defineProps<{
   boxId: string | number | undefined // Changed from injectedBoxId
   bubbleColor: string
   // removed injectedAudioStates
-}>()
+ }>()
 
 // Use useAudioPlayer directly
 const { audioStates, toggleAudioPlayback, seekAudio } = useAudioPlayer(props.boxId)
@@ -26,6 +26,21 @@ const handleSeek = (event: MouseEvent) => {
   const newTime = (props.message.duration || 0) * seekPercentage
   seekAudio(props.message, newTime)
 }
+
+watch(
+  () => props.message.audioUrl,
+  (newUrl) => {
+    if (newUrl) {
+      nextTick(() => {
+        const domId = `audio-${props.boxId ?? '0'}-${props.message.id}`
+        const audioElement = document.getElementById(domId) as HTMLAudioElement | null
+        if (audioElement) {
+          audioElement.load()
+        }
+      })
+    }
+  }
+)
 
 const visualizerBars = [10, 20, 14, 25, 20, 15, 20, 10]
 const VISUALIZER_THRESHOLDS = [0, 12, 25, 37, 50, 62, 75, 87]

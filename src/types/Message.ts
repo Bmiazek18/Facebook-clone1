@@ -1,6 +1,6 @@
 export interface BaseMessage {
   id: number | string
-  sender: 'me' | 'other'
+  sender: 'me' | 'them'
   time: number
   timestamp?: string
   isReply?: boolean
@@ -18,9 +18,8 @@ export interface TextMessage extends BaseMessage {
 }
 
 /** Wiadomość używana przez store konwersacji i dane zwracane przez API czatu. */
-export interface ChatMessage extends Omit<BaseMessage, 'sender' | 'reactions'> {
+export interface ChatMessage extends Omit<BaseMessage, 'reactions'> {
   chatId: string
-  sender: 'me' | 'them'
   type: Message['type']
   content: string
   imageUrl?: string
@@ -28,6 +27,8 @@ export interface ChatMessage extends Omit<BaseMessage, 'sender' | 'reactions'> {
   duration?: number
   reactions?: Record<string, string[]>
   isPinned?: boolean
+  pollData?: PollData
+  systemActionPayload?: string
 }
 
 export interface ImageMessage extends BaseMessage {
@@ -109,9 +110,12 @@ export interface LinkMessage extends BaseMessage {
   content: string
 }
 export interface PostLinkMessage extends BaseMessage {
-  type: 'post_link'
+  type: 'feed-link' | 'post_link'
 
-  sharedPostId: string
+  sharedPostId?: string
+  url?: string
+  linkUrl?: string
+  content?: string
 }
 
 // ----------------

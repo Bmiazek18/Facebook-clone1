@@ -34,35 +34,8 @@ export function getUserById(id: string | number): User | undefined {
   }
 
   // Fallback default mock users
-  const defaultUsers: Record<string, { name: string, avatar: string }> = {
-    '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce': {
-      name: 'Jan Wiśniewski',
-      avatar: 'https://randomuser.me/api/portraits/men/32.jpg'
-    },
-    '469e30bb-139b-43a8-8fa6-cbedce352bfa': {
-      name: 'Piotr Kowalski',
-      avatar: 'https://randomuser.me/api/portraits/men/84.jpg'
-    }
-  }
 
-  const def = defaultUsers[cleanId]
-  if (def) {
-    return {
-      id: cleanId,
-      name: def.name,
-      avatar: def.avatar,
-      bio: 'Bio',
-      location: '',
-      website: '',
-      joinDate: '',
-      followersCount: 0,
-      followingCount: 0,
-      friendsCount: 0,
-      postsCount: 0,
-      cover: '',
-      status: 'offline'
-    } as User
-  }
+
 
   return undefined
 }
