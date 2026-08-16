@@ -1,182 +1,207 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useUserMedia, type UserMediaItem } from '@/composables/feed/useUserMedia'
+import { useAuthStore } from '@/stores/auth'
 
 definePageMeta({
   keepScroll: true,
 })
 
 // Ikony
-import Earth from 'vue-material-design-icons/Earth.vue'
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
-import EyeOutline from 'vue-material-design-icons/EyeOutline.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
-import Magnify from 'vue-material-design-icons/Magnify.vue'
+import Play from 'vue-material-design-icons/Play.vue'
+import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue'
+import ImageMultiple from 'vue-material-design-icons/ImageMultiple.vue'
+import TagOutline from 'vue-material-design-icons/TagOutline.vue'
+import VideoOutline from 'vue-material-design-icons/VideoOutline.vue'
+import FolderMultipleOutline from 'vue-material-design-icons/FolderMultipleOutline.vue'
 
-// --- STANY AKTYWNYCH SUB-TABÓW ---
-const activePhotosTab = ref<'yours' | 'albums'>('yours')
-const activeReelsTab = ref<'yours' | 'saved'>('yours')
+const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
 
-// --- PRZYKŁADOWE DANE ---
-const photos = ref([
-  { id: 1, url: 'https://picsum.photos/id/10/300/300', editable: true },
-  { id: 2, url: 'https://picsum.photos/id/20/300/300', editable: true },
-  { id: 3, url: 'https://picsum.photos/id/30/300/300', editable: true },
-])
+const profileUserId = computed(() => (route.params.userId as string) || String(authStore.currentUserId))
+const isOwnProfile = computed(() => String(profileUserId.value) === String(authStore.currentUserId))
 
-// Dane albumów na podstawie Twojego zrzutu ekranu
-const albums = ref([
-  { id: 1, title: 'Zdjęcia profilowe', count: 2, coverUrl: 'https://picsum.photos/id/64/300/300' },
-  { id: 2, title: 'Zdjęcia w tle', count: 5, coverUrl: 'https://picsum.photos/id/29/300/300' },
-])
+// Stany zakładek
+type TabType = 'photos' | 'tagged' | 'videos' | 'albums'
+const activeTab = ref<TabType>('photos')
+const selectedAlbum = ref<string | null>(null)
 
-const reels = ref([{ id: 1, url: 'https://picsum.photos/id/40/200/400', views: '26' }])
+// Modal podglądu (Lightbox)
+const activeMediaModal = ref<UserMediaItem | null>(null)
 
-const pastEvents = ref([
-  {
-    id: 1,
-    date: 'Sob, 30 maj',
-    title: 'Rajd Elektronika 2026',
-    desc: 'Pole namiotowe Małdyty "Dzika Gęś" · Morąg',
-    organizer: 'WRS ETI',
-    img: 'https://picsum.photos/id/50/150/100',
-  },
-  {
-    id: 2,
-    date: 'Pt, 29 maj',
-    title: 'JUWENALIA TRÓJMIASTA 2026 ⭐️ FESTIWAL ⭐️ 29-31 MAJ ⭐️',
-    desc: 'Wydarzenie Studenci Trójmiasto',
-    organizer: 'Studenci Trójmiasto',
-    img: 'https://picsum.photos/id/60/150/100',
-  },
-  {
-    id: 3,
-    date: 'Sob, 16 maj',
-    title: 'Technikalia.26',
-    desc: 'Camper Park Politechniki Gdańskiej, ul. Towarowa 40...',
-    organizer: 'WRS ETI',
-    img: 'https://picsum.photos/id/70/150/100',
-  },
-  {
-    id: 4,
-    date: 'Czw, 9 paź 2025',
-    title: '🐴 Wielkie Otrzęsiny Studenckie 🌵|| EiA, ETI, WILIŚ, ZIE',
-    desc: 'AK PG Kwadratowa · Gdańsk',
-    organizer: 'WRS EiA',
-    img: 'https://picsum.photos/id/80/150/100',
-  },
-])
+const {
+  mediaItems,
+  albums,
+  loading,
+  hasMore,
+  totalCount,
+  fetchMedia,
+  loadMore,
+  fetchAlbums,
+} = useUserMedia()
 
-const groups = ref([
-  {
-    id: 1,
-    name: 'Studenci Miasta Gdańsk !!',
-    type: 'Grupa publiczna',
-    members: '24.6K członków',
-    img: 'https://picsum.photos/id/100/100/100',
+function switchTab(tab: TabType) {
+  activeTab.value = tab
+  selectedAlbum.value = null
+  if (tab === 'photos') {
+    fetchMedia(profileUserId.value, 'PHOTOS')
+  } else if (tab === 'tagged') {
+    fetchMedia(profileUserId.value, 'TAGGED')
+  } else if (tab === 'videos') {
+    fetchMedia(profileUserId.value, 'VIDEOS')
+  } else if (tab === 'albums') {
+    fetchAlbums(profileUserId.value)
+  }
+}
+
+function openAlbum(albumName: string) {
+  selectedAlbum.value = albumName
+  fetchMedia(profileUserId.value, 'ALBUM', albumName)
+}
+
+function closeAlbum() {
+  selectedAlbum.value = null
+  fetchAlbums(profileUserId.value)
+}
+
+function openMedia(item: UserMediaItem) {
+  activeMediaModal.value = item
+}
+
+function closeMedia() {
+  activeMediaModal.value = null
+}
+
+function isVideo(url: string, type: string) {
+  if (type === 'VIDEO') return true
+  const lower = url.toLowerCase()
+  return lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov') || lower.contains('/video/')
+}
+
+watch(
+  () => profileUserId.value,
+  (newId) => {
+    if (newId) {
+      switchTab(activeTab.value)
+    }
   },
-  {
-    id: 2,
-    name: 'PG Kupię/Sprzedam Politechnika Gdańska',
-    type: 'Grupa publiczna',
-    members: '5.7K członków',
-    img: 'https://picsum.photos/id/110/100/100',
-  },
-  {
-    id: 3,
-    name: 'Tanie loty królu złoty!',
-    type: 'Grupa publiczna',
-    members: '256.8K członków',
-    img: 'https://picsum.photos/id/120/100/100',
-  },
-  {
-    id: 4,
-    name: 'Absurdalnie Tanie Loty',
-    type: 'Grupa publiczna',
-    members: '1.6M członków',
-    img: 'https://picsum.photos/id/130/100/100',
-  },
-])
+  { immediate: true }
+)
+
+onMounted(() => {
+  fetchAlbums(profileUserId.value)
+})
 </script>
 
 <template>
-  <div class="bg-[#F0F2F5] p-4 space-y-4 antialiased   text-[#050505]">
+  <div class="bg-[#F0F2F5] p-4 space-y-4 antialiased text-[#050505]">
     <div class="bg-white rounded-xl shadow-sm p-4">
+      <!-- Nagłówek -->
       <div class="flex items-center justify-between mb-2">
-        <h2 class="text-[20px] font-bold">Zdjęcia</h2>
         <div class="flex items-center gap-2">
           <button
-            class="text-[#1877F2] hover:bg-blue-50 px-3 py-2 rounded-md font-medium text-[15px] transition-colors"
+            v-if="selectedAlbum"
+            @click="closeAlbum"
+            class="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
-            Dodaj zdjęcia/film
+            <ArrowLeft :size="20" />
           </button>
+          <h2 class="text-[20px] font-bold">
+            {{ selectedAlbum ? selectedAlbum : 'Zdjęcia i multimedia' }}
+          </h2>
+          <span v-if="totalCount > 0 && !selectedAlbum" class="text-sm font-normal text-gray-500">
+            ({{ totalCount }})
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <NuxtLink
+            v-if="isOwnProfile"
+            to="/addAlbum"
+            class="text-[#1877F2] hover:bg-blue-50 px-3 py-2 rounded-md font-medium text-[15px] transition-colors flex items-center gap-1"
+          >
+            <Plus :size="18" />
+            <span>Utwórz album</span>
+          </NuxtLink>
           <button class="p-2 bg-[#E4E6EB] hover:bg-[#D8DADF] rounded-full transition-colors">
             <DotsHorizontal :size="16" />
           </button>
         </div>
       </div>
 
-      <div class="flex items-center justify-between border-b border-gray-200 mb-4">
-        <div class="flex gap-1">
+      <!-- Pasek zakładek i filtrów -->
+      <div v-if="!selectedAlbum" class="flex items-center justify-between border-b border-gray-200 mb-4 overflow-x-auto">
+        <div class="flex gap-1 min-w-max">
           <button
-            @click="activePhotosTab = 'yours'"
-            class="px-4 py-3 text-[15px] font-semibold transition-all relative"
-            :class="
-              activePhotosTab === 'yours' ? 'text-[#1877F2]' : 'text-[#65676B] hover:bg-gray-50'
-            "
+            @click="switchTab('photos')"
+            class="px-4 py-3 text-[15px] font-semibold transition-all relative flex items-center gap-1.5"
+            :class="activeTab === 'photos' ? 'text-[#1877F2]' : 'text-[#65676B] hover:bg-gray-50'"
           >
-            Twoje zdjęcia
+            <ImageMultiple :size="18" />
+            <span>Twoje zdjęcia</span>
             <div
-              v-if="activePhotosTab === 'yours'"
+              v-if="activeTab === 'photos'"
               class="absolute bottom-0 left-0 right-0 h-[3px] bg-[#1877F2]"
             ></div>
           </button>
+
           <button
-            @click="activePhotosTab = 'albums'"
-            class="px-4 py-3 text-[15px] font-semibold transition-all relative"
-            :class="
-              activePhotosTab === 'albums' ? 'text-[#1877F2]' : 'text-[#65676B] hover:bg-gray-50'
-            "
+            @click="switchTab('tagged')"
+            class="px-4 py-3 text-[15px] font-semibold transition-all relative flex items-center gap-1.5"
+            :class="activeTab === 'tagged' ? 'text-[#1877F2]' : 'text-[#65676B] hover:bg-gray-50'"
           >
-            Albumy
+            <TagOutline :size="18" />
+            <span>Zdjęcia z oznaczeniem</span>
             <div
-              v-if="activePhotosTab === 'albums'"
+              v-if="activeTab === 'tagged'"
+              class="absolute bottom-0 left-0 right-0 h-[3px] bg-[#1877F2]"
+            ></div>
+          </button>
+
+          <button
+            @click="switchTab('videos')"
+            class="px-4 py-3 text-[15px] font-semibold transition-all relative flex items-center gap-1.5"
+            :class="activeTab === 'videos' ? 'text-[#1877F2]' : 'text-[#65676B] hover:bg-gray-50'"
+          >
+            <VideoOutline :size="18" />
+            <span>Filmy i Rolki</span>
+            <div
+              v-if="activeTab === 'videos'"
+              class="absolute bottom-0 left-0 right-0 h-[3px] bg-[#1877F2]"
+            ></div>
+          </button>
+
+          <button
+            @click="switchTab('albums')"
+            class="px-4 py-3 text-[15px] font-semibold transition-all relative flex items-center gap-1.5"
+            :class="activeTab === 'albums' ? 'text-[#1877F2]' : 'text-[#65676B] hover:bg-gray-50'"
+          >
+            <FolderMultipleOutline :size="18" />
+            <span>Albumy</span>
+            <div
+              v-if="activeTab === 'albums'"
               class="absolute bottom-0 left-0 right-0 h-[3px] bg-[#1877F2]"
             ></div>
           </button>
         </div>
-        <button class="p-2 text-[#65676B] hover:bg-gray-100 rounded-full">
-          <Magnify :size="20" />
-        </button>
       </div>
 
-      <div
-        v-if="activePhotosTab === 'yours'"
-        class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1.5"
-      >
-        <div
-          v-for="img in photos"
-          :key="img.id"
-          class="relative aspect-square group overflow-hidden rounded-md border border-gray-200"
-        >
-          <img
-            :src="img.url"
-            class="w-full h-full object-cover transition-transform duration-200 group-hover:scale-102"
-          />
-          <button
-            v-if="img.editable"
-            class="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-full transition-colors shadow-sm"
-          >
-            <Pencil :size="16" />
-          </button>
-        </div>
+      <!-- STAN ŁADOWANIA -->
+      <div v-if="loading && mediaItems.length === 0" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 py-4">
+        <div v-for="i in 10" :key="i" class="aspect-square bg-gray-200 animate-pulse rounded-md"></div>
       </div>
 
+      <!-- WIDOK ALBUMÓW -->
       <div
-        v-if="activePhotosTab === 'albums'"
+        v-else-if="activeTab === 'albums' && !selectedAlbum"
         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
       >
-        <NuxtLink to="/addAlbum" class="cursor-pointer group">
+        <NuxtLink v-if="isOwnProfile" to="/addAlbum" class="cursor-pointer group">
           <div
             class="aspect-square w-full bg-[#E4E6EB] hover:bg-[#D8DADF] transition rounded-xl flex items-center justify-center border border-gray-200"
           >
@@ -187,173 +212,157 @@ const groups = ref([
           </div>
         </NuxtLink>
 
-        <div v-for="album in albums" :key="album.id" class="cursor-pointer group">
+        <div
+          v-for="album in albums"
+          :key="album.name"
+          @click="openAlbum(album.name)"
+          class="cursor-pointer group"
+        >
           <div
-            class="aspect-square w-full rounded-xl overflow-hidden border border-gray-200 hover:brightness-95 transition"
+            class="aspect-square w-full rounded-xl overflow-hidden border border-gray-200 bg-gray-100 hover:brightness-95 transition relative flex items-center justify-center"
           >
-            <img :src="album.coverUrl" class="w-full h-full object-cover" />
+            <img
+              v-if="album.coverUrl"
+              :src="album.coverUrl"
+              class="w-full h-full object-cover"
+              loading="lazy"
+            />
+            <FolderMultipleOutline v-else :size="48" class="text-gray-400" />
           </div>
           <div class="mt-2 pl-1">
             <h4 class="text-[15px] font-semibold text-[#050505] leading-tight truncate">
-              {{ album.title }}
+              {{ album.name }}
             </h4>
-            <p class="text-[13px] text-[#65676B] mt-0.5">{{ album.count }} elementy</p>
+            <p class="text-[13px] text-[#65676B] mt-0.5">{{ album.count }} elementów</p>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="bg-white rounded-xl shadow-sm p-4">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="text-[20px] font-bold">Rolki</h2>
-        <button
-          class="text-[#1877F2] hover:bg-blue-50 px-3 py-2 rounded-md font-medium text-[15px] transition-colors"
-        >
-          Utwórz rolkę
-        </button>
+        <div v-if="albums.length === 0 && !isOwnProfile" class="col-span-full py-12 text-center text-gray-500">
+          Brak dostępnych albumów.
+        </div>
       </div>
 
-      <div class="flex gap-1 border-b border-gray-200 mb-4">
-        <button
-          @click="activeReelsTab = 'yours'"
-          class="px-4 py-3 text-[15px] font-semibold relative"
-          :class="activeReelsTab === 'yours' ? 'text-[#1877F2]' : 'text-[#65676B] hover:bg-gray-50'"
-        >
-          Twoje rolki
-          <div
-            v-if="activeReelsTab === 'yours'"
-            class="absolute bottom-0 left-0 right-0 h-[3px] bg-[#1877F2]"
-          ></div>
-        </button>
-        <button
-          @click="activeReelsTab = 'saved'"
-          class="px-4 py-3 text-[15px] font-semibold relative"
-          :class="activeReelsTab === 'saved' ? 'text-[#1877F2]' : 'text-[#65676B] hover:bg-gray-50'"
-        >
-          Zapisane rolki
-          <div
-            v-if="activeReelsTab === 'saved'"
-            class="absolute bottom-0 left-0 right-0 h-[3px] bg-[#1877F2]"
-          ></div>
-        </button>
-      </div>
-
-      <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
+      <!-- WIDOK SIATKI MEDIÓW (ZDJĘCIA, OZNACZENIA, WIDEO, LUB WNĘTRZE ALBUMU) -->
+      <div v-else>
         <div
-          v-for="reel in reels"
-          :key="reel.id"
-          class="relative aspect-[9/16] w-full rounded-xl overflow-hidden group shadow-sm"
+          v-if="mediaItems.length > 0"
+          class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2"
         >
-          <img :src="reel.url" class="w-full h-full object-cover" />
           <div
-            class="absolute bottom-2 left-2 flex items-center gap-1 text-white text-[13px] font-semibold drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]"
+            v-for="item in mediaItems"
+            :key="item.id"
+            @click="openMedia(item)"
+            class="relative aspect-square group overflow-hidden rounded-md border border-gray-200 bg-gray-100 cursor-pointer"
           >
-            <EyeOutline :size="16" />
-            <span>{{ reel.views }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
+            <video
+              v-if="isVideo(item.mediaUrl, item.mediaType)"
+              :src="item.mediaUrl"
+              class="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+            ></video>
+            <img
+              v-else
+              :src="item.mediaUrl"
+              :alt="item.altText || 'Zdjęcie użytkownika'"
+              class="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+              loading="lazy"
+            />
 
-    <div class="bg-white rounded-xl shadow-sm p-4">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="text-[20px] font-bold">Wydarzenia</h2>
-        <div class="flex items-center gap-2">
-          <button
-            class="bg-[#E7F3FF] hover:bg-[#DBE7F2] text-[#1877F2] px-3 h-9 rounded-md font-semibold text-[14px] flex items-center gap-1.5 transition-colors"
-          >
-            <Plus :size="16" />
-            Utwórz wydarzenie
-          </button>
-          <button class="p-2 bg-[#E4E6EB] hover:bg-[#D8DADF] rounded-full transition-colors">
-            <DotsHorizontal :size="16" />
-          </button>
-        </div>
-      </div>
-
-      <div class="border-b border-gray-200 mb-4">
-        <div class="px-4 py-3 text-[15px] font-semibold text-[#1877F2] inline-block relative">
-          Wydarzenia z przeszłości
-          <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-[#1877F2]"></div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div
-          v-for="event in pastEvents"
-          :key="event.id"
-          class="flex gap-3 p-2 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-        >
-          <img
-            :src="event.img"
-            class="w-[140px] h-[84px] object-cover rounded-lg border border-gray-100 shrink-0"
-          />
-          <div class="flex flex-col justify-center min-w-0">
-            <span class="text-[12px] text-[#980202] font-medium uppercase tracking-wide">{{
-              event.date
-            }}</span>
-            <h3 class="text-[15px] font-bold text-[#050505] leading-tight truncate mt-0.5">
-              {{ event.title }}
-            </h3>
-            <span class="text-[13px] text-[#65676B] truncate mt-0.5">{{ event.desc }}</span>
-            <span class="text-[12px] text-[#65676B] font-semibold mt-1"
-              >Wydarzenie {{ event.organizer }}</span
+            <!-- Wskaźnik wideo -->
+            <div
+              v-if="isVideo(item.mediaUrl, item.mediaType)"
+              class="absolute bottom-2 right-2 bg-black/60 text-white p-1 rounded-full pointer-events-none"
             >
-          </div>
-        </div>
-      </div>
+              <Play :size="16" />
+            </div>
 
-      <button
-        class="w-full mt-4 py-2 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold text-[15px] rounded-lg transition-colors text-center"
-      >
-        Zobacz wszystko
-      </button>
-    </div>
-
-    <div class="bg-white rounded-xl shadow-sm p-4">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="text-[20px] font-bold">Grupy</h2>
-        <button class="p-2 bg-[#E4E6EB] hover:bg-[#D8DADF] rounded-full transition-colors">
-          <DotsHorizontal :size="16" />
-        </button>
-      </div>
-
-      <div class="border-b border-gray-200 mb-4">
-        <div class="px-4 py-3 text-[15px] font-semibold text-[#1877F2] inline-block relative">
-          Publiczne
-          <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-[#1877F2]"></div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div
-          v-for="group in groups"
-          :key="group.id"
-          class="flex items-center gap-3 p-1 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer"
-        >
-          <img
-            :src="group.img"
-            class="w-[60px] h-[60px] object-cover rounded-xl border border-gray-200/60 shrink-0"
-          />
-          <div class="flex flex-col min-w-0">
-            <h3 class="text-[15px] font-bold text-[#050505] leading-snug truncate hover:underline">
-              {{ group.name }}
-            </h3>
-            <div class="flex items-center gap-1 text-[13px] text-[#65676B] mt-0.5">
-              <Earth :size="14" class="inline text-[#65676B]" />
-              <span>{{ group.type }}</span>
-              <span>·</span>
-              <span>{{ group.members }}</span>
+            <!-- Nakładka hover -->
+            <div
+              class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white"
+            >
+              <span class="text-xs font-semibold px-2 py-1 bg-black/50 rounded">Pokaż post</span>
             </div>
           </div>
         </div>
-      </div>
 
-      <button
-        class="w-full mt-5 py-2 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold text-[15px] rounded-lg transition-colors text-center"
-      >
-        Zobacz wszystko
-      </button>
+        <!-- PUSTY STAN -->
+        <div v-else-if="!loading" class="py-12 text-center text-gray-500">
+          <p class="text-[16px] font-semibold">Brak multimediów w tej kategorii</p>
+          <p class="text-sm mt-1 text-gray-400">Dodaj nowy post ze zdjęciem lub filmem, aby pojawił się tutaj.</p>
+        </div>
+
+        <!-- PRZYCISK ZAŁADUJ WIĘCEJ -->
+        <div v-if="hasMore" class="text-center mt-6">
+          <button
+            @click="loadMore(profileUserId)"
+            :disabled="loading"
+            class="px-6 py-2.5 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold rounded-lg text-sm transition-colors"
+          >
+            {{ loading ? 'Wczytywanie...' : 'Załaduj więcej zdjęć' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL PEŁNOEKRANOWY (LIGHTBOX / PODGLĄD) -->
+    <div
+      v-if="activeMediaModal"
+      class="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+      @click.self="closeMedia"
+    >
+      <div class="relative max-w-5xl w-full max-h-[90vh] flex flex-col md:flex-row bg-[#18191A] rounded-xl overflow-hidden shadow-2xl">
+        <!-- Obszar mediów po lewej -->
+        <div class="flex-1 bg-black flex items-center justify-center min-h-[300px] md:min-h-[500px]">
+          <video
+            v-if="isVideo(activeMediaModal.mediaUrl, activeMediaModal.mediaType)"
+            :src="activeMediaModal.mediaUrl"
+            controls
+            autoplay
+            class="max-h-[85vh] max-w-full object-contain"
+          ></video>
+          <img
+            v-else
+            :src="activeMediaModal.mediaUrl"
+            class="max-h-[85vh] max-w-full object-contain"
+          />
+        </div>
+
+        <!-- Panel boczny informacji po prawej -->
+        <div class="w-full md:w-80 bg-white p-4 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-3 border-b border-gray-200">
+              <h3 class="font-bold text-gray-900">Szczegóły zdjęcia</h3>
+              <button
+                @click="closeMedia"
+                class="p-1 hover:bg-gray-100 rounded-full text-gray-500"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div class="mt-4 space-y-2 text-sm text-gray-700">
+              <p v-if="activeMediaModal.albumName">
+                <span class="font-semibold text-gray-500">Album:</span> {{ activeMediaModal.albumName }}
+              </p>
+              <p v-if="activeMediaModal.createdAt">
+                <span class="font-semibold text-gray-500">Data dodania:</span>
+                {{ new Date(activeMediaModal.createdAt).toLocaleDateString('pl-PL') }}
+              </p>
+              <p v-if="activeMediaModal.altText">
+                <span class="font-semibold text-gray-500">Opis:</span> {{ activeMediaModal.altText }}
+              </p>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-gray-200 mt-6">
+            <button
+              @click="router.push(`/posts/${activeMediaModal.postId}`)"
+              class="w-full py-2 px-4 bg-[#1877F2] hover:bg-[#166FE5] text-white font-semibold rounded-lg text-sm transition-colors text-center"
+            >
+              Przejdź do posta
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

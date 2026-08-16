@@ -2,7 +2,6 @@
 import { ref, watch, computed, provide, type ComponentPublicInstance } from 'vue'
 import { useRouter, onBeforeRouteLeave, type RouteLocation } from 'vue-router'
 import { useWindowVirtualizer } from '@tanstack/vue-virtual'
-import { useQuery } from '@vue/apollo-composable'
 import { GET_HOME_DATA } from '@/graphql/home'
 import { processActiveStories } from '@/utils/stories'
 import { processPostsIntoReels } from '@/utils/reels'
@@ -19,57 +18,123 @@ import ReelsGallery from '@/components/feed/reel/ReelsGallery.vue'
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import { useCreatePostStore } from '~/stores/createPost'
 import { useAuthStore } from '@/stores/auth'
+import { usePostsStore, useStoriesStore } from '@/composables/feed/useAppState'
 
 const authStore = useAuthStore()
 const currentUserId = computed(() => String(authStore.currentUserId || '123'))
 const postsPerPage = 5
 
-const { result, loading, error, fetchMore } = useQuery(GET_HOME_DATA, () => ({
+const postsStore = usePostsStore()
+const storiesStore = useStoriesStore()
+
+const { data: result, error } = await useAsyncQuery<any>(GET_HOME_DATA, {
   currentUserId: currentUserId.value,
   limit: postsPerPage,
   offset: 0
-}))
+})
 
-import { usePostsStore, useStoriesStore } from '@/composables/feed/useAppState'
+// Przetwarzanie danych pobranych z GraphQL
+const populateFeed = (data: any) => {
+  if (!data) return
+  const feed = (data.getFeed ?? []).filter(Boolean)
+  postsStore.posts = feed.map((post: any) => {
+    let formattedReactions: Record<string, number[]> = {}
+    let reactionUserNames: Record<string, string[]> = {}
+    if (Array.isArray(post.reactions)) {
+      post.reactions.forEach((r: any) => {
+        const type = r.reactionType.toLowerCase()
+        formattedReactions[type] = r.userIds.map(String)
+        if (Array.isArray(r.users)) {
+          reactionUserNames[type] = r.users.map((u: any) =>
+            [u.firstName, u.lastName].filter(Boolean).join(' ') || 'Użytkownik'
+          )
+        }
+      })
+    } else if (post.reactions) {
+      formattedReactions = post.reactions
+    }
 
-const postsStore = usePostsStore()
-const storiesStore = useStoriesStore()
+    return {
+      ...post,
+      reactions: formattedReactions,
+      rawReactions: post.reactions,
+      reactionUserNames,
+      stats: {
+        reactions: Object.values(formattedReactions).flat().length,
+        comments: post.commentCount ?? 0,
+        shares: post.shareCount ?? 0,
+      }
+    }
+  })
+
+  if (data.getActiveStories) {
+    storiesStore.userStories = processActiveStories(data.getActiveStories ?? [], String(currentUserId.value))
+  }
+}
+
+if (result.value) {
+  populateFeed(result.value)
+}
+
+watch(result, (newVal) => {
+  if (newVal) populateFeed(newVal)
+})
+
+const friends = computed(() => result.value?.getFriends ?? [])
+const birthdayUsers = computed(() => result.value?.getBirthdayUsers ?? [])
 
 const allPosts = computed(() => postsStore.posts)
 const allStories = computed(() => storiesStore.allUserStories)
 const allReels = computed(() => processPostsIntoReels(postsStore.posts, String(currentUserId.value)))
 
-const friends = ref<any[]>([])
-const birthdayUsers = ref<any[]>([])
-
 provide('allPosts', allPosts)
 provide('allStories', allStories)
 
-watch(result, (newVal) => {
-  if (newVal) {
-    const feed = newVal.getFeed ?? []
-    postsStore.posts = feed.map((post: any) => {
+// =========================================
+// 2. INFINITE SCROLL (Dla dalszego dociągania postów)
+// =========================================
+const isFetchingMore = ref(false)
+const hasMore = ref(true)
+
+// Do paginacji używamy tradycyjnego klienta Apollo z Nuxta
+const nuxtApp = useNuxtApp()
+
+const loadMorePosts = async () => {
+  if (isFetchingMore.value || !hasMore.value) return
+
+  isFetchingMore.value = true
+
+  try {
+    // Odwołanie do domyślnego klienta Apollo w Nuxt
+    const apolloClient = nuxtApp.$apollo?.defaultClient
+    if (!apolloClient) return
+
+    const { data: fetchMoreResult } = await apolloClient.query({
+      query: GET_HOME_DATA,
+      variables: {
+        currentUserId: currentUserId.value,
+        limit: postsPerPage,
+        offset: allPosts.value.length
+      }
+    })
+
+    const newPosts = (fetchMoreResult?.getFeed ?? []).filter(Boolean)
+    if (newPosts.length === 0) {
+      hasMore.value = false
+      return
+    }
+
+    // Formatowanie nowych postów i dodanie do stoiska
+    const formattedNewPosts = newPosts.map((post: any) => {
       let formattedReactions: Record<string, number[]> = {}
-      let reactionUserNames: Record<string, string[]> = {}
       if (Array.isArray(post.reactions)) {
         post.reactions.forEach((r: any) => {
-          const type = r.reactionType.toLowerCase()
-          formattedReactions[type] = r.userIds.map(String)
-          if (Array.isArray(r.users)) {
-            reactionUserNames[type] = r.users.map((u: any) =>
-              [u.firstName, u.lastName].filter(Boolean).join(' ') || 'Użytkownik'
-            )
-          }
+          formattedReactions[r.reactionType.toLowerCase()] = r.userIds.map(String)
         })
-      } else if (post.reactions) {
-        formattedReactions = post.reactions
       }
-
       return {
         ...post,
         reactions: formattedReactions,
-        rawReactions: post.reactions,
-        reactionUserNames,
         stats: {
           reactions: Object.values(formattedReactions).flat().length,
           comments: post.commentCount ?? 0,
@@ -78,40 +143,7 @@ watch(result, (newVal) => {
       }
     })
 
-    storiesStore.userStories = processActiveStories(newVal.getActiveStories ?? [], String(currentUserId.value))
-    friends.value = newVal.getFriends ?? []
-    birthdayUsers.value = newVal.getBirthdayUsers ?? []
-  }
-}, { immediate: true })
-
-// =========================================
-// 2. INFINITE SCROLL (Apollo fetchMore)
-// =========================================
-const isFetchingMore = ref(false)
-const hasMore = ref(true)
-
-const loadMorePosts = async () => {
-  if (loading.value || isFetchingMore.value || !hasMore.value) return
-
-  isFetchingMore.value = true
-
-  try {
-    await fetchMore({
-      variables: {
-        offset: allPosts.value.length
-      },
-      updateQuery: (previousResult, { fetchMoreResult }) => {
-        if (!fetchMoreResult || !fetchMoreResult.getFeed || fetchMoreResult.getFeed.length === 0) {
-          hasMore.value = false
-          return previousResult
-        }
-
-        return {
-          ...previousResult,
-          getFeed: [...previousResult.getFeed, ...fetchMoreResult.getFeed]
-        }
-      }
-    })
+    postsStore.posts = [...postsStore.posts, ...formattedNewPosts]
   } catch (e) {
     console.error('Błąd paginacji Apollo:', e)
   } finally {
@@ -133,7 +165,8 @@ const processedList = computed(() => {
   const list: ProcessedItem[] = []
 
   allPosts.value.forEach((post: any, index: number) => {
-    list.push({ type: 'post', data: post, id: `post-${post.id}` })
+    if (!post) return
+    list.push({ type: 'post', data: post, id: `post-${post.id || index}` })
 
     if (index === PEOPLE_INDEX) {
       list.push({ type: 'peopleYouMayKnow', id: 'people-you-may-know' })
@@ -147,7 +180,7 @@ const processedList = computed(() => {
 })
 
 // =========================================
-// 4. TANSTACK VIRTUAL (Bezpieczna konfiguracja)
+// 4. TANSTACK VIRTUAL
 // =========================================
 const rowVirtualizer = useWindowVirtualizer({
   get count() {
@@ -156,20 +189,21 @@ const rowVirtualizer = useWindowVirtualizer({
   estimateSize: () => 650,
   overscan: 15,
   scrollMargin: 400,
-  // Zabezpieczenie przed pętlą inicjalizacji w środowisku SSR / Nuxt
-  getScrollElement: () => typeof window !== 'undefined' ? window : null
+  getScrollElement: () => (typeof window !== 'undefined' ? window : null),
 })
 
-// Bezpieczne wyciągnięcie wartości numerycznych
 const totalSize = computed(() => rowVirtualizer.value?.getTotalSize() ?? 0)
 const scrollMarginOffset = computed(() => rowVirtualizer.value?.options?.scrollMargin ?? 0)
 
 const virtualEntries = computed(() => {
   if (!rowVirtualizer.value) return []
-  return rowVirtualizer.value.getVirtualItems().map((virtualRow) => ({
-    virtualRow,
-    item: processedList.value[virtualRow.index],
-  }))
+  return rowVirtualizer.value
+    .getVirtualItems()
+    .map((virtualRow) => ({
+      virtualRow,
+      item: processedList.value[virtualRow.index],
+    }))
+    .filter((entry) => !!entry.item)
 })
 
 const measureElement = (el: Element | ComponentPublicInstance | null) => {
@@ -181,7 +215,7 @@ const measureElement = (el: Element | ComponentPublicInstance | null) => {
 watch(
   () => rowVirtualizer.value?.getVirtualItems(),
   (rows) => {
-    if (!rows || !rows.length || loading.value || isFetchingMore.value) return
+    if (!rows || !rows.length || isFetchingMore.value) return
     const lastRow = rows[rows.length - 1]
 
     if (lastRow && lastRow.index >= processedList.value.length - 3) {
@@ -191,15 +225,12 @@ watch(
 )
 
 // =========================================
-// 5. ROUTING
+// 5. ROUTING & CONFIRMATION
 // =========================================
 const router = useRouter()
-const route = router.currentRoute
-
 const createPostStore = useCreatePostStore()
 const showConfirmModal = ref(false)
 const pendingRoute = ref<RouteLocation | null>(null)
-
 
 onBeforeRouteLeave((to, from, next) => {
   if (createPostStore.hasUnsavedChanges) {
@@ -227,9 +258,10 @@ const handleCancelLeave = () => {
   <div class="flex w-full min-h-screen bg-theme-bg text-theme-text relative">
     <div class="flex-1 w-full">
       <div
-        class="grid grid-cols-1 lg:grid-cols-[1fr_350px] xl:grid-cols-[360px_680px_350px] w-full max-w-[1450px] xl:max-w-none mt-14 mx-auto justify-between min-[1750px]:justify-center lg:px-6 xl:px-4 gap-4"
+        class="grid grid-cols-1 lg:grid-cols-[1fr_350px] xl:grid-cols-[360px_680px_350px] min-[1500px]:grid-cols-[1fr_680px_1fr] w-full max-w-[1450px] xl:max-w-none mt-14 mx-auto justify-between min-[1750px]:justify-center lg:px-6 xl:px-4 gap-4"
       >
-        <div id="LeftSection" class="hidden xl:block sticky top-20 h-[calc(100vh-80px)] overflow-y-auto no-scrollbar">
+        <!-- Zmiana tutaj: ukrywanie lewego paska na mniejszych ekranach (widoczny dopiero od rozmiaru xl) -->
+        <div class="hidden xl:block">
           <LeftSidebar />
         </div>
 
@@ -265,16 +297,12 @@ const handleCancelLeave = () => {
                   willChange: 'transform',
                 }"
               >
-                <div class="mb-4">
-                  <PostItem v-if="entry.item?.type === 'post'" :post="entry.item.data" />
-                  <PeopleYouMayKnow v-else-if="entry.item?.type === 'peopleYouMayKnow'" />
-                  <ReelsGallery v-else-if="entry.item?.type === 'reelsGallery'" :reels="allReels" />
+                <div v-if="entry.item" class="mb-4">
+                  <PostItem v-if="entry.item.type === 'post' && entry.item.data" :post="entry.item.data" />
+                  <PeopleYouMayKnow v-else-if="entry.item.type === 'peopleYouMayKnow'" />
+                  <ReelsGallery v-else-if="entry.item.type === 'reelsGallery'" :reels="allReels" />
                 </div>
               </div>
-            </div>
-
-            <div v-if="loading && allPosts.length === 0" class="pt-2 pb-10 space-y-4">
-              <PostSkeleton v-for="n in 3" :key="n" />
             </div>
 
             <div v-if="isFetchingMore" class="pt-2 pb-10 space-y-4">
@@ -282,7 +310,7 @@ const handleCancelLeave = () => {
             </div>
 
             <div
-              v-if="!hasMore && !loading && !isFetchingMore"
+              v-if="!hasMore && !isFetchingMore"
               class="text-center py-20 text-theme-text-secondary opacity-50 text-sm"
             >
               Nie ma więcej postów.
@@ -290,36 +318,16 @@ const handleCancelLeave = () => {
           </div>
         </div>
 
-        <div id="RightSection" class="hidden lg:block sticky top-20 h-[calc(100vh-80px)] overflow-y-auto no-scrollbar">
+        <div id="RightSection" class="hidden lg:block sticky top-0 overflow-y-auto no-scrollbar">
           <RightSidebar :friends="friends" :birthday-users="birthdayUsers" />
         </div>
       </div>
     </div>
   </div>
+
   <ConfirmationModal
-      v-if="showConfirmModal"
-      @confirm="handleConfirmLeave"
-      @cancel="handleCancelLeave"
-    />
+    v-if="showConfirmModal"
+    @confirm="handleConfirmLeave"
+    @cancel="handleCancelLeave"
+  />
 </template>
-
-<style scoped>
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-</style>

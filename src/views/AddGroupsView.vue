@@ -92,22 +92,23 @@ const removeFriend = (name: string) => {
   invitedFriends.value = invitedFriends.value.filter((f) => f !== name)
 }
 
-const handleCreateGroup = () => {
+const handleCreateGroup = async () => {
   if (!isFormValid.value) return
 
-  const newGroup = groupsStore.addGroup({
+  const newGroup = await groupsStore.addGroup({
     name: groupName.value,
     privacy: privacy.value as 'public' | 'private',
     description:
       privacy.value === 'public'
         ? 'Każdy może sprawdzić listę członków grupy i zobaczyć ich posty.'
         : 'Tylko członkowie grupy mogą sprawdzić listę członków grupy i zobaczyć ich posty.',
-    members: 1,
     image: coverIllustration,
     images: [coverIllustration],
   })
 
-  router.push(`/groups/${newGroup.id}`)
+  if (newGroup) {
+    router.push(`/groups/${newGroup.id}`)
+  }
 }
 </script>
 

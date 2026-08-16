@@ -1,163 +1,610 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Group } from '@/types/Group'
+import { useQuery, useMutation, useApolloClient } from '@vue/apollo-composable'
+import { useAuthStore } from '@/stores/auth'
+import type { Group, GroupRole } from '@/types/Group'
+import { gql } from 'graphql-tag'
+
+const GET_GROUPS = gql`
+  query GetGroups($limit: Int, $offset: Int) {
+    getGroups(limit: $limit, offset: $offset) {
+      id
+      name
+      description
+      privacy
+      image
+      membersCount
+      lastActive
+      newPostsToday
+      newPostsMonth
+      newMembersWeek
+      createdAge
+    }
+  }
+`
+
+const GET_GROUP_BY_ID = gql`
+  query GetGroupById($id: ID!) {
+    getGroupById(id: $id) {
+      id
+      name
+      description
+      privacy
+      image
+      membersCount
+      lastActive
+      newPostsToday
+      newPostsMonth
+      newMembersWeek
+      createdAge
+    }
+  }
+`
+
+const GET_GROUP_OVERVIEW = gql`
+  query GetGroupOverview($groupId: ID!) {
+    getGroupOverview(groupId: $groupId) {
+      groupId
+      reportedItemsCount
+      moderationAlertsCount
+      pendingPostsCount
+      pendingRequestsCount
+      groupStatusViolationCount
+      postsCount7Days
+      commentsCount7Days
+      reactionsCount7Days
+      postsTrend
+      commentsTrend
+      reactionsTrend
+      activeMembersChart
+      chartCategories
+    }
+  }
+`
+
+const CREATE_GROUP = gql`
+  mutation CreateGroup($input: CreateGroupInput!) {
+    createGroup(input: $input) {
+      id
+      name
+      description
+      privacy
+      image
+      membersCount
+      lastActive
+      newPostsToday
+      newPostsMonth
+      newMembersWeek
+      createdAge
+    }
+  }
+`
+
+const JOIN_GROUP = gql`
+  mutation JoinGroup($groupId: ID!, $userId: ID!) {
+    joinGroup(groupId: $groupId, userId: $userId)
+  }
+`
+
+const LEAVE_GROUP = gql`
+  mutation LeaveGroup($groupId: ID!, $userId: ID!) {
+    leaveGroup(groupId: $groupId, userId: $userId)
+  }
+`
+
+const GET_GROUP_MEMBERSHIP = gql`
+  query GetGroupMembership($groupId: ID!, $userId: ID!) {
+    getGroupMembership(groupId: $groupId, userId: $userId)
+  }
+`
+
+const GET_PENDING_REQUESTS = gql`
+  query GetPendingRequests($groupId: ID!) {
+    getPendingRequests(groupId: $groupId)
+  }
+`
+
+const GET_GROUP_MEMBERS = gql`
+  query GetGroupMembers($groupId: ID!) {
+    getGroupMembers(groupId: $groupId) {
+      userId
+      role
+      joinedAt
+      isFriend
+    }
+  }
+`
+
+const APPROVE_GROUP_REQUEST = gql`
+  mutation ApproveGroupRequest($groupId: ID!, $userId: ID!, $adminId: ID!) {
+    approveGroupRequest(groupId: $groupId, userId: $userId, adminId: $adminId)
+  }
+`
+
+const REJECT_GROUP_REQUEST = gql`
+  mutation RejectGroupRequest($groupId: ID!, $userId: ID!, $adminId: ID!) {
+    rejectGroupRequest(groupId: $groupId, userId: $userId, adminId: $adminId)
+  }
+`
+
+const REMOVE_GROUP_MEMBER = gql`
+  mutation RemoveGroupMember($groupId: ID!, $userId: ID!, $adminId: ID!) {
+    removeGroupMember(groupId: $groupId, userId: $userId, adminId: $adminId)
+  }
+`
+
+const UPDATE_GROUP_MEMBER_ROLE = gql`
+  mutation UpdateGroupMemberRole($groupId: ID!, $userId: ID!, $role: GroupRole!, $adminId: ID!) {
+    updateGroupMemberRole(groupId: $groupId, userId: $userId, role: $role, adminId: $adminId)
+  }
+`
+
+const GET_GROUP_RULES = gql`
+  query GetGroupRules($groupId: ID!) {
+    getGroupRules(groupId: $groupId) {
+      id
+      title
+      description
+      orderIndex
+    }
+  }
+`
+
+const CREATE_GROUP_RULE = gql`
+  mutation CreateGroupRule($groupId: ID!, $title: String!, $description: String!) {
+    createGroupRule(groupId: $groupId, title: $title, description: $description) {
+      id
+      title
+      description
+      orderIndex
+    }
+  }
+`
+
+const UPDATE_GROUP_RULES_ORDER = gql`
+  mutation UpdateGroupRulesOrder($groupId: ID!, $ruleIds: [ID!]!) {
+    updateGroupRulesOrder(groupId: $groupId, ruleIds: $ruleIds)
+  }
+`
+
+const DELETE_GROUP_RULE = gql`
+  mutation DeleteGroupRule($ruleId: ID!) {
+    deleteGroupRule(ruleId: $ruleId)
+  }
+`
+
+const GET_GROUP_ACTIVITY_LOGS = gql`
+  query GetGroupActivityLogs($groupId: ID!) {
+    getGroupActivityLogs(groupId: $groupId) {
+      id
+      groupId
+      actorId
+      actorName
+      text
+      note
+      time
+      date
+    }
+  }
+`
+
+const LOG_GROUP_ACTIVITY = gql`
+  mutation LogGroupActivity($groupId: ID!, $text: String!, $note: String, $actorId: ID!, $actorName: String!) {
+    logGroupActivity(groupId: $groupId, text: $text, note: $note, actorId: $actorId, actorName: $actorName) {
+      id
+      groupId
+      actorId
+      actorName
+      text
+      note
+      time
+      date
+    }
+  }
+`
 
 export const useGroupsStore = defineStore('groups', () => {
-  const groups = ref<Group[]>([
-    {
-      id: '1',
-      name: 'Frontend Developers',
-      description: 'A group for frontend developers to share knowledge and best practices.',
-      members: 1200,
-      privacy: 'public',
-      images: [
-        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80',
-      ],
-      image:
-        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80',
-      lastActive: '12 min temu',
-    },
-    {
-      id: '2',
-      name: 'Vue.js Enthusiasts',
-      description: 'A group for Vue.js enthusiasts to discuss the latest features and projects.',
-      members: 2500,
-      privacy: 'public',
-      images: [
-        'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
-      ],
-      image:
-        'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
-      lastActive: '30 min temu',
-    },
-    {
-      id: '3',
-      name: 'Tailwind CSS Fans',
-      description: 'A group for Tailwind CSS fans to share tips and tricks.',
-      members: 800,
-      privacy: 'private',
-      images: [
-        'https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?auto=format&fit=crop&w=800&q=80',
-      ],
-      image:
-        'https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?auto=format&fit=crop&w=800&q=80',
-      lastActive: '2 godz. temu',
-    },
-    {
-      id: '4',
-      name: 'Kolegium Sędziów BOZPN',
-      description: 'Oficjalna grupa Kolegium Sędziów BOZPN.',
-      members: 140,
-      privacy: 'private',
-      images: [
-        'https://ui-avatars.com/api/?name=KS&background=3F6212&color=fff&size=128&font-size=0.4',
-      ],
-      image: 'https://ui-avatars.com/api/?name=KS&background=3F6212&color=fff&size=128&font-size=0.4',
-      lastActive: '2 dni temu',
-    },
-    {
-      id: '5',
-      name: 'Absurdalnie Tanie Loty',
-      description: 'Grupa dzieląca się informacjami o najtańszych lotach i okazjach podróżniczych.',
-      members: 95000,
-      privacy: 'public',
-      images: [
-        'https://ui-avatars.com/api/?name=TL&background=3B82F6&color=fff&size=128&font-size=0.4',
-      ],
-      image: 'https://ui-avatars.com/api/?name=TL&background=3B82F6&color=fff&size=128&font-size=0.4',
-      lastActive: '37 min temu',
-    },
-    {
-      id: '6',
-      name: 'Reprezentacja Polski Diabetyków w Futsalu',
-      description: 'Wsparcie i aktualności dotyczące Reprezentacji Polski Diabetyków w Futsalu.',
-      members: 320,
-      privacy: 'public',
-      images: [
-        'https://ui-avatars.com/api/?name=PL&background=DC2626&color=fff&size=128&font-size=0.4',
-      ],
-      image: 'https://ui-avatars.com/api/?name=PL&background=DC2626&color=fff&size=128&font-size=0.4',
-      lastActive: 'tydzień temu',
-    },
-    {
-      id: '7',
-      name: 'Praca dla początkujących programistów: Staż, Junior',
-      description: 'Oferty pracy, porady, staże dla początkujących programistów.',
-      members: 42000,
-      privacy: 'public',
-      images: [
-        'https://ui-avatars.com/api/?name=IT&background=F3F4F6&color=111&size=128&font-size=0.4',
-      ],
-      image: 'https://ui-avatars.com/api/?name=IT&background=F3F4F6&color=111&size=128&font-size=0.4',
-      lastActive: '6 dni temu',
-    },
-    {
-      id: '8',
-      name: 'Piłkarski Świat',
-      description: 'Dyskusje o piłce nożnej z całego świata.',
-      members: 15400,
-      privacy: 'public',
-      images: [
-        'https://ui-avatars.com/api/?name=PS&background=E5E7EB&color=111&size=128&font-size=0.4',
-      ],
-      image: 'https://ui-avatars.com/api/?name=PS&background=E5E7EB&color=111&size=128&font-size=0.4',
-      lastActive: '46 min temu',
-    },
-    {
-      id: '9',
-      name: 'Grupa Piłkarzyki',
-      description: 'Lokalna grupa graczy w piłkarzyki stołowe.',
-      members: 58,
-      privacy: 'private',
-      images: [
-        'https://ui-avatars.com/api/?name=GP&background=1F2937&color=fff&size=128&font-size=0.4',
-      ],
-      image: 'https://ui-avatars.com/api/?name=GP&background=1F2937&color=fff&size=128&font-size=0.4',
-      lastActive: '22 godz. temu',
-    },
-    {
-      id: '10',
-      name: 'BILETY // POLSKA SIATKÓWKA // INFORMACJE',
-      description: 'Kupno, sprzedaż biletów oraz informacje na temat polskiej siatkówki.',
-      members: 2400,
-      privacy: 'public',
-      images: [
-        'https://ui-avatars.com/api/?name=VP&background=1E3A8A&color=fff&size=128&font-size=0.4',
-      ],
-      image: 'https://ui-avatars.com/api/?name=VP&background=1E3A8A&color=fff&size=128&font-size=0.4',
-      lastActive: '5 dni temu',
-    },
-    {
-      id: '11',
-      name: 'EA SPORTS FC 26 - POLSKA',
-      description: 'Polska społeczność gry EA SPORTS FC 26.',
-      members: 31200,
-      privacy: 'public',
-      images: [
-        'https://ui-avatars.com/api/?name=EA&background=450a0a&color=fff&size=128&font-size=0.4',
-      ],
-      image: 'https://ui-avatars.com/api/?name=EA&background=450a0a&color=fff&size=128&font-size=0.4',
-      lastActive: '5 min temu',
-    },
-  ])
+  const groups = ref<Group[]>([])
+  const authStore = useAuthStore()
+  const apollo = useApolloClient()
 
-  const getGroupById = (id: string) => {
-    return groups.value.find((group) => group.id === id)
+  const fetchGroups = async () => {
+    try {
+      const client = apollo.resolveClient()
+      const result = await client.query({
+        query: GET_GROUPS,
+        variables: { limit: 100, offset: 0 },
+        fetchPolicy: 'network-only'
+      })
+      if (result?.data?.getGroups) {
+        groups.value = result.data.getGroups.map((g: any) => ({
+          id: g.id,
+          name: g.name,
+          description: g.description,
+          members: g.membersCount || 0,
+          privacy: g.privacy || 'public',
+          image: g.image,
+          images: [g.image],
+          lastActive: g.lastActive || '1 min temu',
+          newPostsToday: g.newPostsToday || 0,
+          newPostsMonth: g.newPostsMonth || 0,
+          newMembersWeek: g.newMembersWeek || '',
+          createdAge: g.createdAge || ''
+        }))
+      }
+    } catch (e) {
+      console.error('Failed to fetch groups:', e)
+    }
   }
 
-  const addGroup = (group: Omit<Group, 'id'>) => {
-    const newId = (groups.value.length + 1).toString()
-    const newGroup: Group = {
-      ...group,
-      id: newId,
+  const getGroupById = (id: string) => {
+    const existing = groups.value.find((g) => g.id === id)
+    return existing
+  }
+
+  const loadGroupDetails = async (id: string) => {
+    try {
+      const client = apollo.resolveClient()
+      const result = await client.query({
+        query: GET_GROUP_BY_ID,
+        variables: { id },
+        fetchPolicy: 'network-only'
+      })
+      if (result?.data?.getGroupById) {
+        const g = result.data.getGroupById
+        const groupObj: Group = {
+          id: g.id,
+          name: g.name,
+          description: g.description,
+          members: g.membersCount || 0,
+          privacy: g.privacy || 'public',
+          image: g.image,
+          images: [g.image],
+          lastActive: g.lastActive || '1 min temu',
+          newPostsToday: g.newPostsToday || 0,
+          newPostsMonth: g.newPostsMonth || 0,
+          newMembersWeek: g.newMembersWeek || '',
+          createdAge: g.createdAge || ''
+        }
+        const index = groups.value.findIndex((grp) => grp.id === id)
+        if (index !== -1) {
+          groups.value[index] = groupObj
+        } else {
+          groups.value.push(groupObj)
+        }
+        return groupObj
+      }
+    } catch (e) {
+      console.error('Failed to load group details:', e)
     }
-    groups.value.push(newGroup)
-    return newGroup
+    return undefined
+  }
+
+  const { mutate: createGroupMutate } = useMutation(CREATE_GROUP)
+  const addGroup = async (groupInput: Omit<Group, 'id' | 'members'>) => {
+    try {
+      const result = await createGroupMutate({
+        input: {
+          name: groupInput.name,
+          description: groupInput.description || '',
+          privacy: groupInput.privacy,
+          image: groupInput.image || '',
+          creatorId: authStore.currentUserId
+        }
+      })
+      if (result?.data?.createGroup) {
+        const g = result.data.createGroup
+        const newGroup: Group = {
+          id: g.id,
+          name: g.name,
+          description: g.description,
+          members: g.membersCount || 0,
+          privacy: g.privacy || 'public',
+          image: g.image,
+          images: [g.image],
+          lastActive: g.lastActive || '1 min temu',
+          newPostsToday: g.newPostsToday || 0,
+          newPostsMonth: g.newPostsMonth || 0,
+          newMembersWeek: g.newMembersWeek || '',
+          createdAge: g.createdAge || ''
+        }
+        groups.value.push(newGroup)
+        return newGroup
+      }
+    } catch (e) {
+      console.error('Failed to add group:', e)
+    }
+    return null
+  }
+
+  const { mutate: joinGroupMutate } = useMutation(JOIN_GROUP)
+  const joinGroup = async (groupId: string) => {
+    try {
+      const result = await joinGroupMutate({
+        groupId,
+        userId: authStore.currentUserId
+      })
+      if (result?.data?.joinGroup) {
+        // Only increment local count if not private group (where role would be PENDING)
+        const grp = groups.value.find((g) => g.id === groupId)
+        if (grp) {
+          if (grp.privacy !== 'private') {
+            grp.members++
+          }
+        }
+        return true
+      }
+    } catch (e) {
+      console.error('Failed to join group:', e)
+    }
+    return false
+  }
+
+  const { mutate: leaveGroupMutate } = useMutation(LEAVE_GROUP)
+  const leaveGroup = async (groupId: string) => {
+    try {
+      const result = await leaveGroupMutate({
+        groupId,
+        userId: authStore.currentUserId
+      })
+      if (result?.data?.leaveGroup) {
+        const grp = groups.value.find((g) => g.id === groupId)
+        if (grp) grp.members = Math.max(0, grp.members - 1)
+        return true
+      }
+    } catch (e) {
+      console.error('Failed to leave group:', e)
+    }
+    return false
+  }
+
+  const getGroupMembership = async (groupId: string, userId: string) => {
+    try {
+      const client = apollo.resolveClient()
+      const result = await client.query({
+        query: GET_GROUP_MEMBERSHIP,
+        variables: { groupId, userId },
+        fetchPolicy: 'network-only'
+      })
+      return result?.data?.getGroupMembership || ''
+    } catch (e) {
+      console.error('Failed to get group membership:', e)
+      return ''
+    }
+  }
+
+  const getPendingRequests = async (groupId: string) => {
+    try {
+      const client = apollo.resolveClient()
+      const result = await client.query({
+        query: GET_PENDING_REQUESTS,
+        variables: { groupId },
+        fetchPolicy: 'network-only'
+      })
+      return result?.data?.getPendingRequests || []
+    } catch (e) {
+      console.error('Failed to get pending requests:', e)
+      return []
+    }
+  }
+
+  const { mutate: approveGroupRequestMutate } = useMutation(APPROVE_GROUP_REQUEST)
+  const approveGroupRequest = async (groupId: string, userId: string) => {
+    try {
+      const result = await approveGroupRequestMutate({
+        groupId,
+        userId,
+        adminId: authStore.currentUserId
+      })
+      if (result?.data?.approveGroupRequest) {
+        const grp = groups.value.find((g) => g.id === groupId)
+        if (grp) grp.members++
+        return true
+      }
+    } catch (e) {
+      console.error('Failed to approve group request:', e)
+    }
+    return false
+  }
+
+  const { mutate: rejectGroupRequestMutate } = useMutation(REJECT_GROUP_REQUEST)
+  const rejectGroupRequest = async (groupId: string, userId: string) => {
+    try {
+      const result = await rejectGroupRequestMutate({
+        groupId,
+        userId,
+        adminId: authStore.currentUserId
+      })
+      return !!result?.data?.rejectGroupRequest
+    } catch (e) {
+      console.error('Failed to reject group request:', e)
+    }
+    return false
+  }
+
+  const fetchGroupMembers = async (groupId: string) => {
+    try {
+      const client = apollo.resolveClient()
+      const result = await client.query({
+        query: GET_GROUP_MEMBERS,
+        variables: { groupId },
+        fetchPolicy: 'network-only'
+      })
+      return result?.data?.getGroupMembers || []
+    } catch (e) {
+      console.error('Failed to fetch group members:', e)
+      return []
+    }
+  }
+
+  const { mutate: removeGroupMemberMutate } = useMutation(REMOVE_GROUP_MEMBER)
+  const removeGroupMember = async (groupId: string, userId: string) => {
+    try {
+      const result = await removeGroupMemberMutate({
+        groupId,
+        userId,
+        adminId: authStore.currentUserId
+      })
+      if (result?.data?.removeGroupMember) {
+        const grp = groups.value.find((g) => g.id === groupId)
+        if (grp) grp.members = Math.max(0, grp.members - 1)
+        return true
+      }
+    } catch (e) {
+      console.error('Failed to remove group member:', e)
+    }
+    return false
+  }
+
+  const { mutate: updateGroupMemberRoleMutate } = useMutation(UPDATE_GROUP_MEMBER_ROLE)
+  const updateGroupMemberRole = async (groupId: string, userId: string, role: GroupRole | string) => {
+    try {
+      const result = await updateGroupMemberRoleMutate({
+        groupId,
+        userId,
+        role,
+        adminId: authStore.currentUserId
+      })
+      return !!result?.data?.updateGroupMemberRole
+    } catch (e) {
+      console.error('Failed to update group member role:', e)
+    }
+    return false
+  }
+
+  const getGroupOverview = async (groupId: string) => {
+    try {
+      const client = apollo.resolveClient()
+      const result = await client.query({
+        query: GET_GROUP_OVERVIEW,
+        variables: { groupId },
+        fetchPolicy: 'network-only'
+      })
+      return result?.data?.getGroupOverview || null
+    } catch (e) {
+      console.error('Failed to get group overview:', e)
+      return null
+    }
+  }
+
+  const fetchGroupRules = async (groupId: string) => {
+    try {
+      const client = apollo.resolveClient()
+      const result = await client.query({
+        query: GET_GROUP_RULES,
+        variables: { groupId },
+        fetchPolicy: 'network-only'
+      })
+      return result?.data?.getGroupRules || []
+    } catch (e) {
+      console.error('Failed to fetch group rules:', e)
+      return []
+    }
+  }
+
+  const createGroupRule = async (groupId: string, title: string, description: string) => {
+    try {
+      const client = apollo.resolveClient()
+      const result = await client.mutate({
+        mutation: CREATE_GROUP_RULE,
+        variables: { groupId, title, description }
+      })
+      return result?.data?.createGroupRule
+    } catch (e) {
+      console.error('Failed to create group rule:', e)
+      return null
+    }
+  }
+
+  const updateGroupRulesOrder = async (groupId: string, ruleIds: string[]) => {
+    try {
+      const client = apollo.resolveClient()
+      const result = await client.mutate({
+        mutation: UPDATE_GROUP_RULES_ORDER,
+        variables: { groupId, ruleIds }
+      })
+      return !!result?.data?.updateGroupRulesOrder
+    } catch (e) {
+      console.error('Failed to update group rules order:', e)
+      return false
+    }
+  }
+
+  const deleteGroupRule = async (ruleId: string) => {
+    try {
+      const client = apollo.resolveClient()
+      const result = await client.mutate({
+        mutation: DELETE_GROUP_RULE,
+        variables: { ruleId }
+      })
+      return !!result?.data?.deleteGroupRule
+    } catch (e) {
+      console.error('Failed to delete group rule:', e)
+      return false
+    }
+  }
+
+  const fetchGroupActivityLogs = async (groupId: string) => {
+    try {
+      const client = apollo.resolveClient()
+      const result = await client.query({
+        query: GET_GROUP_ACTIVITY_LOGS,
+        variables: { groupId },
+        fetchPolicy: 'network-only'
+      })
+      return result?.data?.getGroupActivityLogs || []
+    } catch (e) {
+      console.error('Failed to fetch group activity logs:', e)
+      return []
+    }
+  }
+
+  const logGroupActivity = async (groupId: string, text: string, note?: string) => {
+    try {
+      const client = apollo.resolveClient()
+      const actorId = authStore.currentUserId || '1'
+      const actorName = [authStore.currentUser?.firstName, authStore.currentUser?.lastName]
+        .filter(Boolean)
+        .join(' ') || 'Test Testowy'
+
+      const result = await client.mutate({
+        mutation: LOG_GROUP_ACTIVITY,
+        variables: {
+          groupId,
+          text,
+          note: note || '',
+          actorId,
+          actorName
+        }
+      })
+      return result?.data?.logGroupActivity
+    } catch (e) {
+      console.error('Failed to log group activity:', e)
+      return null
+    }
   }
 
   return {
     groups,
+    fetchGroups,
     getGroupById,
+    loadGroupDetails,
     addGroup,
+    joinGroup,
+    leaveGroup,
+    getGroupMembership,
+    getPendingRequests,
+    approveGroupRequest,
+    rejectGroupRequest,
+    fetchGroupMembers,
+    removeGroupMember,
+    updateGroupMemberRole,
+    getGroupOverview,
+    fetchGroupRules,
+    createGroupRule,
+    updateGroupRulesOrder,
+    deleteGroupRule,
+    fetchGroupActivityLogs,
+    logGroupActivity
   }
 })

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import '@/assets/animations/slideTransition.css'
-import { ref, watch, computed, nextTick, onUnmounted } from 'vue'
+import { ref, watch, computed, nextTick, onUnmounted, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import { useBreakpoints } from '@vueuse/core'
 
@@ -11,55 +11,70 @@ definePageMeta({
 import MessageMenu from '@/layouts/Navbar/MessageMenu.vue'
 import MessageBox from '@/components/chat/messageBox/index.vue'
 import ChatInfoPanel from '@/components/chat/info/ChatInfoPanel.vue'
+import E2eeBackupModal from '@/components/chat/E2eeBackupModal.vue'
 import { useConversationsStore } from '@/stores/conversations'
 
 const routeProps = withDefaults(defineProps<{ chatId?: string }>(), { chatId: undefined })
 const route = useRoute()
-
-// 1. ZMIANA: Traktujemy chatId zawsze jako String (wsparcie dla ScyllaDB UUID)
-const chatId = computed(() => {
-  const rawId = route.params.chatId ?? routeProps.chatId ?? ''
-  return String(rawId)
-})
-
 const convStore = useConversationsStore()
 
-const showMobileChat = ref(false)
-const showMobileInfo = ref(false)
+// 1. Zmiana: Jeśli chatId nie ma w URL, automatycznie wybieramy ID pierwszego czatu jako domyślne do wyświetlenia!
+const chatId = computed(() => {
+  const urlId = route.params.chatId ?? routeProps.chatId
+  if (urlId) return String(urlId)
 
-const breakpoints = useBreakpoints({
-  tablet: 768,
+  // Pobieramy ID pierwszego czatu z Pinii (bez przekierowywania routerem!)
+  const firstChat = convStore.chats?.[0]
+  const defaultId = firstChat?.id ?? firstChat?.chatId ?? firstChat?.uuid
+  return defaultId ? String(defaultId) : ''
 })
+
+const chatName = computed(() => {
+  if (!chatId.value) return 'Czat'
+  const currentChat = convStore.chats.find(c => String(c.id) === String(chatId.value))
+  return currentChat?.name || 'Czat'
+})
+
+useHead({
+  title: computed(() => `${chatName.value} | Facebook`)
+})
+
+const showMobileChat = ref(false)
+const showMobileInfo = ref(true)
+
+const breakpoints = useBreakpoints({ tablet: 768 })
 const isMobile = breakpoints.smaller('tablet')
 
+// Pobieranie skrzynki odbiorczej, jeśli jest pusta
+watchEffect(() => {
+  if (convStore.chats.length === 0 && convStore.currentUserUuid) {
+    convStore.fetchInbox(convStore.currentUserUuid)
+  }
+})
+
+// Ładowanie wiadomości dla aktywnego/wybranego czatu
 watch(
   [chatId, () => convStore.currentUserUuid],
-  ([newId, newUserId]) => {
-    console.log('[[chatId]].vue: Watch triggered with chatId:', newId, 'currentUserUuid:', newUserId)
-    // Sprawdzamy czy mamy prawidłowe UUID użytkownika i wybrane ID czatu
+  async ([newId, newUserId]) => {
     if (newId && newUserId && newUserId !== '1' && newUserId !== '0') {
       showMobileChat.value = true
-      showMobileInfo.value = false
-
-      // 2. ZMIANA: Natychmiast ustawiamy aktywny czat, żeby zablokować toasty z powiadomieniami dla tego czatu!
+      showMobileInfo.value = true
       convStore.activeChatId = String(newId)
-
-      console.log('[[chatId]].vue: Fetching messages for activeChatId:', convStore.activeChatId)
-      // Pobieramy historię
+      if (convStore.chats.length === 0) {
+        await convStore.fetchInbox(newUserId)
+      }
       convStore.fetchMessages(String(newId))
     } else {
       convStore.activeChatId = null
     }
 
     if (newId) {
-      const s = convStore.settings.find((x) => String(x.chatId) === String(newId))
+      const settings = convStore.settings || []
+      const s = settings.find((x: any) => String(x.chatId) === String(newId))
       if (s?.themeId !== undefined) {
         const idx = Number(s.themeId)
         const themesArr = convStore.themes as { id: string }[] | undefined
-        const mappedId =
-          themesArr && themesArr[idx]?.id
-            ? themesArr[idx].id
-            : ((themesArr && themesArr[0]?.id) ?? String(s.themeId))
+        const mappedId = themesArr?.[idx]?.id ?? themesArr?.[0]?.id ?? String(s.themeId)
         convStore.setSelectedTheme(mappedId)
       }
       if (s?.emoji) convStore.setSelectedEmoji(s.emoji)
@@ -73,13 +88,9 @@ const chatInfoPanelRef = ref<InstanceType<typeof ChatInfoPanel> | null>(null)
 
 function openModal(modalType: 'CHANGE_E' | 'CHANGE_NICKNAME' | 'CHANGE_THEME') {
   if (!chatInfoPanelRef.value) return
-  if (modalType === 'CHANGE_NICKNAME') {
-    chatInfoPanelRef.value.openEditNicknamesModal()
-  } else if (modalType === 'CHANGE_THEME') {
-    chatInfoPanelRef.value.openThemeModal()
-  } else if (modalType === 'CHANGE_E') {
-    chatInfoPanelRef.value.openEmojiModal()
-  }
+  if (modalType === 'CHANGE_NICKNAME') chatInfoPanelRef.value.openEditNicknamesModal()
+  else if (modalType === 'CHANGE_THEME') chatInfoPanelRef.value.openThemeModal()
+  else if (modalType === 'CHANGE_E') chatInfoPanelRef.value.openEmojiModal()
 }
 
 function onSearchGoTo(payload: { id: number; chatId?: string | number }) {
@@ -138,6 +149,7 @@ onUnmounted(() => {
         />
       </div>
     </div>
+    <E2eeBackupModal />
   </div>
 </template>
 

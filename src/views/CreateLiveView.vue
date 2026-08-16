@@ -43,25 +43,23 @@ const shareToStory = ref(true)
 
 const formattedCameraOptions = computed(() => {
   if (cameraOptions.value.length === 0) {
-    return [{ id: '', title: 'Szukanie kamer...', description: '', icon: CameraIcon }]
+    return [{ id: '', title: 'Szukanie kamer...', icon: CameraIcon as any }]
   }
   return cameraOptions.value.map((cam) => ({
     id: cam.deviceId,
     title: cam.label,
-    description: '', // No description available
-    icon: CameraIcon,
+    icon: CameraIcon as any,
   }))
 })
 
 const formattedMicOptions = computed(() => {
   if (micOptions.value.length === 0) {
-    return [{ id: '', title: 'Szukanie mikrofonów...', description: '', icon: MicrophoneIcon }]
+    return [{ id: '', title: 'Szukanie mikrofonów...', icon: MicrophoneIcon as any }]
   }
   return micOptions.value.map((mic) => ({
     id: mic.deviceId,
     title: mic.label,
-    description: '', // No description available
-    icon: MicrophoneIcon,
+    icon: MicrophoneIcon as any,
   }))
 })
 
@@ -73,13 +71,24 @@ const onCameraChange = async () => {
 const handleStartScreenShare = async () => {
   const stream = await liveStore.startScreenShare()
   if (stream) {
-    stream.getVideoTracks()[0].onended = () => {
-      liveStore.stopStream()
-      liveStore.startStream(true, true) // Powrót do kamery
+    const track = stream.getVideoTracks()[0]
+    if (track) {
+      track.onended = () => {
+        liveStore.stopStream()
+        liveStore.startStream(true, true) // Powrót do kamery
+      }
     }
   } else {
     liveStore.startStream(true, true) // Fallback on cancel
   }
+}
+
+const getMediaDevicesList = () => {
+  liveStore.getMediaDevicesList()
+}
+
+const enableCameraAccess = async () => {
+  await liveStore.startStream(true, true)
 }
 
 onMounted(() => {
