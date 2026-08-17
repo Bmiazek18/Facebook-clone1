@@ -14,13 +14,15 @@ env:
 
 jobs:
   # ========================================================
-  # KROK 1: Wykrywanie zmian w katalogach
+  # KROK 1: Precyzyjne wykrywanie zmian w poszczególnych folderach
   # ========================================================
   changes:
     runs-on: ubuntu-latest
     outputs:
       nuxt: ${{ steps.filter.outputs.nuxt }}
-      keycloak: ${{ steps.filter.outputs.keycloak }}
+      keycloak_any: ${{ steps.filter.outputs.keycloak_any }}
+      keycloak_theme: ${{ steps.filter.outputs.keycloak_theme }}
+      keycloak_spi: ${{ steps.filter.outputs.keycloak_spi }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.2.2
@@ -32,8 +34,12 @@ jobs:
           filters: |
             nuxt:
               - 'frontend/**'
-            keycloak:
+            keycloak_any:
               - 'keycloak/**'
+            keycloak_theme:
+              - 'keycloak/themes/**'
+            keycloak_spi:
+              - 'keycloak/spi/**'
 
   # ========================================================
   # KROK 2: Budowanie Frontendu (Nuxt)
@@ -83,19 +89,21 @@ jobs:
           TARGET_FILE="charts/frontend/values.yaml"
           [ -f "$TARGET_FILE" ] || TARGET_FILE="chart/values.yaml"
 
-          sed -i "s|repository: .*|repository: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}|" $TARGET_FILE
-          sed -i 's/tag: .*/tag: "${{ github.sha }}"/' $TARGET_FILE
-          
-          git add $TARGET_FILE
-          git commit -m "chore(ci): update nuxt image tag to ${{ github.sha }} [skip ci]" || exit 0
-          git push origin main
+          if [ -f "$TARGET_FILE" ]; then
+            sed -i "s|repository: .*|repository: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}|" $TARGET_FILE
+            sed -i 's/tag: .*/tag: "${{ github.sha }}"/' $TARGET_FILE
+            
+            git add $TARGET_FILE
+            git commit -m "chore(ci): update nuxt image tag to ${{ github.sha }} [skip ci]" || exit 0
+            git push origin main
+          fi
 
   # ========================================================
-  # KROK 3: Budowanie Keycloak (React Themes + Java SPI)
+  # KROK 3: Budowanie Keycloak (UI i SPI)
   # ========================================================
   build-keycloak:
     needs: [changes, build-nuxt]
-    if: ${{ always() && (needs.changes.outputs.keycloak == 'true' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ always() && (needs.changes.outputs.keycloak_any == 'true' || github.event_name == 'workflow_dispatch') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -105,27 +113,33 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4.2.2
 
-      - name: Set up Node.js for Keycloakify
+      - name: Przygotowanie folderu na JAR-y
+        run: mkdir -p keycloak/dist_jars
+
+      # --- SEKCJA KEYCLOAK UI (React Keycloakify) ---
+      - name: Set up Node.js (Latest LTS)
+        if: ${{ needs.changes.outputs.keycloak_theme == 'true' || github.event_name == 'workflow_dispatch' || !needs.changes.outputs.keycloak_spi }}
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 'lts/*'
           cache: 'npm'
           cache-dependency-path: 'keycloak/themes/package-lock.json'
 
       - name: Build React Keycloakify Theme JAR
+        if: ${{ needs.changes.outputs.keycloak_theme == 'true' || github.event_name == 'workflow_dispatch' || !needs.changes.outputs.keycloak_spi }}
         run: |
           if [ -d "keycloak/themes" ]; then
+            echo "Budowanie motywu UI..."
             cd keycloak/themes
-           
             npm ci
             npm run build-keycloak-theme
-            
-            mkdir -p ../dist_jars
             cp dist_keycloak/*.jar ../dist_jars/ || true
             cd ../..
           fi
 
+      # --- SEKCJA KEYCLOAK SPI (Java Maven) ---
       - name: Set up JDK 21 for Custom SPI
+        if: ${{ needs.changes.outputs.keycloak_spi == 'true' || github.event_name == 'workflow_dispatch' }}
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -133,15 +147,20 @@ jobs:
           cache: 'maven'
 
       - name: Build Java Custom SPI JARs
+        if: ${{ needs.changes.outputs.keycloak_spi == 'true' || github.event_name == 'workflow_dispatch' }}
         run: |
-          if [ -d "keycloak/spi" ]; then
+          if [ -f "keycloak/spi/pom.xml" ]; then
+            echo "Budowanie backendu SPI (Maven)..."
             cd keycloak/spi
             mvn clean package -DskipTests
             mkdir -p ../dist_jars
             cp target/*.jar ../dist_jars/ || true
             cd ../..
+          else
+            echo "Brak projektu Maven w keycloak/spi. Pomijanie."
           fi
 
+      # --- BUDOWANIE OBRAZU DOCKER ---
       - name: Set Image Name
         run: echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}-keycloak" >> $GITHUB_ENV
 
@@ -166,6 +185,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # --- AKTUALIZACJA GITOPS ---
       - name: Update Keycloak Tag in GitOps
         run: |
           git config --global user.name "github-actions[bot]"
@@ -175,8 +195,10 @@ jobs:
           TARGET_FILE="charts/keycloak/values.yaml"
           [ -f "$TARGET_FILE" ] || TARGET_FILE="chart/values.yaml"
 
-          sed -i "s|image: .*|image: \"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}\"|" $TARGET_FILE
-          
-          git add $TARGET_FILE
-          git commit -m "chore(ci): update keycloak image tag to ${{ github.sha }} [skip ci]" || exit 0
-          git push origin main
+          if [ -f "$TARGET_FILE" ]; then
+            sed -i "s|image: .*|image: \"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}\"|" $TARGET_FILE
+            
+            git add $TARGET_FILE
+            git commit -m "chore(ci): update keycloak image tag to ${{ github.sha }} [skip ci]" || exit 0
+            git push origin main
+          fi
