@@ -1,8 +1,8 @@
 replicaCount: 2
 
 image:
-  repository: ghcr.io/bmiazek18/facebook-clone1
-  tag: "4b7a49b654bb8eeea90d67f32202434b280b5687"
+  repository: ghcr.io/bmiazek18/facebook-clone1-frontend
+  tag: "91810f39278380259842b0b9beb8705ed3deac75"
   pullPolicy: IfNotPresent
 
 service:
