@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: nuxt-app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          env:
+            - name: NUXT_PUBLIC_KEYCLOAK_URL
+              value: {{ .Values.keycloakUrl | quote }}
+            - name: NUXT_PUBLIC_FRONTEND_URL
+              value: {{ .Values.frontendUrl | quote }}
+            - name: NUXT_PUBLIC_API_URL
+              value: {{ .Values.apiUrl | quote }}
+            - name: NUXT_PUBLIC_MQTT_URL
+              value: {{ .Values.mqttUrl | quote }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

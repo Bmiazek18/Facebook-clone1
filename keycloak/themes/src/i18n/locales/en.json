@@ -1,0 +1,18 @@
+{
+  "auth": {
+    "register": {
+      "title": "Create a new account",
+      "description": "It's quick and easy.",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "birthdate": "Date of birth",
+      "day": "Day",
+      "month": "Month",
+      "year": "Year",
+      "gender": "Gender",
+      "emailOrPhone": "Mobile number or email",
+      "password": "New password",
+      "submit": "Sign Up"
+    }
+  }
+}

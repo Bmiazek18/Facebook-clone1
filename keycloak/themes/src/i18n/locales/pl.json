@@ -1,0 +1,18 @@
+{
+  "auth": {
+    "register": {
+      "title": "Utwórz nowe konto",
+      "description": "To szybkie i proste.",
+      "firstName": "Imię",
+      "lastName": "Nazwisko",
+      "birthdate": "Data urodzenia",
+      "day": "Dzień",
+      "month": "Miesiąc",
+      "year": "Rok",
+      "gender": "Płeć",
+      "emailOrPhone": "Numer telefonu lub e-mail",
+      "password": "Nowe hasło",
+      "submit": "Zarejestruj się"
+    }
+  }
+}

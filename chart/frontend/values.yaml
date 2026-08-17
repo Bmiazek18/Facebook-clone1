@@ -1,0 +1,27 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/bmiazek18/facebook-clone1
+  tag: "542324dbb618286964bb63e9a497cfefa305f8ee"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 3000
+  targetPort: 3000
+
+ingress:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 384Mi
+
+keycloakUrl: "https//auth.lab-bm.pl"
+frontendUrl: "https//lab-bm.pl"
+apiUrl: "https//api.lab-bm.pl"
+mqttUrl: "ws://localhost:8080/mqtt"

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-keycloak
+  namespace: {{ .Release.Namespace | default "apps" }}
+  labels:
+    app: postgres-keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-keycloak
+  template:
+    metadata:
+      labels:
+        app: postgres-keycloak
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.database.image }}
+          ports:
+            - name: postgres
+              containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.database.name | quote }}
+            - name: POSTGRES_USER
+              value: {{ .Values.database.user | quote }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.database.password | quote }}
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: pgdata
+          persistentVolumeClaim:
+            claimName: postgres-keycloak-pvc

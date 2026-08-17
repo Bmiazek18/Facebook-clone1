@@ -1,0 +1,17 @@
+keycloak:
+  hostname: "auth.lab-bm.com"
+  image: "quay.io/keycloak/keycloak:26.6.2"
+  adminUser: "admin"
+  adminPassword: "admin"
+  actionTokenSecret: "7bA9xN2mK5vP8rQ1wZ4eT7yU0iO3pL6k"
+  
+database:
+  image: "postgres:16-alpine"
+  name: "keycloak"
+  user: "keycloak"
+  password: "keycloak"
+  storageSize: "5Gi"
+
+mailpit:
+  enabled: true
+  image: "axllent/mailpit:latest"
