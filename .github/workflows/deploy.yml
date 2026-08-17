@@ -14,15 +14,13 @@ env:
 
 jobs:
   # ========================================================
-  # KROK 1: Precyzyjne wykrywanie zmian w poszczególnych folderach
+  # KROK 1: Wykrywanie zmian w poszczególnych folderach
   # ========================================================
   changes:
     runs-on: ubuntu-latest
     outputs:
       nuxt: ${{ steps.filter.outputs.nuxt }}
-      keycloak_any: ${{ steps.filter.outputs.keycloak_any }}
-      keycloak_theme: ${{ steps.filter.outputs.keycloak_theme }}
-      keycloak_spi: ${{ steps.filter.outputs.keycloak_spi }}
+      keycloak: ${{ steps.filter.outputs.keycloak }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.2.2
@@ -34,12 +32,8 @@ jobs:
           filters: |
             nuxt:
               - 'frontend/**'
-            keycloak_any:
+            keycloak:
               - 'keycloak/**'
-            keycloak_theme:
-              - 'keycloak/themes/**'
-            keycloak_spi:
-              - 'keycloak/spi/**'
 
   # ========================================================
   # KROK 2: Budowanie Frontendu (Nuxt)
@@ -99,11 +93,11 @@ jobs:
           fi
 
   # ========================================================
-  # KROK 3: Budowanie Keycloak (UI i SPI)
+  # KROK 3: Budowanie Keycloak (UI + SPI + Docker)
   # ========================================================
   build-keycloak:
     needs: [changes, build-nuxt]
-    if: ${{ always() && (needs.changes.outputs.keycloak_any == 'true' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ !failure() && !cancelled() && (needs.changes.outputs.keycloak == 'true' || github.event_name == 'workflow_dispatch') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -118,7 +112,6 @@ jobs:
 
       # --- SEKCJA KEYCLOAK UI (React Keycloakify) ---
       - name: Set up Node.js (Latest LTS)
-        if: ${{ needs.changes.outputs.keycloak_theme == 'true' || github.event_name == 'workflow_dispatch' || !needs.changes.outputs.keycloak_spi }}
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
@@ -126,20 +119,19 @@ jobs:
           cache-dependency-path: 'keycloak/themes/package-lock.json'
 
       - name: Build React Keycloakify Theme JAR
-        if: ${{ needs.changes.outputs.keycloak_theme == 'true' || github.event_name == 'workflow_dispatch' || !needs.changes.outputs.keycloak_spi }}
         run: |
           if [ -d "keycloak/themes" ]; then
-            echo "Budowanie motywu UI..."
+            echo "Budowanie motywu UI (Keycloakify)..."
             cd keycloak/themes
             npm ci
             npm run build-keycloak-theme
+            # Kopiujemy wygenerowany plik JAR do folderu kontekstu Dockera
             cp dist_keycloak/*.jar ../dist_jars/ || true
             cd ../..
           fi
 
       # --- SEKCJA KEYCLOAK SPI (Java Maven) ---
       - name: Set up JDK 21 for Custom SPI
-        if: ${{ needs.changes.outputs.keycloak_spi == 'true' || github.event_name == 'workflow_dispatch' }}
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -147,13 +139,11 @@ jobs:
           cache: 'maven'
 
       - name: Build Java Custom SPI JARs
-        if: ${{ needs.changes.outputs.keycloak_spi == 'true' || github.event_name == 'workflow_dispatch' }}
         run: |
           if [ -f "keycloak/spi/pom.xml" ]; then
             echo "Budowanie backendu SPI (Maven)..."
             cd keycloak/spi
             mvn clean package -DskipTests
-            mkdir -p ../dist_jars
             cp target/*.jar ../dist_jars/ || true
             cd ../..
           else
@@ -196,7 +186,8 @@ jobs:
           [ -f "$TARGET_FILE" ] || TARGET_FILE="chart/values.yaml"
 
           if [ -f "$TARGET_FILE" ]; then
-            sed -i "s|image: .*|image: \"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}\"|" $TARGET_FILE
+            # Podmieniamy wyłącznie pole image w sekcji keycloak: (pierwsze wystąpienie image)
+            sed -i '0,/image:.*/s||image: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"|' $TARGET_FILE
             
             git add $TARGET_FILE
             git commit -m "chore(ci): update keycloak image tag to ${{ github.sha }} [skip ci]" || exit 0

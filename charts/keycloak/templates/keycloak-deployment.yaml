@@ -19,8 +19,7 @@ spec:
         - name: keycloak
           image: {{ .Values.keycloak.image }}
           args:
-            - "start"
-            - "--optimized"
+            - "start-dev"
             - "--spi-action-token-handler-action-token-example-enabled=true"
             - "--spi-action-token-handler-action-token-example-hmac-secret={{ .Values.keycloak.actionTokenSecret }}"
           env:
@@ -41,6 +40,8 @@ spec:
               value: "true"
             - name: KC_PROXY_HEADERS
               value: "xforwarded"
+            - name: KC_HEALTH_ENABLED
+              value: "true"
 
             # Dane konta administratora
             - name: KC_BOOTSTRAP_ADMIN_USERNAME
@@ -59,14 +60,14 @@ spec:
             - name: http
               containerPort: 8080
           readinessProbe:
-            httpGet:
-              path: /health/ready
+            tcpSocket:
               port: 8080
             initialDelaySeconds: 25
             periodSeconds: 10
+            failureThreshold: 3
           livenessProbe:
-            httpGet:
-              path: /health/live
+            tcpSocket:
               port: 8080
-            initialDelaySeconds: 35
+            initialDelaySeconds: 45
             periodSeconds: 15
+            failureThreshold: 3
