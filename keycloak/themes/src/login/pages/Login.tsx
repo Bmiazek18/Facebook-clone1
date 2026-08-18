@@ -245,13 +245,15 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                     ) : (
                         <div className="w-full max-w-[380px] flex flex-col mt-8 lg:mt-0">
                             <div className="flex items-center w-full mb-8 relative">
-                                <button
-                                    className="absolute -left-3 text-black hover:bg-slate-100 p-2 rounded-full transition-colors cursor-pointer"
-                                    onClick={() => setShowLoginForm(false)}
-                                >
-                                    <ChevronLeft size={32} />
-                                </button>
-                                <h2 className="text-[22px] font-medium text-slate-900 ml-12 tracking-tight">
+                                {profiles.length > 0 && (
+                                    <button
+                                        className="absolute -left-3 text-black hover:bg-slate-100 p-2 rounded-full transition-colors cursor-pointer"
+                                        onClick={() => setShowLoginForm(false)}
+                                    >
+                                        <ChevronLeft size={32} />
+                                    </button>
+                                )}
+                                <h2 className={`text-[22px] font-medium text-slate-900 tracking-tight ${profiles.length > 0 ? "ml-12" : ""}`}>
                                     Zaloguj się do Facebooka
                                 </h2>
                             </div>

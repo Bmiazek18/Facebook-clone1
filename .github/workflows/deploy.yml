@@ -140,14 +140,20 @@ jobs:
 
       - name: Build Java Custom SPI JARs
         run: |
-          if [ -f "keycloak/spi/pom.xml" ]; then
-            echo "Budowanie backendu SPI (Maven)..."
-            cd keycloak/spi
-            mvn clean package -DskipTests
-            cp target/*.jar ../dist_jars/ || true
-            cd ../..
-          else
-            echo "Brak projektu Maven w keycloak/spi. Pomijanie."
+          echo "Budowanie wtyczek SPI (Maven)..."
+          has_spi=false
+          for d in keycloak/spi/*/; do
+            if [ -f "$d/pom.xml" ]; then
+              has_spi=true
+              echo "Budowanie wtyczki w $d ..."
+              cd "$d"
+              mvn clean package -DskipTests
+              cp target/*.jar ../../dist_jars/ || true
+              cd - > /dev/null
+            fi
+          done
+          if [ "$has_spi" = false ]; then
+            echo "Brak projektów Maven w podfolderach keycloak/spi. Pomijanie."
           fi
 
       # --- BUDOWANIE OBRAZU DOCKER ---
