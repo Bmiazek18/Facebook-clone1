@@ -1,6 +1,6 @@
 keycloak:
   hostname: "auth.lab-bm.com"
-  image: "ghcr.io/bmiazek18/facebook-clone1-keycloak:91810f39278380259842b0b9beb8705ed3deac75"
+  image: "ghcr.io/bmiazek18/facebook-clone1-keycloak:3997fc2128ccab36b33934417d20c90f726ed1ef"
   adminUser: "admin"
   adminPassword: "admin"
   actionTokenSecret: "7bA9xN2mK5vP8rQ1wZ4eT7yU0iO3pL6k"
