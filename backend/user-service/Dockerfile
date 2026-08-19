@@ -7,6 +7,7 @@ COPY pom.xml .
 COPY shared-proto shared-proto
 COPY user-service user-service
 COPY user-edge-service/pom.xml user-edge-service/pom.xml
+COPY socialgraph-service/pom.xml socialgraph-service/pom.xml
 COPY socialgraph-edge-service/pom.xml socialgraph-edge-service/pom.xml
 
 RUN mvn clean package -pl user-service -am -DskipTests && \
