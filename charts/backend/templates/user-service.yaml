@@ -79,6 +79,11 @@ spec:
                 configMapKeyRef:
                   name: backend-runtime-config
                   key: SOCIAL_GRAPH_SERVICE_GRPC_ADDRESS
+            - name: SEARCH_SERVICE_GRPC_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-runtime-config
+                  key: SEARCH_SERVICE_GRPC_ADDRESS
             - name: VAULT_URI
               valueFrom:
                 configMapKeyRef:
@@ -89,6 +94,14 @@ spec:
                 secretKeyRef:
                   name: backend-runtime-secrets
                   key: VAULT_TOKEN
+            - name: SPRING_RABBITMQ_HOST
+              value: "rabbitmq"
+            - name: SPRING_RABBITMQ_PORT
+              value: "5672"
+            - name: SPRING_RABBITMQ_USERNAME
+              value: "guest"
+            - name: SPRING_RABBITMQ_PASSWORD
+              value: "guest"
             - name: JAVA_TOOL_OPTIONS
               value: -Xms128m -Xmx256m
 

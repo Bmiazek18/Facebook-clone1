@@ -7,6 +7,7 @@ import com.facebook.UserService.dto.RegisterResponse;
 import com.facebook.UserService.mapper.UserProtoMapper;
 import com.facebook.UserService.model.SearchUser;
 import com.facebook.UserService.model.User;
+import com.facebook.UserService.model.UserEventType;
 import com.facebook.UserService.repository.SearchUserRepository;
 import com.facebook.UserService.repository.UserRepository;
 import com.facebook.socialgraph.grpc.UserRelation;
@@ -35,6 +36,7 @@ public class UserService {
     private final SearchServiceClient searchServiceClient;
     private final MinioService minioService;
     private final MediaUrlService mediaUrlService;
+    private final org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
 
     @net.devh.boot.grpc.client.inject.GrpcClient("social-graph-service")
     private com.facebook.socialgraph.grpc.SocialGraphGrpcServiceGrpc.SocialGraphGrpcServiceBlockingStub socialGraphGrpcStub;
@@ -45,13 +47,15 @@ public class UserService {
                        SocialGraphClient socialGraphClient,
                        SearchServiceClient searchServiceClient,
                        MinioService minioService,
-                       MediaUrlService mediaUrlService) {
+                       MediaUrlService mediaUrlService,
+                       org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate) {
         this.userRepository = userRepository;
         this.searchUserRepository = searchUserRepository;
         this.socialGraphClient = socialGraphClient;
         this.searchServiceClient = searchServiceClient;
         this.minioService = minioService;
         this.mediaUrlService = mediaUrlService;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Transactional
@@ -89,7 +93,7 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        syncUserToSearchService(savedUser);
+        syncUserToSearchService(savedUser, UserEventType.USER_CREATED);
         createSocialGraphNode(savedUser, request.getBirthDate());
 
         return RegisterResponse.builder()
@@ -102,18 +106,19 @@ public class UserService {
                 .build();
     }
 
-    private void syncUserToSearchService(User user) {
+    private void syncUserToSearchService(User user, UserEventType eventType) {
         try {
-            searchServiceClient.indexUser(
+            com.facebook.UserService.dto.UserIndexEvent event = new com.facebook.UserService.dto.UserIndexEvent(
                     user.getId().toString(),
                     user.getUsername(),
                     user.getFirstName(),
                     user.getLastName(),
                     user.getAvatarId()
             );
-            log.info("Successfully synced user to search-service via gRPC: {}", user.getId());
+            rabbitTemplate.convertAndSend(com.facebook.UserService.config.RabbitConfig.EXCHANGE_NAME, eventType.getRoutingKey(), event);
+            log.info("Successfully published user event to RabbitMQ ({}): {}", eventType.getRoutingKey(), user.getId());
         } catch (Exception e) {
-            log.error("Failed to sync user to search-service via gRPC: {}", e.getMessage(), e);
+            log.error("Failed to publish user event to RabbitMQ ({}): {}", eventType.getRoutingKey(), e.getMessage(), e);
         }
     }
 
@@ -273,7 +278,7 @@ public class UserService {
                 .orElseThrow(() -> new IllegalStateException("Storage service is currently unavailable"));
         user.setAvatarId(avatarId);
         User savedUser = userRepository.save(user);
-        syncUserToSearchService(savedUser);
+        syncUserToSearchService(savedUser, UserEventType.USER_UPDATED);
         return mapToUserDto(savedUser);
     }
 
@@ -286,7 +291,7 @@ public class UserService {
                 .orElseThrow(() -> new IllegalStateException("Storage service is currently unavailable"));
         user.setCoverPhotoId(coverId);
         User savedUser = userRepository.save(user);
-        syncUserToSearchService(savedUser);
+        syncUserToSearchService(savedUser, UserEventType.USER_UPDATED);
         return mapToUserDto(savedUser);
     }
 
@@ -320,7 +325,7 @@ public class UserService {
         UserProtoMapper.applyUpdateProfileRequest(user, input);
 
         User savedUser = userRepository.save(user);
-        syncUserToSearchService(savedUser);
+        syncUserToSearchService(savedUser, UserEventType.USER_UPDATED);
         return mapToUserDto(savedUser);
     }
 
@@ -387,5 +392,9 @@ public class UserService {
             userRepository.save(user);
             log.info("Saved OPAQUE Vault securely for user: {}", userId);
         });
+    }
+
+    public java.util.List<User> getAllUsers(int page, int size) {
+        return userRepository.findAll(org.springframework.data.domain.PageRequest.of(page, size)).getContent();
     }
 }

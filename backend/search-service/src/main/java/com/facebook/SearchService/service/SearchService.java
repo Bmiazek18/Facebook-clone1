@@ -1,8 +1,9 @@
 package com.facebook.SearchService.service;
 
+import com.facebook.SearchService.model.MeiliEvent;
 import com.facebook.SearchService.model.MeiliUser;
 import com.facebook.SearchService.model.User;
-import com.facebook.SearchService.repository.UserRepository;
+import com.facebook.SearchService.model.Event;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Config;
@@ -16,26 +17,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.facebook.SearchService.model.Event;
-import com.facebook.SearchService.model.MeiliEvent;
-import com.facebook.SearchService.repository.EventRepository;
+import net.devh.boot.grpc.client.inject.GrpcClient;
+import com.facebook.user.grpc.UserGrpcServiceGrpc;
+import com.facebook.user.grpc.GetAllUsersRequest;
+import com.facebook.user.grpc.GetAllUsersResponse;
+import com.facebook.user.grpc.UserDto;
 
 @Service
 public class SearchService {
 
     private final Client client;
-    private final UserRepository userRepository;
-    private final EventRepository eventRepository;
     private final String indexName = "users";
     private final String eventIndexName = "events";
 
+    @GrpcClient("user-service")
+    private UserGrpcServiceGrpc.UserGrpcServiceBlockingStub userGrpcStub;
+
     public SearchService(@Value("${meilisearch.host}") String host,
-                         @Value("${meilisearch.api-key}") String apiKey,
-                         UserRepository userRepository,
-                         EventRepository eventRepository) {
+                         @Value("${meilisearch.api-key}") String apiKey) {
         this.client = new Client(new Config(host, apiKey));
-        this.userRepository = userRepository;
-        this.eventRepository = eventRepository;
     }
 
     @PostConstruct
@@ -53,7 +53,7 @@ public class SearchService {
             } catch (Exception e) {
                 client.createIndex(eventIndexName, "id");
             }
-            // Reindex all users and events on startup to make sure data is fresh
+            // Reindex all users on startup to make sure data is fresh
             reindexAll();
             reindexAllEvents();
         } catch (Exception e) {
@@ -63,25 +63,42 @@ public class SearchService {
 
     public void reindexAll() {
         try {
-            List<User> dbUsers = userRepository.findAll();
-            List<MeiliUser> meiliUsers = dbUsers.stream()
-                    .map(u -> new MeiliUser(
-                            u.getId().toString(),
-                            u.getUsername(),
-                            u.getFirstName() != null ? u.getFirstName() : "",
-                            u.getLastName() != null ? u.getLastName() : "",
-                            u.getAvatarId() != null ? u.getAvatarId() : ""
-                    ))
-                    .collect(Collectors.toList());
+            int page = 0;
+            int size = 100;
+            List<MeiliUser> allMeiliUsers = new ArrayList<>();
+            while (true) {
+                GetAllUsersResponse response = userGrpcStub.getAllUsers(
+                        GetAllUsersRequest.newBuilder()
+                                .setPage(page)
+                                .setSize(size)
+                                .build()
+                );
+                List<UserDto> usersList = response.getUsersList();
+                if (usersList.isEmpty()) {
+                    break;
+                }
+                List<MeiliUser> meiliUsers = usersList.stream()
+                        .map(u -> new MeiliUser(
+                                u.getId(),
+                                u.getUsername(),
+                                u.getFirstName(),
+                                u.getLastName(),
+                                u.getAvatarId()
+                        ))
+                        .collect(Collectors.toList());
+                allMeiliUsers.addAll(meiliUsers);
+                page++;
+            }
 
-            ObjectMapper mapper = new ObjectMapper();
-            String jsonDocuments = mapper.writeValueAsString(meiliUsers);
-
-            Index index = client.index(indexName);
-            index.addDocuments(jsonDocuments);
-            System.out.println("Meilisearch: Indexed " + meiliUsers.size() + " users successfully.");
+            if (!allMeiliUsers.isEmpty()) {
+                ObjectMapper mapper = new ObjectMapper();
+                String jsonDocuments = mapper.writeValueAsString(allMeiliUsers);
+                Index index = client.index(indexName);
+                index.addDocuments(jsonDocuments);
+                System.out.println("Meilisearch: Indexed " + allMeiliUsers.size() + " users successfully via gRPC.");
+            }
         } catch (Exception e) {
-            System.err.println("Meilisearch: Failed to reindex users: " + e.getMessage());
+            System.err.println("Meilisearch: Failed to reindex users via gRPC: " + e.getMessage());
         }
     }
 
@@ -122,40 +139,7 @@ public class SearchService {
     }
 
     public void reindexAllEvents() {
-        try {
-            List<Event> dbEvents = eventRepository.findAll();
-            List<MeiliEvent> meiliEvents = dbEvents.stream()
-                    .map(e -> MeiliEvent.builder()
-                            .id(e.getId())
-                            .userId(e.getUserId())
-                            .name(e.getName())
-                            .title(e.getTitle())
-                            .startDate(e.getStartDate() != null ? e.getStartDate() : "")
-                            .startTime(e.getStartTime() != null ? e.getStartTime() : "")
-                            .endDate(e.getEndDate() != null ? e.getEndDate() : "")
-                            .endTime(e.getEndTime() != null ? e.getEndTime() : "")
-                            .type(e.getType() != null ? e.getType() : "")
-                            .privacy(e.getPrivacy() != null ? e.getPrivacy() : "")
-                            .description(e.getDescription() != null ? e.getDescription() : "")
-                            .location(e.getLocation() != null ? e.getLocation() : "")
-                            .locationName(e.getLocationName() != null ? e.getLocationName() : "")
-                            .address(e.getAddress() != null ? e.getAddress() : "")
-                            .showGuestList(e.getShowGuestList() != null ? e.getShowGuestList() : true)
-                            .date(e.getDate() != null ? e.getDate() : "")
-                            .frequency(e.getFrequency() != null ? e.getFrequency() : "")
-                            .images(java.util.Collections.emptyList())
-                            .build())
-                    .collect(Collectors.toList());
-
-            ObjectMapper mapper = new ObjectMapper();
-            String jsonDocuments = mapper.writeValueAsString(meiliEvents);
-
-            Index index = client.index(eventIndexName);
-            index.addDocuments(jsonDocuments);
-            System.out.println("Meilisearch: Indexed " + meiliEvents.size() + " events successfully.");
-        } catch (Exception e) {
-            System.err.println("Meilisearch: Failed to reindex events: " + e.getMessage());
-        }
+        System.out.println("Meilisearch: Event reindexing skipped (event-service is the source of truth).");
     }
 
     public void indexEvent(MeiliEvent event) {

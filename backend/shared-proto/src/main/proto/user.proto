@@ -48,6 +48,7 @@ service UserGrpcService {
   rpc GetListing(GetListingRequest) returns (GetListingResponse);
   rpc GetNearbyListings(GetNearbyListingsRequest) returns (GetNearbyListingsResponse);
   rpc CreateListing(CreateListingRequest) returns (CreateListingResponse);
+  rpc GetAllUsers(GetAllUsersRequest) returns (GetAllUsersResponse);
 }
 
 // ==========================================
@@ -89,6 +90,7 @@ message UserDto {
   string createdAt = 32;
   string updatedAt = 33;
   string note = 34;
+  string username = 35;
 }
 
 // ==========================================
@@ -311,3 +313,13 @@ message UpdateVaultAttemptsRequest {
   int32 attempts = 2;
 }
 message UpdateVaultAttemptsResponse { VaultData vault = 1; }
+
+// Bulk fetch models
+message GetAllUsersRequest {
+  int32 page = 1;
+  int32 size = 2;
+}
+
+message GetAllUsersResponse {
+  repeated UserDto users = 1;
+}

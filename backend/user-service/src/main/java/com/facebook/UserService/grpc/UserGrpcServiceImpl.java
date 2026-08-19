@@ -490,6 +490,24 @@ public class UserGrpcServiceImpl extends UserGrpcServiceGrpc.UserGrpcServiceImpl
                 .build();
     }
 
+    @Override
+    public void getAllUsers(GetAllUsersRequest request, StreamObserver<GetAllUsersResponse> responseObserver) {
+        log.info("gRPC: Fetching all users for search service reindexing, page={}, size={}", request.getPage(), request.getSize());
+        handleUnary(
+                () -> {
+                    List<com.facebook.UserService.model.User> users = userService.getAllUsers(request.getPage(), request.getSize());
+                    List<UserDto> dtos = users.stream()
+                            .map(com.facebook.UserService.mapper.UserProtoMapper::toUserDto)
+                            .collect(Collectors.toList());
+                    return GetAllUsersResponse.newBuilder()
+                            .addAllUsers(dtos)
+                            .build();
+                },
+                responseObserver,
+                "Failed to get all users via gRPC"
+        );
+    }
+
     private <T> void handleUnary(java.util.function.Supplier<T> action,
                                  StreamObserver<T> responseObserver,
                                  String errorMsg) {

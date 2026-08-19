@@ -26,6 +26,7 @@
 		<module>socialgraph-service</module>
 		<module>user-edge-service</module>
 		<module>socialgraph-edge-service</module>
+		<module>search-service</module>
 	</modules>
 
 	<profiles>

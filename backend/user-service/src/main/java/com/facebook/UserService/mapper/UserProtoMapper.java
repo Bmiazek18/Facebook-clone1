@@ -38,6 +38,7 @@ public final class UserProtoMapper {
                 .setFirstName(nullToEmpty(user.getFirstName()))
                 .setLastName(nullToEmpty(user.getLastName()))
                 .setAvatarId(nullToEmpty(user.getAvatarId()))
+                .setUsername(nullToEmpty(user.getUsername()))
                 .setBio(nullToEmpty(user.getBio()))
                 .setLocation(nullToEmpty(user.getLocation()))
                 .setHometown(nullToEmpty(user.getHometown()))

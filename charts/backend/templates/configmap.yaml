@@ -11,6 +11,7 @@ data:
   MEDIA_STABLE_URL_BASE: {{ .Values.config.MEDIA_STABLE_URL_BASE | quote }}
   USER_SERVICE_GRPC_ADDRESS: {{ .Values.config.USER_SERVICE_GRPC_ADDRESS | quote }}
   SOCIAL_GRAPH_SERVICE_GRPC_ADDRESS: {{ .Values.config.SOCIAL_GRAPH_SERVICE_GRPC_ADDRESS | quote }}
+  SEARCH_SERVICE_GRPC_ADDRESS: {{ .Values.config.SEARCH_SERVICE_GRPC_ADDRESS | quote }}
   NEO4J_URI: {{ .Values.config.NEO4J_URI | quote }}
   VAULT_URI: {{ .Values.config.VAULT_URI | quote }}
   SENTRY_ENVIRONMENT: {{ .Values.config.SENTRY_ENVIRONMENT | quote }}

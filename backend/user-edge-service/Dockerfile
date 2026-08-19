@@ -9,6 +9,7 @@ COPY user-edge-service user-edge-service
 COPY user-service/pom.xml user-service/pom.xml
 COPY socialgraph-service/pom.xml socialgraph-service/pom.xml
 COPY socialgraph-edge-service/pom.xml socialgraph-edge-service/pom.xml
+COPY search-service/pom.xml search-service/pom.xml
 
 RUN mvn clean package -pl user-edge-service -am -DskipTests && \
     rm -f user-edge-service/target/*-plain.jar

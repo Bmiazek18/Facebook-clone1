@@ -16,6 +16,9 @@ images:
   videoAbrService:
     repository: ghcr.io/bmiazek18/facebook-clone1-video-abr-service
     tag: "latest"
+  searchService:
+    repository: ghcr.io/bmiazek18/facebook-clone1-search-service
+    tag: "latest"
   apolloRouter:
     repository: ghcr.io/apollographql/router
     tag: "v2.17.0"
@@ -37,6 +40,7 @@ config:
   MEDIA_STABLE_URL_BASE: https://api.lab-bm.com
   USER_SERVICE_GRPC_ADDRESS: dns:///userservice:9090
   SOCIAL_GRAPH_SERVICE_GRPC_ADDRESS: dns:///socialgraph-service:9091
+  SEARCH_SERVICE_GRPC_ADDRESS: dns:///search-service:9097
   VAULT_URI: http://vault.apps.svc.cluster.local:8200
   VAULT_TOKEN: vault-root-token
   OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.observability:4317
