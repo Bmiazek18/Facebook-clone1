@@ -1,0 +1,35 @@
+extend schema @link(url: "https://specs.apollo.dev/federation/v2.11", import: ["@key", "@external", "@requires", "@provides", "@extends"])
+
+type Query {
+    getBirthdayUsers(currentUserId: ID!): [BirthdayUser!]!
+    getFriendSuggestions(currentUserId: ID!): [FriendSuggestion!]!
+    getFriendRequests(currentUserId: ID!): [FriendSuggestion!]!
+    getFriends(userId: ID!): [UserSearchResponse!]!
+}
+
+type Mutation {
+    sendFriendRequest(senderId: ID!, receiverId: ID!): FriendRequestResponse!
+    acceptFriendRequest(senderId: ID!, receiverId: ID!): FriendRequestResponse!
+}
+
+type FriendRequestResponse {
+    success: Boolean!
+    message: String!
+}
+
+type BirthdayUser {
+    userId: ID!
+    birthDate: String!
+    user: UserSearchResponse
+}
+
+type UserSearchResponse @key(fields: "id") {
+    id: ID!
+    mutualFriendsCount(currentUserId: ID!): Int!
+}
+
+type FriendSuggestion {
+    userId: ID!
+    mutualFriendsCount: Int!
+    user: UserSearchResponse
+}

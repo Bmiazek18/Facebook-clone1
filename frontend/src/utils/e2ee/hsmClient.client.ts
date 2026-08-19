@@ -143,8 +143,26 @@ export async function unlockVaultAndRestoreHistory(pin: string, userId: string) 
 
 export async function hasVaultOnServer(userId: string): Promise<boolean> {
   try {
-    const resp = await fetch(`/api/vaults/${userId}`, { method: 'GET' })
-    return resp.ok
+    const resp = await fetch('/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: `
+          query GetVault($userId: ID!) {
+            vault(userId: $userId) {
+              opaqueRecord
+            }
+          }
+        `,
+        variables: { userId }
+      })
+    })
+
+    if (!resp.ok) return false
+    const json = await resp.json()
+    return !!json.data?.vault?.opaqueRecord
   } catch {
     return false
   }

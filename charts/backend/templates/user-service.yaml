@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userservice
+  labels:
+    app: userservice
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: userservice
+  template:
+    metadata:
+      labels:
+        app: userservice
+    spec:
+      containers:
+        - name: user-service
+          image: "{{ .Values.images.userService.repository }}:{{ .Values.images.userService.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8081
+            - name: grpc
+              containerPort: 9090
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-runtime-config
+                  key: SPRING_DATASOURCE_URL
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: backend-runtime-secrets
+                  key: SPRING_DATASOURCE_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-runtime-secrets
+                  key: SPRING_DATASOURCE_PASSWORD
+            - name: SPRING_DATA_REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-runtime-config
+                  key: SPRING_DATA_REDIS_HOST
+            - name: SPRING_DATA_REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-runtime-config
+                  key: SPRING_DATA_REDIS_PORT
+            - name: MINIO_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-runtime-config
+                  key: MINIO_URL
+            - name: MINIO_PUBLIC_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-runtime-config
+                  key: MINIO_PUBLIC_ENDPOINT
+            - name: MEDIA_STABLE_URL_BASE
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-runtime-config
+                  key: MEDIA_STABLE_URL_BASE
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-runtime-secrets
+                  key: MINIO_ACCESS_KEY
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-runtime-secrets
+                  key: MINIO_SECRET_KEY
+            - name: SOCIAL_GRAPH_SERVICE_GRPC_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-runtime-config
+                  key: SOCIAL_GRAPH_SERVICE_GRPC_ADDRESS
+            - name: VAULT_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-runtime-config
+                  key: VAULT_URI
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: backend-runtime-secrets
+                  key: VAULT_TOKEN
+            - name: JAVA_TOOL_OPTIONS
+              value: -Xms128m -Xmx256m
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 40
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: userservice
+spec:
+  selector:
+    app: userservice
+  ports:
+    - name: http
+      port: 8081
+      targetPort: http
+    - name: grpc
+      port: 9090
+      targetPort: grpc

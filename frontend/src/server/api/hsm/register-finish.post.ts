@@ -15,17 +15,33 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    interface GraphQLResponse<T> {
+      data?: T
+      errors?: any[]
+    }
 
-    await $fetch(`${JAVA_API_URL}/api/vaults/${userId}`, {
-      method: 'PUT',
+    await $fetch<GraphQLResponse<any>>(`${JAVA_API_URL}/graphql`, {
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       },
       body: {
-        opaqueRecord: registrationRecord,
-        encryptedHistory: encryptedHistory ?? '',
-        failedAttempts: 0
+        query: `
+          mutation SaveVault($userId: ID!, $input: SaveVaultInput!) {
+            saveVault(userId: $userId, input: $input) {
+              userId
+            }
+          }
+        `,
+        variables: {
+          userId,
+          input: {
+            opaqueRecord: registrationRecord,
+            encryptedHistory: encryptedHistory ?? '',
+            failedAttempts: 0
+          }
+        }
       }
     })
 

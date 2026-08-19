@@ -1,0 +1,42 @@
+# router.yaml
+supergraph:
+  listen: 0.0.0.0:4000
+  introspection: true
+
+cors:
+  allow_any_origin: true
+
+sandbox:
+  enabled: true
+
+homepage:
+  enabled: false
+
+include_subgraph_errors:
+  all: true
+
+authentication:
+  router:
+    jwt:
+      jwks:
+        - url: ${env.KEYCLOAK_JWKS_URL:-http://keycloak:8080/realms/myrealm/protocol/openid-connect/certs}
+      header_name: Authorization
+      header_value_prefix: Bearer
+
+headers:
+  all:
+    request:
+      - propagate:
+          named: "Authorization"
+      - propagate:
+          named: "X-User-Id"
+      - propagate:
+          named: "X-Actor-Id"
+      - propagate:
+          named: "X-Entity-Type"
+      - propagate:
+          named: "X-Original-User-Id"
+
+rhai:
+  scripts: "/dist/config"
+  main: "main.rhai"

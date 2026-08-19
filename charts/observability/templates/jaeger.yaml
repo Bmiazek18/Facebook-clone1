@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger
+  namespace: {{ .Values.namespace | default "apps" }}
+  labels:
+    app: jaeger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger
+  template:
+    metadata:
+      labels:
+        app: jaeger
+    spec:
+      containers:
+      - name: jaeger
+        image: jaegertracing/all-in-one:latest
+        env:
+        - name: COLLECTOR_OTLP_ENABLED
+          value: "true"
+        ports:
+        - name: query
+          containerPort: 16686
+        - name: otlp-grpc
+          containerPort: 4317
+        - name: otlp-http
+          containerPort: 4318
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger
+  namespace: {{ .Values.namespace | default "apps" }}
+  labels:
+    app: jaeger
+spec:
+  ports:
+  - name: query
+    port: {{ .Values.jaeger.service.queryPort }}
+    targetPort: query
+  - name: otlp-grpc
+    port: {{ .Values.jaeger.service.otlpGrpcPort }}
+    targetPort: otlp-grpc
+  - name: otlp-http
+    port: {{ .Values.jaeger.service.otlpHttpPort }}
+    targetPort: otlp-http
+  selector:
+    app: jaeger
+  type: ClusterIP

@@ -1,0 +1,1030 @@
+schema
+  @link(url: "https://specs.apollo.dev/link/v1.0")
+  @link(url: "https://specs.apollo.dev/join/v0.5", for: EXECUTION)
+{
+  query: Query
+  mutation: Mutation
+}
+
+directive @join__directive(graphs: [join__Graph!], name: String!, args: join__DirectiveArguments) repeatable on SCHEMA | OBJECT | INTERFACE | FIELD_DEFINITION
+
+directive @join__enumValue(graph: join__Graph!) repeatable on ENUM_VALUE
+
+directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet, type: String, external: Boolean, override: String, usedOverridden: Boolean, overrideLabel: String, contextArguments: [join__ContextArgument!]) repeatable on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @join__graph(name: String!, url: String!) on ENUM_VALUE
+
+directive @join__implements(graph: join__Graph!, interface: String!) repeatable on OBJECT | INTERFACE
+
+directive @join__type(graph: join__Graph!, key: join__FieldSet, extension: Boolean! = false, resolvable: Boolean! = true, isInterfaceObject: Boolean! = false) repeatable on OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT | SCALAR
+
+directive @join__unionMember(graph: join__Graph!, member: String!) repeatable on UNION
+
+directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+
+input AddCommentInput
+  @join__type(graph: FEED)
+{
+  content: String!
+  mediaUrl: String
+  parentId: ID
+  postId: ID!
+  userId: ID!
+}
+
+type BirthdayUser
+  @join__type(graph: SOCIALGRAPH)
+{
+  birthDate: String!
+  user: UserSearchResponse
+  userId: ID!
+}
+
+type ChatMessage
+  @join__type(graph: CHAT)
+{
+  audioUrl: String
+  duration: Int
+  fileName: String
+  fileSize: Float
+  fileUrl: String
+  imageUrl: String
+  isPinned: Boolean
+  linkUrl: String
+  messageId: String!
+  reactionsJson: String
+  replyToId: String
+  replyToSenderId: String
+  replyToText: String
+  senderId: String!
+  systemActionPayload: String
+  systemActionType: String
+  text: String!
+  time: Float!
+}
+
+type ChatNickname
+  @join__type(graph: CHAT)
+{
+  nickname: String!
+  userId: ID!
+}
+
+type ChatSettings
+  @join__type(graph: CHAT)
+{
+  emoji: String
+  nicknames: [ChatNickname!]!
+  themeId: Int
+}
+
+type ChatUser
+  @join__type(graph: CHAT)
+{
+  avatar: String
+  avatarId: String
+  firstName: String
+  id: ID!
+  lastName: String
+}
+
+type ChatWithUserResponse
+  @join__type(graph: CHAT)
+{
+  messages: [ChatMessage!]!
+  user: ChatUser!
+}
+
+type Comment
+  @join__type(graph: FEED, key: "id", resolvable: true)
+  @join__type(graph: USERS, key: "id", resolvable: true)
+{
+  content: String! @join__field(graph: FEED)
+  createdAt: String! @join__field(graph: FEED)
+  id: ID!
+  mediaUrl: String @join__field(graph: FEED)
+  parentId: ID @join__field(graph: FEED)
+  postId: ID! @join__field(graph: FEED)
+  reactions: [ReactionDetail!]! @join__field(graph: FEED)
+  mentionedUsers: [ReactionUser!] @join__field(graph: FEED)
+  userId: ID! @join__field(graph: FEED) @join__field(graph: USERS, external: true)
+  author: UserSearchResponse @join__field(graph: USERS, requires: "userId")
+}
+
+input CommentReactionInput
+  @join__type(graph: FEED)
+{
+  commentId: ID!
+  reactionType: String
+  userId: ID!
+}
+
+input CreateEventInput
+  @join__type(graph: FEED)
+{
+  address: String
+  coordinates: [Float!]
+  date: String
+  description: String
+  endDate: String
+  endTime: String
+  frequency: String
+  hosts: [String!]
+  id: ID
+  images: [String!]!
+  location: String
+  locationName: String
+  name: String!
+  privacy: String!
+  showGuestList: Boolean
+  startDate: String!
+  startTime: String
+  title: String
+  type: String!
+  userId: ID!
+}
+
+input CreateGroupInput
+  @join__type(graph: FEED)
+{
+  creatorId: ID!
+  description: String
+  image: String
+  name: String!
+  privacy: String!
+}
+
+input CreateListingInput
+  @join__type(graph: USERS)
+{
+  category: String!
+  condition: String!
+  description: String
+  latitude: Float!
+  longitude: Float!
+  price: Float!
+  title: String!
+}
+
+input CreatePostInput
+  @join__type(graph: FEED)
+{
+  allowedUserIds: [ID!]
+  authorId: ID!
+  content: String!
+  context: PostContextInput
+  isAnonymous: Boolean
+  media: [PostMediaInput!]!
+  taggedUsersIds: [ID!]
+  targetId: String
+  targetType: String
+  visibility: String
+}
+
+input CreateStoryInput
+  @join__type(graph: FEED)
+{
+  authorId: ID!
+  mediaType: String!
+  mediaUrl: String!
+
+  """ IMAGE or VIDEO"""
+  text: String
+}
+
+enum ErrorDetail
+  @join__type(graph: CHAT)
+  @join__type(graph: FEED)
+  @join__type(graph: SOCIALGRAPH)
+  @join__type(graph: USERS)
+{
+  """
+  The deadline expired before the operation could complete.
+  
+  For operations that change the state of the system, this error
+  may be returned even if the operation has completed successfully.
+  For example, a successful response from a server could have been
+  delayed long enough for the deadline to expire.
+  
+  HTTP Mapping: 504 Gateway Timeout
+  Error Type: UNAVAILABLE
+  """
+  DEADLINE_EXCEEDED @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  The server detected that the client is exhibiting a behavior that
+  might be generating excessive load.
+  
+  HTTP Mapping: 420 Enhance Your Calm
+  Error Type: UNAVAILABLE
+  """
+  ENHANCE_YOUR_CALM @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  The requested field is not found in the schema.
+  
+  This differs from `NOT_FOUND` in that `NOT_FOUND` should be used when a
+  query is valid, but is unable to return a result (if, for example, a
+  specific video id doesn't exist). `FIELD_NOT_FOUND` is intended to be
+  returned by the server to signify that the requested field is not known to exist.
+  This may be returned in lieu of failing the entire query.
+  See also `PERMISSION_DENIED` for cases where the
+  requested field is invalid only for the given user or class of users.
+  
+  HTTP Mapping: 404 Not Found
+  Error Type: BAD_REQUEST
+  """
+  FIELD_NOT_FOUND @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  The client specified an invalid argument.
+  
+  Note that this differs from `FAILED_PRECONDITION`.
+  `INVALID_ARGUMENT` indicates arguments that are problematic
+  regardless of the state of the system (e.g., a malformed file name).
+  
+  HTTP Mapping: 400 Bad Request
+  Error Type: BAD_REQUEST
+  """
+  INVALID_ARGUMENT @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  The provided cursor is not valid.
+  
+  The most common usage for this error is when a client is paginating
+  through a list that uses stateful cursors. In that case, the provided
+  cursor may be expired.
+  
+  HTTP Mapping: 404 Not Found
+  Error Type: NOT_FOUND
+  """
+  INVALID_CURSOR @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  Unable to perform operation because a required resource is missing.
+  
+  Example: Client is attempting to refresh a list, but the specified
+  list is expired. This requires an action by the client to get a new list.
+  
+  If the user is simply trying GET a resource that is not found,
+  use the NOT_FOUND error type. FAILED_PRECONDITION.MISSING_RESOURCE
+  is to be used particularly when the user is performing an operation
+  that requires a particular resource to exist.
+  
+  HTTP Mapping: 400 Bad Request or 500 Internal Server Error
+  Error Type: FAILED_PRECONDITION
+  """
+  MISSING_RESOURCE @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  Service Error.
+  
+  There is a problem with an upstream service.
+  
+  This may be returned if a gateway receives an unknown error from a service
+  or if a service is unreachable.
+  If a request times out which waiting on a response from a service,
+  `DEADLINE_EXCEEDED` may be returned instead.
+  If a service returns a more specific error Type, the specific error Type may
+  be returned instead.
+  
+  HTTP Mapping: 502 Bad Gateway
+  Error Type: UNAVAILABLE
+  """
+  SERVICE_ERROR @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  Request failed due to network errors.
+  
+  HTTP Mapping: 503 Unavailable
+  Error Type: UNAVAILABLE
+  """
+  TCP_FAILURE @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  Request throttled based on server concurrency limits.
+  
+  HTTP Mapping: 503 Unavailable
+  Error Type: UNAVAILABLE
+  """
+  THROTTLED_CONCURRENCY @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  Request throttled based on server CPU limits
+  
+  HTTP Mapping: 503 Unavailable.
+  Error Type: UNAVAILABLE
+  """
+  THROTTLED_CPU @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  The server detected that the client is exhibiting a behavior that
+  might be generating excessive load.
+  
+  HTTP Mapping: 429 Too Many Requests
+  Error Type: UNAVAILABLE
+  """
+  TOO_MANY_REQUESTS @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  The operation is not implemented or is not currently supported/enabled.
+  
+  HTTP Mapping: 501 Not Implemented
+  Error Type: BAD_REQUEST
+  """
+  UNIMPLEMENTED @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  Unknown error.
+  
+  This error should only be returned when no other error detail applies.
+  If a client sees an unknown errorDetail, it will be interpreted as UNKNOWN.
+  
+  HTTP Mapping: 500 Internal Server Error
+  """
+  UNKNOWN @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+}
+
+enum ErrorType
+  @join__type(graph: CHAT)
+  @join__type(graph: FEED)
+  @join__type(graph: SOCIALGRAPH)
+  @join__type(graph: USERS)
+{
+  """
+  Bad Request.
+  
+  There is a problem with the request.
+  Retrying the same request is not likely to succeed.
+  An example would be a query or argument that cannot be deserialized.
+  
+  HTTP Mapping: 400 Bad Request
+  """
+  BAD_REQUEST @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  The operation was rejected because the system is not in a state
+  required for the operation's execution.  For example, the directory
+  to be deleted is non-empty, an rmdir operation is applied to
+  a non-directory, etc.
+  
+  Service implementers can use the following guidelines to decide
+  between `FAILED_PRECONDITION` and `UNAVAILABLE`:
+  
+  - Use `UNAVAILABLE` if the client can retry just the failing call.
+  - Use `FAILED_PRECONDITION` if the client should not retry until
+  the system state has been explicitly fixed.  E.g., if an "rmdir"
+       fails because the directory is non-empty, `FAILED_PRECONDITION`
+  should be returned since the client should not retry unless
+  the files are deleted from the directory.
+  
+  HTTP Mapping: 400 Bad Request or 500 Internal Server Error
+  """
+  FAILED_PRECONDITION @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  Internal error.
+  
+  An unexpected internal error was encountered. This means that some
+  invariants expected by the underlying system have been broken.
+  This error code is reserved for serious errors.
+  
+  HTTP Mapping: 500 Internal Server Error
+  """
+  INTERNAL @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  The requested entity was not found.
+  
+  This could apply to a resource that has never existed (e.g. bad resource id),
+  or a resource that no longer exists (e.g. cache expired.)
+  
+  Note to server developers: if a request is denied for an entire class
+  of users, such as gradual feature rollout or undocumented allowlist,
+  `NOT_FOUND` may be used. If a request is denied for some users within
+  a class of users, such as user-based access control, `PERMISSION_DENIED`
+  must be used.
+  
+  HTTP Mapping: 404 Not Found
+  """
+  NOT_FOUND @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  The caller does not have permission to execute the specified
+  operation.
+  
+  `PERMISSION_DENIED` must not be used for rejections
+  caused by exhausting some resource or quota.
+  `PERMISSION_DENIED` must not be used if the caller
+  cannot be identified (use `UNAUTHENTICATED`
+  instead for those errors).
+  
+  This error Type does not imply the
+  request is valid or the requested entity exists or satisfies
+  other pre-conditions.
+  
+  HTTP Mapping: 403 Forbidden
+  """
+  PERMISSION_DENIED @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  The request does not have valid authentication credentials.
+  
+  This is intended to be returned only for routes that require
+  authentication.
+  
+  HTTP Mapping: 401 Unauthorized
+  """
+  UNAUTHENTICATED @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  Currently Unavailable.
+  
+  The service is currently unavailable.  This is most likely a
+  transient condition, which can be corrected by retrying with
+  a backoff.
+  
+  HTTP Mapping: 503 Unavailable
+  """
+  UNAVAILABLE @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+
+  """
+  Unknown error.
+  
+  For example, this error may be returned when
+  an error code received from another address space belongs to
+  an error space that is not known in this address space.  Also
+  errors raised by APIs that do not return enough error information
+  may be converted to this error.
+  
+  If a client sees an unknown errorType, it will be interpreted as UNKNOWN.
+  Unknown errors MUST NOT trigger any special behavior. These MAY be treated
+  by an implementation as being equivalent to INTERNAL.
+  
+  When possible, a more specific error should be provided.
+  
+  HTTP Mapping: 520 Unknown Error
+  """
+  UNKNOWN @join__enumValue(graph: CHAT) @join__enumValue(graph: FEED) @join__enumValue(graph: SOCIALGRAPH) @join__enumValue(graph: USERS)
+}
+
+type Event
+  @join__type(graph: FEED, key: "id", resolvable: true)
+{
+  address: String
+  coordinates: [Float!]
+  date: String
+  description: String
+  endDate: String
+  endTime: String
+  frequency: String
+  guestsGoing: Int
+  guestsInterested: Int
+  hosts: [String!]
+  id: ID!
+  images: [String!]!
+  location: String
+  locationName: String
+  name: String!
+  privacy: String!
+  responses: Int
+  showGuestList: Boolean
+  startDate: String!
+  startTime: String
+  title: String
+  type: String!
+  userId: ID!
+}
+
+type Feeling
+  @join__type(graph: FEED)
+{
+  emoji: String
+  label: String
+}
+
+input FeelingInput
+  @join__type(graph: FEED)
+{
+  emoji: String
+  label: String
+}
+
+type FriendRequestResponse
+  @join__type(graph: SOCIALGRAPH)
+{
+  message: String!
+  success: Boolean!
+}
+
+type FriendSuggestion
+  @join__type(graph: SOCIALGRAPH)
+{
+  mutualFriendsCount: Int!
+  user: UserSearchResponse
+  userId: ID!
+}
+
+type Group
+  @join__type(graph: FEED, key: "id", resolvable: true)
+{
+  description: String
+  id: ID!
+  image: String
+  lastActive: String
+  membersCount: Int
+  name: String!
+  privacy: String!
+}
+
+input ImageTagInput
+  @join__type(graph: FEED)
+{
+  id: ID!
+  userId: ID
+  x: Float!
+  y: Float!
+}
+
+type ImageTagType
+  @join__type(graph: FEED)
+{
+  id: ID!
+  user: ReactionUser
+  userId: ID
+  x: Float!
+  y: Float!
+}
+
+type InboxItem
+  @join__type(graph: CHAT)
+{
+  conversationId: ID!
+  isUnread: Boolean!
+  lastActivity: Float!
+  lastMessageSenderId: ID
+  lastMessageText: String
+  recipientId: ID
+}
+
+input join__ContextArgument {
+  name: String!
+  type: String!
+  context: String!
+  selection: join__FieldValue!
+}
+
+scalar join__DirectiveArguments
+
+scalar join__FieldSet
+
+scalar join__FieldValue
+
+enum join__Graph {
+  CHAT @join__graph(name: "chat", url: "http://chat-edge:8089/graphql")
+  FEED @join__graph(name: "feed", url: "http://feed-edge:8084/graphql")
+  SOCIALGRAPH @join__graph(name: "socialgraph", url: "http://socialgraph-edge:8082/graphql")
+  USERS @join__graph(name: "users", url: "http://userservice-edge:8081/graphql")
+}
+
+type LifeEvent
+  @join__type(graph: USERS)
+{
+  date: String!
+  event: String!
+}
+
+input LifeEventInput
+  @join__type(graph: USERS)
+{
+  date: String!
+  event: String!
+}
+
+scalar link__Import
+
+enum link__Purpose {
+  """
+  `SECURITY` features provide metadata necessary to securely resolve fields.
+  """
+  SECURITY
+
+  """
+  `EXECUTION` features provide metadata necessary for operation execution.
+  """
+  EXECUTION
+}
+
+""" ---------------- MARKETPLACE ----------------"""
+type Listing
+  @join__type(graph: USERS)
+{
+  category: String!
+  condition: String!
+  createdAt: String
+  description: String
+  id: ID!
+  latitude: Float
+  longitude: Float
+  price: Float!
+  title: String!
+}
+
+type Location
+  @join__type(graph: FEED)
+{
+  lat: String
+  lon: String
+  subtitle: String
+  title: String!
+  type: String
+}
+
+input LocationInput
+  @join__type(graph: FEED)
+{
+  lat: String
+  lon: String
+  subtitle: String
+  title: String!
+  type: String
+}
+
+type Mutation
+  @join__type(graph: CHAT)
+  @join__type(graph: FEED)
+  @join__type(graph: SOCIALGRAPH)
+  @join__type(graph: USERS)
+{
+  markInboxAsRead(conversationId: ID!, userId: ID!): Boolean! @join__field(graph: CHAT)
+  pinChatMessage(conversationId: ID!, isPinned: Boolean!, messageId: ID!, participantIds: [ID!]!): Boolean! @join__field(graph: CHAT)
+  reactToChatMessage(conversationId: ID!, messageId: ID!, participantIds: [ID!]!, reactionEmoji: String!, senderId: ID!): Boolean! @join__field(graph: CHAT)
+  sendChatMessage(input: SendChatMessageInput!): ChatMessage! @join__field(graph: CHAT)
+  updateChatCustomization(conversationId: ID!, emoji: String, participantIds: [ID!]!, senderId: ID!, themeId: Int): Boolean! @join__field(graph: CHAT)
+  updateChatNickname(conversationId: ID!, nickname: String, participantIds: [ID!]!, senderId: ID!, userId: ID!): Boolean! @join__field(graph: CHAT)
+  addComment(input: AddCommentInput!): Comment! @join__field(graph: FEED)
+  createEvent(input: CreateEventInput!): Event! @join__field(graph: FEED)
+  createGroup(input: CreateGroupInput!): Group! @join__field(graph: FEED)
+  createPost(input: CreatePostInput!): Post! @join__field(graph: FEED)
+  createStory(input: CreateStoryInput!): Story! @join__field(graph: FEED)
+  joinGroup(groupId: ID!, userId: ID!): Boolean! @join__field(graph: FEED)
+  leaveGroup(groupId: ID!, userId: ID!): Boolean! @join__field(graph: FEED)
+  markStoryAsViewed(storyId: ID!, viewerId: ID!): Boolean! @join__field(graph: FEED)
+  reactToComment(input: CommentReactionInput!): Boolean! @join__field(graph: FEED)
+  reactToPost(input: PostReactionInput!): Boolean! @join__field(graph: FEED)
+  voteOnPoll(optionId: ID!, postId: ID!, userId: ID!): Post! @join__field(graph: FEED)
+  acceptFriendRequest(receiverId: ID!, senderId: ID!): FriendRequestResponse! @join__field(graph: SOCIALGRAPH)
+  sendFriendRequest(receiverId: ID!, senderId: ID!): FriendRequestResponse! @join__field(graph: SOCIALGRAPH)
+  createListing(input: CreateListingInput!): Listing @join__field(graph: USERS)
+  generateTicket(userId: ID!): String! @join__field(graph: USERS)
+  markNotificationAsRead(id: ID!): Boolean @join__field(graph: USERS)
+  recordSearch(searchedUserId: ID!): Boolean @join__field(graph: USERS)
+  setUserActive(userId: ID!): Boolean @join__field(graph: USERS)
+  translateText(targetLanguage: String!, text: String!): String! @join__field(graph: USERS)
+  updateProfile(input: UpdateProfileInput!, userId: ID!): UserSearchResponse @join__field(graph: USERS)
+}
+
+""" ---------------- NOTIFICATIONS ----------------"""
+type Notification
+  @join__type(graph: USERS)
+{
+  createdAt: String!
+  id: ID!
+  message: String!
+  read: Boolean!
+  sender: NotificationUser
+  title: String!
+  userId: ID!
+}
+
+type NotificationUser
+  @join__type(graph: USERS)
+{
+  avatar: String
+  avatarId: String
+  firstName: String
+  id: ID!
+  lastName: String
+}
+
+type Poll
+  @join__type(graph: FEED)
+{
+  options: [PollOption!]!
+  question: String!
+}
+
+input PollInput
+  @join__type(graph: FEED)
+{
+  options: [PollOptionInput!]!
+  question: String!
+}
+
+type PollOption
+  @join__type(graph: FEED)
+{
+  id: ID!
+  text: String!
+  votes: [ID!]!
+}
+
+input PollOptionInput
+  @join__type(graph: FEED)
+{
+  id: ID!
+  text: String!
+  votes: [ID!]!
+}
+
+"""
+---------------- FEDERATION REFERENCES ----------------
+Keep reference ids available for federated entity hydration.
+"""
+type Post
+  @join__type(graph: FEED, key: "id", resolvable: true)
+  @join__type(graph: USERS, key: "id", resolvable: true)
+{
+  allowedUserIds: [ID!] @join__field(graph: FEED)
+  authorId: ID! @join__field(graph: FEED) @join__field(graph: USERS, external: true)
+  commentCount: Int @join__field(graph: FEED)
+  content: String! @join__field(graph: FEED)
+  context: PostContext @join__field(graph: FEED)
+  date: String! @join__field(graph: FEED)
+  detectedLanguage: String @join__field(graph: FEED)
+  groupId: String @join__field(graph: FEED)
+  id: ID!
+  isAnonymous: Boolean @join__field(graph: FEED)
+  isBirthday: Boolean @join__field(graph: FEED)
+  isLifeEvent: Boolean @join__field(graph: FEED)
+  lifeEventCategory: String @join__field(graph: FEED)
+  media: [PostMedia!]! @join__field(graph: FEED)
+  reactions: [ReactionDetail!]! @join__field(graph: FEED)
+  shareCount: Int @join__field(graph: FEED)
+  sharedPost: Post @join__field(graph: FEED)
+  taggedUsers: [ReactionUser!] @join__field(graph: FEED)
+  targetId: String @join__field(graph: FEED)
+  targetType: String @join__field(graph: FEED)
+  timestamp: Float! @join__field(graph: FEED)
+  visibility: String @join__field(graph: FEED)
+  status: String @join__field(graph: FEED)
+  scheduledPublishTime: Float @join__field(graph: FEED)
+  authorGroupRole: String @join__field(graph: FEED)
+  author: UserSearchResponse @join__field(graph: USERS, requires: "authorId")
+}
+
+type PostContext
+  @join__type(graph: FEED)
+{
+  feeling: Feeling
+  location: Location
+  poll: Poll
+}
+
+input PostContextInput
+  @join__type(graph: FEED)
+{
+  feeling: FeelingInput
+  location: LocationInput
+  poll: PollInput
+}
+
+type PostMedia
+  @join__type(graph: FEED)
+{
+  altText: String
+  backgroundColor: String
+  src: String!
+  tags: [ImageTagType!]
+}
+
+input PostMediaInput
+  @join__type(graph: FEED)
+{
+  altText: String
+  backgroundColor: String
+  src: String!
+  tags: [ImageTagInput!]
+}
+
+input PostReactionInput
+  @join__type(graph: FEED)
+{
+  postId: ID!
+  previousReactionType: String
+  reactionType: String
+  userId: ID!
+}
+
+type Query
+  @join__type(graph: CHAT)
+  @join__type(graph: FEED)
+  @join__type(graph: SOCIALGRAPH)
+  @join__type(graph: USERS)
+{
+  getChatMessages(conversationId: ID!): [ChatMessage!]! @join__field(graph: CHAT)
+  getChatSettings(conversationId: ID!): ChatSettings! @join__field(graph: CHAT)
+  getChatWithUser(conversationId: ID!, userId: ID!): ChatWithUserResponse! @join__field(graph: CHAT)
+  getInbox(userId: ID!): [InboxItem!]! @join__field(graph: CHAT)
+  comments(limit: Int, postId: ID!): [Comment!]! @join__field(graph: FEED)
+  getActiveStories(currentUserId: ID!): [Story!]! @join__field(graph: FEED)
+  getEventById(id: ID!): Event @join__field(graph: FEED)
+  getEvents(limit: Int, offset: Int): [Event!]! @join__field(graph: FEED)
+  getFeed(currentUserId: ID!, limit: Int, offset: Int): [Post!]! @join__field(graph: FEED)
+  getGroupById(id: ID!): Group @join__field(graph: FEED)
+  getGroupFeed(groupId: ID!, limit: Int, offset: Int): [Post!]! @join__field(graph: FEED)
+  getGroups(limit: Int, offset: Int): [Group!]! @join__field(graph: FEED)
+  getPostById(postId: ID!): Post @join__field(graph: FEED)
+  getUserGroups(userId: ID!): [Group!]! @join__field(graph: FEED)
+  postReactions(postId: ID!): [ReactionDetail!]! @join__field(graph: FEED)
+  searchEvents(query: String!): [Event!]! @join__field(graph: FEED)
+  getBirthdayUsers(currentUserId: ID!): [BirthdayUser!]! @join__field(graph: SOCIALGRAPH)
+  getFriendRequests(currentUserId: ID!): [FriendSuggestion!]! @join__field(graph: SOCIALGRAPH)
+  getFriendSuggestions(currentUserId: ID!): [FriendSuggestion!]! @join__field(graph: SOCIALGRAPH)
+  getFriends(userId: ID!): [UserSearchResponse!]! @join__field(graph: SOCIALGRAPH)
+  detectLanguage(text: String!): String! @join__field(graph: USERS)
+  getActiveStatuses(userIds: [ID!]!): [UserActiveStatus!]! @join__field(graph: USERS)
+  getListing(id: ID!): Listing @join__field(graph: USERS)
+  getNearbyListings(lat: Float!, lon: Float!, query: String, radius: Float): [Listing!]! @join__field(graph: USERS)
+  getNotifications(userId: ID!): [Notification!]! @join__field(graph: USERS)
+  getSearchHistory(userId: ID): [UserSearchResponse!]! @join__field(graph: USERS)
+  getUserMedia(albumName: String, filter: String, limit: Int, offset: Int, userId: ID!): UserMediaResponse! @join__field(graph: FEED)
+  getUserAlbums(userId: ID!): [UserAlbum!]! @join__field(graph: FEED)
+  searchUsers(currentUserId: ID, query: String!): [UserSearchResponse!]! @join__field(graph: USERS)
+}
+
+type ReactionDetail
+  @join__type(graph: FEED)
+{
+  reactionType: String!
+  userIds: [ID!]!
+  users: [ReactionUser!]
+}
+
+type ReactionUser
+  @join__type(graph: FEED)
+{
+  avatar: String
+  avatarId: String
+  firstName: String!
+  id: ID!
+  lastName: String!
+}
+
+input SendChatMessageInput
+  @join__type(graph: CHAT)
+{
+  audioUrl: String
+  conversationId: ID!
+  duration: Int
+  fileName: String
+  fileSize: Float
+  fileUrl: String
+  imageUrl: String
+  linkUrl: String
+  participantIds: [ID!]!
+  replyToId: String
+  replyToSenderId: String
+  replyToText: String
+  senderId: ID!
+  text: String
+}
+
+type SocialLink
+  @join__type(graph: USERS)
+{
+  name: String!
+  url: String!
+}
+
+input SocialLinkInput
+  @join__type(graph: USERS)
+{
+  name: String!
+  url: String!
+}
+
+type Story
+  @join__type(graph: FEED, key: "id", resolvable: true)
+  @join__type(graph: USERS, key: "id", resolvable: true)
+{
+  authorId: ID! @join__field(graph: FEED) @join__field(graph: USERS, external: true)
+  createdAt: String! @join__field(graph: FEED)
+  expiresAt: String! @join__field(graph: FEED)
+  id: ID!
+  mediaType: String! @join__field(graph: FEED)
+  mediaUrl: String! @join__field(graph: FEED)
+  text: String @join__field(graph: FEED)
+  thumbMediaUrl: String @join__field(graph: FEED)
+  viewedBy: [ID!] @join__field(graph: FEED)
+  author: UserSearchResponse @join__field(graph: USERS, requires: "authorId")
+}
+
+input UpdateProfileInput
+  @join__type(graph: USERS)
+{
+  bio: String
+  birthDate: String
+  city: String
+  company: String
+  education: String
+  gender: String
+  highSchool: String
+  hometown: String
+  job: String
+  languages: [String!]
+  lifeEvents: [LifeEventInput!]
+  location: String
+  phone: String
+  pronouns: String
+  school: String
+  socialLinks: [SocialLinkInput!]
+  website: String
+  work: String
+}
+
+""" ---------------- STATUS ----------------"""
+type UserActiveStatus
+  @join__type(graph: USERS)
+{
+  active: Boolean!
+  lastActiveText: String
+  lastActiveTimestamp: Float
+  userId: ID!
+}
+
+""" ---------------- USER ----------------"""
+type UserSearchResponse
+  @join__type(graph: SOCIALGRAPH, key: "id", resolvable: true)
+  @join__type(graph: USERS, key: "id", resolvable: true)
+{
+  id: ID!
+  mutualFriendsCount(currentUserId: ID!): Int! @join__field(graph: SOCIALGRAPH)
+  avatar: String @join__field(graph: USERS)
+  avatarId: String @join__field(graph: USERS)
+  bio: String @join__field(graph: USERS)
+  bioDetails: String @join__field(graph: USERS)
+  birthDate: String @join__field(graph: USERS)
+  city: String @join__field(graph: USERS)
+  company: String @join__field(graph: USERS)
+  cover: String @join__field(graph: USERS)
+  coverId: String @join__field(graph: USERS)
+  createdAt: String @join__field(graph: USERS)
+  education: String @join__field(graph: USERS)
+  email: String @join__field(graph: USERS)
+  favoriteQuotes: [String!] @join__field(graph: USERS)
+  firstName: String @join__field(graph: USERS)
+  gender: String @join__field(graph: USERS)
+  highSchool: String @join__field(graph: USERS)
+  hometown: String @join__field(graph: USERS)
+  inHistory: Boolean @join__field(graph: USERS)
+  job: String @join__field(graph: USERS)
+  languages: [String!] @join__field(graph: USERS)
+  lastName: String @join__field(graph: USERS)
+  lifeEvents: [LifeEvent!] @join__field(graph: USERS)
+  location: String @join__field(graph: USERS)
+  namePronunciation: String @join__field(graph: USERS)
+  newPostsCount: Int @join__field(graph: USERS)
+  otherNames: [String!] @join__field(graph: USERS)
+  partnerAvatar: String @join__field(graph: USERS)
+  partnerName: String @join__field(graph: USERS)
+  phone: String @join__field(graph: USERS)
+  pronouns: String @join__field(graph: USERS)
+  relationshipSince: String @join__field(graph: USERS)
+  relationshipStatus: String @join__field(graph: USERS)
+  school: String @join__field(graph: USERS)
+  socialLinks: [SocialLink!] @join__field(graph: USERS)
+  updatedAt: String @join__field(graph: USERS)
+  website: String @join__field(graph: USERS)
+  work: String @join__field(graph: USERS)
+}
+
+type UserMediaItem
+  @join__type(graph: FEED)
+{
+  id: ID!
+  userId: ID!
+  postId: ID!
+  mediaUrl: String!
+  mediaType: String!
+  albumName: String
+  altText: String
+  createdAt: String!
+  timestamp: Float!
+}
+
+type UserAlbum
+  @join__type(graph: FEED)
+{
+  name: String!
+  count: Int!
+  coverUrl: String
+}
+
+type UserMediaResponse
+  @join__type(graph: FEED)
+{
+  items: [UserMediaItem!]!
+  totalCount: Int!
+  hasMore: Boolean!
+}

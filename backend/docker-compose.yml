@@ -1,0 +1,967 @@
+services:
+  # --- BAZY DANYCH I INFRASTRUKTURA ---
+  db:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: userservice-db-compose
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: ${USERS_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${USERS_DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${USERS_DB_NAME:-users_db}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d users_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - userservice-db-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: userservice-redis-compose
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - userservice-db-net
+      - gateway-net
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: userservice-rabbitmq-compose
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - gateway-net
+
+  minio:
+    image: minio/minio:latest
+    container_name: userservice-minio-compose
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      # DODANO: Pozzwolenie na żądania CORS dla API MinIO
+      MINIO_API_CORS_ALLOW_ORIGIN: "*"
+    command: server /data --console-address ":9001"
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: [ "CMD-SHELL", "mc ready local || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - userservice-db-net
+      - gateway-net
+
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: userservice-kafka-compose
+    ports:
+      - "9094:9094"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9094
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+    networks:
+      - userservice-db-net
+      - gateway-net
+
+  neo4j:
+    image: neo4j:5-community
+    platform: linux/arm64
+    container_name: socialgraph-neo4j-compose
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-password123}
+      NEO4J_server_memory_pagecache_size: 256m
+      NEO4J_server_memory_heap_max_size: 256m
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    networks:
+      - socialgraph-net
+      - grpc-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  mosquitto:
+    image: iegomez/mosquitto-go-auth:latest
+    container_name: chatservice-mosquitto-compose
+    ports:
+      - "1883:1883"
+      - "9002:9002"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/etc/mosquitto/mosquitto.conf
+    depends_on:
+      userservice:
+        condition: service_healthy
+    networks:
+      - gateway-net
+
+  scylla:
+    image: scylladb/scylla:latest
+    container_name: chatservice-scylla-compose
+    ports:
+      - "9042:9042"
+    command: --smp 1 --memory 1G --overprovisioned 1 --api-address 0.0.0.0
+    networks:
+      - gateway-net
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.12
+    container_name: searchservice-meili-compose
+    ports:
+      - "7700:7700"
+    environment:
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterKey}
+      - MEILI_ENV=development
+    volumes:
+      - meilidata:/meili_data
+    networks:
+      - gateway-net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--header=Authorization: Bearer masterKey", "--tries=1", "--spider", "http://127.0.0.1:7700/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  vault:
+    image: hashicorp/vault:latest
+    container_name: dev-vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: "vault-root-token"
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      test: ["CMD", "vault", "status", "-address=http://127.0.0.1:8200"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+    networks:
+      - gateway-net
+      - userservice-db-net
+
+  vault-init:
+    image: hashicorp/vault:latest
+    container_name: dev-vault-init
+    environment:
+      VAULT_ADDR: "http://vault:8200"
+      VAULT_TOKEN: "vault-root-token"
+    depends_on:
+      vault:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+      echo 'Waiting for Vault KV engine...';
+      vault kv put secret/application spring.datasource.password=postgres spring.datasource.username=postgres;
+      vault kv put secret/database spring.datasource.password=postgres spring.datasource.username=postgres spring.datasource.url=jdbc:postgresql://db:5432/users_db;
+      vault kv put secret/redis spring.data.redis.host=redis spring.data.redis.port=6379 spring.data.redis.password=;
+      vault kv put secret/minio minio.access-key=minioadmin minio.secret-key=minioadmin minio.url=http://minio:9000;
+      vault kv put secret/mqtt mqtt.password=chat-service-internal mqtt.username=chat-service-internal;
+      vault kv put secret/neo4j neo4j.user=neo4j neo4j.password=password123 neo4j.uri=bolt://neo4j:7687;
+      vault kv put secret/feed-service spring.datasource.password=postgres spring.datasource.username=postgres;
+      vault kv put secret/user-service spring.datasource.password=postgres spring.datasource.username=postgres;
+      vault kv put secret/notification-service spring.datasource.password=postgres spring.datasource.username=postgres;
+      vault kv put secret/socialgraph-service spring.neo4j.authentication.password=password123 spring.neo4j.authentication.username=neo4j;
+      vault kv put secret/chat-service mqtt.password=chat-service-internal;
+      vault kv put secret/groups-service spring.datasource.password=postgres spring.datasource.username=postgres;
+      vault kv put secret/observability sentry.dsn= otel.exporter.otlp.endpoint=http://otel-collector:4317 otel.traces.sample-rate=0.1;
+      vault kv put secret/kafka spring.kafka.bootstrap-servers=kafka:9094;
+      vault kv put secret/agora agora.app-id=${AGORA_APP_ID:-75a23d4f4f554dd780f53c9aef8915a1} agora.app-certificate=${AGORA_APP_CERTIFICATE:-e23a5e7e66094bccb3eb72fdadf6a9f4};
+      vault kv put secret/link-guard link.shim.secret=${LINK_SHIM_SECRET:-super_secret_link_guard_key_2026};
+      echo 'Vault initialized successfully!';
+      "
+    networks:
+      - gateway-net
+      - userservice-db-net
+
+  # --- MIKROSERWISY ---
+  userservice:
+    build:
+      context: .
+      dockerfile: ./user-service/Dockerfile
+    container_name: userservice-app-compose
+    ports:
+      - "9090:9090"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${USERS_DB_NAME:-users_db}
+      SPRING_DATASOURCE_USERNAME: ${USERS_DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${USERS_DB_PASSWORD:-postgres}
+      SPRING_DATA_REDIS_HOST: redis
+      MINIO_URL: http://minio:9000
+      MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-http://localhost:9000}
+      MEDIA_STABLE_URL_BASE: ${MEDIA_STABLE_URL_BASE:-http://localhost:8080}
+      SOCIAL_GRAPH_SERVICE_GRPC_ADDRESS: dns:///socialgraph-service:9091
+      CHAT_SERVICE_GRPC_ADDRESS: dns:///chat-service:9095
+      NOTIFICATION_SERVICE_GRPC_ADDRESS: dns:///notificationservice:9093
+      MARKETPLACE_SERVICE_GRPC_ADDRESS: dns:///marketplace-service:9096
+      SEARCH_SERVICE_GRPC_ADDRESS: dns:///search-service:9097
+      MQTT_SERVICE_TOKEN: chat-service-internal
+      VAULT_URI: http://vault:8200
+      VAULT_TOKEN: vault-root-token
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      vault-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 -O /dev/null http://localhost:8081/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - gateway-net
+      - userservice-db-net
+      - grpc-net
+
+  userservice-edge:
+    build:
+      context: .
+      dockerfile: ./user-edge-service/Dockerfile
+    container_name: userservice-edge-compose
+    ports:
+      - "8081:8081"
+    environment:
+      USER_SERVICE_GRPC_ADDRESS: dns:///userservice:9090
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+    depends_on:
+      userservice:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health || wget --no-verbose --tries=1 --post-data='{\"query\":\"{__typename}\"}' --header='Content-Type:application/json' -O /dev/null http://localhost:8081/graphql || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - gateway-net
+
+  notificationservice:
+    build:
+      context: .
+      dockerfile: ./notification-service/Dockerfile
+    container_name: notificationservice-app-compose
+    ports:
+      - "8083:8083"
+      - "9093:9093"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${USERS_DB_NAME:-users_db}
+      SPRING_DATASOURCE_USERNAME: ${USERS_DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${USERS_DB_PASSWORD:-postgres}
+      SPRING_DATA_REDIS_HOST: redis
+      VAULT_URI: http://vault:8200
+      VAULT_TOKEN: vault-root-token
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      vault-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8083/api/notifications/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - gateway-net
+      - userservice-db-net
+      - grpc-net
+
+  feedservice:
+    build:
+      context: .
+      dockerfile: ./feed-service/Dockerfile
+    container_name: feedservice-app-compose
+    ports:
+      - "9092:9092"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${USERS_DB_NAME:-users_db}
+      SPRING_DATASOURCE_USERNAME: ${USERS_DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${USERS_DB_PASSWORD:-postgres}
+      UPLOAD_DIR: /app/uploads
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9094
+      SPRING_DATA_REDIS_HOST: redis
+      LINK_GUARD_SERVICE_URL: http://linkguard-service:8086
+      SOCIAL_GRAPH_SERVICE_GRPC_ADDRESS: dns:///socialgraph-service:9091
+      NOTIFICATION_SERVICE_GRPC_ADDRESS: dns:///notificationservice:9093
+      USER_SERVICE_GRPC_ADDRESS: dns:///userservice:9090
+      ABR_SERVICE_GRPC_ADDRESS: dns:///video-abr-service:9095
+      GROUPS_SERVICE_GRPC_ADDRESS: dns:///groups-service:9098
+      VAULT_URI: http://vault:8200
+      VAULT_TOKEN: vault-root-token
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+    volumes:
+      - feed-uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      linkguard-service:
+        condition: service_healthy
+      vault-init:
+        condition: service_completed_successfully
+    networks:
+      - gateway-net
+      - userservice-db-net
+      - grpc-net
+
+  feed-edge:
+    build:
+      context: .
+      dockerfile: ./feed-edge-service/Dockerfile
+    container_name: feed-edge-compose
+    ports:
+      - "8084:8084"
+    environment:
+      FEED_SERVICE_GRPC_ADDRESS: dns:///feedservice:9092
+      USER_SERVICE_GRPC_ADDRESS: dns:///userservice:9090
+      SEARCH_SERVICE_GRPC_ADDRESS: dns:///search-service:9097
+      GROUPS_SERVICE_GRPC_ADDRESS: dns:///groups-service:9098
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+    depends_on:
+      feedservice:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8084/actuator/health || wget --no-verbose --tries=1 --post-data='{\"query\":\"{__typename}\"}' --header='Content-Type:application/json' -O /dev/null http://localhost:8084/graphql || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - gateway-net
+      - grpc-net
+
+  tusd:
+    image: tusproject/tusd:latest
+    container_name: tusd-compose
+    user: "0:0"
+    ports:
+      - "1080:1080"
+    environment:
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin
+    command: [
+      "-s3-bucket", "poczekalnia",
+      "-s3-endpoint", "http://minio:9000",
+      "-host", "0.0.0.0",
+      "-port", "1080",
+      "-base-path", "/files/",
+      "-hooks-http", "http://video-abr-service:8085/hooks"
+    ]
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - gateway-net
+
+  video-abr-service:
+    build:
+      context: .
+      dockerfile: ./video-abr-service/Dockerfile
+    container_name: video-abr-service-compose
+    ports:
+      - "8085:8085"
+    volumes:
+      - feed-uploads:/app/uploads
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      FEED_SERVICE_GRPC_ADDRESS: dns:///feedservice:9092
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      NOTIFICATION_SERVICE_GRPC_ADDRESS: dns:///notificationservice:9093
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - gateway-net
+
+  linkguard-service:
+    build:
+      context: .
+      dockerfile: ./linkguard-service/Dockerfile
+    container_name: linkguard-service-compose
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      PLATFORM_BASE_URL: http://localhost:8080
+      LINK_SHIM_SECRET: ${LINK_SHIM_SECRET:-super_secret_link_guard_key_2026}
+      FEED_SERVICE_GRPC_ADDRESS: dns:///feedservice:9092
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8086/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - gateway-net
+
+  linkguard-worker:
+    build:
+      context: .
+      dockerfile: ./linkguard-service/Dockerfile
+    container_name: linkguard-worker-compose
+    command: celery -A worker.worker worker --loglevel=INFO
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      FEED_SERVICE_GRPC_ADDRESS: dns:///feedservice:9092
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - gateway-net
+
+  socialgraph-service:
+    build:
+      context: .
+      dockerfile: ./socialgraph-service/Dockerfile
+    container_name: socialgraph-service-compose
+    ports:
+      - "9091:9091"
+    environment:
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: ${NEO4J_USER:-neo4j}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-password123}
+      NOTIFICATION_SERVICE_GRPC_ADDRESS: dns:///notificationservice:9093
+      VAULT_URI: http://vault:8200
+      VAULT_TOKEN: vault-root-token
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 -O /dev/null http://localhost:8082/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - gateway-net
+      - grpc-net
+      - socialgraph-net
+      - userservice-db-net
+    depends_on:
+      userservice:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      vault-init:
+        condition: service_completed_successfully
+
+  socialgraph-edge:
+    build:
+      context: .
+      dockerfile: ./socialgraph-edge-service/Dockerfile
+    container_name: socialgraph-edge-compose
+    ports:
+      - "8082:8082"
+    environment:
+      SOCIAL_GRAPH_SERVICE_GRPC_ADDRESS: dns:///socialgraph-service:9091
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+    depends_on:
+      socialgraph-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8082/actuator/health || wget --no-verbose --tries=1 --post-data='{\"query\":\"{__typename}\"}' --header='Content-Type:application/json' -O /dev/null http://localhost:8082/graphql || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - gateway-net
+
+  chat-service:
+    build:
+      context: .
+      dockerfile: ./chat-service/Dockerfile
+    container_name: chatservice-app-compose
+    ports:
+      - "8087:8087"
+      - "9095:9095"
+    environment:
+      SCYLLA_CONTACT_POINTS: scylla:9042
+      SCYLLA_LOCAL_DATACENTER: datacenter1
+      SCYLLA_KEYSPACE: chat
+      MQTT_BROKER_URL: tcp://mosquitto:1883
+      MQTT_USERNAME: chat-service-internal
+      MQTT_PASSWORD: chat-service-internal
+      SPRING_DATA_REDIS_HOST: redis
+      USER_SERVICE_GRPC_ADDRESS: dns:///userservice:9090
+      MINIO_URL: http://minio:9000
+      MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-http://localhost:9000}
+      AGORA_APP_ID: ${AGORA_APP_ID:-75a23d4f4f554dd780f53c9aef8915a1}
+      AGORA_APP_CERTIFICATE: ${AGORA_APP_CERTIFICATE:-e23a5e7e66094bccb3eb72fdadf6a9f4}
+      VAULT_URI: http://vault:8200
+      VAULT_TOKEN: vault-root-token
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+    depends_on:
+      mosquitto:
+        condition: service_started
+      scylla:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      vault-init:
+        condition: service_completed_successfully
+    networks:
+      - gateway-net
+      - grpc-net
+
+  chat-edge:
+    build:
+      context: .
+      dockerfile: ./chat-edge-service/Dockerfile
+    container_name: chat-edge-compose
+    ports:
+      - "8091:8089"
+    environment:
+      CHAT_SERVICE_GRPC_ADDRESS: dns:///chat-service:9095
+      USER_SERVICE_GRPC_ADDRESS: dns:///userservice:9090
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+    depends_on:
+      chat-service:
+        condition: service_started
+      userservice:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8089/actuator/health || wget --no-verbose --tries=1 --post-data='{\"query\":\"{__typename}\"}' --header='Content-Type:application/json' -O /dev/null http://localhost:8089/graphql || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - gateway-net
+      - grpc-net
+
+  search-service:
+    build:
+      context: .
+      dockerfile: ./search-service/Dockerfile
+    container_name: searchservice-app-compose
+    ports:
+      - "8088:8088"
+      - "9097:9097"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${USERS_DB_NAME:-users_db}
+      SPRING_DATASOURCE_USERNAME: ${USERS_DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${USERS_DB_PASSWORD:-postgres}
+      SPRING_DATASOURCE_HOST: db
+      SPRING_DATASOURCE_PORT: 5432
+      MEILI_HOST: http://meilisearch:7700
+      MEILI_API_KEY: ${MEILI_MASTER_KEY:-masterKey}
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+    depends_on:
+      db:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8088/api/search/users?query=test || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - gateway-net
+      - userservice-db-net
+      - grpc-net
+
+  marketplace-service:
+    build:
+      context: .
+      dockerfile: ./marketplace-service/Dockerfile
+    container_name: marketplace-service-compose
+    ports:
+      - "8090:8090"
+      - "9096:9096"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${USERS_DB_NAME:-users_db}
+      SPRING_DATASOURCE_USERNAME: ${USERS_DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${USERS_DB_PASSWORD:-postgres}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9094
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider 'http://localhost:8090/api/v1/listings/nearby?lat=0&lon=0' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    networks:
+      - gateway-net
+      - userservice-db-net
+      - grpc-net
+
+  analytics-service:
+    build:
+      context: .
+      dockerfile: ./analytics-service/Dockerfile
+    container_name: analytics-service-compose
+    ports:
+      - "8095:8095"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${USERS_DB_NAME:-users_db}
+      SPRING_DATASOURCE_USERNAME: ${USERS_DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${USERS_DB_PASSWORD:-postgres}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9094
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+    depends_on:
+      db:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider 'http://localhost:8095/api/analytics/pages/00000000-0000-0000-0000-000000000000/insights' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    networks:
+      - gateway-net
+      - userservice-db-net
+
+  groups-service:
+    build:
+      context: .
+      dockerfile: ./groups-service/Dockerfile
+    container_name: groups-service-compose
+    ports:
+      - "9098:9098"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${USERS_DB_NAME:-users_db}
+      SPRING_DATASOURCE_USERNAME: ${USERS_DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${USERS_DB_PASSWORD:-postgres}
+      VAULT_URI: http://vault:8200
+      VAULT_TOKEN: vault-root-token
+      FEED_SERVICE_GRPC_ADDRESS: dns:///feedservice:9092
+      USER_SERVICE_GRPC_ADDRESS: dns:///userservice:9090
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+    depends_on:
+      db:
+        condition: service_healthy
+      vault-init:
+        condition: service_completed_successfully
+    networks:
+      - userservice-db-net
+      - grpc-net
+      - gateway-net
+
+  # --- GRAPHQL ROUTING & GATEWAYS ---
+  schema-composer:
+    image: apollograph/rover:latest
+    container_name: userservice-schema-composer
+    user: root
+    environment:
+      APOLLO_ELV2_LICENSE: accept
+    volumes:
+      - .:/config
+      - shared-schema:/schema
+    command: supergraph compose --config /config/supergraph-config.yaml --output /schema/supergraph.graphql --elv2-license accept
+    depends_on:
+      userservice-edge:
+        condition: service_healthy
+      socialgraph-edge:
+        condition: service_healthy
+      feed-edge:
+        condition: service_healthy
+      chat-edge:
+        condition: service_healthy
+    networks:
+      - gateway-net
+
+  apollo-router:
+    image: ghcr.io/apollographql/router:v2.17.0
+    container_name: apollo-router-gateway
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./router.yaml:/dist/config/router.yaml
+      - ./main.rhai:/dist/config/main.rhai
+      - shared-schema:/schema
+    command: --config /dist/config/router.yaml --supergraph /schema/supergraph.graphql --hot-reload
+    environment:
+      APOLLO_ROUTER_HOT_RELOAD: "true"
+      KEYCLOAK_JWKS_URL: ${KEYCLOAK_JWKS_URL:-http://keycloak:8080/realms/myrealm/protocol/openid-connect/certs}
+    depends_on:
+      schema-composer:
+        condition: service_completed_successfully
+    networks:
+      - gateway-net
+      - keycloak_network
+
+  gateway:
+    image: nginx:alpine
+    platform: linux/arm64
+    container_name: userservice-gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      apollo-router:
+        condition: service_started
+      userservice-edge:
+        condition: service_healthy
+      socialgraph-edge:
+        condition: service_healthy
+      notificationservice:
+        condition: service_healthy
+      feed-edge:
+        condition: service_healthy
+      tusd:
+        condition: service_started
+      linkguard-service:
+        condition: service_healthy
+    networks:
+      - gateway-net
+
+  kong:
+    image: kong:latest
+    container_name: kong-gateway
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
+      KONG_PROXY_LISTEN: 0.0.0.0:8000, 0.0.0.0:8443 ssl http2
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001, 127.0.0.1:8444 ssl
+      KONG_PLUGINS: bundled
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    volumes:
+      - ./kong:/usr/local/kong/declarative
+    depends_on:
+      - keycloak
+    networks:
+      - gateway-net
+      - keycloak_network
+
+  # --- KEYCLOAK & MAILPIT ---
+  postgres-keycloak:
+    image: postgres:18.4
+    container_name: keycloak_db
+    volumes:
+      - postgres-data-v18:/var/lib/postgresql
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    ports:
+      - "5435:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - keycloak_network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.6.2
+    container_name: keycloak_server
+    command:
+      - start-dev
+      - --spi-action-token-handler-action-token-example-enabled=true
+      - --spi-action-token-handler-action-token-example-hmac-secret=7bA9xN2mK5vP8rQ1wZ4eT7yU0iO3pL6k
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: localhost
+      KC_HTTP_ENABLED: true
+      KC_LOG_LEVEL: INFO,org.keycloak.cookie:ERROR
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres-keycloak:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/certs/cert.pem
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/certs/key.pem
+    volumes:
+      - ./certs:/opt/keycloak/certs:ro
+      - ./dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar:/opt/keycloak/providers/keycloak-theme.jar:ro
+      - ./dist_keycloak/action-token-example.jar:/opt/keycloak/providers/action-token-example.jar:ro
+      - ./dist_keycloak/email-otp-authenticator-dev-kc-26.6.2.jar:/opt/keycloak/providers/email-otp-authenticator.jar
+    ports:
+      - "8089:8080"
+      - "8443:8443"
+    depends_on:
+      postgres-keycloak:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    networks:
+      - keycloak_network
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: keycloak_mailpit
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - keycloak_network
+
+  # --- OBSERVABILITY: OPENTELEMETRY COLLECTOR & JAEGER ---
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.95.0
+    container_name: userservice-otel-collector-compose
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8888:8888"   # Collector internal metrics
+      - "8889:8889"   # Prometheus metrics exporter
+      - "13133:13133" # Health check
+    depends_on:
+      - jaeger
+    networks:
+      - gateway-net
+      - grpc-net
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.54
+    container_name: userservice-jaeger-compose
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "14268:14268" # Jaeger HTTP collector
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - gateway-net
+      - grpc-net
+
+  # --- METRICS: PROMETHEUS ---
+  prometheus:
+    image: prom/prometheus:v2.50.0
+    container_name: userservice-prometheus-compose
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9099:9090"
+    networks:
+      - gateway-net
+      - grpc-net
+      - userservice-db-net
+
+  # --- LOGS: LOKI ---
+  loki:
+    image: grafana/loki:2.9.4
+    container_name: userservice-loki-compose
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml:ro
+    ports:
+      - "3100:3100"
+    networks:
+      - gateway-net
+      - grpc-net
+
+  # --- DASHBOARD & VISUALIZATION: GRAFANA ---
+  grafana:
+    image: grafana/grafana:10.3.3
+    container_name: userservice-grafana-compose
+    ports:
+      - "3002:3000" # Grafana UI (port 3002)
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+      - jaeger
+      - loki
+    networks:
+      - gateway-net
+      - grpc-net
+
+  # --- ERROR TRACKING & APM: SENTRY (GLITCHTIP SENTRY-COMPATIBLE ENGINE) ---
+  sentry:
+    image: glitchtip/glitchtip:latest
+    container_name: userservice-sentry-compose
+    ports:
+      - "8075:8000" # Sentry / GlitchTip UI & DSN ingestion endpoint
+    environment:
+      - DATABASE_URL=postgres://${USERS_DB_USER:-postgres}:${USERS_DB_PASSWORD:-postgres}@db:5432/${USERS_DB_NAME:-users_db}
+      - SECRET_KEY=change_me_to_a_random_secret_string_123456789
+      - GLITCHTIP_DOMAIN=http://localhost:8075
+      - ENABLE_USER_REGISTRATION=true
+      - REDIS_URL=redis://redis:6379/1
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - userservice-db-net
+      - gateway-net
+
+volumes:
+  pgdata:
+  miniodata:
+  shared-schema:
+  feed-uploads:
+  meilidata:
+  postgres-data-v18:
+
+networks:
+  gateway-net:
+  userservice-db-net:
+  grpc-net:
+  socialgraph-net:
+  keycloak_network:
+    driver: bridge

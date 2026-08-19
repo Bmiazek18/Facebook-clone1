@@ -1,0 +1,10 @@
+federation_version: =2.11.0
+subgraphs:
+  users:
+    routing_url: http://userservice-edge:8081/graphql
+    schema:
+      subgraph_url: http://userservice-edge:8081/graphql
+  socialgraph:
+    routing_url: http://socialgraph-edge:8082/graphql
+    schema:
+      subgraph_url: http://socialgraph-edge:8082/graphql

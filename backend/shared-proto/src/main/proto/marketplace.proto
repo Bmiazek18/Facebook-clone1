@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package com.facebook.marketplace.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.facebook.marketplace.grpc";
+
+service MarketplaceGrpcService {
+  rpc CreateItem(CreateItemRequest) returns (CreateItemResponse);
+  rpc GetItem(GetItemRequest) returns (GetItemResponse);
+  rpc SearchItems(SearchItemsRequest) returns (SearchItemsResponse);
+  rpc DeleteItem(DeleteItemRequest) returns (DeleteItemResponse);
+}
+
+message MarketplaceItemDto {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  double price = 4;
+  string locationName = 5;
+  double latitude = 6;
+  double longitude = 7;
+  string imageUrl = 8;
+  string ownerId = 9;
+  string createdAt = 10;
+  double distance = 11;
+  string category = 12;
+  string condition = 13;
+}
+
+message CreateItemRequest {
+  string title = 1;
+  string description = 2;
+  double price = 3;
+  string locationName = 4;
+  double latitude = 5;
+  double longitude = 6;
+  string imageUrl = 7;
+  string ownerId = 8;
+  string category = 9;
+  string condition = 10;
+}
+
+message CreateItemResponse {
+  MarketplaceItemDto item = 1;
+}
+
+message GetItemRequest {
+  string id = 1;
+  double latitude = 2;
+  double longitude = 3;
+}
+
+message GetItemResponse {
+  MarketplaceItemDto item = 1;
+}
+
+message SearchItemsRequest {
+  string query = 1;
+  double latitude = 2;
+  double longitude = 3;
+  double radiusKm = 4;
+  int32 limit = 5;
+  int32 offset = 6;
+}
+
+message SearchItemsResponse {
+  repeated MarketplaceItemDto items = 1;
+}
+
+message DeleteItemRequest {
+  string id = 1;
+}
+
+message DeleteItemResponse {
+  bool success = 1;
+}

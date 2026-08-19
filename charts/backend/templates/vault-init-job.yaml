@@ -1,0 +1,47 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vault-init
+  namespace: apps
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        app: vault-init
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: vault-init
+        image: vault:latest
+        env:
+        - name: VAULT_ADDR
+          value: "http://vault:8200"
+        - name: VAULT_TOKEN
+          value: "vault-root-token"
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for Vault to be ready..."
+          until vault status -address=http://vault:8200 > /dev/null 2>&1; do
+            echo "Vault is not ready yet, sleeping 2s..."
+            sleep 2
+          done
+          echo "Vault is ready. Writing secrets..."
+          
+          # Write secrets for user-service
+          vault kv put -address=http://vault:8200 secret/user-service \
+            spring.datasource.username={{ .Values.secrets.SPRING_DATASOURCE_USERNAME | quote }} \
+            spring.datasource.password={{ .Values.secrets.SPRING_DATASOURCE_PASSWORD | quote }} \
+            minio.access-key={{ .Values.secrets.MINIO_ACCESS_KEY | quote }} \
+            minio.secret-key={{ .Values.secrets.MINIO_SECRET_KEY | quote }}
+          
+          # Write secrets for socialgraph-service
+          vault kv put -address=http://vault:8200 secret/socialgraph-service \
+            spring.neo4j.authentication.username={{ .Values.secrets.NEO4J_USER | quote }} \
+            spring.neo4j.authentication.password={{ .Values.secrets.NEO4J_PASSWORD | quote }}
+            
+          echo "Vault initialized successfully!"

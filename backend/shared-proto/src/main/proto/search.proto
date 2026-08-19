@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package com.facebook.search.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.facebook.search.grpc";
+
+service SearchGrpcService {
+  rpc SearchUsers(SearchUsersRequest) returns (SearchUsersResponse);
+  rpc IndexUser(IndexUserRequest) returns (IndexUserResponse);
+  rpc SearchEvents(SearchEventsRequest) returns (SearchEventsResponse);
+}
+
+message SearchUserHit {
+  string id = 1;
+  string username = 2;
+  string firstName = 3;
+  string lastName = 4;
+  string avatarId = 5;
+}
+
+message SearchUsersRequest {
+  string query = 1;
+}
+
+message SearchUsersResponse {
+  repeated SearchUserHit users = 1;
+}
+
+message IndexUserRequest {
+  string id = 1;
+  string username = 2;
+  string firstName = 3;
+  string lastName = 4;
+  string avatarId = 5;
+}
+
+message IndexUserResponse {
+  bool success = 1;
+}
+
+message SearchEventHit {
+  string id = 1;
+  string userId = 2;
+  string name = 3;
+  string title = 4;
+  string startDate = 5;
+  string startTime = 6;
+  string endDate = 7;
+  string endTime = 8;
+  string type = 9;
+  string privacy = 10;
+  string description = 11;
+  string location = 12;
+  string locationName = 13;
+  string address = 14;
+  bool showGuestList = 15;
+  string date = 16;
+  string frequency = 17;
+  repeated string images = 18;
+}
+
+message SearchEventsRequest {
+  string query = 1;
+}
+
+message SearchEventsResponse {
+  repeated SearchEventHit events = 1;
+}

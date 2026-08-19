@@ -1,0 +1,250 @@
+syntax = "proto3";
+
+package com.facebook.groups.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.facebook.groups.grpc";
+
+service GroupsGrpcService {
+  rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse);
+  rpc GetGroupById(GetGroupByIdRequest) returns (GetGroupByIdResponse);
+  rpc JoinGroup(JoinGroupRequest) returns (JoinGroupResponse);
+  rpc LeaveGroup(LeaveGroupRequest) returns (LeaveGroupResponse);
+  rpc GetGroups(GetGroupsRequest) returns (GetGroupsResponse);
+  rpc GetGroupMembers(GetGroupMembersRequest) returns (GetGroupMembersResponse);
+  rpc GetUserGroups(GetUserGroupsRequest) returns (GetUserGroupsResponse);
+  rpc GetGroupMembership(GetGroupMembershipRequest) returns (GetGroupMembershipResponse);
+  rpc ApproveGroupRequest(ApproveGroupRequestMsg) returns (ApproveGroupResponseMsg);
+  rpc RejectGroupRequest(RejectGroupRequestMsg) returns (RejectGroupResponseMsg);
+  rpc GetPendingRequests(GetPendingRequestsRequest) returns (GetPendingRequestsResponse);
+  rpc RemoveGroupMember(RemoveGroupMemberRequest) returns (RemoveGroupMemberResponse);
+  rpc UpdateMemberRole(UpdateMemberRoleRequest) returns (UpdateMemberRoleResponse);
+
+  // Group Rules Management
+  rpc GetGroupRules(GetGroupRulesRequest) returns (GetGroupRulesResponse);
+  rpc CreateGroupRule(CreateGroupRuleRequest) returns (CreateGroupRuleResponse);
+  rpc UpdateGroupRulesOrder(UpdateGroupRulesOrderRequest) returns (UpdateGroupRulesOrderResponse);
+  rpc DeleteGroupRule(DeleteGroupRuleRequest) returns (DeleteGroupRuleResponse);
+
+  // Group Activity Logs
+  rpc GetGroupActivityLogs(GetGroupActivityLogsRequest) returns (GetGroupActivityLogsResponse);
+  rpc LogGroupActivity(LogGroupActivityRequest) returns (LogGroupActivityResponse);
+}
+
+message GroupDto {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string privacy = 4;
+  string image = 5;
+  int32 membersCount = 6;
+  string lastActive = 7;
+  int32 newPostsToday = 8;
+  int32 newPostsMonth = 9;
+  string newMembersWeek = 10;
+  string createdAge = 11;
+}
+
+message CreateGroupRequest {
+  string name = 1;
+  string description = 2;
+  string privacy = 3;
+  string image = 4;
+  string creatorId = 5;
+}
+
+message CreateGroupResponse {
+  GroupDto group = 1;
+}
+
+message GetGroupByIdRequest {
+  string id = 1;
+}
+
+message GetGroupByIdResponse {
+  GroupDto group = 1;
+}
+
+message JoinGroupRequest {
+  string groupId = 1;
+  string userId = 2;
+}
+
+message JoinGroupResponse {
+  bool success = 1;
+}
+
+message LeaveGroupRequest {
+  string groupId = 1;
+  string userId = 2;
+}
+
+message LeaveGroupResponse {
+  bool success = 1;
+}
+
+message GetGroupsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message GetGroupsResponse {
+  repeated GroupDto groups = 1;
+}
+
+message GetGroupMembersRequest {
+  string groupId = 1;
+}
+
+message GetGroupMembersResponse {
+  repeated string userIds = 1;
+  repeated GroupMemberDto members = 2;
+}
+
+message GroupMemberDto {
+  string userId = 1;
+  string role = 2;
+  string joinedAt = 3;
+}
+
+message GetUserGroupsRequest {
+  string userId = 1;
+}
+
+message GetUserGroupsResponse {
+  repeated GroupDto groups = 1;
+}
+
+message GetGroupMembershipRequest {
+  string groupId = 1;
+  string userId = 2;
+}
+
+message GetGroupMembershipResponse {
+  string role = 1; // MEMBER, ADMIN, PENDING, or empty if not joined
+}
+
+message ApproveGroupRequestMsg {
+  string groupId = 1;
+  string userId = 2;
+  string adminId = 3;
+}
+
+message ApproveGroupResponseMsg {
+  bool success = 1;
+}
+
+message RejectGroupRequestMsg {
+  string groupId = 1;
+  string userId = 2;
+  string adminId = 3;
+}
+
+message RejectGroupResponseMsg {
+  bool success = 1;
+}
+
+message GetPendingRequestsRequest {
+  string groupId = 1;
+}
+
+message GetPendingRequestsResponse {
+  repeated string userIds = 1;
+}
+
+message RemoveGroupMemberRequest {
+  string groupId = 1;
+  string userId = 2;
+  string adminId = 3;
+}
+
+message RemoveGroupMemberResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message UpdateMemberRoleRequest {
+  string groupId = 1;
+  string userId = 2;
+  string newRole = 3;
+  string adminId = 4;
+}
+
+message UpdateMemberRoleResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GroupRuleDto {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  int32 orderIndex = 4;
+}
+
+message GetGroupRulesRequest {
+  string groupId = 1;
+}
+
+message GetGroupRulesResponse {
+  repeated GroupRuleDto rules = 1;
+}
+
+message CreateGroupRuleRequest {
+  string groupId = 1;
+  string title = 2;
+  string description = 3;
+}
+
+message CreateGroupRuleResponse {
+  GroupRuleDto rule = 1;
+}
+
+message UpdateGroupRulesOrderRequest {
+  string groupId = 1;
+  repeated string ruleIds = 2;
+}
+
+message UpdateGroupRulesOrderResponse {
+  bool success = 1;
+}
+
+message DeleteGroupRuleRequest {
+  string ruleId = 1;
+}
+
+message DeleteGroupRuleResponse {
+  bool success = 1;
+}
+
+// Group Activity Logs
+message GroupActivityLogDto {
+  string id = 1;
+  string groupId = 2;
+  string actorId = 3;
+  string actorName = 4;
+  string text = 5;
+  string note = 6;
+  string time = 7;
+  string date = 8;
+}
+
+message GetGroupActivityLogsRequest {
+  string groupId = 1;
+}
+
+message GetGroupActivityLogsResponse {
+  repeated GroupActivityLogDto logs = 1;
+}
+
+message LogGroupActivityRequest {
+  string groupId = 1;
+  string actorId = 2;
+  string actorName = 3;
+  string text = 4;
+  string note = 5;
+}
+
+message LogGroupActivityResponse {
+  GroupActivityLogDto log = 1;
+}

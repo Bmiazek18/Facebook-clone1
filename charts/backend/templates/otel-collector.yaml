@@ -1,0 +1,618 @@
+---
+# ============================================================
+# ConfigMap
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: apps
+data:
+  config.yaml: |
+    extensions:
+      health_check:
+        endpoint: "0.0.0.0:13133"
+
+    receivers:
+
+      # ======================================================
+      # OTLP
+      # ======================================================
+      otlp:
+        protocols:
+
+          grpc:
+            endpoint: "0.0.0.0:4317"
+
+          http:
+            endpoint: "0.0.0.0:4318"
+
+      # ======================================================
+      # PROMETHEUS
+      # ======================================================
+      prometheus:
+        config:
+          scrape_configs:
+
+          - job_name: "otel-collector"
+
+            static_configs:
+            - targets:
+              - "localhost:8888"
+
+          - job_name: "kubernetes-apiservers"
+
+            kubernetes_sd_configs:
+            - role: endpoints
+
+            scheme: https
+
+            tls_config:
+              ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+
+            bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+            relabel_configs:
+
+            - source_labels:
+              - __meta_kubernetes_namespace
+              - __meta_kubernetes_service_name
+              - __meta_kubernetes_endpoint_port_name
+
+              action: keep
+              regex: default;kubernetes;https
+
+
+    processors:
+
+      # ======================================================
+      # KUBERNETES ATTRIBUTES
+      #
+      # Wzbogaca traces / metrics / logs:
+      #
+      # k8s.namespace.name
+      # k8s.pod.name
+      # k8s.pod.uid
+      # k8s.node.name
+      # k8s.deployment.name
+      # k8s.container.name
+      # service.name
+      # service.namespace
+      # ======================================================
+      k8sattributes:
+
+        auth_type: serviceAccount
+
+        passthrough: false
+
+        extract:
+
+          metadata:
+            - k8s.namespace.name
+            - k8s.pod.name
+            - k8s.pod.uid
+            - k8s.node.name
+            - k8s.deployment.name
+            - k8s.container.name
+            - service.name
+            - service.namespace
+
+        pod_association:
+
+          - sources:
+
+              - from: resource_attribute
+                name: k8s.pod.ip
+
+          - sources:
+
+              - from: resource_attribute
+                name: k8s.pod.uid
+
+          - sources:
+
+              - from: connection
+
+
+      # ======================================================
+      # RESOURCE
+      #
+      # Dodajemy wartości wymagane do korelacji i filtrowania.
+      # "insert" nie nadpisuje wartości dostarczonych przez app.
+      # ======================================================
+      resource:
+
+        attributes:
+
+        - key: service.namespace
+          value: apps
+          action: insert
+
+        - key: deployment.environment
+          value: kubernetes
+          action: insert
+
+        - key: namespace
+          from_attribute: k8s.namespace.name
+          action: upsert
+
+        - key: pod.name
+          from_attribute: k8s.pod.name
+          action: upsert
+
+
+      # ======================================================
+      # TRANSFORM
+      #
+      # Kopiujemy trace/span ID do attributes.
+      #
+      # Uwaga:
+      # OTel LogRecord ma już natywne TraceId / SpanId.
+      # Loki zachowa je jako structured metadata.
+      #
+      # Te pola są dodatkowym ułatwieniem dla zapytań.
+      # ======================================================
+      transform:
+
+        error_mode: ignore
+
+        log_statements:
+
+          - context: log
+            statements:
+
+              - set(resource.attributes["trace_id"], trace_id.string)
+                where trace_id.string != ""
+
+              - set(resource.attributes["span_id"], span_id.string)
+                where span_id.string != ""
+
+
+      # ======================================================
+      # MEMORY LIMITER
+      # ======================================================
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 384
+        spike_limit_mib: 64
+
+
+      # ======================================================
+      # BATCH
+      # ======================================================
+      batch:
+        timeout: 5s
+        send_batch_size: 1024
+
+
+    exporters:
+
+      # ======================================================
+      # TRACES -> JAEGER
+      # ======================================================
+      otlp_grpc/jaeger:
+
+        endpoint: "jaeger.apps.svc.cluster.local:4317"
+
+        tls:
+          insecure: true
+
+
+      # ======================================================
+      # LOGS -> LOKI
+      #
+      # Loki 3.x native OTLP ingestion.
+      #
+      # OTLP HTTP exporter automatycznie używa:
+      #
+      # /v1/traces
+      # /v1/metrics
+      # /v1/logs
+      #
+      # dlatego dla Loki używamy logs_endpoint.
+      # ======================================================
+      otlp_http/loki:
+
+        endpoint: "http://loki.apps.svc.cluster.local:3100"
+
+        logs_endpoint: "http://loki.apps.svc.cluster.local:3100/otlp/v1/logs"
+
+        compression: gzip
+
+        timeout: 10s
+
+        retry_on_failure:
+          enabled: true
+          initial_interval: 1s
+          max_interval: 10s
+          max_elapsed_time: 30s
+
+        sending_queue:
+          enabled: true
+          num_consumers: 4
+          queue_size: 1000
+
+
+      # ======================================================
+      # METRICS -> PROMETHEUS
+      # ======================================================
+      prometheus:
+
+        endpoint: "0.0.0.0:8889"
+
+        namespace: "otel"
+
+        send_timestamps: true
+
+
+    service:
+
+      extensions:
+        - health_check
+
+
+      pipelines:
+
+        # ====================================================
+        # TRACES
+        # ====================================================
+        traces:
+
+          receivers:
+            - otlp
+
+          processors:
+            - memory_limiter
+            - k8sattributes
+            - resource
+            - batch
+
+          exporters:
+            - otlp_grpc/jaeger
+
+
+        # ====================================================
+        # METRICS
+        # ====================================================
+        metrics:
+
+          receivers:
+            - otlp
+            - prometheus
+
+          processors:
+            - memory_limiter
+            - k8sattributes
+            - resource
+            - batch
+
+          exporters:
+            - prometheus
+
+
+        # ====================================================
+        # LOGS
+        # ====================================================
+        logs:
+
+          receivers:
+            - otlp
+
+          processors:
+            - memory_limiter
+            - k8sattributes
+            - resource
+            - transform
+            - batch
+
+          exporters:
+            - otlp_http/loki
+
+
+      # ======================================================
+      # INTERNAL METRICS
+      # ======================================================
+      telemetry:
+
+        metrics:
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: "0.0.0.0"
+                    port: 8888
+
+
+---
+# ============================================================
+# Deployment
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: apps
+
+  labels:
+    app: otel-collector
+
+spec:
+  replicas: 2
+
+  strategy:
+    type: RollingUpdate
+
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+
+  selector:
+    matchLabels:
+      app: otel-collector
+
+  template:
+
+    metadata:
+      labels:
+        app: otel-collector
+
+    spec:
+
+      serviceAccountName: otel-collector
+
+      terminationGracePeriodSeconds: 30
+
+      containers:
+
+      - name: otel-collector
+
+        image: otel/opentelemetry-collector-contrib:0.157.0
+
+        imagePullPolicy: IfNotPresent
+
+        args:
+          - "--config=/etc/otelcol-contrib/config.yaml"
+
+        ports:
+
+        - name: otlp-grpc
+          containerPort: 4317
+          protocol: TCP
+
+        - name: otlp-http
+          containerPort: 4318
+          protocol: TCP
+
+        - name: prometheus
+          containerPort: 8888
+          protocol: TCP
+
+        - name: prometheus-exp
+          containerPort: 8889
+          protocol: TCP
+
+        - name: healthcheck
+          containerPort: 13133
+          protocol: TCP
+
+        env:
+
+        - name: GOGC
+          value: "85"
+
+        - name: GOMEMLIMIT
+          value: "400MiB"
+
+        resources:
+
+          requests:
+            cpu: 200m
+            memory: 256Mi
+
+          limits:
+            cpu: 500m
+            memory: 512Mi
+
+        volumeMounts:
+
+        - name: otel-config
+          mountPath: /etc/otelcol-contrib
+          readOnly: true
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 13133
+
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 13133
+
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        lifecycle:
+          preStop:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "sleep 10"
+
+
+      volumes:
+
+      - name: otel-config
+
+        configMap:
+          name: otel-collector-config
+
+
+---
+# ============================================================
+# Service
+# ============================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: apps
+
+  labels:
+    app: otel-collector
+
+spec:
+  type: ClusterIP
+
+  ports:
+
+  - name: otlp-grpc
+    port: 4317
+    targetPort: 4317
+
+  - name: otlp-http
+    port: 4318
+    targetPort: 4318
+
+  - name: collector-metrics
+    port: 8888
+    targetPort: 8888
+
+  - name: prometheus-exp
+    port: 8889
+    targetPort: 8889
+
+  - name: healthcheck
+    port: 13133
+    targetPort: 13133
+
+  selector:
+    app: otel-collector
+
+
+---
+# ============================================================
+# ServiceAccount
+# ============================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: otel-collector
+  namespace: apps
+
+
+---
+# ============================================================
+# ClusterRole
+# ============================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: otel-collector
+
+rules:
+
+# ------------------------------------------------------------
+# Kubernetes metadata
+# ------------------------------------------------------------
+- apiGroups:
+    - ""
+
+  resources:
+    - pods
+    - namespaces
+    - nodes
+    - services
+    - endpoints
+
+  verbs:
+    - get
+    - list
+    - watch
+
+
+# ------------------------------------------------------------
+# Deployment metadata
+# ------------------------------------------------------------
+- apiGroups:
+    - apps
+
+  resources:
+    - deployments
+    - replicasets
+
+  verbs:
+    - get
+    - list
+    - watch
+
+
+# ------------------------------------------------------------
+# Ingress metrics discovery
+# ------------------------------------------------------------
+- apiGroups:
+    - extensions
+    - networking.k8s.io
+
+  resources:
+    - ingresses
+
+  verbs:
+    - get
+    - list
+    - watch
+
+
+---
+# ============================================================
+# ClusterRoleBinding
+# ============================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: otel-collector
+
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: otel-collector
+
+subjects:
+
+- kind: ServiceAccount
+  name: otel-collector
+  namespace: apps
+
+
+---
+# ============================================================
+# ServiceMonitor
+# ============================================================
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: otel-collector
+  namespace: apps
+
+  labels:
+    app: otel-collector
+
+spec:
+
+  selector:
+    matchLabels:
+      app: otel-collector
+
+  endpoints:
+
+  - port: prometheus-exp
+    interval: 30s
+    path: /metrics

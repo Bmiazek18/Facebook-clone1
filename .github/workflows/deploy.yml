@@ -1,29 +1,35 @@
-name: Build and Update GitOps
+name: CI & GitOps Pipeline
 
 on:
   push:
     branches:
       - main
-    paths-ignore:
-      - 'charts/**/values.yaml'
-      - 'chart/values.yaml'
+    paths:
+      - "frontend/**"
+      - "keycloak/**"
+      - "backend/**"
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
+  GITOPS_REPO: "Bmiazek18/facebook-clone-gitops"
+  REPO_OWNER: "bmiazek18"
 
 jobs:
   # ========================================================
-  # KROK 1: Wykrywanie zmian w poszczególnych folderach
+  # KROK 1: Centralne wykrywanie zmian we wszystkich modułach
   # ========================================================
-  changes:
+  detect-changes:
     runs-on: ubuntu-latest
     outputs:
       nuxt: ${{ steps.filter.outputs.nuxt }}
       keycloak: ${{ steps.filter.outputs.keycloak }}
+      backend_modules: ${{ steps.pack.outputs.modules }}
+      has_backend: ${{ steps.pack.outputs.modules != '[]' }}
+      router_changed: ${{ steps.filter.outputs.router_changed }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
 
       - name: Filter Changed Paths
         uses: dorny/paths-filter@v3
@@ -34,84 +40,90 @@ jobs:
               - 'frontend/**'
             keycloak:
               - 'keycloak/**'
+            user-service:
+              - 'backend/user-service/**'
+              - 'backend/shared-proto/**'
+              - 'backend/pom.xml'
+            user-edge-service:
+              - 'backend/user-edge-service/**'
+              - 'backend/shared-proto/**'
+              - 'backend/pom.xml'
+            socialgraph-service:
+              - 'backend/socialgraph-service/**'
+              - 'backend/shared-proto/**'
+              - 'backend/pom.xml'
+            socialgraph-edge-service:
+              - 'backend/socialgraph-edge-service/**'
+              - 'backend/shared-proto/**'
+              - 'backend/pom.xml'
+            router_changed:
+              - 'backend/user-edge-service/**'
+              - 'backend/socialgraph-edge-service/**'
+              - 'backend/shared-proto/**'
+              - 'backend/pom.xml'
+              - 'backend/router.yaml'
+              - 'backend/main.rhai'
+              - 'backend/supergraph-config.yaml'
+
+      - name: Pack backend module list
+        id: pack
+        run: |
+          MODULES=$(echo '${{ steps.filter.outputs.changes }}' | jq -c 'map(select(. != "nuxt" and . != "keycloak" and . != "router_changed"))')
+          echo "modules=$MODULES" >> "$GITHUB_OUTPUT"
 
   # ========================================================
-  # KROK 2: Budowanie Frontendu (Nuxt)
+  # KROK 2A: Budowanie Frontendu (Nuxt)
   # ========================================================
   build-nuxt:
-    needs: changes
-    if: ${{ needs.changes.outputs.nuxt == 'true' || github.event_name == 'workflow_dispatch' }}
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.nuxt == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       packages: write
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.2.2
-
-      - name: Set Image Name
-        run: echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}-frontend" >> $GITHUB_ENV
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.10.0
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3.3.0
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Nuxt Image
-        uses: docker/build-push-action@v6.15.0
+        uses: docker/build-push-action@v6
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-frontend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Update Nuxt Tag in GitOps
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git pull origin main --rebase
-          
-          TARGET_FILE="charts/frontend/values.yaml"
-          [ -f "$TARGET_FILE" ] || TARGET_FILE="chart/values.yaml"
-
-          if [ -f "$TARGET_FILE" ]; then
-            sed -i "s|repository: .*|repository: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}|" $TARGET_FILE
-            sed -i 's/tag: .*/tag: "${{ github.sha }}"/' $TARGET_FILE
-            
-            git add $TARGET_FILE
-            git commit -m "chore(ci): update nuxt image tag to ${{ github.sha }} [skip ci]" || exit 0
-            git push origin main
-          fi
-
   # ========================================================
-  # KROK 3: Budowanie Keycloak (UI + SPI + Docker)
+  # KROK 2B: Budowanie Keycloak (UI + SPI + Docker)
   # ========================================================
   build-keycloak:
-    needs: [changes, build-nuxt]
-    if: ${{ !failure() && !cancelled() && (needs.changes.outputs.keycloak == 'true' || github.event_name == 'workflow_dispatch') }}
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.keycloak == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       packages: write
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
 
       - name: Przygotowanie folderu na JAR-y
         run: mkdir -p keycloak/dist_jars
 
-      # --- SEKCJA KEYCLOAK UI (React Keycloakify) ---
-      - name: Set up Node.js (Latest LTS)
+      - name: Set up Node.js for Keycloakify
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
@@ -121,16 +133,13 @@ jobs:
       - name: Build React Keycloakify Theme JAR
         run: |
           if [ -d "keycloak/themes" ]; then
-            echo "Budowanie motywu UI (Keycloakify)..."
             cd keycloak/themes
             npm ci
             npm run build-keycloak-theme
-            # Kopiujemy wygenerowany plik JAR do folderu kontekstu Dockera
             cp dist_keycloak/*.jar ../dist_jars/ || true
             cd ../..
           fi
 
-      # --- SEKCJA KEYCLOAK SPI (Java Maven) ---
       - name: Set up JDK 21 for Custom SPI
         uses: actions/setup-java@v4
         with:
@@ -140,62 +149,168 @@ jobs:
 
       - name: Build Java Custom SPI JARs
         run: |
-          echo "Budowanie wtyczek SPI (Maven)..."
-          has_spi=false
           for d in keycloak/spi/*/; do
-            if [ -f "$d/pom.xml" ]; then
-              has_spi=true
-              echo "Budowanie wtyczki w $d ..."
-              cd "$d"
-              mvn clean package -DskipTests
-              cp target/*.jar ../../dist_jars/ || true
-              cd - > /dev/null
+            if [ -d "$d" ] && [ -f "$d/pom.xml" ]; then
+              echo "Budowanie SPI w $d ..."
+              (cd "$d" && mvn clean package -DskipTests)
+              find "$d/target" -maxdepth 1 -name "*.jar" ! -name "*-sources.jar" ! -name "original-*.jar" -exec cp {} keycloak/dist_jars/ \;
             fi
           done
-          if [ "$has_spi" = false ]; then
-            echo "Brak projektów Maven w podfolderach keycloak/spi. Pomijanie."
-          fi
-
-      # --- BUDOWANIE OBRAZU DOCKER ---
-      - name: Set Image Name
-        run: echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}-keycloak" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.10.0
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3.3.0
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and Push Custom Keycloak Image
-        uses: docker/build-push-action@v6.15.0
+      - name: Build and Push Keycloak Image
+        uses: docker/build-push-action@v6
         with:
           context: ./keycloak
           file: ./keycloak/Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-keycloak:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # --- AKTUALIZACJA GITOPS ---
-      - name: Update Keycloak Tag in GitOps
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git pull origin main --rebase
-          
-          TARGET_FILE="charts/keycloak/values.yaml"
-          [ -f "$TARGET_FILE" ] || TARGET_FILE="chart/values.yaml"
+  # ========================================================
+  # KROK 2C: Budowanie Backendów (Matrix)
+  # ========================================================
+  build-backend:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.has_backend == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ github.event_name == 'workflow_dispatch' && fromJson('["user-service","user-edge-service","socialgraph-service","socialgraph-edge-service"]') || fromJson(needs.detect-changes.outputs.backend_modules) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-          if [ -f "$TARGET_FILE" ]; then
-            # Podmieniamy wyłącznie pole image w sekcji keycloak: (pierwsze wystąpienie image)
-            sed -i '0,/image:.*/s||image: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"|' $TARGET_FILE
-            
-            git add $TARGET_FILE
-            git commit -m "chore(ci): update keycloak image tag to ${{ github.sha }} [skip ci]" || exit 0
-            git push origin main
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend module image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/${{ matrix.module }}/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-${{ matrix.module }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ========================================================
+  # KROK 3: Pojedyncza, atomowa aktualizacja GitOps
+  # ========================================================
+  update-gitops:
+    needs: [detect-changes, build-nuxt, build-keycloak, build-backend]
+    if: ${{ always() && !failure() && !cancelled() && (needs.detect-changes.outputs.nuxt == 'true' || needs.detect-changes.outputs.keycloak == 'true' || needs.detect-changes.outputs.has_backend == 'true' || needs.detect-changes.outputs.router_changed == 'true' || github.event_name == 'workflow_dispatch') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout app repository
+        uses: actions/checkout@v4
+
+      - name: Checkout GitOps repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.GITOPS_REPO }}
+          token: ${{ secrets.GITOPS_REPO_TOKEN }}
+          path: gitops-repo
+
+      # 1. Aktualizacja Frontendu
+      - name: Update Frontend Tag
+        if: ${{ needs.detect-changes.outputs.nuxt == 'true' || github.event_name == 'workflow_dispatch' }}
+        run: |
+          FILE="gitops-repo/charts/frontend/values.yaml"
+          IMAGE="${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-frontend"
+          if [ -f "$FILE" ]; then
+            yq -i ".image.repository = \"${IMAGE}\"" "$FILE"
+            yq -i ".image.tag = \"${{ github.sha }}\"" "$FILE"
           fi
+
+      # 2. Aktualizacja Keycloaka
+      - name: Update Keycloak Tag
+        if: ${{ needs.detect-changes.outputs.keycloak == 'true' || github.event_name == 'workflow_dispatch' }}
+        run: |
+          FILE="gitops-repo/charts/keycloak/values.yaml"
+          IMAGE="${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-keycloak"
+          if [ -f "$FILE" ]; then
+            yq -i ".image.repository = \"${IMAGE}\"" "$FILE"
+            yq -i ".image.tag = \"${{ github.sha }}\"" "$FILE"
+          fi
+
+      # 3. Supergraph Rover Compose
+      - name: Set up Rover
+        if: ${{ needs.detect-changes.outputs.router_changed == 'true' || github.event_name == 'workflow_dispatch' }}
+        uses: apollographql/rover-actions/install-rover-cli@v1
+
+      - name: Compose Supergraph
+        if: ${{ needs.detect-changes.outputs.router_changed == 'true' || github.event_name == 'workflow_dispatch' }}
+        run: |
+          mkdir -p gitops-repo/charts/backend/files
+          rover supergraph compose \
+            --config backend/supergraph-config.yaml \
+            --output gitops-repo/charts/backend/files/supergraph.graphql \
+            --elv2-license accept
+
+      # 4. Aktualizacja Tagów Backendów
+      - name: Update Backend Helm Tags
+        if: ${{ needs.detect-changes.outputs.has_backend == 'true' || github.event_name == 'workflow_dispatch' }}
+        run: |
+          MODULES='${{ needs.detect-changes.outputs.backend_modules }}'
+          [ "${{ github.event_name }}" = "workflow_dispatch" ] && MODULES='["user-service","user-edge-service","socialgraph-service","socialgraph-edge-service"]'
+
+          VALUES_FILE="gitops-repo/charts/backend/values.yaml"
+
+          declare -A SERVICE_MAP=(
+            ["user-service"]="userService"
+            ["user-edge-service"]="userEdgeService"
+            ["socialgraph-service"]="socialgraphService"
+            ["socialgraph-edge-service"]="socialgraphEdgeService"
+          )
+
+          for module in $(echo "$MODULES" | jq -r '.[]'); do
+            KEY="${SERVICE_MAP[$module]}"
+            if [ -n "$KEY" ]; then
+              REPO="${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-${module}"
+              yq -i ".${KEY}.image.repository = \"${REPO}\"" "$VALUES_FILE"
+              yq -i ".${KEY}.image.tag = \"${{ github.sha }}\"" "$VALUES_FILE"
+            fi
+          done
+
+      # 5. Jeden commit i push do GitOps
+      - name: Commit and Push to GitOps
+        run: |
+          cd gitops-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add charts/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore(gitops): deploy version ${{ github.sha }} [skip ci]"
+          git pull --rebase origin main
+          git push origin main

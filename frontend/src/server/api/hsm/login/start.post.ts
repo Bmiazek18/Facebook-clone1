@@ -46,7 +46,29 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const vault = await $fetch<VaultResponse>(`${JAVA_API_URL}/api/vaults/${userId}`, { headers })
+    interface GraphQLResponse<T> {
+      data?: T
+      errors?: any[]
+    }
+
+    const response = await $fetch<GraphQLResponse<{ vault: VaultResponse | null }>>(`${JAVA_API_URL}/graphql`, {
+      method: 'POST',
+      headers,
+      body: {
+        query: `
+          query GetVault($userId: ID!) {
+            vault(userId: $userId) {
+              failedAttempts
+              opaqueRecord
+              encryptedHistory
+            }
+          }
+        `,
+        variables: { userId }
+      }
+    })
+
+    const vault = response.data?.vault
 
     if (!vault?.opaqueRecord) {
       throw createError({
@@ -62,10 +84,22 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    await $fetch<void>(`${JAVA_API_URL}/api/vaults/${userId}/attempts`, {
+    await $fetch<GraphQLResponse<any>>(`${JAVA_API_URL}/graphql`, {
       method: 'POST',
       headers,
-      body: { attempts: vault.failedAttempts + 1 }
+      body: {
+        query: `
+          mutation UpdateAttempts($userId: ID!, $attempts: Int!) {
+            updateVaultAttempts(userId: $userId, attempts: $attempts) {
+              failedAttempts
+            }
+          }
+        `,
+        variables: {
+          userId,
+          attempts: vault.failedAttempts + 1
+        }
+      }
     })
 
     const { loginResponse, serverLoginState } = opaqueServer.startLogin({

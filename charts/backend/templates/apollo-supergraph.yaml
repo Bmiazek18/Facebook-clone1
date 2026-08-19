@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apollo-supergraph
+data:
+  supergraph.graphql: |
+{{ .Files.Get "files/supergraph.graphql" | indent 4 }}

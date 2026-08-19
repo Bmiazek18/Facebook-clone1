@@ -1,0 +1,264 @@
+extend schema
+@link(
+    url: "https://specs.apollo.dev/federation/v2.11"
+    import: ["@key", "@external", "@requires"]
+)
+
+type Query {
+    getUserById(userId: ID!): UserSearchResponse
+    searchUsers(query: String!, currentUserId: ID): [UserSearchResponse!]!
+    getActiveStatuses(userIds: [ID!]!): [UserActiveStatus!]!
+    detectLanguage(text: String!): String!
+    getSearchHistory(userId: ID): [UserSearchResponse!]!
+    getNotifications(userId: ID!): [Notification!]!
+    getListing(id: ID!): Listing
+    getNearbyListings(
+        lat: Float!
+        lon: Float!
+        radius: Float
+        query: String
+    ): [Listing!]!
+    pages: [Page!]!
+    page(id: ID!): Page
+    pageByWebsite(domain: String!): Page
+    userPages(userId: ID!): [Page!]!
+    vault(userId: ID!): VaultData
+}
+
+type Mutation {
+    setUserActive(userId: ID!): Boolean
+    updateProfile(userId: ID!, input: UpdateProfileInput!): UserSearchResponse
+    translateText(text: String!, targetLanguage: String!): String!
+    recordSearch(searchedUserId: ID!, searchingUserId: ID): Boolean
+    generateTicket(userId: ID!): String!
+    markNotificationAsRead(id: ID!): Boolean
+    createListing(input: CreateListingInput!): Listing
+    createPage(input: CreatePageInput!): Page
+    exchangePageToken(pageId: ID!): PageTokenResponse!
+    verifyPageAccess(pageId: ID!): AccessVerification!
+    clearActivePageToken: ClearSessionResponse!
+    saveVault(userId: ID!, input: SaveVaultInput!): VaultData!
+    updateVaultAttempts(userId: ID!, attempts: Int!): VaultData!
+}
+
+# ---------------- USER ----------------
+
+type UserSearchResponse @key(fields: "id") {
+    id: ID!
+    email: String
+    firstName: String
+    lastName: String
+    birthDate: String
+    gender: String
+    city: String
+    location: String
+    hometown: String
+    work: String
+    job: String
+    company: String
+    education: String
+    school: String
+    highSchool: String
+    avatarId: String
+    avatar: String
+    coverId: String
+    cover: String
+    bio: String
+    languages: [String!]
+    phone: String
+    website: String
+    pronouns: String
+    relationshipStatus: String
+    relationshipSince: String
+    partnerName: String
+    partnerAvatar: String
+    bioDetails: String
+    namePronunciation: String
+    otherNames: [String!]
+    favoriteQuotes: [String!]
+    lifeEvents: [LifeEvent!]
+    socialLinks: [SocialLink!]
+    inHistory: Boolean
+    newPostsCount: Int
+    createdAt: String
+    updatedAt: String
+    note: String
+}
+
+type LifeEvent {
+    date: String!
+    event: String!
+}
+
+type SocialLink {
+    name: String!
+    url: String!
+}
+
+input UpdateProfileInput {
+    bio: String
+    city: String
+    location: String
+    hometown: String
+    work: String
+    job: String
+    company: String
+    education: String
+    school: String
+    highSchool: String
+    languages: [String!]
+    lifeEvents: [LifeEventInput!]
+    socialLinks: [SocialLinkInput!]
+    phone: String
+    website: String
+    gender: String
+    birthDate: String
+    pronouns: String
+    note: String
+}
+
+input LifeEventInput {
+    date: String!
+    event: String!
+}
+
+input SocialLinkInput {
+    name: String!
+    url: String!
+}
+
+# ---------------- STATUS ----------------
+
+type UserActiveStatus {
+    userId: ID!
+    active: Boolean!
+    lastActiveText: String
+    lastActiveTimestamp: Float
+}
+
+# ---------------- FEDERATION REFERENCES ----------------
+# Keep reference ids available for federated entity hydration.
+
+type Post @key(fields: "id") {
+    id: ID!
+    authorId: ID! @external
+    author: UserSearchResponse @requires(fields: "authorId")
+}
+
+type Comment @key(fields: "id") {
+    id: ID!
+    userId: ID! @external
+    author: UserSearchResponse @requires(fields: "userId")
+}
+
+type Story @key(fields: "id") {
+    id: ID!
+    authorId: ID! @external
+    author: UserSearchResponse @requires(fields: "authorId")
+}
+
+# ---------------- NOTIFICATIONS ----------------
+
+type Notification {
+    id: ID!
+    userId: ID!
+    title: String!
+    message: String!
+    createdAt: String!
+    read: Boolean!
+    sender: NotificationUser
+}
+
+type NotificationUser {
+    id: ID!
+    firstName: String
+    lastName: String
+    avatarId: String
+    avatar: String
+}
+
+# ---------------- MARKETPLACE ----------------
+
+type Listing {
+    id: ID!
+    title: String!
+    price: Float!
+    category: String!
+    condition: String!
+    description: String
+    latitude: Float
+    longitude: Float
+    createdAt: String
+}
+
+input CreateListingInput {
+    title: String!
+    price: Float!
+    category: String!
+    condition: String!
+    description: String
+    latitude: Float!
+    longitude: Float!
+}
+
+# ==========================================
+# PAGES
+# ==========================================
+
+type Page {
+    id: ID!
+    name: String!
+    domain: String!
+    ownerId: ID!
+    description: String
+    avatarId: String
+    createdAt: String!
+    updatedAt: String
+}
+
+input CreatePageInput {
+    name: String!
+    domain: String!
+    description: String
+}
+
+type PageTokenResponse {
+    active: Boolean!
+    accessToken: String
+    tokenType: String
+    expiresIn: Int
+    pageId: ID
+    userId: ID
+    page: Page
+    message: String
+}
+
+type AccessVerification {
+    pageId: ID!
+    userId: ID!
+    authorized: Boolean!
+    message: String
+}
+
+type ClearSessionResponse {
+    cleared: Boolean!
+    message: String
+}
+
+# ==========================================
+# VAULT (E2EE PIN BACKUP)
+# ==========================================
+
+type VaultData {
+    userId: ID!
+    opaqueRecord: String
+    encryptedHistory: String
+    failedAttempts: Int
+    lastUpdated: String
+}
+
+input SaveVaultInput {
+    opaqueRecord: String!
+    encryptedHistory: String!
+    failedAttempts: Int
+}

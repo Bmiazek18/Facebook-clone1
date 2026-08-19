@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package com.facebook.socialgraph.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.facebook.socialgraph.grpc";
+
+service SocialGraphGrpcService {
+  rpc CreateUserNode(CreateNodeRequest) returns (CreateNodeResponse);
+  rpc GetRelations(GetRelationsRequest) returns (GetRelationsResponse);
+  rpc GetBirthdayUsers(GetBirthdayUsersRequest) returns (GetBirthdayUsersResponse);
+  rpc GetFriendSuggestions(GetFriendSuggestionsRequest) returns (GetFriendSuggestionsResponse);
+  rpc GetFriendRequests(GetFriendSuggestionsRequest) returns (GetFriendSuggestionsResponse);
+  rpc SendFriendRequest(FriendRequestMsg) returns (FriendRequestResponse);
+  rpc AcceptFriendRequest(FriendRequestMsg) returns (FriendRequestResponse);
+  rpc GetFriends(GetFriendsRequest) returns (GetFriendsResponse);
+}
+
+message CreateNodeRequest {
+  string userId = 1;
+  string username = 2;
+  string birthDate = 3;
+}
+
+message CreateNodeResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetRelationsRequest {
+  string userId = 1;
+  repeated string targetUserIds = 2;
+}
+
+message UserRelation {
+  string targetUserId = 1;
+  bool friend = 2;
+  int32 mutualFriendsCount = 3;
+}
+
+message GetRelationsResponse {
+  repeated UserRelation relations = 1;
+}
+
+message GetBirthdayUsersRequest {
+  string userId = 1;
+}
+
+message BirthdayUser {
+  string userId = 1;
+  string birthDate = 2;
+}
+
+message GetBirthdayUsersResponse {
+  repeated BirthdayUser users = 1;
+}
+
+message GetFriendSuggestionsRequest {
+  string userId = 1;
+}
+
+message FriendSuggestion {
+  string userId = 1;
+  int32 mutualFriendsCount = 2;
+}
+
+message GetFriendSuggestionsResponse {
+  repeated FriendSuggestion suggestions = 1;
+}
+
+message FriendRequestMsg {
+  string senderId = 1;
+  string receiverId = 2;
+}
+
+message FriendRequestResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetFriendsRequest {
+  string userId = 1;
+}
+
+message GetFriendsResponse {
+  repeated string friendIds = 1;
+}

@@ -1,0 +1,376 @@
+syntax = "proto3";
+
+package com.facebook.feed.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.facebook.feed.grpc";
+option go_package = "video-abr-service/pb/feed;feedpb";
+
+service FeedGrpcService {
+  rpc GetFeed(GetFeedRequest) returns (GetFeedResponse);
+  rpc CreatePost(CreatePostRequest) returns (CreatePostResponse);
+  rpc GetActiveStories(GetActiveStoriesRequest) returns (GetActiveStoriesResponse);
+  rpc CreateStory(CreateStoryRequest) returns (CreateStoryResponse);
+  rpc MarkStoryAsViewed(MarkStoryAsViewedRequest) returns (MarkStoryAsViewedResponse);
+  rpc GetPostById(GetPostByIdRequest) returns (GetPostByIdResponse);
+  rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
+  rpc GetEventById(GetEventByIdRequest) returns (GetEventByIdResponse);
+  rpc GetEvents(GetEventsRequest) returns (GetEventsResponse);
+
+  // --- Nowe metody dla komentarzy i reakcji (FeedInteractionDataFetcher) ---
+  rpc GetComments(GetCommentsRequest) returns (GetCommentsResponse);
+  rpc AddComment(AddCommentRequest) returns (AddCommentResponse);
+  rpc GetPostReactions(GetPostReactionsRequest) returns (GetPostReactionsResponse);
+  rpc ReactToPost(ReactToPostRequest) returns (ReactToPostResponse);
+  rpc ReactToComment(ReactToCommentRequest) returns (ReactToCommentResponse);
+
+  // Internal callbacks (replaces REST controllers)
+  rpc UpdatePostStatus(UpdatePostStatusRequest) returns (UpdatePostStatusResponse);
+  rpc UpdatePostMediaStatus(UpdatePostMediaStatusRequest) returns (UpdatePostMediaStatusResponse);
+  rpc VoteOnPoll(VoteOnPollRequest) returns (VoteOnPollResponse);
+  rpc GetGroupFeed(GetGroupFeedRequest) returns (GetGroupFeedResponse);
+  rpc GetUserMedia(GetUserMediaRequest) returns (GetUserMediaResponse);
+  rpc GetUserAlbums(GetUserAlbumsRequest) returns (GetUserAlbumsResponse);
+  rpc GetScheduledPosts(GetScheduledPostsRequest) returns (GetScheduledPostsResponse);
+}
+
+message ImageTag {
+  string id = 1;
+  double x = 2;
+  double y = 3;
+  string userId = 4;
+}
+
+message PostMedia {
+  string src = 1;
+  string altText = 2;
+  repeated ImageTag tags = 3;
+  string backgroundColor = 4;
+}
+
+message GetFeedRequest {
+  string currentUserId = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  string hashtag = 4;
+}
+
+message ReactionDetail {
+  string reactionType = 1;
+  repeated string userIds = 2;
+}
+
+message Post {
+  string id = 1;
+  string authorId = 2;
+  string content = 3;
+  string date = 4;
+  double timestamp = 5;
+  repeated PostMedia media = 6;
+  bool isAnonymous = 7;
+  string targetId = 8;
+  string targetType = 9;
+  repeated ReactionDetail reactions = 10;
+  int32 commentCount = 11;
+  int32 shareCount = 12;
+  string visibility = 13;
+  repeated string allowedUserIds = 14;
+  repeated string taggedUserIds = 15;
+  string contextJson = 16;
+  string status = 17;
+  int64 scheduled_publish_time = 18;
+}
+
+message GetFeedResponse {
+  repeated Post posts = 1;
+}
+
+message CreatePostRequest {
+  string content = 1;
+  string authorId = 2;
+  repeated PostMedia media = 3;
+  bool isAnonymous = 4;
+  string targetId = 5;
+  string targetType = 6;
+  string visibility = 7;
+  repeated string allowedUserIds = 8;
+  repeated string taggedUserIds = 9;
+  string contextJson = 10;
+  int64 scheduled_publish_time = 11;
+}
+
+message CreatePostResponse {
+  Post post = 1;
+}
+
+message GetScheduledPostsRequest {
+  string target_type = 1;
+  string target_id = 2;
+  string author_id = 3;
+}
+
+message GetScheduledPostsResponse {
+  repeated Post posts = 1;
+}
+
+message Story {
+  string id = 1;
+  string authorId = 2;
+  string mediaUrl = 3;
+  string mediaType = 4;
+  string text = 5;
+  string createdAt = 6;
+  string expiresAt = 7;
+  string thumbMediaUrl = 8;
+  repeated string viewedByUserIds = 9;
+}
+
+message GetActiveStoriesRequest {
+  string currentUserId = 1;
+}
+
+message GetActiveStoriesResponse {
+  repeated Story stories = 1;
+}
+
+message CreateStoryRequest {
+  string authorId = 1;
+  string mediaUrl = 2;
+  string mediaType = 3;
+  string text = 4;
+}
+
+message CreateStoryResponse {
+  Story story = 1;
+}
+
+message GetPostByIdRequest {
+  string postId = 1;
+}
+
+message GetPostByIdResponse {
+  Post post = 1;
+}
+
+message Event {
+  string id = 1;
+  string userId = 2;
+  string name = 3;
+  string title = 4;
+  string startDate = 5;
+  string startTime = 6;
+  string endDate = 7;
+  string endTime = 8;
+  string type = 9;
+  string privacy = 10;
+  string description = 11;
+  repeated string images = 12;
+  string location = 13;
+  string locationName = 14;
+  string address = 15;
+  bool showGuestList = 16;
+  repeated string hosts = 17;
+  string date = 18;
+  int32 responses = 19;
+  int32 guestsGoing = 20;
+  int32 guestsInterested = 21;
+  repeated double coordinates = 22;
+  string frequency = 23;
+}
+
+message CreateEventRequest {
+  string id = 1;
+  string userId = 2;
+  string name = 3;
+  string title = 4;
+  string startDate = 5;
+  string startTime = 6;
+  string endDate = 7;
+  string endTime = 8;
+  string type = 9;
+  string privacy = 10;
+  string description = 11;
+  repeated string images = 12;
+  string location = 13;
+  string locationName = 14;
+  string address = 15;
+  bool showGuestList = 16;
+  repeated string hosts = 17;
+  string date = 18;
+  repeated double coordinates = 19;
+  string frequency = 20;
+}
+
+message CreateEventResponse {
+  Event event = 1;
+}
+
+message GetEventByIdRequest {
+  string id = 1;
+}
+
+message GetEventByIdResponse {
+  Event event = 1;
+}
+
+message GetEventsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message GetEventsResponse {
+  repeated Event events = 1;
+}
+
+// ==========================================
+// NOWE STRUKTURY DLA KOMENTARZY I REAKCJI
+// ==========================================
+
+message Comment {
+  string id = 1;
+  string userId = 2;
+  string postId = 3;
+  string parentId = 4;
+  string content = 5;
+  string createdAt = 6;
+  string mediaUrl = 7;
+  repeated ReactionDetail reactions = 8;
+}
+
+message GetCommentsRequest {
+  string postId = 1;
+  int32 limit = 2;
+}
+
+message GetCommentsResponse {
+  repeated Comment comments = 1;
+}
+
+message AddCommentRequest {
+  string postId = 1;
+  string userId = 2;
+  string content = 3;
+  string mediaUrl = 4;
+  string parentId = 5;
+}
+
+message AddCommentResponse {
+  Comment comment = 1;
+}
+
+message GetPostReactionsRequest {
+  string postId = 1;
+}
+
+message GetPostReactionsResponse {
+  repeated ReactionDetail reactions = 1;
+}
+
+message ReactToPostRequest {
+  string postId = 1;
+  string userId = 2;
+  string reactionType = 3;
+  string previousReactionType = 4;
+}
+
+message ReactToPostResponse {
+  bool success = 1;
+}
+
+message ReactToCommentRequest {
+  string commentId = 1;
+  string userId = 2;
+  string reactionType = 3;
+}
+
+message ReactToCommentResponse {
+  bool success = 1;
+}
+
+message UpdatePostStatusRequest {
+  string postId = 1;
+  string status = 2;
+}
+
+message UpdatePostStatusResponse {
+  bool success = 1;
+}
+
+message UpdatePostMediaStatusRequest {
+  string fileId = 1;
+  string status = 2;
+}
+
+message UpdatePostMediaStatusResponse {
+  bool success = 1;
+  int32 updatedCount = 2;
+}
+
+message MarkStoryAsViewedRequest {
+  string storyId = 1;
+  string viewerId = 2;
+}
+
+message MarkStoryAsViewedResponse {
+  bool success = 1;
+}
+
+message VoteOnPollRequest {
+  string postId = 1;
+  string optionId = 2;
+  string userId = 3;
+}
+
+message VoteOnPollResponse {
+  Post post = 1;
+}
+
+message GetGroupFeedRequest {
+  string groupId = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetGroupFeedResponse {
+  repeated Post posts = 1;
+}
+
+message UserMediaItemDto {
+  int64 id = 1;
+  string userId = 2;
+  string postId = 3;
+  string mediaUrl = 4;
+  string mediaType = 5;
+  string albumName = 6;
+  string altText = 7;
+  string createdAt = 8;
+  double timestamp = 9;
+}
+
+message UserAlbumDto {
+  string name = 1;
+  int32 count = 2;
+  string coverUrl = 3;
+}
+
+message GetUserMediaRequest {
+  string userId = 1;
+  string filter = 2;
+  string albumName = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+
+message GetUserMediaResponse {
+  repeated UserMediaItemDto items = 1;
+  int32 totalCount = 2;
+  bool hasMore = 3;
+}
+
+message GetUserAlbumsRequest {
+  string userId = 1;
+}
+
+message GetUserAlbumsResponse {
+  repeated UserAlbumDto albums = 1;
+}

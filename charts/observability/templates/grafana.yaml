@@ -1,0 +1,315 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: {{ .Values.namespace | default "apps" }}
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus:9090
+        isDefault: true
+        jsonData:
+          httpMethod: POST
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki:3100
+        jsonData:
+          derivedFields:
+            - datasourceUid: jaeger
+              matcherRegex: "trace_id[:=]\\s*\"?(\\w+)\"?"
+              name: TraceID
+              url: "$${__value.raw}"
+      - name: Jaeger
+        type: jaeger
+        uid: jaeger
+        access: proxy
+        url: http://jaeger:16686
+        jsonData:
+          nodeGraph:
+            enabled: true
+      - name: Sentry
+        type: grafana-sentry-datasource
+        uid: sentry
+        access: proxy
+        url: http://sentry:8000
+        jsonData:
+          orgSlug: glitchtip
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: {{ .Values.namespace | default "apps" }}
+  labels:
+    app: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: grafana/grafana:10.4.1
+        ports:
+        - name: service
+          containerPort: 3000
+        env:
+        - name: GF_SECURITY_ADMIN_USER
+          value: {{ .Values.grafana.adminUser | quote }}
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: {{ .Values.grafana.adminPassword | quote }}
+        - name: GF_USERS_ALLOW_SIGN_UP
+          value: "false"
+        - name: GF_INSTALL_PLUGINS
+          value: "grafana-sentry-datasource"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        volumeMounts:
+        - name: grafana-datasources
+          mountPath: /etc/grafana/provisioning/datasources
+        - name: grafana-dashboards-provider
+          mountPath: /etc/grafana/provisioning/dashboards
+        - name: grafana-dashboard-observability
+          mountPath: /var/lib/grafana/dashboards
+      volumes:
+      - name: grafana-datasources
+        configMap:
+          name: grafana-datasources
+      - name: grafana-dashboards-provider
+        configMap:
+          name: grafana-dashboards-provider
+      - name: grafana-dashboard-observability
+        configMap:
+          name: grafana-dashboard-observability
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: {{ .Values.namespace | default "apps" }}
+  labels:
+    app: grafana
+spec:
+  ports:
+  - name: http
+    port: {{ .Values.grafana.service.port }}
+    targetPort: service
+  selector:
+    app: grafana
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-provider
+  namespace: {{ .Values.namespace | default "apps" }}
+data:
+  provider.yaml: |
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-observability
+  namespace: {{ .Values.namespace | default "apps" }}
+data:
+  observability.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "datasource",
+              "uid": "-- Graphic transition --"
+            },
+            "enable": true,
+            "hide": true,
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": 1,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "title": "System Metrics (Prometheus)",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "smooth"
+              },
+              "unit": "decbytes"
+            }
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 1
+          },
+          "id": 2,
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "Prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum(jvm_memory_used_bytes{area=\"heap\"}) by (job)",
+              "legendFormat": "{{job}}",
+              "range": true
+            }
+          ],
+          "title": "JVM Heap Memory Usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "smooth"
+              },
+              "unit": "ops"
+            }
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 1
+          },
+          "id": 3,
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "Prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(http_server_requests_seconds_count[5m])) by (job)",
+              "legendFormat": "{{job}}",
+              "range": true
+            }
+          ],
+          "title": "HTTP Request Rate (5m)",
+          "type": "timeseries"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 9
+          },
+          "id": 4,
+          "title": "Application Logs & Tracing Links",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 16,
+            "x": 0,
+            "y": 10
+          },
+          "id": 5,
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "Loki"
+              },
+              "expr": "{job=~\".*\"} |= \"\"",
+              "legendFormat": ""
+            }
+          ],
+          "title": "Live Application Logs (Loki)",
+          "type": "logs"
+        },
+        {
+          "gridPos": {
+            "h": 10,
+            "w": 8,
+            "x": 16,
+            "y": 10
+          },
+          "id": 6,
+          "options": {
+            "content": "### 🛠️ Observability Control Panel\n\nThis dashboard consolidates system observability:\n\n*   **Logs:** The Loki panel on the left shows real-time logs. Clicking on any log containing a `trace_id` will display a link to jump directly into **Jaeger** to inspect the trace!\n*   **Traces:** Open [Jaeger UI](http://localhost:16686) to search and visualize gRPC and HTTP distributed traces.\n*   **Errors (Sentry/GlitchTip):** Open [GlitchTip Console](http://localhost:8075) to view tracked exceptions, errors, stack traces, and release health metrics for the backend and frontend services.\n"
+          },
+          "title": "Diagnostics & Quick Links",
+          "type": "markdown"
+        }
+      ],
+      "schemaVersion": 38,
+      "style": "dark",
+      "tags": ["system", "observability"],
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "",
+      "title": "System Observability Dashboard",
+      "version": 1
+    }

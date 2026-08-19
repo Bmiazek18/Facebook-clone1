@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apollo-router
+  labels:
+    app: apollo-router
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: apollo-router
+  template:
+    metadata:
+      labels:
+        app: apollo-router
+    spec:
+      containers:
+        - name: apollo-router
+          image: "{{ .Values.images.apolloRouter.repository }}:{{ .Values.images.apolloRouter.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          args:
+            - --config
+            - /dist/config/router.yaml
+            - --supergraph
+            - /dist/schema/supergraph.graphql
+          env:
+            - name: KEYCLOAK_JWKS_URL
+              value: {{ .Values.keycloakJwksUrl | quote }}
+          ports:
+            - name: http
+              containerPort: 4000
+          volumeMounts:
+            - name: router-config
+              mountPath: /dist/config
+            - name: supergraph
+              mountPath: /dist/schema
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: router-config
+          configMap:
+            name: apollo-router-config
+        - name: supergraph
+          configMap:
+            name: apollo-supergraph
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apollo-router
+spec:
+  type: ClusterIP
+  selector:
+    app: apollo-router
+  ports:
+    - name: http
+      port: 4000
+      targetPort: http

@@ -1,0 +1,171 @@
+syntax = "proto3";
+
+package com.facebook.chat.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.facebook.chat.grpc";
+
+service ChatGrpcService {
+  rpc GetMessages(GetMessagesRequest) returns (GetMessagesResponse);
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+  rpc GetInbox(GetInboxRequest) returns (GetInboxResponse);
+  rpc MarkAsRead(MarkAsReadRequest) returns (MarkAsReadResponse);
+  rpc ReactToMessage(ReactToMessageRequest) returns (ReactToMessageResponse);
+  rpc PinMessage(PinMessageRequest) returns (PinMessageResponse);
+  rpc SaveChatCustomization(SaveChatCustomizationRequest) returns (SaveChatCustomizationResponse);
+  rpc SaveChatNickname(SaveChatNicknameRequest) returns (SaveChatNicknameResponse);
+  rpc GetChatSettings(GetChatSettingsRequest) returns (GetChatSettingsResponse);
+  rpc LeaveChat(LeaveChatRequest) returns (LeaveChatResponse);
+}
+
+message ChatMessageDto {
+  string messageId = 1;
+  string senderId = 2;
+  string text = 3;
+  string replyToId = 4;
+  string replyToText = 5;
+  string replyToSenderId = 6;
+  string imageUrl = 7;
+  string audioUrl = 8;
+  string fileUrl = 9;
+  string fileName = 10;
+  double fileSize = 11;
+  string linkUrl = 12;
+  int32 duration = 13;
+  bool isPinned = 14;
+  double time = 15;
+  map<string, string> reactions = 16;
+  string systemActionType = 17;
+  string systemActionPayload = 18;
+}
+
+message GetMessagesRequest {
+  string conversationId = 1;
+}
+
+message GetMessagesResponse {
+  repeated ChatMessageDto messages = 1;
+}
+
+message SendMessageRequest {
+  string senderId = 1;
+  string conversationId = 2;
+  string text = 3;
+  string replyToId = 4;
+  string replyToText = 5;
+  string replyToSenderId = 6;
+  string imageUrl = 7;
+  string audioUrl = 8;
+  int32 duration = 9;
+  string fileUrl = 10;
+  string fileName = 11;
+  int64 fileSize = 12;
+  string linkUrl = 13;
+  repeated string participantIds = 14;
+}
+
+message SendMessageResponse {
+  ChatMessageDto message = 1;
+}
+
+message GetInboxRequest {
+  string userId = 1;
+}
+
+message InboxItemDto {
+  string conversationId = 1;
+  int64 lastActivity = 2;
+  string lastMessageText = 3;
+  bool isUnread = 4;
+  string recipientId = 5;
+  string lastMessageSenderId = 6;
+}
+
+message GetInboxResponse {
+  repeated InboxItemDto items = 1;
+}
+
+message MarkAsReadRequest {
+  string userId = 1;
+  string conversationId = 2;
+}
+
+message MarkAsReadResponse {
+  bool success = 1;
+}
+
+message ReactToMessageRequest {
+  string senderId = 1;
+  string conversationId = 2;
+  string messageId = 3;
+  string reactionEmoji = 4;
+  repeated string participantIds = 5;
+}
+
+message ReactToMessageResponse {
+  bool success = 1;
+}
+
+message PinMessageRequest {
+  string conversationId = 1;
+  string messageId = 2;
+  bool isPinned = 3;
+  repeated string participantIds = 4;
+}
+
+message PinMessageResponse {
+  bool success = 1;
+}
+
+message SaveChatCustomizationRequest {
+  string senderId = 1;
+  string conversationId = 2;
+  int32 themeId = 3;
+  bool hasThemeId = 4;
+  string emoji = 5;
+  bool hasEmoji = 6;
+  repeated string participantIds = 7;
+}
+
+message SaveChatCustomizationResponse {
+  bool success = 1;
+}
+
+message SaveChatNicknameRequest {
+  string senderId = 1;
+  string conversationId = 2;
+  string userId = 3;
+  string nickname = 4;
+  repeated string participantIds = 5;
+}
+
+message SaveChatNicknameResponse {
+  bool success = 1;
+}
+
+message GetChatSettingsRequest {
+  string conversationId = 1;
+}
+
+message ChatNicknameDto {
+  string userId = 1;
+  string nickname = 2;
+}
+
+message GetChatSettingsResponse {
+  int32 themeId = 1;
+  bool hasThemeId = 2;
+  string emoji = 3;
+  repeated ChatNicknameDto nicknames = 4;
+  repeated string participantIds = 5;
+  string type = 6;
+}
+
+message LeaveChatRequest {
+  string userId = 1;
+  string conversationId = 2;
+}
+
+message LeaveChatResponse {
+  bool success = 1;
+}

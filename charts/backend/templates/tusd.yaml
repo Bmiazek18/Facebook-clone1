@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tusd
+  namespace: apps
+  labels:
+    app: tusd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tusd
+  template:
+    metadata:
+      labels:
+        app: tusd
+    spec:
+      containers:
+      - name: tusd
+        image: tusproject/tusd:latest
+        ports:
+        - containerPort: 1080
+          name: http
+        env:
+        - name: AWS_REGION
+          value: "us-east-1"
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: backend-runtime-secrets
+              key: MINIO_ACCESS_KEY
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backend-runtime-secrets
+              key: MINIO_SECRET_KEY
+        - name: MINIO_URL
+          valueFrom:
+            configMapKeyRef:
+              name: backend-runtime-config
+              key: MINIO_URL
+        command:
+        - /tusd
+        - -s3-bucket
+        - poczekalnia
+        - -s3-endpoint
+        - $(MINIO_URL)
+        - -host
+        - 0.0.0.0
+        - -port
+        - "1080"
+        - -base-path
+        - /files/
+        - -hooks-http
+        - http://video-abr-service.apps.svc.cluster.local:8085/hooks
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        livenessProbe:
+          tcpSocket:
+            port: 1080
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          tcpSocket:
+            port: 1080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tusd
+  namespace: apps
+spec:
+  selector:
+    app: tusd
+  ports:
+  - port: 1080
+    targetPort: 1080
+    name: http

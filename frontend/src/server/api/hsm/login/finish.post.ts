@@ -45,13 +45,30 @@ export default defineEventHandler(async (event) => {
 
     const accessToken = await getValidAccessToken(event)
     if (accessToken) {
-      await $fetch<void>(`${JAVA_API_URL}/api/vaults/${cachedData.userId}/attempts`, {
+      interface GraphQLResponse<T> {
+        data?: T
+        errors?: any[]
+      }
+
+      await $fetch<GraphQLResponse<any>>(`${JAVA_API_URL}/graphql`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json'
         },
-        body: { attempts: 0 }
+        body: {
+          query: `
+            mutation UpdateAttempts($userId: ID!, $attempts: Int!) {
+              updateVaultAttempts(userId: $userId, attempts: $attempts) {
+                failedAttempts
+              }
+            }
+          `,
+          variables: {
+            userId: cachedData.userId,
+            attempts: 0
+          }
+        }
       }).catch((err) => {
         console.error(`Nie udało się wyzerować prób dla usera ${cachedData.userId}:`, err)
       })

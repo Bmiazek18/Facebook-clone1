@@ -1,0 +1,313 @@
+syntax = "proto3";
+
+package com.facebook.user.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.facebook.user.grpc";
+
+// ==========================================
+// GŁÓWNY SERWIS (UserEdge / Core Service)
+// ==========================================
+
+service UserGrpcService {
+  // User & Profile
+  rpc GetUserById(GetUserByIdRequest) returns (GetUserByIdResponse);
+  rpc SearchUsers(SearchUsersRequest) returns (SearchUsersResponse);
+  rpc GetActiveStatuses(GetActiveStatusesRequest) returns (GetActiveStatusesResponse);
+  rpc SetUserActive(SetUserActiveRequest) returns (SetUserActiveResponse);
+  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
+  rpc DetectLanguage(DetectLanguageRequest) returns (DetectLanguageResponse);
+  rpc TranslateText(TranslateTextRequest) returns (TranslateTextResponse);
+  rpc GetSearchHistory(GetSearchHistoryRequest) returns (GetSearchHistoryResponse);
+  rpc RecordSearch(RecordSearchRequest) returns (RecordSearchResponse);
+  rpc GenerateTicket(GenerateTicketRequest) returns (GenerateTicketResponse);
+  rpc ResolveMediaUrl(ResolveMediaUrlRequest) returns (ResolveMediaUrlResponse);
+
+  // Pages
+  rpc CreatePage(CreatePageRequest) returns (CreatePageResponse);
+  rpc GetPageById(GetPageByIdRequest) returns (GetPageByIdResponse);
+  rpc GetPageByDomain(GetPageByDomainRequest) returns (GetPageByDomainResponse);
+  rpc GetPagesByOwnerId(GetPagesByOwnerIdRequest) returns (GetPagesByOwnerIdResponse);
+  rpc ExchangePageToken(ExchangePageTokenRequest) returns (ExchangePageTokenResponse);
+  rpc VerifyPageAccess(VerifyPageAccessRequest) returns (VerifyPageAccessResponse);
+  rpc ClearActivePageSession(ClearActivePageSessionRequest) returns (ClearActivePageSessionResponse);
+
+  // Vault (E2EE PIN Backup)
+  rpc GetVault(GetVaultRequest) returns (GetVaultResponse);
+  rpc SaveVault(SaveVaultRequest) returns (SaveVaultResponse);
+  rpc UpdateVaultAttempts(UpdateVaultAttemptsRequest) returns (UpdateVaultAttemptsResponse);
+
+  // Chat
+  rpc GetChatMessages(GetChatMessagesRequest) returns (GetChatMessagesResponse);
+
+  // Notifications
+  rpc GetNotificationsHistory(GetNotificationsHistoryRequest) returns (GetNotificationsHistoryResponse);
+  rpc MarkNotificationAsRead(MarkNotificationAsReadRequest) returns (MarkNotificationAsReadResponse);
+
+  // Marketplace
+  rpc GetListing(GetListingRequest) returns (GetListingResponse);
+  rpc GetNearbyListings(GetNearbyListingsRequest) returns (GetNearbyListingsResponse);
+  rpc CreateListing(CreateListingRequest) returns (CreateListingResponse);
+}
+
+// ==========================================
+// MODELE (USER)
+// ==========================================
+
+message UserDto {
+  string id = 1;
+  string firstName = 2;
+  string lastName = 3;
+  string avatarId = 4;
+  string bio = 5;
+  string location = 6;
+  string hometown = 7;
+  string school = 8;
+  string highSchool = 9;
+  string education = 10;
+  string job = 11;
+  string company = 12;
+  string phone = 13;
+  string website = 14;
+  string gender = 15;
+  string birthDate = 16;
+  string languages = 17;
+  string pronouns = 18;
+  string relationshipStatus = 19;
+  string relationshipSince = 20;
+  string partnerName = 21;
+  string partnerAvatar = 22;
+  string bioDetails = 23;
+  string namePronounciation = 24;
+  repeated string otherNames = 25;
+  repeated string favoriteQuotes = 26;
+  repeated string lifeEvents = 27;
+  repeated string socialLinks = 28;
+  bool inHistory = 29;
+  int32 newPostsCount = 30;
+  string coverId = 31;
+  string createdAt = 32;
+  string updatedAt = 33;
+  string note = 34;
+}
+
+// ==========================================
+// MODELE (CHAT, NOTIFICATIONS, MARKETPLACE)
+// ==========================================
+
+message ChatMessageDto {
+  string messageId = 1;
+  string senderId = 2;
+  string text = 3;
+  string replyToId = 4;
+  string replyToText = 5;
+  string replyToSenderId = 6;
+  string imageUrl = 7;
+  string audioUrl = 8;
+  string fileUrl = 9;
+  string fileName = 10;
+  double fileSize = 11;
+  string linkUrl = 12;
+  int32 duration = 13;
+  bool isPinned = 14;
+  double time = 15;
+  map<string, string> reactions = 16;
+}
+
+message NotificationDto {
+  int64 id = 1;
+  string userId = 2;
+  string title = 3;
+  string message = 4;
+  bool read = 5;
+  string createdAt = 6;
+}
+
+message ListingDto {
+  string id = 1;
+  string title = 2;
+  double price = 3;
+  string category = 4;
+  string condition = 5;
+  string description = 6;
+  double latitude = 7;
+  double longitude = 8;
+  string createdAt = 9;
+}
+
+// ==========================================
+// REQUESTY I RESPONSE'Y
+// ==========================================
+
+message GetUserByIdRequest { string userId = 1; }
+message GetUserByIdResponse { UserDto user = 1; }
+
+message SearchUsersRequest { string query = 1; string currentUserId = 2; }
+message SearchUsersResponse { repeated UserDto users = 1; }
+
+message GetActiveStatusesRequest { repeated string userIds = 1; }
+message UserActiveStatusMessage { string userId = 1; bool active = 2; string lastActiveText = 3; double lastActiveTimestamp = 4; }
+message GetActiveStatusesResponse { repeated UserActiveStatusMessage statuses = 1; }
+
+message SetUserActiveRequest { string userId = 1; }
+message SetUserActiveResponse { bool success = 1; }
+
+message UpdateProfileRequest {
+  string userId = 1;
+  optional string bio = 2;
+  optional string location = 3;
+  optional string hometown = 4;
+  optional string school = 5;
+  optional string highSchool = 6;
+  optional string education = 7;
+  optional string job = 8;
+  optional string company = 9;
+  optional string phone = 10;
+  optional string website = 11;
+  optional string gender = 12;
+  optional string birthDate = 13;
+  optional string languages = 14;
+  optional string pronouns = 15;
+  optional string note = 16;
+}
+message UpdateProfileResponse { UserDto user = 1; }
+
+message DetectLanguageRequest { string text = 1; }
+message DetectLanguageResponse { string languageCode = 1; }
+
+message TranslateTextRequest { string text = 1; string targetLanguage = 2; }
+message TranslateTextResponse { string translatedText = 1; }
+
+message GetSearchHistoryRequest { string userId = 1; }
+message GetSearchHistoryResponse { repeated UserDto users = 1; }
+
+message RecordSearchRequest {
+  string searchedUserId = 1;
+  string searchingUserId = 2;
+}
+message RecordSearchResponse { bool success = 1; }
+
+message GenerateTicketRequest { string userId = 1; }
+message GenerateTicketResponse { string ticket = 1; }
+
+message ResolveMediaUrlRequest { string reference = 1; }
+message ResolveMediaUrlResponse {
+  string objectKey = 1;
+  string stableUrl = 2;
+  string presignedUrl = 3;
+  int64 expiresAt = 4;
+}
+
+// Chat requests
+message GetChatMessagesRequest { string conversationId = 1; }
+message GetChatMessagesResponse { repeated ChatMessageDto messages = 1; }
+
+// Notification requests
+message GetNotificationsHistoryRequest { string userId = 1; }
+message GetNotificationsHistoryResponse { repeated NotificationDto notifications = 1; }
+
+message MarkNotificationAsReadRequest { string id = 1; }
+message MarkNotificationAsReadResponse { bool success = 1; }
+
+// Marketplace requests
+message GetListingRequest { string id = 1; }
+message GetListingResponse { ListingDto listing = 1; }
+
+message GetNearbyListingsRequest { double latitude = 1; double longitude = 2; double radius = 3; string query = 4; }
+message GetNearbyListingsResponse { repeated ListingDto listings = 1; }
+
+message CreateListingRequest {
+  string title = 1;
+  double price = 2;
+  string category = 3;
+  string condition = 4;
+  string description = 5;
+  double latitude = 6;
+  double longitude = 7;
+}
+message CreateListingResponse { ListingDto listing = 1; }
+
+// ==========================================
+// PAGES
+// ==========================================
+
+message PageDto {
+  string id = 1;
+  string name = 2;
+  string domain = 3;
+  string ownerId = 4;
+  string description = 5;
+  string avatarId = 6;
+  string createdAt = 7;
+  string updatedAt = 8;
+}
+
+message CreatePageRequest {
+  string name = 1;
+  string domain = 2;
+  string description = 3;
+  string ownerId = 4;
+}
+message CreatePageResponse { PageDto page = 1; }
+
+message GetPageByIdRequest { string pageId = 1; }
+message GetPageByIdResponse { PageDto page = 1; }
+
+message GetPageByDomainRequest { string domain = 1; }
+message GetPageByDomainResponse { PageDto page = 1; }
+
+message GetPagesByOwnerIdRequest { string ownerId = 1; }
+message GetPagesByOwnerIdResponse { repeated PageDto pages = 1; }
+
+message ExchangePageTokenRequest {
+  string pageId = 1;
+  string userId = 2;
+}
+message ExchangePageTokenResponse {
+  bool success = 1;
+  string accessToken = 2;
+  string tokenType = 3;
+  int64 expiresIn = 4;
+  PageDto page = 5;
+}
+
+message VerifyPageAccessRequest {
+  string pageId = 1;
+  string userId = 2;
+}
+message VerifyPageAccessResponse {
+  bool authorized = 1;
+  string message = 2;
+}
+
+message ClearActivePageSessionRequest { string userId = 1; }
+message ClearActivePageSessionResponse { bool success = 1; }
+
+// ==========================================
+// VAULT (E2EE PIN BACKUP)
+// ==========================================
+
+message VaultData {
+  string userId = 1;
+  string opaqueRecord = 2;
+  string encryptedHistory = 3;
+  int32 failedAttempts = 4;
+  string lastUpdated = 5;
+}
+
+message GetVaultRequest { string userId = 1; }
+message GetVaultResponse { VaultData vault = 1; }
+
+message SaveVaultRequest {
+  string userId = 1;
+  string opaqueRecord = 2;
+  string encryptedHistory = 3;
+  int32 failedAttempts = 4;
+}
+message SaveVaultResponse { VaultData vault = 1; }
+
+message UpdateVaultAttemptsRequest {
+  string userId = 1;
+  int32 attempts = 2;
+}
+message UpdateVaultAttemptsResponse { VaultData vault = 1; }

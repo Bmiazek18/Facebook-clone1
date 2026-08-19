@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-runtime-config
+data:
+  SPRING_DATASOURCE_URL: {{ .Values.config.SPRING_DATASOURCE_URL | quote }}
+  SPRING_DATA_REDIS_HOST: {{ .Values.config.SPRING_DATA_REDIS_HOST | quote }}
+  SPRING_DATA_REDIS_PORT: {{ .Values.config.SPRING_DATA_REDIS_PORT | quote }}
+  MINIO_URL: {{ .Values.config.MINIO_URL | quote }}
+  MINIO_PUBLIC_ENDPOINT: {{ .Values.config.MINIO_PUBLIC_ENDPOINT | quote }}
+  MEDIA_STABLE_URL_BASE: {{ .Values.config.MEDIA_STABLE_URL_BASE | quote }}
+  USER_SERVICE_GRPC_ADDRESS: {{ .Values.config.USER_SERVICE_GRPC_ADDRESS | quote }}
+  SOCIAL_GRAPH_SERVICE_GRPC_ADDRESS: {{ .Values.config.SOCIAL_GRAPH_SERVICE_GRPC_ADDRESS | quote }}
+  NEO4J_URI: {{ .Values.config.NEO4J_URI | quote }}
+  VAULT_URI: {{ .Values.config.VAULT_URI | quote }}
+  SENTRY_ENVIRONMENT: {{ .Values.config.SENTRY_ENVIRONMENT | quote }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.config.OTEL_EXPORTER_OTLP_ENDPOINT | quote }}
+
