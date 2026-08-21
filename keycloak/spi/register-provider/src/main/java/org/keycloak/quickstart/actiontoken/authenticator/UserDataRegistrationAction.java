@@ -37,7 +37,7 @@ public class UserDataRegistrationAction implements FormAction {
 
     @Override
     public void validate(ValidationContext context) {
-        logger.info("UserDataRegistrationAction: validating registration form");
+        logger.info("UserDataRegistrationAction: starting registration validation and user-service synchronization");
         MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
 
         String userServiceUrl = null;
