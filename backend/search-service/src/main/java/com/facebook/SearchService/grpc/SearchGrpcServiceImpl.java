@@ -21,6 +21,8 @@ public class SearchGrpcServiceImpl extends SearchGrpcServiceGrpc.SearchGrpcServi
     public void searchUsers(SearchUsersRequest request, StreamObserver<SearchUsersResponse> responseObserver) {
         try {
             SearchUsersResponse.Builder builder = SearchUsersResponse.newBuilder();
+            
+            // 1. Search Users
             for (MeiliUser user : searchService.searchUsers(request.getQuery())) {
                 builder.addUsers(SearchUserHit.newBuilder()
                         .setId(user.getId())
@@ -28,8 +30,34 @@ public class SearchGrpcServiceImpl extends SearchGrpcServiceGrpc.SearchGrpcServi
                         .setFirstName(user.getFirstName() != null ? user.getFirstName() : "")
                         .setLastName(user.getLastName() != null ? user.getLastName() : "")
                         .setAvatarId(user.getAvatarId() != null ? user.getAvatarId() : "")
+                        .setNewPostsCount(0)
                         .build());
             }
+
+            // 2. Search Groups
+            for (com.facebook.GroupsService.event.GroupIndexEvent group : searchService.searchGroups(request.getQuery())) {
+                builder.addUsers(SearchUserHit.newBuilder()
+                        .setId(group.getId())
+                        .setUsername("__group__")
+                        .setFirstName(group.getName() != null ? group.getName() : "")
+                        .setLastName("")
+                        .setAvatarId(group.getImage() != null ? group.getImage() : "")
+                        .setNewPostsCount(group.getNewPostsCount() != null ? group.getNewPostsCount() : 0)
+                        .build());
+            }
+
+            // 3. Search Pages
+            for (com.facebook.UserService.dto.PageIndexEvent page : searchService.searchPages(request.getQuery())) {
+                builder.addUsers(SearchUserHit.newBuilder()
+                        .setId(page.getId())
+                        .setUsername("__page__")
+                        .setFirstName(page.getName() != null ? page.getName() : "")
+                        .setLastName(page.getCategory() != null ? page.getCategory() : "")
+                        .setAvatarId(page.getAvatarUrl() != null ? page.getAvatarUrl() : "")
+                        .setNewPostsCount(0)
+                        .build());
+            }
+
             responseObserver.onNext(builder.build());
             responseObserver.onCompleted();
         } catch (Exception e) {

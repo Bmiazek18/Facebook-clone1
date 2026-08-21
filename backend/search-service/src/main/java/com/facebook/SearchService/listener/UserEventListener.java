@@ -18,6 +18,10 @@ public class UserEventListener {
 
     @RabbitListener(queues = "user.search-indexing")
     public void handleUserIndexEvent(UserIndexEvent event) {
+        if (event.getUsername() != null && event.getUsername().startsWith("page_")) {
+            System.out.println("RabbitMQ: Ignoring page-linked dummy user index event for username: " + event.getUsername());
+            return;
+        }
         System.out.println("RabbitMQ: Received user index event for user: " + event.getId());
         try {
             User user = new User();

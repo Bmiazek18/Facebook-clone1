@@ -1,5 +1,6 @@
 package com.facebook.SearchService.service;
 
+import com.facebook.SearchService.client.UserServiceClient;
 import com.facebook.SearchService.model.MeiliEvent;
 import com.facebook.SearchService.model.MeiliUser;
 import com.facebook.SearchService.model.User;
@@ -17,9 +18,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import net.devh.boot.grpc.client.inject.GrpcClient;
-import com.facebook.user.grpc.UserGrpcServiceGrpc;
-import com.facebook.user.grpc.GetAllUsersRequest;
 import com.facebook.user.grpc.GetAllUsersResponse;
 import com.facebook.user.grpc.UserDto;
 
@@ -29,13 +27,13 @@ public class SearchService {
     private final Client client;
     private final String indexName = "users";
     private final String eventIndexName = "events";
-
-    @GrpcClient("user-service")
-    private UserGrpcServiceGrpc.UserGrpcServiceBlockingStub userGrpcStub;
+    private final UserServiceClient userServiceClient;
 
     public SearchService(@Value("${meilisearch.host}") String host,
-                         @Value("${meilisearch.api-key}") String apiKey) {
+                         @Value("${meilisearch.api-key}") String apiKey,
+                         UserServiceClient userServiceClient) {
         this.client = new Client(new Config(host, apiKey));
+        this.userServiceClient = userServiceClient;
     }
 
     @PostConstruct
@@ -53,6 +51,39 @@ public class SearchService {
             } catch (Exception e) {
                 client.createIndex(eventIndexName, "id");
             }
+            // Check if listings index exists, create if not
+            try {
+                client.getIndex("listings");
+            } catch (Exception e) {
+                client.createIndex("listings", "id");
+            }
+            // Check if groups index exists, create if not
+            try {
+                client.getIndex("groups");
+            } catch (Exception e) {
+                client.createIndex("groups", "id");
+            }
+            // Check if pages index exists, create if not
+            try {
+                client.getIndex("pages");
+            } catch (Exception e) {
+                client.createIndex("pages", "id");
+            }
+            // Configure geo filterable settings
+            try {
+                client.index("listings").updateFilterableAttributesSettings(new String[]{"_geo"});
+            } catch (Exception e) {
+                System.err.println("Failed to configure filterable attributes for listings: " + e.getMessage());
+            }
+            // Configure searchable attributes to only search by names
+            try {
+                client.index(indexName).updateSearchableAttributesSettings(new String[]{"username", "firstName", "lastName"});
+                client.index("groups").updateSearchableAttributesSettings(new String[]{"name"});
+                client.index("pages").updateSearchableAttributesSettings(new String[]{"name"});
+                System.out.println("Meilisearch: Successfully configured searchableAttributes settings.");
+            } catch (Exception e) {
+                System.err.println("Failed to configure searchable attributes settings: " + e.getMessage());
+            }
             // Reindex all users on startup to make sure data is fresh
             reindexAll();
             reindexAllEvents();
@@ -67,17 +98,13 @@ public class SearchService {
             int size = 100;
             List<MeiliUser> allMeiliUsers = new ArrayList<>();
             while (true) {
-                GetAllUsersResponse response = userGrpcStub.getAllUsers(
-                        GetAllUsersRequest.newBuilder()
-                                .setPage(page)
-                                .setSize(size)
-                                .build()
-                );
+                GetAllUsersResponse response = userServiceClient.getAllUsers(page, size);
                 List<UserDto> usersList = response.getUsersList();
                 if (usersList.isEmpty()) {
                     break;
                 }
                 List<MeiliUser> meiliUsers = usersList.stream()
+                        .filter(u -> u.getUsername() == null || !u.getUsername().startsWith("page_"))
                         .map(u -> new MeiliUser(
                                 u.getId(),
                                 u.getUsername(),
@@ -167,6 +194,105 @@ public class SearchService {
             return results;
         } catch (Exception e) {
             System.err.println("Meilisearch: Event search failed: " + e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    public void indexListing(com.facebook.marketplace.event.ListingIndexEvent event) {
+        try {
+            java.util.Map<String, Object> doc = new java.util.HashMap<>();
+            doc.put("id", event.getId());
+            doc.put("title", event.getTitle());
+            doc.put("description", event.getDescription());
+            doc.put("price", event.getPrice());
+            doc.put("category", event.getCategory());
+            doc.put("condition", event.getCondition());
+            if (event.getLatitude() != null && event.getLongitude() != null) {
+                doc.put("_geo", java.util.Map.of("lat", event.getLatitude(), "lng", event.getLongitude()));
+            }
+            ObjectMapper mapper = new ObjectMapper();
+            String jsonDocument = mapper.writeValueAsString(List.of(doc));
+            client.index("listings").addDocuments(jsonDocument);
+            System.out.println("Meilisearch: Indexed listing " + event.getId() + " successfully from RabbitMQ.");
+        } catch (Exception e) {
+            System.err.println("Meilisearch: Failed to index listing " + event.getId() + ": " + e.getMessage());
+        }
+    }
+
+    public void indexGroup(com.facebook.GroupsService.event.GroupIndexEvent event) {
+        try {
+            if (Boolean.TRUE.equals(event.getDelete())) {
+                client.index("groups").deleteDocument(event.getId());
+                System.out.println("Meilisearch: Removed group " + event.getId() + " from index (became private/deleted).");
+                return;
+            }
+            java.util.Map<String, Object> doc = new java.util.HashMap<>();
+            doc.put("id", event.getId());
+            doc.put("name", event.getName());
+            doc.put("image", event.getImage() != null ? event.getImage() : "");
+            doc.put("newPostsCount", event.getNewPostsCount() != null ? event.getNewPostsCount() : 0);
+            ObjectMapper mapper = new ObjectMapper();
+            String jsonDocument = mapper.writeValueAsString(List.of(doc));
+            client.index("groups").addDocuments(jsonDocument);
+            System.out.println("Meilisearch: Indexed public group " + event.getId() + " successfully from RabbitMQ.");
+        } catch (Exception e) {
+            System.out.println("Meilisearch: Failed to index public group " + event.getId() + ": " + e.getMessage());
+        }
+    }
+
+    public List<com.facebook.GroupsService.event.GroupIndexEvent> searchGroups(String query) {
+        try {
+            Index index = client.index("groups");
+            var searchResults = index.search(query);
+            
+            ObjectMapper mapper = new ObjectMapper();
+            List<com.facebook.GroupsService.event.GroupIndexEvent> results = new ArrayList<>();
+            for (Object hit : searchResults.getHits()) {
+                com.facebook.GroupsService.event.GroupIndexEvent group = mapper.convertValue(hit, com.facebook.GroupsService.event.GroupIndexEvent.class);
+                results.add(group);
+            }
+            return results;
+        } catch (Exception e) {
+            System.err.println("Meilisearch: Group search failed: " + e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    public void indexPage(com.facebook.UserService.dto.PageIndexEvent event) {
+        try {
+            if (Boolean.TRUE.equals(event.getDelete())) {
+                client.index("pages").deleteDocument(event.getId());
+                System.out.println("Meilisearch: Removed page " + event.getId() + " from index.");
+                return;
+            }
+            java.util.Map<String, Object> doc = new java.util.HashMap<>();
+            doc.put("id", event.getId());
+            doc.put("name", event.getName());
+            doc.put("category", event.getCategory() != null ? event.getCategory() : "");
+            doc.put("avatarUrl", event.getAvatarUrl() != null ? event.getAvatarUrl() : "");
+            ObjectMapper mapper = new ObjectMapper();
+            String jsonDocument = mapper.writeValueAsString(List.of(doc));
+            client.index("pages").addDocuments(jsonDocument);
+            System.out.println("Meilisearch: Indexed page " + event.getId() + " successfully from RabbitMQ.");
+        } catch (Exception e) {
+            System.err.println("Meilisearch: Failed to index page " + event.getId() + ": " + e.getMessage());
+        }
+    }
+
+    public List<com.facebook.UserService.dto.PageIndexEvent> searchPages(String query) {
+        try {
+            Index index = client.index("pages");
+            var searchResults = index.search(query);
+            
+            ObjectMapper mapper = new ObjectMapper();
+            List<com.facebook.UserService.dto.PageIndexEvent> results = new ArrayList<>();
+            for (Object hit : searchResults.getHits()) {
+                com.facebook.UserService.dto.PageIndexEvent page = mapper.convertValue(hit, com.facebook.UserService.dto.PageIndexEvent.class);
+                results.add(page);
+            }
+            return results;
+        } catch (Exception e) {
+            System.err.println("Meilisearch: Page search failed: " + e.getMessage());
             return Collections.emptyList();
         }
     }

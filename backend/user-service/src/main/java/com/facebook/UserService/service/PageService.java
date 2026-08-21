@@ -7,6 +7,9 @@ import com.facebook.UserService.model.Page;
 import com.facebook.UserService.model.User;
 import com.facebook.UserService.repository.PageRepository;
 import com.facebook.UserService.repository.UserRepository;
+import com.facebook.UserService.dto.PageIndexEvent;
+import com.facebook.UserService.config.RabbitConfig;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +31,17 @@ public class PageService {
     private final PageRepository pageRepository;
     private final UserRepository userRepository;
     private final SearchServiceClient searchServiceClient;
+    private final RabbitTemplate rabbitTemplate;
 
     @Autowired
     public PageService(PageRepository pageRepository,
                        UserRepository userRepository,
-                       SearchServiceClient searchServiceClient) {
+                       SearchServiceClient searchServiceClient,
+                       RabbitTemplate rabbitTemplate) {
         this.pageRepository = pageRepository;
         this.userRepository = userRepository;
         this.searchServiceClient = searchServiceClient;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     /**
@@ -127,9 +133,21 @@ public class PageService {
             userRepository.save(pageUser);
 
             try {
-                searchServiceClient.indexUser(pageId.toString(), pageUsername, pageName, "", avatar);
+                PageIndexEvent pageIndexEvent = PageIndexEvent.builder()
+                        .id(pageId.toString())
+                        .name(pageName)
+                        .category(category)
+                        .avatarUrl(avatar)
+                        .delete(false)
+                        .build();
+                rabbitTemplate.convertAndSend(
+                        RabbitConfig.EXCHANGE_NAME,
+                        RabbitConfig.PAGE_ROUTING_KEY,
+                        pageIndexEvent
+                );
+                log.info("Pages: Published page indexing event to RabbitMQ for ID: {}", pageId);
             } catch (Exception e) {
-                log.warn("Could not sync page to search service: {}", e.getMessage());
+                log.error("Pages: Failed to publish page indexing event to RabbitMQ", e);
             }
 
             log.info("Successfully created Page and linked User record with id: {} owned by: {}", pageId, ownerUuid);

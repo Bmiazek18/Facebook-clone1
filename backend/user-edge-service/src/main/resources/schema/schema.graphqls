@@ -30,6 +30,7 @@ type Mutation {
     updateProfile(userId: ID!, input: UpdateProfileInput!): UserSearchResponse
     translateText(text: String!, targetLanguage: String!): String!
     recordSearch(searchedUserId: ID!, searchingUserId: ID): Boolean
+    deleteSearchHistoryItem(searchedUserId: ID!, searchingUserId: ID): Boolean
     generateTicket(userId: ID!): String!
     markNotificationAsRead(id: ID!): Boolean
     createListing(input: CreateListingInput!): Listing

@@ -17,6 +17,7 @@ message SearchUserHit {
   string firstName = 3;
   string lastName = 4;
   string avatarId = 5;
+  int32 newPostsCount = 6;
 }
 
 message SearchUsersRequest {

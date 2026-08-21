@@ -9,6 +9,11 @@ import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.web.bind.annotation.RequestHeader;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryRegistry;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,13 +27,16 @@ public class UserDataFetcher {
     private UserGrpcServiceGrpc.UserGrpcServiceBlockingStub userGrpcStub;
 
     private final EdgeMapper edgeMapper;
+    private final CircuitBreakerRegistry circuitBreakerRegistry;
+    private final RetryRegistry retryRegistry;
+    private final io.github.resilience4j.bulkhead.BulkheadRegistry bulkheadRegistry;
 
     @DgsQuery
     public UserSearchResponse getUserById(@InputArgument String userId) {
         try {
-            return edgeMapper.grpcUserToDgsUser(
+            return executeWithResilience(() -> edgeMapper.grpcUserToDgsUser(
                     userGrpcStub.getUserById(GetUserByIdRequest.newBuilder().setUserId(userId).build()).getUser()
-            );
+            ));
         } catch (io.grpc.StatusRuntimeException e) {
             if (isUserNotFound(e)) {
                 log.debug("User not found: {}", userId);
@@ -98,6 +106,25 @@ public class UserDataFetcher {
         }
         catch (Exception e) {
             log.error("Failed to record search", e);
+            return false;
+        }
+    }
+
+    @DgsMutation
+    public Boolean deleteSearchHistoryItem(
+            @InputArgument String searchedUserId,
+            @InputArgument String searchingUserId,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        try {
+            String finalSearchingUserId = (xUserId != null && !xUserId.isEmpty()) ? xUserId : searchingUserId;
+            userGrpcStub.deleteSearchHistoryItem(com.facebook.user.grpc.DeleteSearchHistoryRequest.newBuilder()
+                    .setSearchedUserId(searchedUserId)
+                    .setSearchingUserId(finalSearchingUserId != null ? finalSearchingUserId : "")
+                    .build());
+            return true;
+        }
+        catch (Exception e) {
+            log.error("Failed to delete search history item", e);
             return false;
         }
     }
@@ -398,9 +425,13 @@ public class UserDataFetcher {
         if (user == null || user.getAvatarId() == null || user.getAvatarId().isEmpty()) {
             return null;
         }
+        String avatarId = user.getAvatarId();
+        if (avatarId.startsWith("http://") || avatarId.startsWith("https://")) {
+            return avatarId;
+        }
         try {
             var res = userGrpcStub.resolveMediaUrl(ResolveMediaUrlRequest.newBuilder()
-                    .setReference(user.getAvatarId())
+                    .setReference(avatarId)
                     .build());
             return res.getStableUrl();
         } catch (Exception e) {
@@ -415,9 +446,13 @@ public class UserDataFetcher {
         if (user == null || user.getAvatarId() == null || user.getAvatarId().isEmpty()) {
             return null;
         }
+        String avatarId = user.getAvatarId();
+        if (avatarId.startsWith("http://") || avatarId.startsWith("https://")) {
+            return avatarId;
+        }
         try {
             var res = userGrpcStub.resolveMediaUrl(ResolveMediaUrlRequest.newBuilder()
-                    .setReference(user.getAvatarId())
+                    .setReference(avatarId)
                     .build());
             return res.getStableUrl();
         } catch (Exception e) {
@@ -464,8 +499,15 @@ public class UserDataFetcher {
         return e.getCause() != null && isUserNotFound(e.getCause());
     }
 
+    private <T> T executeWithResilience(java.util.function.Supplier<T> action) {
+        CircuitBreaker cb = circuitBreakerRegistry.circuitBreaker("userService");
+        Retry retry = retryRegistry.retry("userService");
+        io.github.resilience4j.bulkhead.Bulkhead bulkhead = bulkheadRegistry.bulkhead("userService");
+        return CircuitBreaker.decorateSupplier(cb, Retry.decorateSupplier(retry, io.github.resilience4j.bulkhead.Bulkhead.decorateSupplier(bulkhead, action))).get();
+    }
+
     private <T> T executeGrpc(java.util.function.Supplier<T> action, String errorMsg) {
-        try { return action.get(); }
+        try { return executeWithResilience(action); }
         catch (Exception e) { log.error(errorMsg, e); throw new RuntimeException("Core service unavailable: " + e.getMessage()); }
     }
 }

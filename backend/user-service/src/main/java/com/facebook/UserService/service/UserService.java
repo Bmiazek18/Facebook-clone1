@@ -166,6 +166,23 @@ public class UserService {
         return mapToUserDto(searchedUser);
     }
 
+    @Transactional
+    public void deleteSearchHistoryItem(UUID searchedUserId, UUID searchingUserId) {
+        if (searchedUserId == null) {
+            throw new IllegalArgumentException("Searched User ID is required");
+        }
+        if (searchingUserId != null) {
+            searchUserRepository.findBySearchingUserIdAndSearchedUserId(searchingUserId, searchedUserId)
+                    .ifPresent(searchUserRepository::delete);
+        } else {
+            User searchedUser = userRepository.findById(searchedUserId).orElse(null);
+            if (searchedUser != null) {
+                searchUserRepository.findBySearchedUser(searchedUser)
+                        .ifPresent(searchUserRepository::delete);
+            }
+        }
+    }
+
     @Transactional(readOnly = true)
     public UserDto getUserProfileById(UUID userId) {
         if (userId == null) {
@@ -186,11 +203,13 @@ public class UserService {
                 User user,
                 double similarity,
                 boolean friend,
-                int mutualFriendsCount
+                int mutualFriendsCount,
+                int newPostsCount
         ) {
             public boolean isFriend() { return friend; }
             public double getSimilarity() { return similarity; }
             public int getMutualFriendsCount() { return mutualFriendsCount; }
+            public int getNewPostsCount() { return newPostsCount; }
         }
 
         java.util.List<UserSearchResult> results;
@@ -206,7 +225,7 @@ public class UserService {
                         .lastName(hit.getLastName())
                         .avatarId(hit.getAvatarId())
                         .build();
-                results.add(new UserSearchResult(user, 1.0 - (i * 0.05), false, 0));
+                results.add(new UserSearchResult(user, 1.0 - (i * 0.05), false, 0, hit.getNewPostsCount()));
             }
         } catch (Exception e) {
             log.error("Meilisearch search failed via search-service gRPC: {}", e.getMessage(), e);
@@ -222,16 +241,16 @@ public class UserService {
 
             java.util.Map<UUID, UserRelation> relationMap = relations.stream()
                     .collect(java.util.stream.Collectors.toMap(
-                            rel -> UUID.fromString(rel.getTargetUserId()),
-                            rel -> rel,
-                            (r1, r2) -> r1
+                             rel -> UUID.fromString(rel.getTargetUserId()),
+                             rel -> rel,
+                             (r1, r2) -> r1
                     ));
 
             results = results.stream()
                     .map(res -> {
                         UserRelation rel = relationMap.get(res.user().getId());
                         if (rel != null) {
-                            return new UserSearchResult(res.user(), res.similarity(), rel.getFriend(), rel.getMutualFriendsCount());
+                            return new UserSearchResult(res.user(), res.similarity(), rel.getFriend(), rel.getMutualFriendsCount(), res.getNewPostsCount());
                         }
                         return res;
                     })
@@ -247,7 +266,7 @@ public class UserService {
 
         return results.stream()
                 .limit(6)
-                .map(res -> UserProtoMapper.toUserDto(res.user()))
+                .map(res -> UserProtoMapper.toUserDto(res.user(), false, res.getNewPostsCount()))
                 .collect(java.util.stream.Collectors.toList());
     }
 

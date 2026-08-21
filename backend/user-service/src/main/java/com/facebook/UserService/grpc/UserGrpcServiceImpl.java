@@ -58,6 +58,21 @@ public class UserGrpcServiceImpl extends UserGrpcServiceGrpc.UserGrpcServiceImpl
     }
 
     @Override
+    public void deleteSearchHistoryItem(DeleteSearchHistoryRequest request, StreamObserver<DeleteSearchHistoryResponse> responseObserver) {
+        log.info("gRPC: Deleting search history item: searchedUser={}, searchingUser={}", request.getSearchedUserId(), request.getSearchingUserId());
+        handleUnary(
+                () -> {
+                    UUID searchedUserId = UUID.fromString(request.getSearchedUserId());
+                    UUID searchingUserId = !request.getSearchingUserId().isEmpty() ? UUID.fromString(request.getSearchingUserId()) : null;
+                    userService.deleteSearchHistoryItem(searchedUserId, searchingUserId);
+                    return DeleteSearchHistoryResponse.newBuilder().setSuccess(true).build();
+                },
+                responseObserver,
+                "Failed to delete search history item via gRPC"
+        );
+    }
+
+    @Override
     public void generateTicket(GenerateTicketRequest request, StreamObserver<GenerateTicketResponse> responseObserver) {
         log.info("gRPC: Generating one-time ticket for user: {}", request.getUserId());
         handleUnary(

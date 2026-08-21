@@ -20,6 +20,7 @@ service UserGrpcService {
   rpc TranslateText(TranslateTextRequest) returns (TranslateTextResponse);
   rpc GetSearchHistory(GetSearchHistoryRequest) returns (GetSearchHistoryResponse);
   rpc RecordSearch(RecordSearchRequest) returns (RecordSearchResponse);
+  rpc DeleteSearchHistoryItem(DeleteSearchHistoryRequest) returns (DeleteSearchHistoryResponse);
   rpc GenerateTicket(GenerateTicketRequest) returns (GenerateTicketResponse);
   rpc ResolveMediaUrl(ResolveMediaUrlRequest) returns (ResolveMediaUrlResponse);
 
@@ -188,6 +189,12 @@ message RecordSearchRequest {
   string searchingUserId = 2;
 }
 message RecordSearchResponse { bool success = 1; }
+
+message DeleteSearchHistoryRequest {
+  string searchedUserId = 1;
+  string searchingUserId = 2;
+}
+message DeleteSearchHistoryResponse { bool success = 1; }
 
 message GenerateTicketRequest { string userId = 1; }
 message GenerateTicketResponse { string ticket = 1; }
