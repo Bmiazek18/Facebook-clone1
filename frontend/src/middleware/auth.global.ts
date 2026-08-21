@@ -10,7 +10,7 @@ export default defineNuxtRouteMiddleware((to) => {
 
   if (!isAuthenticated && !isAuthPath) {
     // Redirect to Keycloak login page
-    const keycloakLoginUrl = `${config.public.keycloakUrl}/realms/myrealm/protocol/openid-connect/auth?client_id=facebook-clone&redirect_uri=` + encodeURIComponent(`${config.public.frontendUrl}/api/auth/callback`) + '&response_type=code&scope=openid'
+    const keycloakLoginUrl = `${config.public.keycloakUrl}/realms/facebook-clone/protocol/openid-connect/auth?client_id=facebook-clone&redirect_uri=` + encodeURIComponent(`${config.public.frontendUrl}/api/auth/callback`) + '&response_type=code&scope=openid'
     return navigateTo(keycloakLoginUrl, { external: true })
   }
 
