@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RegisterRequest {
+    @com.fasterxml.jackson.annotation.JsonAlias({"userId", "keycloakUserId"})
     private String userId; // Dodane pole do odbierania UUID z Keycloaka
     private String username;
     private String email;
