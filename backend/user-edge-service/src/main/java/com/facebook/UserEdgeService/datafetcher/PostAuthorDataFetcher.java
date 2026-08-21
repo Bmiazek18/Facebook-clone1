@@ -18,6 +18,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryRegistry;
 import java.util.Map;
 
 @Slf4j
@@ -29,6 +33,9 @@ public class PostAuthorDataFetcher {
     private UserGrpcServiceGrpc.UserGrpcServiceBlockingStub userGrpcStub;
 
     private final EdgeMapper edgeMapper;
+    private final CircuitBreakerRegistry circuitBreakerRegistry;
+    private final RetryRegistry retryRegistry;
+    private final io.github.resilience4j.bulkhead.BulkheadRegistry bulkheadRegistry;
 
     @DgsEntityFetcher(name = DgsConstants.POST.TYPE_NAME)
     public Post resolvePost(Map<String, Object> representation) {
@@ -89,10 +96,16 @@ public class PostAuthorDataFetcher {
 
     // Pomocnicza metoda wykorzystująca nasz wspólny EdgeMapper
     private UserSearchResponse fetchUser(String targetUserId) {
+        CircuitBreaker cb = circuitBreakerRegistry.circuitBreaker("userService");
+        Retry retry = retryRegistry.retry("userService");
+        io.github.resilience4j.bulkhead.Bulkhead bulkhead = bulkheadRegistry.bulkhead("userService");
+
         try {
-            GetUserByIdResponse response = userGrpcStub.getUserById(GetUserByIdRequest.newBuilder()
-                    .setUserId(targetUserId)
-                    .build());
+            GetUserByIdResponse response = CircuitBreaker.decorateSupplier(cb,
+                    Retry.decorateSupplier(retry, io.github.resilience4j.bulkhead.Bulkhead.decorateSupplier(bulkhead, () -> userGrpcStub.getUserById(GetUserByIdRequest.newBuilder()
+                            .setUserId(targetUserId)
+                            .build())))
+            ).get();
 
             return edgeMapper.grpcUserToDgsUser(response.getUser());
         } catch (Exception e) {

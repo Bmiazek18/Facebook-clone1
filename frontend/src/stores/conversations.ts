@@ -4,6 +4,7 @@ import { type Chat } from '@/types/Chat'
 const rawChats: Chat[] = []
 import { type ChatMessage } from '@/types/Message'
 import { useChatThemeStore } from '@/stores/chatTheme'
+import type { Theme } from '@/types/Theme'
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
 import { useNotify } from '@/composables/shared/useNotify'
@@ -20,6 +21,7 @@ import { decryptMessage, encryptMessage } from '@/utils/e2ee'
 import { signalStore } from '@/utils/e2ee/signalStore.client'
 import { getSymmetricUuid } from '@/utils/uuid'
 import { formatSystemActionText } from '@/utils/contentProcessor'
+import { playNotificationSound } from '@/utils/audio'
 
 export const useConversationsStore = defineStore('conversations', () => {
   const chats = ref(structuredClone(rawChats))
@@ -75,6 +77,28 @@ export const useConversationsStore = defineStore('conversations', () => {
 
     const connectMqtt = () => {
       chatMqtt.connectMqtt(currentUserUuid.value, async (topic, payload) => {
+        if (topic.endsWith('/notifications')) {
+          console.log('[MQTT Notification] Received new notification payload:', payload)
+          if (payload.type === 'NOTIFICATION_READ') {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('notification-read-sync', { detail: payload }))
+            }
+            return
+          }
+          
+          playNotificationSound()
+          
+          notify.notification({
+            title: payload.title || 'Powiadomienie',
+            header: payload.message || '',
+            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(payload.title)}&background=random&color=fff`,
+          })
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('new-notification', { detail: payload }))
+          }
+          return
+        }
+
         if (payload.type === 'typing') {
           const senderId = payload.senderId
           if (senderId !== currentUserUuid.value) {
@@ -299,6 +323,13 @@ export const useConversationsStore = defineStore('conversations', () => {
 
         if (messages.value.some((m) => m.id === msgId)) {
           return
+        }
+
+        if (senderId !== currentUserUuid.value) {
+          playNotificationSound()
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('new-chat-message', { detail: payload }))
+          }
         }
 
         let parsedType = payload.audioUrl ? 'audio' : (payload.imageUrl ? 'image' : (payload.fileUrl ? 'file' : (payload.linkUrl ? 'link' : 'text')))
@@ -1095,6 +1126,13 @@ export const useConversationsStore = defineStore('conversations', () => {
     }
   }
 
+  const acceptIncomingCall = () => chatCalls.acceptCall()
+  const rejectIncomingCall = () => chatCalls.rejectCall(
+    currentUserUuid.value,
+    isMqttConnected.value,
+    publishMqtt
+  )
+
   return {
     chats,
     messages,
@@ -1137,6 +1175,8 @@ export const useConversationsStore = defineStore('conversations', () => {
     leaveGroup,
     voteChatPoll,
     addChatPollOption,
+    acceptIncomingCall,
+    rejectIncomingCall
   }
 })
 

@@ -1,0 +1,14 @@
+project: recommend_feature_store
+registry: registry.db
+provider: local
+offline_store:
+  type: feast.infra.offline_stores.contrib.clickhouse_offline_store.clickhouse.ClickhouseOfflineStore
+  host: ${CLICKHOUSE_HOST:localhost}
+  port: ${CLICKHOUSE_PORT:8123}
+  database: ${CLICKHOUSE_DB:analytics_db}
+  user: ${CLICKHOUSE_USER:default}
+  password: ${CLICKHOUSE_PASSWORD:default_password}
+online_store:
+  type: redis
+  connection_string: ${REDIS_CONNECTION_STRING:redis://localhost:6379}
+  key_ttl: 86400

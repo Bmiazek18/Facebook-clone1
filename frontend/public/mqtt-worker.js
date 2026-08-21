@@ -7,6 +7,7 @@ let mqttClient = null;
 let connectionState = 'DISCONNECTED'; // DISCONNECTED, CONNECTING, CONNECTED, OFFLINE
 let currentUserId = null;
 let currentBrokerUrl = null;
+let heartbeatInterval = null;
 
 // Helper to broadcast message to all active ports
 function broadcast(message) {
@@ -96,7 +97,32 @@ function handleConnect(userId, brokerUrl, ticket) {
       connectionState = 'CONNECTED';
       console.log('[MQTT Worker] Connected to broker.');
       client.subscribe('chat/messages/user/' + userId);
+      client.subscribe('user/' + userId + '/notifications');
       broadcast({ type: 'STATUS', state: connectionState, userId });
+
+      // Start presence heartbeat interval inside the Shared Worker
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+      }
+      
+      // Send first heartbeat immediately
+      try {
+        client.publish('user/presence/heartbeat', JSON.stringify({ userId }));
+        console.log('[MQTT Worker] Sent immediate presence heartbeat for user: ' + userId);
+      } catch (err) {
+        console.error('[MQTT Worker] Failed to send immediate heartbeat:', err);
+      }
+
+      heartbeatInterval = setInterval(() => {
+        if (client && client.connected) {
+          try {
+            client.publish('user/presence/heartbeat', JSON.stringify({ userId }));
+            console.log('[MQTT Worker] Sent presence heartbeat for user: ' + userId);
+          } catch (err) {
+            console.error('[MQTT Worker] Failed to send background heartbeat:', err);
+          }
+        }
+      }, 30000);
     });
 
     client.on('offline', () => {
@@ -140,6 +166,10 @@ function handlePublish(topic, payload, options) {
 }
 
 function handleDisconnect() {
+  if (heartbeatInterval) {
+    clearInterval(heartbeatInterval);
+    heartbeatInterval = null;
+  }
   if (mqttClient) {
     mqttClient.end(true);
     mqttClient = null;

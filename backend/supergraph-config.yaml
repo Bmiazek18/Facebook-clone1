@@ -8,3 +8,20 @@ subgraphs:
     routing_url: http://socialgraph-edge:8082/graphql
     schema:
       subgraph_url: http://socialgraph-edge:8082/graphql
+  feed:
+    routing_url: http://feed-edge-service:8084/graphql
+    schema:
+      subgraph_url: http://feed-edge-service:8084/graphql
+  chat:
+    routing_url: http://chat-edge-service:8089/graphql
+    schema:
+      subgraph_url: http://chat-edge-service:8089/graphql
+  linkguard:
+    routing_url: http://linkguard-service:8086/graphql
+    schema:
+      subgraph_url: http://linkguard-service:8086/graphql
+  marketplace:
+    routing_url: http://marketplace-edge-service:8099/graphql
+    schema:
+      subgraph_url: http://marketplace-edge-service:8099/graphql
+

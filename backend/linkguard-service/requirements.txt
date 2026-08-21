@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+strawberry-graphql[fastapi]
+celery
+redis
+beautifulsoup4
+python-whois
+requests
+cachetools
+grpcio
+grpcio-tools
+protobuf
+pytest
+httpx

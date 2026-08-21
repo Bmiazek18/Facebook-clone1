@@ -1,27 +1,26 @@
 <template>
   <div>
-    <!-- Używamy Suspense do automatycznego zarządzania stanem asynchronicznym -->
+
     <Suspense>
-      <!-- SLOT DOMYŚLNY: Renderuje się gdy wszystkie zapytania `await` na stronie spłyną -->
+
       <template #default>
         <div>
-          <!-- Główny szablon nawigacji -->
+
           <MainNavLayout v-if="showMainLayout && !isPopupRoute" />
 
-          <!-- Główny widok podstron Nuxta -->
+
           <NuxtLayout>
             <NuxtPage />
           </NuxtLayout>
 
-          <!-- Globalny Modal Połączeń Przychodzących -->
           <IncomingCallModal
             v-if="conversationsStore.incomingCall"
             :isOpen="true"
             :callerName="conversationsStore.incomingCall.callerName"
             :callerAvatar="conversationsStore.incomingCall.callerAvatar"
             @close="conversationsStore.incomingCall = null"
-            @reject="handleIncomingCallReject"
-            @accept="handleIncomingCallAccept"
+            @reject="conversationsStore.rejectIncomingCall"
+            @accept="conversationsStore.acceptIncomingCall"
           />
 
           <!-- Kontener na dokowane okienka czatu -->
@@ -50,13 +49,13 @@
             @click="isNewChatBoxOpen = true"
           />
 
-          <ClientOnly>
+          <!-- <ClientOnly>
             <FingerprintLoader />
-          </ClientOnly>
+          </ClientOnly> -->
         </div>
       </template>
 
-      <!-- SLOT FALLBACK: Wyświetla się AUTOMATYCZNIE, dopóki zapytania SSR/API trwają -->
+
       <template #fallback>
         <div v-if="isCallRoute" class="fixed inset-0 bg-black z-[999999]"></div>
         <FacebookSplash v-else />
@@ -67,7 +66,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { useOnline } from '@vueuse/core'
+import { useOnline, useEventListener } from '@vueuse/core'
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 
@@ -87,6 +86,11 @@ import { useAuthStore } from '@/stores/auth'
 import { useConversationsStore } from '@/stores/conversations'
 import { useGenerateTicket } from '@/composables/shared/useGenerateTicket'
 import { useLinkGuard } from '@/composables/shared/useLinkGuard'
+import { useTabFlasher } from '@/composables/shared/useTabFlasher'
+import { useWebPush } from '@/composables/shared/useWebPush'
+
+const { initTabFlasher, destroyTabFlasher } = useTabFlasher()
+const { registerWebPush } = useWebPush()
 
 // ==========================================
 // USUWANIE STATYCZNEGO HTML DLA ZEROWEGO MIGNIĘCIA
@@ -124,79 +128,7 @@ const { generateTicket } = useGenerateTicket()
 const config = useRuntimeConfig()
 const apiUrl = config.public.apiUrl
 
-// ==========================================
-// APOLLO MUTATIONS
-// ==========================================
-const SET_USER_ACTIVE_MUTATION = gql`
-  mutation SetUserActive($userId: ID!) {
-    setUserActive(userId: $userId)
-  }
-`
-const { mutate: setUserActive } = useMutation(SET_USER_ACTIVE_MUTATION)
-
 useTheme()
-
-// ==========================================
-// LOGIKA POŁĄCZEŃ I CZATU
-// ==========================================
-const handleIncomingCallAccept = () => {
-  if (!conversationsStore.incomingCall) return
-  const call = conversationsStore.incomingCall
-  conversationsStore.incomingCall = null
-
-  const routeData = router.resolve({
-    name: 'video-call',
-    query: {
-      type: call.callType,
-      boxId: call.callerId,
-      callerId: call.callerId,
-      conversationId: call.conversationId,
-    },
-  })
-
-  if (import.meta.client) {
-    window.open(
-      routeData.href,
-      `Rozmowa_${call.conversationId}`,
-      'popup=yes,width=900,height=650,left=300,top=150,resizable=yes,location=no,toolbar=no,menubar=no',
-    )
-  }
-}
-
-const handleIncomingCallReject = async () => {
-  if (!conversationsStore.incomingCall) return
-  const call = conversationsStore.incomingCall
-  conversationsStore.incomingCall = null
-
-  const currentUserId = authStore.currentUser?.id || authStore.currentUserId
-
-  try {
-    await $fetch(`${apiUrl}/api/chat/calls/log`, {
-      method: 'POST',
-      query: {
-        conversationId: call.conversationId,
-        senderId: currentUserId,
-        callerId: call.callerId,
-        duration: 0,
-        status: 'rejected',
-        participantIds: [currentUserId, call.callerId].join(','),
-      },
-    })
-  } catch (err) {
-    console.error('Failed to log call rejection:', err)
-  }
-
-  if (conversationsStore.isMqttConnected) {
-    const payload = {
-      type: 'call_rejected',
-      conversationId: call.conversationId,
-      senderId: currentUserId,
-      callerId: call.callerId,
-      participantIds: [currentUserId, call.callerId],
-    }
-    conversationsStore.publishMqtt('chat/messages/user/' + call.callerId, payload)
-  }
-}
 
 // --- STAN OKNA NOWEJ WIADOMOŚCI ---
 const isNewChatBoxOpen = ref(false)
@@ -210,71 +142,11 @@ const openNewChatListener = () => {
   isNewChatBoxOpen.value = true
 }
 
-// ==========================================
-// SSE NOTIFICATIONS LISTENER
-// ==========================================
-let eventSource: EventSource | null = null
-
-const setupNotificationListener = async (userId: string | number) => {
-  if (eventSource) {
-    eventSource.close()
-    eventSource = null
-  }
-
-  if (!userId || !import.meta.client) return
-
-  try {
-    const ticket = await generateTicket(String(userId))
-
-    console.log(`Connecting to SSE notifications stream for user ID: ${userId}`)
-    eventSource = new EventSource(`${apiUrl}/api/notifications/subscribe/${userId}?ticket=${ticket}`)
-
-    eventSource.addEventListener('notification', (event) => {
-      try {
-        const data = JSON.parse(event.data)
-        notify.notification({
-          title: data.title || 'Powiadomienie',
-          header: data.message || '',
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.title)}&background=random&color=fff`,
-        })
-
-        window.dispatchEvent(new CustomEvent('new-notification', { detail: data }))
-      } catch (err) {
-        console.error('Failed to parse SSE notification data:', err)
-      }
-    })
-
-    eventSource.onerror = (err) => {
-      console.warn('SSE EventSource error, will retry...', err)
-    }
-  } catch (err) {
-    console.error('Failed to initialize SSE connection:', err)
-  }
-}
-
-// ==========================================
-// HEARTBEAT & PROFILE TRACKING
-// ==========================================
-let activeInterval: any = null
-
-const sendActiveStatus = async () => {
-  const userId = authStore.currentUserId
-  if (!userId || userId === 0) return
-  try {
-    await setUserActive({ userId: String(userId) })
-  } catch (err) {
-    console.error('Failed to send active status signal via Apollo:', err)
-  }
-}
-
 watch(
   () => authStore.currentUserId,
   (newId) => {
     if (import.meta.client && newId) {
-      setupNotificationListener(newId)
-      if (activeInterval) clearInterval(activeInterval)
-      sendActiveStatus()
-      activeInterval = setInterval(sendActiveStatus, 30000)
+      registerWebPush(newId)
     }
   },
   { immediate: true },
@@ -299,34 +171,27 @@ watch(
 )
 
 // Globalny interceptor kliknięć w linki zewnętrzne
-const { verifyAndNavigate } = useLinkGuard()
-
-const handleGlobalLinkClick = async (event: MouseEvent) => {
-  const target = event.target as HTMLElement
-  const anchor = target.closest('a')
-  if (!anchor) return
-
-  const href = anchor.getAttribute('href')
-  if (!href) return
-
-  // Interceptujemy tylko zewnętrzne linki bezwzględne
-  if (href.startsWith('http://') || href.startsWith('https://')) {
-    // Pomijamy jeśli to już jest gotowy link przekierowujący (l.php)
-    if (href.includes('/l.php?')) return
-
-    event.preventDefault()
-    event.stopPropagation()
-    await verifyAndNavigate(href)
-  }
-}
+const { initLinkGuard } = useLinkGuard()
 
 // ==========================================
 // LIFECYCLE HOOKS
 // ==========================================
 onMounted(() => {
   if (import.meta.client) {
-    window.addEventListener('open-new-chat', openNewChatListener)
-    document.addEventListener('click', handleGlobalLinkClick, true)
+    // Register Web Push Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('[ServiceWorker] Registered with scope:', reg.scope))
+        .catch(err => console.error('[ServiceWorker] Registration failed:', err))
+    }
+
+    useEventListener(window, 'open-new-chat', openNewChatListener)
+
+    // Inicjalizacja sprawdzania linków zewnętrznych (LinkGuard)
+    initLinkGuard()
+
+    // Inicjalizacja migania karty (Facebook style)
+    initTabFlasher()
 
     const tokenCookie = document.cookie.split('; ').find((row) => row.startsWith('jwt_token='))
     if (tokenCookie) {
@@ -340,14 +205,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (import.meta.client) {
-    window.removeEventListener('open-new-chat', openNewChatListener)
-    document.removeEventListener('click', handleGlobalLinkClick, true)
-  }
-  if (eventSource) {
-    eventSource.close()
-  }
-  if (activeInterval) {
-    clearInterval(activeInterval)
+    // Sprzątanie migania karty
+    destroyTabFlasher()
   }
 })
 

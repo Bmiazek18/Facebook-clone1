@@ -47,3 +47,5 @@ override.tf.json
 # Helm
 *.tgz
 charts/**/charts/
+ # python
+__pycache__/

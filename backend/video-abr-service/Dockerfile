@@ -31,8 +31,8 @@ RUN go mod tidy
 RUN CGO_ENABLED=0 GOOS=linux go build -o /app/video-abr-service-bin .
 
 # Final stage
-FROM alpine:3.19
-RUN apk add --no-cache ffmpeg
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY --from=builder /app/video-abr-service-bin ./video-abr-service

@@ -5,6 +5,10 @@ import com.facebook.chat.grpc.GetMessagesRequest;
 import com.facebook.marketplace.grpc.*;
 import com.facebook.notification.grpc.*;
 import com.facebook.user.grpc.*;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryRegistry;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
@@ -25,16 +29,39 @@ public class DownstreamGrpcService {
     private MarketplaceGrpcServiceGrpc.MarketplaceGrpcServiceBlockingStub marketplaceGrpcStub;
 
     private final UserService userService;
+    private final CircuitBreakerRegistry circuitBreakerRegistry;
+    private final RetryRegistry retryRegistry;
+    private final io.github.resilience4j.bulkhead.BulkheadRegistry bulkheadRegistry;
 
-    public DownstreamGrpcService(UserService userService) {
+    public DownstreamGrpcService(UserService userService,
+                                  CircuitBreakerRegistry circuitBreakerRegistry,
+                                  RetryRegistry retryRegistry,
+                                  io.github.resilience4j.bulkhead.BulkheadRegistry bulkheadRegistry) {
         this.userService = userService;
+        this.circuitBreakerRegistry = circuitBreakerRegistry;
+        this.retryRegistry = retryRegistry;
+        this.bulkheadRegistry = bulkheadRegistry;
+    }
+
+    private <T> T executeWithResilience(String serviceName, java.util.function.Supplier<T> action) {
+        CircuitBreaker cb = circuitBreakerRegistry.circuitBreaker(serviceName);
+        Retry retry = retryRegistry.retry(serviceName);
+        io.github.resilience4j.bulkhead.Bulkhead bulkhead = bulkheadRegistry.bulkhead(serviceName);
+        return CircuitBreaker.decorateSupplier(cb, Retry.decorateSupplier(retry, io.github.resilience4j.bulkhead.Bulkhead.decorateSupplier(bulkhead, action))).get();
+    }
+
+    private void executeWithResilienceVoid(String serviceName, Runnable action) {
+        CircuitBreaker cb = circuitBreakerRegistry.circuitBreaker(serviceName);
+        Retry retry = retryRegistry.retry(serviceName);
+        io.github.resilience4j.bulkhead.Bulkhead bulkhead = bulkheadRegistry.bulkhead(serviceName);
+        CircuitBreaker.decorateRunnable(cb, Retry.decorateRunnable(retry, io.github.resilience4j.bulkhead.Bulkhead.decorateRunnable(bulkhead, action))).run();
     }
 
     public List<ChatMessageDto> getChatMessages(String conversationId) {
         try {
-            return chatGrpcStub.getMessages(GetMessagesRequest.newBuilder()
+            return executeWithResilience("chatService", () -> chatGrpcStub.getMessages(GetMessagesRequest.newBuilder()
                             .setConversationId(conversationId)
-                            .build())
+                            .build()))
                     .getMessagesList().stream()
                     .map(this::toUserChatMessage)
                     .toList();
@@ -46,9 +73,9 @@ public class DownstreamGrpcService {
 
     public List<com.facebook.user.grpc.NotificationDto> getNotificationsHistory(String userId) {
         try {
-            return notificationGrpcStub.getHistory(GetHistoryRequest.newBuilder()
+            return executeWithResilience("notificationService", () -> notificationGrpcStub.getHistory(GetHistoryRequest.newBuilder()
                             .setUserId(userId)
-                            .build())
+                            .build()))
                     .getNotificationsList().stream()
                     .map(this::toUserNotification)
                     .toList();
@@ -60,9 +87,9 @@ public class DownstreamGrpcService {
 
     public void markNotificationAsRead(String id) {
         try {
-            notificationGrpcStub.markAsRead(MarkAsReadRequest.newBuilder()
+            executeWithResilienceVoid("notificationService", () -> notificationGrpcStub.markAsRead(MarkAsReadRequest.newBuilder()
                     .setId(Long.parseLong(id))
-                    .build());
+                    .build()));
         } catch (Exception e) {
             log.error("Failed to mark notification {} as read", id, e);
             throw new RuntimeException("Notification service unavailable: " + e.getMessage(), e);
@@ -71,9 +98,9 @@ public class DownstreamGrpcService {
 
     public ListingDto getListing(String id) {
         try {
-            MarketplaceItemDto item = marketplaceGrpcStub.getItem(GetItemRequest.newBuilder()
+            MarketplaceItemDto item = executeWithResilience("marketplaceService", () -> marketplaceGrpcStub.getItem(GetItemRequest.newBuilder()
                     .setId(id)
-                    .build()).getItem();
+                    .build())).getItem();
             return toUserListing(item);
         } catch (Exception e) {
             log.error("Failed to fetch listing {}", id, e);
@@ -90,7 +117,7 @@ public class DownstreamGrpcService {
             if (query != null && !query.isBlank()) {
                 requestBuilder.setQuery(query);
             }
-            return marketplaceGrpcStub.searchItems(requestBuilder.build())
+            return executeWithResilience("marketplaceService", () -> marketplaceGrpcStub.searchItems(requestBuilder.build()))
                     .getItemsList().stream()
                     .map(this::toUserListing)
                     .toList();
@@ -102,7 +129,7 @@ public class DownstreamGrpcService {
 
     public ListingDto createListing(CreateListingRequest request) {
         try {
-            MarketplaceItemDto item = marketplaceGrpcStub.createItem(CreateItemRequest.newBuilder()
+            MarketplaceItemDto item = executeWithResilience("marketplaceService", () -> marketplaceGrpcStub.createItem(CreateItemRequest.newBuilder()
                     .setTitle(request.getTitle())
                     .setPrice(request.getPrice())
                     .setCategory(request.getCategory())
@@ -110,7 +137,7 @@ public class DownstreamGrpcService {
                     .setDescription(request.getDescription())
                     .setLatitude(request.getLatitude())
                     .setLongitude(request.getLongitude())
-                    .build()).getItem();
+                    .build())).getItem();
             return toUserListing(item);
         } catch (Exception e) {
             log.error("Failed to create listing", e);

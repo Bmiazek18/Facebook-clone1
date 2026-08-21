@@ -18,12 +18,10 @@ const routeProps = withDefaults(defineProps<{ chatId?: string }>(), { chatId: un
 const route = useRoute()
 const convStore = useConversationsStore()
 
-// 1. Zmiana: Jeśli chatId nie ma w URL, automatycznie wybieramy ID pierwszego czatu jako domyślne do wyświetlenia!
 const chatId = computed(() => {
   const urlId = route.params.chatId ?? routeProps.chatId
   if (urlId) return String(urlId)
 
-  // Pobieramy ID pierwszego czatu z Pinii (bez przekierowywania routerem!)
   const firstChat = convStore.chats?.[0]
   const defaultId = firstChat?.id ?? firstChat?.chatId ?? firstChat?.uuid
   return defaultId ? String(defaultId) : ''
@@ -45,14 +43,12 @@ const showMobileInfo = ref(true)
 const breakpoints = useBreakpoints({ tablet: 768 })
 const isMobile = breakpoints.smaller('tablet')
 
-// Pobieranie skrzynki odbiorczej, jeśli jest pusta
 watchEffect(() => {
   if (convStore.chats.length === 0 && convStore.currentUserUuid) {
     convStore.fetchInbox(convStore.currentUserUuid)
   }
 })
 
-// Ładowanie wiadomości dla aktywnego/wybranego czatu
 watch(
   [chatId, () => convStore.currentUserUuid],
   async ([newId, newUserId]) => {

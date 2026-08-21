@@ -19,6 +19,30 @@ services:
     networks:
       - userservice-db-net
 
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3-alpine
+    container_name: clickhouse-server-compose
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      CLICKHOUSE_DB: analytics_db
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: default_password
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - clickhousedata:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider 'http://localhost:8123/ping' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - userservice-db-net
+
   redis:
     image: redis:7-alpine
     container_name: userservice-redis-compose
@@ -373,6 +397,28 @@ services:
       - gateway-net
       - grpc-net
 
+  marketplace-edge:
+    build:
+      context: .
+      dockerfile: ./marketplace-edge-service/Dockerfile
+    container_name: marketplace-edge-compose
+    ports:
+      - "8099:8099"
+    environment:
+      MARKETPLACE_SERVICE_GRPC_ADDRESS: dns:///marketplace-service:9096
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+    depends_on:
+      marketplace-service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8099/actuator/health || wget --no-verbose --tries=1 --post-data='{\"query\":\"{__typename}\"}' --header='Content-Type:application/json' -O /dev/null http://localhost:8099/graphql || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - gateway-net
+      - grpc-net
+
   tusd:
     image: tusproject/tusd:latest
     container_name: tusd-compose
@@ -451,9 +497,27 @@ services:
     environment:
       CELERY_BROKER_URL: redis://redis:6379/0
       FEED_SERVICE_GRPC_ADDRESS: dns:///feedservice:9092
+      INFERENCE_SERVICE_URL: http://inference-service:8000
     depends_on:
       redis:
         condition: service_healthy
+      inference-service:
+        condition: service_healthy
+    networks:
+      - gateway-net
+
+  inference-service:
+    build:
+      context: .
+      dockerfile: ./inference-service/Dockerfile
+    container_name: inference-service-compose
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 -O /dev/null http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
     networks:
       - gateway-net
 
@@ -645,18 +709,49 @@ services:
     ports:
       - "8095:8095"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${USERS_DB_NAME:-users_db}
-      SPRING_DATASOURCE_USERNAME: ${USERS_DB_USER:-postgres}
-      SPRING_DATASOURCE_PASSWORD: ${USERS_DB_PASSWORD:-postgres}
+      SPRING_DATASOURCE_URL: jdbc:clickhouse://clickhouse:8123/analytics_db
+      SPRING_DATASOURCE_USERNAME: default
+      SPRING_DATASOURCE_PASSWORD: default_password
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9094
       JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
     depends_on:
-      db:
+      clickhouse:
         condition: service_healthy
       kafka:
         condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider 'http://localhost:8095/api/analytics/pages/00000000-0000-0000-0000-000000000000/insights' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    networks:
+      - gateway-net
+      - userservice-db-net
+
+  recommend-service:
+    build:
+      context: .
+      dockerfile: ./recommend-service/Dockerfile
+    container_name: recommend-service-compose
+    ports:
+      - "8096:8096"
+    environment:
+      CLICKHOUSE_HOST: clickhouse
+      CLICKHOUSE_PORT: 8123
+      CLICKHOUSE_DB: analytics_db
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: default_password
+      REDIS_CONNECTION_STRING: redis://redis:6379
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9094
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8096/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 15
@@ -957,6 +1052,7 @@ volumes:
   feed-uploads:
   meilidata:
   postgres-data-v18:
+  clickhousedata:
 
 networks:
   gateway-net:

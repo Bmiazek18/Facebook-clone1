@@ -26,6 +26,8 @@ public class UserEntityFetcher {
     private final EdgeMapper edgeMapper;
 
     @DgsEntityFetcher(name = DgsConstants.USERSEARCHRESPONSE.TYPE_NAME)
+    @io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker(name = "userService", fallbackMethod = "resolveUserFallback")
+    @io.github.resilience4j.retry.annotation.Retry(name = "userService")
     public UserSearchResponse resolveUser(Map<String, Object> representation) {
         Object idVal = representation.get("id");
         if (idVal == null) {
@@ -36,16 +38,21 @@ public class UserEntityFetcher {
         String id = idVal.toString();
         log.info("Edge: Resolving federated User entity for ID: {}", id);
 
-        try {
-            GetUserByIdResponse response = userGrpcStub.getUserById(GetUserByIdRequest.newBuilder()
-                    .setUserId(id)
-                    .build());
+        GetUserByIdResponse response = userGrpcStub.getUserById(GetUserByIdRequest.newBuilder()
+                .setUserId(id)
+                .build());
 
-            return edgeMapper.grpcUserToDgsUser(response.getUser());
+        return edgeMapper.grpcUserToDgsUser(response.getUser());
+    }
 
-        } catch (Exception e) {
-            log.error("Failed to resolve federated User entity via gRPC", e);
-            throw new RuntimeException("User core service unavailable: " + e.getMessage(), e);
+    public UserSearchResponse resolveUserFallback(Map<String, Object> representation, Throwable throwable) {
+        log.error("Fallback: Failed to resolve federated User entity via gRPC", throwable);
+        Object idVal = representation.get("id");
+        if (idVal != null) {
+            UserSearchResponse fallbackUser = new UserSearchResponse();
+            fallbackUser.setId(idVal.toString());
+            return fallbackUser;
         }
+        return null;
     }
 }

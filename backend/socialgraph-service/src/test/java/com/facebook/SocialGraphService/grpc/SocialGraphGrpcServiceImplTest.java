@@ -43,11 +43,14 @@ class SocialGraphGrpcServiceImplTest {
     @Mock
     private StreamObserver<GetFriendSuggestionsResponse> getFriendSuggestionsResponseObserver;
 
+    @Mock
+    private com.facebook.SocialGraphService.client.NotificationServiceClient notificationServiceClient;
+
     private SocialGraphGrpcServiceImpl socialGraphGrpcService;
 
     @BeforeEach
     void setUp() {
-        socialGraphGrpcService = new SocialGraphGrpcServiceImpl(neo4jDriver);
+        socialGraphGrpcService = new SocialGraphGrpcServiceImpl(neo4jDriver, notificationServiceClient);
     }
 
     @Test

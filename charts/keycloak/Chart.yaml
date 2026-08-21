@@ -1,6 +1,0 @@
-apiVersion: v2
-name: keycloak-platform
-description: Helm Chart dla Keycloak 26, bazy PostgreSQL oraz Mailpit
-type: application
-version: 0.1.0
-appVersion: "26.6.2"

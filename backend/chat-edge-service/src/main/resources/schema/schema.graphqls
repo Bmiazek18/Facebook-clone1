@@ -1,0 +1,93 @@
+extend schema @link(url: "https://specs.apollo.dev/federation/v2.11", import: ["@key", "@external", "@requires", "@provides", "@extends"])
+
+type Query {
+    getChatWithUser(userId: ID!, conversationId: ID!): ChatWithUserResponse!
+    getChatMessages(conversationId: ID!): [ChatMessage!]!
+    getInbox(userId: ID!): [InboxItem!]!
+    getChatSettings(conversationId: ID!): ChatSettings!
+}
+
+type Mutation {
+    sendChatMessage(input: SendChatMessageInput!): ChatMessage!
+    markInboxAsRead(userId: ID!, conversationId: ID!): Boolean!
+    reactToChatMessage(senderId: ID!, conversationId: ID!, messageId: ID!, reactionEmoji: String!, participantIds: [ID!]!): Boolean!
+    pinChatMessage(conversationId: ID!, messageId: ID!, isPinned: Boolean!, participantIds: [ID!]!): Boolean!
+    updateChatCustomization(senderId: ID!, conversationId: ID!, themeId: Int, emoji: String, participantIds: [ID!]!): Boolean!
+    updateChatNickname(senderId: ID!, conversationId: ID!, userId: ID!, nickname: String, participantIds: [ID!]!): Boolean!
+    leaveChat(userId: ID!, conversationId: ID!): Boolean!
+}
+
+type InboxItem {
+    conversationId: ID!
+    lastActivity: Float!
+    lastMessageText: String
+    isUnread: Boolean!
+    recipientId: ID
+    lastMessageSenderId: ID
+}
+
+type ChatWithUserResponse {
+    user: ChatUser!
+    messages: [ChatMessage!]!
+    settings: ChatSettings!
+}
+
+type ChatUser {
+    id: ID!
+    firstName: String
+    lastName: String
+    avatarId: String
+    avatar: String
+}
+
+type ChatMessage {
+    messageId: String!
+    senderId: String!
+    text: String!
+    time: Float!
+    reactionsJson: String
+    replyToId: String
+    replyToText: String
+    replyToSenderId: String
+    imageUrl: String
+    audioUrl: String
+    duration: Int
+    isPinned: Boolean
+    fileUrl: String
+    fileName: String
+    fileSize: Float
+    linkUrl: String
+    systemActionType: String
+    systemActionPayload: String
+}
+
+input SendChatMessageInput {
+    senderId: ID!
+    conversationId: ID!
+    text: String
+    replyToId: String
+    replyToText: String
+    replyToSenderId: String
+    imageUrl: String
+    audioUrl: String
+    duration: Int
+    fileUrl: String
+    fileName: String
+    fileSize: Float
+    linkUrl: String
+    participantIds: [ID!]!
+}
+
+type ChatNickname {
+    userId: ID!
+    nickname: String!
+}
+
+type ChatSettings {
+    themeId: Int
+    emoji: String
+    nicknames: [ChatNickname!]!
+    participants: [ChatUser!]!
+    isGroup: Boolean!
+}
+

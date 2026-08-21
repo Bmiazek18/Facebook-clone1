@@ -27,6 +27,15 @@
 		<module>user-edge-service</module>
 		<module>socialgraph-edge-service</module>
 		<module>search-service</module>
+		<module>feed-service</module>
+		<module>feed-edge-service</module>
+		<module>chat-service</module>
+		<module>chat-edge-service</module>
+		<module>notification-service</module>
+		<module>analytics-service</module>
+		<module>groups-service</module>
+		<module>marketplace-service</module>
+		<module>marketplace-edge-service</module>
 	</modules>
 
 	<profiles>
@@ -46,6 +55,11 @@
 				<groupId>com.apollographql.federation</groupId>
 				<artifactId>federation-graphql-java-support</artifactId>
 				<version>${federation-graphql-java-support.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-aop</artifactId>
+				<version>3.2.4</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

@@ -15,10 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class SocialGraphGrpcServiceImpl extends SocialGraphGrpcServiceGrpc.SocialGraphGrpcServiceImplBase {
 
     private final Driver neo4jDriver;
+    private final com.facebook.SocialGraphService.client.NotificationServiceClient notificationServiceClient;
 
     @Autowired
-    public SocialGraphGrpcServiceImpl(Driver neo4jDriver) {
+    public SocialGraphGrpcServiceImpl(Driver neo4jDriver,
+                                      com.facebook.SocialGraphService.client.NotificationServiceClient notificationServiceClient) {
         this.neo4jDriver = neo4jDriver;
+        this.notificationServiceClient = notificationServiceClient;
     }
 
     @Override
@@ -123,9 +126,6 @@ public class SocialGraphGrpcServiceImpl extends SocialGraphGrpcServiceGrpc.Socia
                     .asRuntimeException());
         }
     }
-
-    @GrpcClient("notification-service")
-    private com.facebook.notification.grpc.NotificationGrpcServiceGrpc.NotificationGrpcServiceBlockingStub notificationGrpcStub;
 
     @Override
     public void getBirthdayUsers(com.facebook.socialgraph.grpc.GetBirthdayUsersRequest request,
@@ -326,14 +326,6 @@ public class SocialGraphGrpcServiceImpl extends SocialGraphGrpcServiceGrpc.Socia
     }
 
     private void sendNotification(String targetUserId, String title, String message) {
-        try {
-            notificationGrpcStub.sendNotification(com.facebook.notification.grpc.SendNotificationRequest.newBuilder()
-                    .setUserId(targetUserId)
-                    .setTitle(title)
-                    .setMessage(message)
-                    .build());
-        } catch (Exception e) {
-            System.err.println("Could not send notification to user " + targetUserId + ": " + e.getMessage());
-        }
+        notificationServiceClient.sendNotification(targetUserId, title, message);
     }
 }

@@ -1,11 +1,36 @@
 import { ref } from 'vue'
+import { useEventListener } from '@vueuse/core'
 
 export function useLinkGuard() {
   const isVerifying = ref(false)
   const GRAPHQL_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/linkguard/graphql`
 
+  const SAFE_DOMAINS = new Set([
+    "google.com", "facebook.com", "github.com", "youtube.com", "wikipedia.org",
+    "pl.wikipedia.org", "microsoft.com", "apple.com", "twitter.com", "linkedin.com",
+    "instagram.com"
+  ])
+
+  const getDomain = (urlStr: string): string => {
+    try {
+      const hostname = new URL(urlStr).hostname.toLowerCase();
+      return hostname.replace(/^www\./, '');
+    } catch {
+      return '';
+    }
+  }
+
   const verifyAndNavigate = async (url: string) => {
     if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
+      if (import.meta.client) {
+        window.open(url, '_blank')
+      }
+      return
+    }
+
+    // Bypass inspection for whitelisted safe domains to speed up navigation and reduce server load
+    const domain = getDomain(url);
+    if (SAFE_DOMAINS.has(domain)) {
       if (import.meta.client) {
         window.open(url, '_blank')
       }
@@ -128,8 +153,49 @@ export function useLinkGuard() {
     }
   }
 
+  const handleGlobalLinkClick = async (event: MouseEvent) => {
+    // Bypass if click is modified (e.g. Cmd/Ctrl/Shift + Click) or not left-click
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return
+    }
+
+    const target = event.target as HTMLElement
+    const anchor = target.closest('a')
+    if (!anchor) return
+
+    const href = anchor.getAttribute('href')
+    if (!href) return
+
+    // Intercept only absolute http/https links
+    if (href.startsWith('http://') || href.startsWith('https://')) {
+      // Bypass if link points to the same hostname (internal absolute link)
+      try {
+        const url = new URL(href, window.location.origin)
+        if (url.hostname === window.location.hostname) {
+          return
+        }
+      } catch (e) {
+        // Ignore invalid URL
+      }
+
+      // Bypass if already translated to redirect link (l.php)
+      if (href.includes('/l.php?')) return
+
+      event.preventDefault()
+      event.stopPropagation()
+      await verifyAndNavigate(href)
+    }
+  }
+
+  const initLinkGuard = () => {
+    if (import.meta.client) {
+      useEventListener(document, 'click', handleGlobalLinkClick, { capture: true })
+    }
+  }
+
   return {
     isVerifying,
     verifyAndNavigate,
+    initLinkGuard
   }
 }

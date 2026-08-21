@@ -1,0 +1,401 @@
+extend schema
+@link(
+    url: "https://specs.apollo.dev/federation/v2.11"
+    import: ["@key", "@external", "@requires", "@provides", "@extends"]
+)
+
+type Query {
+    getFeed(currentUserId: ID!, limit: Int, offset: Int, hashtag: String): [Post!]!
+    getActiveStories(currentUserId: ID!): [Story!]!
+    comments(postId: ID!, limit: Int): [Comment!]!
+    postReactions(postId: ID!): [ReactionDetail!]!
+    getEventById(id: ID!): Event
+    getEvents(limit: Int, offset: Int): [Event!]!
+    searchEvents(query: String!): [Event!]!
+    getPostById(postId: ID!): Post
+    getGroups(limit: Int, offset: Int): [Group!]!
+    getGroupById(id: ID!): Group
+    getUserGroups(userId: ID!): [Group!]!
+    getGroupFeed(groupId: ID!, limit: Int, offset: Int): [Post!]!
+    getGroupMembership(groupId: ID!, userId: ID!): String!
+    getPendingRequests(groupId: ID!): [ID!]!
+    getGroupMembers(groupId: ID!, currentUserId: ID): [GroupMember!]!
+    getUserMedia(userId: ID!, filter: String, albumName: String, limit: Int, offset: Int): UserMediaResponse!
+    getUserAlbums(userId: ID!): [UserAlbum!]!
+    getPageScheduledPosts(pageId: ID!): [Post!]!
+    getScheduledPosts(targetType: String, targetId: String, authorId: ID): [Post!]!
+    getGroupOverview(groupId: ID!): GroupOverview!
+    getGroupRules(groupId: ID!): [GroupRule!]!
+    getGroupActivityLogs(groupId: ID!): [GroupActivityLog!]!
+}
+
+type Mutation {
+    createPost(input: CreatePostInput!): Post!
+    createStory(input: CreateStoryInput!): Story!
+    addComment(input: AddCommentInput!): Comment!
+    reactToPost(input: PostReactionInput!): Boolean!
+    reactToComment(input: CommentReactionInput!): Boolean!
+    createEvent(input: CreateEventInput!): Event!
+    markStoryAsViewed(storyId: ID!, viewerId: ID!): Boolean!
+    voteOnPoll(postId: ID!, optionId: ID!, userId: ID!): Post!
+    createGroup(input: CreateGroupInput!): Group!
+    joinGroup(groupId: ID!, userId: ID!): Boolean!
+    leaveGroup(groupId: ID!, userId: ID!): Boolean!
+    approveGroupRequest(groupId: ID!, userId: ID!, adminId: ID!): Boolean!
+    rejectGroupRequest(groupId: ID!, userId: ID!, adminId: ID!): Boolean!
+    removeGroupMember(groupId: ID!, userId: ID!, adminId: ID!): Boolean!
+    updateGroupMemberRole(groupId: ID!, userId: ID!, role: GroupRole!, adminId: ID!): Boolean!
+
+    # Group Rules Management
+    createGroupRule(groupId: ID!, title: String!, description: String!): GroupRule!
+    updateGroupRulesOrder(groupId: ID!, ruleIds: [ID!]!): Boolean!
+    deleteGroupRule(ruleId: ID!): Boolean!
+
+    # Group Activity Logging
+    logGroupActivity(groupId: ID!, text: String!, note: String, actorId: ID!, actorName: String!): GroupActivityLog!
+}
+
+type Comment @key(fields: "id") {
+    id: ID!
+    userId: ID!
+    postId: ID!
+    parentId: ID
+    content: String!
+    createdAt: String!
+    mediaUrl: String
+    reactions: [ReactionDetail!]!
+    mentionedUsers: [ReactionUser!]
+}
+
+input AddCommentInput {
+    postId: ID!
+    userId: ID!
+    parentId: ID
+    content: String!
+    mediaUrl: String
+}
+
+input PostReactionInput {
+    postId: ID!
+    userId: ID!
+    reactionType: String
+    previousReactionType: String
+}
+
+input CommentReactionInput {
+    commentId: ID!
+    userId: ID!
+    reactionType: String
+}
+
+type Post @key(fields: "id") {
+    id: ID!
+    authorId: ID!
+    groupId: String
+    targetId: String
+    targetType: String
+    content: String!
+    date: String!
+    timestamp: Float!
+    media: [PostMedia!]!
+    isAnonymous: Boolean
+    isBirthday: Boolean
+    isLifeEvent: Boolean
+    lifeEventCategory: String
+    detectedLanguage: String
+    reactions: [ReactionDetail!]!
+    commentCount: Int
+    shareCount: Int
+    visibility: String
+    allowedUserIds: [ID!]
+    taggedUsers: [ReactionUser!]
+    sharedPost: Post
+    context: PostContext
+    status: String
+    scheduledPublishTime: Float
+    authorGroupRole: String
+}
+
+type ReactionDetail {
+    reactionType: String!
+    userIds: [ID!]!
+    users: [ReactionUser!]
+}
+
+type ReactionUser {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    avatarId: String
+    avatar: String
+}
+
+type PostMedia {
+    src: String!
+    altText: String
+    tags: [ImageTagType!]
+    backgroundColor: String
+}
+
+type ImageTagType {
+    id: ID!
+    x: Float!
+    y: Float!
+    userId: ID
+    user: ReactionUser
+}
+
+type Story @key(fields: "id") {
+    id: ID!
+    authorId: ID!
+    mediaUrl: String!
+    thumbMediaUrl: String
+    mediaType: String!
+    text: String
+    createdAt: String!
+    expiresAt: String!
+    viewedBy: [ID!]
+}
+
+input CreatePostInput {
+    content: String!
+    authorId: ID!
+    media: [PostMediaInput!]!
+    isAnonymous: Boolean
+    targetId: String
+    targetType: String
+    visibility: String
+    allowedUserIds: [ID!]
+    taggedUsersIds: [ID!]
+    context: PostContextInput
+    scheduledPublishTime: Float
+}
+
+input PostMediaInput {
+    src: String!
+    altText: String
+    tags: [ImageTagInput!]
+    backgroundColor: String
+}
+
+input ImageTagInput {
+    id: ID!
+    x: Float!
+    y: Float!
+    userId: ID
+}
+
+input CreateStoryInput {
+    authorId: ID!
+    mediaUrl: String!
+    mediaType: String! # IMAGE or VIDEO
+    text: String
+}
+
+type Event @key(fields: "id") {
+    id: ID!
+    userId: ID!
+    name: String!
+    title: String
+    startDate: String!
+    startTime: String
+    endDate: String
+    endTime: String
+    type: String!
+    privacy: String!
+    description: String
+    images: [String!]!
+    location: String
+    locationName: String
+    address: String
+    showGuestList: Boolean
+    hosts: [String!]
+    date: String
+    responses: Int
+    guestsGoing: Int
+    guestsInterested: Int
+    coordinates: [Float!]
+    frequency: String
+}
+
+input CreateEventInput {
+    id: ID
+    userId: ID!
+    name: String!
+    title: String
+    startDate: String!
+    startTime: String
+    endDate: String
+    endTime: String
+    type: String!
+    privacy: String!
+    description: String
+    images: [String!]!
+    location: String
+    locationName: String
+    address: String
+    showGuestList: Boolean
+    hosts: [String!]
+    date: String
+    coordinates: [Float!]
+    frequency: String
+}
+
+type PostContext {
+    feeling: Feeling
+    location: Location
+    poll: Poll
+}
+
+type Feeling {
+    emoji: String
+    label: String
+}
+
+type Location {
+    title: String!
+    subtitle: String
+    type: String
+    lat: String
+    lon: String
+}
+
+input PostContextInput {
+    feeling: FeelingInput
+    location: LocationInput
+    poll: PollInput
+}
+
+input FeelingInput {
+    emoji: String
+    label: String
+}
+
+input LocationInput {
+    title: String!
+    subtitle: String
+    type: String
+    lat: String
+    lon: String
+}
+
+type Poll {
+    question: String!
+    options: [PollOption!]!
+}
+
+type PollOption {
+    id: ID!
+    text: String!
+    votes: [ID!]!
+}
+
+input PollInput {
+    question: String!
+    options: [PollOptionInput!]!
+}
+
+input PollOptionInput {
+    id: ID!
+    text: String!
+    votes: [ID!]!
+}
+
+type Group @key(fields: "id") {
+    id: ID!
+    name: String!
+    description: String
+    privacy: String!
+    image: String
+    membersCount: Int
+    lastActive: String
+    newPostsToday: Int
+    newPostsMonth: Int
+    newMembersWeek: String
+    createdAge: String
+    rules: [GroupRule!]
+}
+
+enum GroupRole {
+    ADMIN
+    MODERATOR
+    MEMBER
+    PENDING
+}
+
+type GroupMember {
+    userId: ID!
+    role: GroupRole!
+    joinedAt: String!
+    isFriend: Boolean
+}
+
+input CreateGroupInput {
+    name: String!
+    description: String
+    privacy: String!
+    image: String
+    creatorId: ID!
+}
+
+type UserMediaItem {
+    id: ID!
+    userId: ID!
+    postId: ID!
+    mediaUrl: String!
+    mediaType: String!
+    albumName: String
+    altText: String
+    createdAt: String!
+    timestamp: Float!
+}
+
+type UserAlbum {
+    name: String!
+    count: Int!
+    coverUrl: String
+}
+
+type UserMediaResponse {
+    items: [UserMediaItem!]!
+    totalCount: Int!
+    hasMore: Boolean!
+}
+
+type GroupOverview {
+    groupId: ID!
+    reportedItemsCount: Int!
+    moderationAlertsCount: Int!
+    pendingPostsCount: Int!
+    pendingRequestsCount: Int!
+    groupStatusViolationCount: Int!
+    
+    postsCount7Days: Int!
+    commentsCount7Days: Int!
+    reactionsCount7Days: Int!
+    
+    postsTrend: String!
+    commentsTrend: String!
+    reactionsTrend: String!
+    
+    activeMembersChart: [Int!]!
+    chartCategories: [String!]!
+}
+
+type GroupRule {
+    id: ID!
+    title: String!
+    description: String!
+    orderIndex: Int!
+}
+
+type GroupActivityLog {
+    id: ID!
+    groupId: ID!
+    actorId: ID!
+    actorName: String!
+    text: String!
+    note: String
+    time: String!
+    date: String!
+}

@@ -1,6 +1,0 @@
-apiVersion: v2
-name: facebook-clone-frontend
-description: Helm Chart dla frontendowej aplikacji Nuxt
-type: application
-version: 0.1.0
-appVersion: "1.0.0"

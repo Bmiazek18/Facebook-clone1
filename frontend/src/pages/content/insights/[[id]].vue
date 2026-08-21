@@ -1,9 +1,6 @@
 <template>
   <div class="min-h-screen bg-[#F0F2F5] mt-[56px] flex font-sans">
 
-    <!-- ========================================== -->
-    <!-- LEWY PANEL BOCZNY (Statystyki posta)       -->
-    <!-- ========================================== -->
     <aside class="w-[400px] shrink-0 bg-white border-r border-gray-200 flex flex-col h-screen sticky top-0 overflow-y-auto z-10 hidden md:flex">
 
       <!-- Nagłówek panelu -->

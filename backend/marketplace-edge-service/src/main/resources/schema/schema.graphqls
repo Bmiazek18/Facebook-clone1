@@ -1,0 +1,37 @@
+type Query {
+    marketplaceItems(latitude: Float!, longitude: Float!, radiusKm: Float, query: String): [MarketplaceItem!]!
+    marketplaceItem(id: ID!): MarketplaceItem
+}
+
+type Mutation {
+    createMarketplaceItem(input: CreateMarketplaceItemInput!): MarketplaceItem!
+}
+
+type MarketplaceItem @key(fields: "id") {
+    id: ID!
+    title: String!
+    description: String
+    price: Float!
+    locationName: String
+    latitude: Float
+    longitude: Float
+    imageUrl: String
+    ownerId: ID!
+    createdAt: String
+    distance: Float
+    category: String
+    condition: String
+}
+
+input CreateMarketplaceItemInput {
+    title: String!
+    description: String
+    price: Float!
+    locationName: String
+    latitude: Float
+    longitude: Float
+    imageUrl: String
+    ownerId: ID!
+    category: String
+    condition: String
+}

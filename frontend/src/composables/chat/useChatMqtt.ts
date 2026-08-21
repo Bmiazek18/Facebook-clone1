@@ -11,6 +11,7 @@ export function useChatMqtt() {
   let worker: SharedWorker | null = null
   let workerPort: MessagePort | null = null
   let messageCallback: ((topic: string, payload: any) => void) | null = null
+  let heartbeatInterval: any = null
 
   async function connectMqtt(
     userId: string,
@@ -99,10 +100,38 @@ export function useChatMqtt() {
         isMqttConnected.value = true
         console.log('Frontend MQTT: Connected directly to broker.')
         client.subscribe('chat/messages/user/' + userId)
+        client.subscribe('user/' + userId + '/notifications')
+
+        // Start presence heartbeat locally when connected directly
+        if (heartbeatInterval) {
+          clearInterval(heartbeatInterval)
+        }
+        
+        try {
+          client.publish('user/presence/heartbeat', JSON.stringify({ userId }))
+          console.log('[Direct MQTT] Sent immediate heartbeat.')
+        } catch (err) {
+          console.error('[Direct MQTT] Failed to send immediate heartbeat:', err)
+        }
+
+        heartbeatInterval = setInterval(() => {
+          if (client && client.connected) {
+            try {
+              client.publish('user/presence/heartbeat', JSON.stringify({ userId }))
+              console.log('[Direct MQTT] Sent heartbeat.')
+            } catch (err) {
+              console.error('[Direct MQTT] Failed to send heartbeat:', err)
+            }
+          }
+        }, 30000)
       })
 
       client.on('offline', () => {
         isMqttConnected.value = false
+        if (heartbeatInterval) {
+          clearInterval(heartbeatInterval)
+          heartbeatInterval = null
+        }
         console.warn('Frontend MQTT: Connection lost. Reconnecting in 3s...')
         client.end(true)
         setTimeout(() => connectMqtt(userId, onMessage), 3000)
@@ -110,6 +139,10 @@ export function useChatMqtt() {
 
       client.on('error', (err) => {
         console.error('Frontend MQTT: Direct connection error:', err)
+        if (heartbeatInterval) {
+          clearInterval(heartbeatInterval)
+          heartbeatInterval = null
+        }
         client.end(true)
         isMqttConnected.value = false
         setTimeout(() => connectMqtt(userId, onMessage), 5000)
@@ -147,6 +180,10 @@ export function useChatMqtt() {
   }
 
   function disconnectMqtt() {
+    if (heartbeatInterval) {
+      clearInterval(heartbeatInterval)
+      heartbeatInterval = null
+    }
     if (workerPort) {
       workerPort.postMessage({ type: 'CLOSE' })
       workerPort.close()

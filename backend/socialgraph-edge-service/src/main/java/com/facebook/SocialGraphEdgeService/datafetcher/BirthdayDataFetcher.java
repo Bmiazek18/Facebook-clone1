@@ -26,31 +26,33 @@ public class BirthdayDataFetcher {
     private SocialGraphGrpcServiceGrpc.SocialGraphGrpcServiceBlockingStub socialGraphGrpcStub;
 
     @DgsQuery
+    @io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker(name = "socialGraphService", fallbackMethod = "getBirthdayUsersFallback")
+    @io.github.resilience4j.retry.annotation.Retry(name = "socialGraphService")
     public List<BirthdayUser> getBirthdayUsers(@InputArgument String currentUserId) {
         log.info("Edge: Fetching birthday users via gRPC for user: {}", currentUserId);
-        try {
-            GetBirthdayUsersResponse response = socialGraphGrpcStub.getBirthdayUsers(GetBirthdayUsersRequest.newBuilder()
-                    .setUserId(currentUserId)
-                    .build());
+        GetBirthdayUsersResponse response = socialGraphGrpcStub.getBirthdayUsers(GetBirthdayUsersRequest.newBuilder()
+                .setUserId(currentUserId)
+                .build());
 
-            return response.getUsersList().stream()
-                    .map(u -> {
-                        // Tworzymy główny obiekt wygenerowany przez DGS
-                        BirthdayUser birthdayUser = new BirthdayUser();
-                        birthdayUser.setUserId(u.getUserId());
-                        birthdayUser.setBirthDate(u.getBirthDate());
+        return response.getUsersList().stream()
+                .map(u -> {
+                    // Tworzymy główny obiekt wygenerowany przez DGS
+                    BirthdayUser birthdayUser = new BirthdayUser();
+                    birthdayUser.setUserId(u.getUserId());
+                    birthdayUser.setBirthDate(u.getBirthDate());
 
-                        // Od razu budujemy i przypisujemy zagnieżdżony obiekt reprezentujący użytkownika
-                        UserSearchResponse user = new UserSearchResponse();
-                        user.setId(u.getUserId());
-                        birthdayUser.setUser(user);
+                    // Od razu budujemy i przypisujemy zagnieżdżony obiekt reprezentujący użytkownika
+                    UserSearchResponse user = new UserSearchResponse();
+                    user.setId(u.getUserId());
+                    birthdayUser.setUser(user);
 
-                        return birthdayUser;
-                    })
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            log.error("Failed to fetch birthday users", e);
-            throw new RuntimeException("SocialGraph core service unavailable: " + e.getMessage());
-        }
+                    return birthdayUser;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<BirthdayUser> getBirthdayUsersFallback(String currentUserId, Throwable throwable) {
+        log.error("Fallback: Failed to fetch birthday users via gRPC", throwable);
+        return java.util.Collections.emptyList();
     }
 }

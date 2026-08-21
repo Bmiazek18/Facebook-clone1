@@ -1,0 +1,13 @@
+fastapi==0.110.0
+uvicorn==0.28.0
+feast[clickhouse,redis]==0.36.0
+pandas==2.2.1
+clickhouse-connect==0.7.8
+aiokafka==0.10.0
+pydantic==2.6.4
+qdrant-client==1.8.0
+transformers==4.38.2
+torch==2.2.1
+numpy==1.26.4
+autogluon.tabular==1.0.0
+prometheus-fastapi-instrumentator==7.0.0
