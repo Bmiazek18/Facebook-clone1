@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
   try {
     const config = useRuntimeConfig(event)
     // Call Keycloak's Account REST API to fetch active user sessions
-    const response = await fetch(`${config.public.keycloakUrl}/realms/myrealm/account/sessions`, {
+    const response = await fetch(`${config.public.keycloakUrl}/realms/facebook-clone/account/sessions`, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Accept': 'application/json'
@@ -51,16 +51,16 @@ export default defineEventHandler(async (event) => {
     }
 
     const keycloakSessions = (await response.json()) as KeycloakSession[]
-    
+
     // Map Keycloak sessions to frontend format
     const mappedLogins = keycloakSessions.map((s, index) => {
       const isCurrent = s.id === currentSessionId
       const browser = isCurrent ? currentBrowser : getBrowserFromUserAgent(undefined, s.id)
       const { location, lat, lng } = getLocationFromIp(s.ipAddress, s.id)
-      
+
       const timeAgo = formatTimeAgo(s.lastAccess * 1000)
       const registeredTimeAgo = formatTimeAgo(s.started * 1000)
-      
+
       // Generate a mock security key signature based on session ID
       const mockKey = generateMockKey(s.id)
 

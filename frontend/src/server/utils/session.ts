@@ -34,7 +34,7 @@ export async function getValidAccessToken(event: any): Promise<string | null> {
     if (Date.now() + 10000 >= session.expiresAt) {
       console.log(`BFF: Access token is expired or close to expiry (diff: ${timeDiff}ms), refreshing...`)
       const config = useRuntimeConfig(event)
-      const tokenUrl = `${config.public.keycloakUrl}/realms/myrealm/protocol/openid-connect/token`
+      const tokenUrl = `${config.public.keycloakUrl}/realms/facebook-clone/protocol/openid-connect/token`
       const body = new URLSearchParams()
       body.append('grant_type', 'refresh_token')
       body.append('refresh_token', session.refreshToken)
