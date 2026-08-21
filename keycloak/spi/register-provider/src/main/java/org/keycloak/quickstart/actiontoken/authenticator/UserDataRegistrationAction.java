@@ -47,6 +47,8 @@ public class UserDataRegistrationAction implements FormAction {
 
         if (userServiceUrl == null || userServiceUrl.trim().isEmpty()) {
             userServiceUrl = "http://127.0.0.1:5000/register-user";
+        } else {
+            userServiceUrl = userServiceUrl.trim(); // Defensive trim to prevent URISyntaxException due to spaces
         }
 
         // Build payload to send to user-service
@@ -58,7 +60,9 @@ public class UserDataRegistrationAction implements FormAction {
 
         if (!success) {
             logger.warn("User-service rejected registration");
-            context.error(Errors.INVALID_REGISTRATION);
+            java.util.List<org.keycloak.models.utils.FormMessage> errors = new java.util.ArrayList<>();
+            errors.add(new org.keycloak.models.utils.FormMessage(null, "Registration failed, backend service rejected the request."));
+            context.validationError(formData, errors);
             return;
         }
 
