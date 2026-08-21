@@ -260,8 +260,7 @@ jobs:
           FILE="gitops-repo/charts/keycloak/values.yaml"
           IMAGE="${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-keycloak"
           if [ -f "$FILE" ]; then
-            yq -i ".image.repository = \"${IMAGE}\"" "$FILE"
-            yq -i ".image.tag = \"${{ github.sha }}\"" "$FILE"
+            yq -i ".keycloak.image = \"${IMAGE}:${{ github.sha }}\"" "$FILE"
           fi
 
       # 3. Supergraph Rover Compose
