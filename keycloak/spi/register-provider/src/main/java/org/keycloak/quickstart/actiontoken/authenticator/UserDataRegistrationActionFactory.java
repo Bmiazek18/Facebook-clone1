@@ -43,7 +43,7 @@ public class UserDataRegistrationActionFactory implements FormActionFactory {
 
     @Override
     public String getDisplayType() {
-        return "User Service Registration";
+        return "User Service Profile Sync";
     }
 
     @Override
