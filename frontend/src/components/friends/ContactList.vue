@@ -96,9 +96,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'nuxt/app'
 import { useAuthStore } from '@/stores/auth'
+import { useApolloClient } from '@vue/apollo-composable'
+import { GET_FRIENDS, GET_FRIEND_SUGGESTIONS } from '@/graphql/friends'
+import { SEARCH_USERS } from '@/graphql/search'
 
 const props = withDefaults(
   defineProps<{
@@ -111,62 +114,57 @@ const props = withDefaults(
 
 const router = useRouter()
 const authStore = useAuthStore()
-const config = useRuntimeConfig()
 
-const searchHistory = ref<any[]>([])
+const contacts = ref<any[]>([])
 
-const fetchSearchHistory = async () => {
-  const currentUserId = authStore.currentUserId
-  if (!currentUserId || currentUserId === 0) return
+const apolloClient = useApolloClient().resolveClient()
 
+const fetchContacts = async () => {
+  const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
+  
   try {
-    const response = await fetch(config.public.apiUrl + '/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: `
-          query GetSearchHistory {
-            getSearchHistory {
-              id
-              firstName
-              lastName
-              avatarId
-              avatar
-              inHistory
-              newPostsCount
-            }
-          }
-        `
-      }),
+    // 1. Fetch real friends from Neo4j (via getFriends query)
+    const { data } = await apolloClient.query({
+      query: GET_FRIENDS,
+      variables: { userId: currentUserId },
+      fetchPolicy: 'cache-and-network'
     })
-    const resJson = await response.json()
-    searchHistory.value = resJson.data?.getSearchHistory || []
+    
+    if (data?.getFriends && data.getFriends.length > 0) {
+      contacts.value = data.getFriends
+      return
+    }
   } catch (err) {
-    console.error('Failed to fetch search history:', err)
+    console.error('Failed to fetch friends:', err)
+  }
+
+  // 2. Fallback: If no friends yet, load suggestions (people you may know)
+  try {
+    const { data: suggestionData } = await apolloClient.query({
+      query: GET_FRIEND_SUGGESTIONS,
+      variables: { currentUserId },
+      fetchPolicy: 'cache-and-network'
+    })
+    
+    if (suggestionData?.getFriendSuggestions) {
+      contacts.value = suggestionData.getFriendSuggestions
+        .filter((s: any) => s.user)
+        .map((s: any) => s.user)
+    }
+  } catch (err) {
+    console.error('Failed to fetch friend suggestions:', err)
   }
 }
 
 onMounted(() => {
-  fetchSearchHistory()
-  if (typeof window !== 'undefined') {
-    // Listen for custom events to refresh when search is performed elsewhere
-    window.addEventListener('search-updated', fetchSearchHistory)
-  }
+  fetchContacts()
 })
 
-onUnmounted(() => {
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('search-updated', fetchSearchHistory)
-  }
-})
-
-// Watch for user changes so search history is re-fetched when switching accounts
+// Watch for user changes so contacts are re-fetched when switching accounts
 watch(
   () => authStore.currentUserId,
   () => {
-    fetchSearchHistory()
+    fetchContacts()
   }
 )
 
@@ -180,33 +178,15 @@ const fetchSearchResults = async (query: string) => {
   }
   isSearching.value = true
   try {
-    const response = await fetch(config.public.apiUrl + '/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: `
-          query SearchUsers($query: String!, $currentUserId: ID) {
-            searchUsers(query: $query, currentUserId: $currentUserId) {
-              id
-              firstName
-              lastName
-              avatarId
-              avatar
-              inHistory
-              newPostsCount
-            }
-          }
-        `,
-        variables: {
-          query: query,
-          currentUserId: String(authStore.currentUserId)
-        }
-      })
+    const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
+    const { data } = await apolloClient.query({
+      query: SEARCH_USERS,
+      variables: {
+        query,
+        currentUserId,
+      }
     })
-    const resJson = await response.json()
-    searchResults.value = resJson.data?.searchUsers || []
+    searchResults.value = data?.searchUsers || []
   } catch (err) {
     console.error('Failed to search users:', err)
   } finally {
@@ -227,7 +207,7 @@ watch(
 
 const formattedContacts = computed(() => {
   const isQueryEmpty = !(props.searchQuery || '').trim()
-  const listToMap = isQueryEmpty ? searchHistory.value : searchResults.value
+  const listToMap = isQueryEmpty ? contacts.value : searchResults.value
 
   return listToMap.map((user) => {
     let subtitle = ''
@@ -238,22 +218,22 @@ const formattedContacts = computed(() => {
       const lastTwoDigits = user.newPostsCount % 100
 
       if (user.newPostsCount === 1) {
-        subtitle = '1 nowy post od ostatniego wyszukiwania'
+        subtitle = '1 nowy post'
       } else if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 10 || lastTwoDigits >= 20)) {
-        subtitle = `${user.newPostsCount} nowe posty od ostatniego wyszukiwania`
+        subtitle = `${user.newPostsCount} nowe posty`
       } else {
-        subtitle = `${user.newPostsCount} nowych postów od ostatniego wyszukiwania`
+        subtitle = `${user.newPostsCount} nowych postów`
       }
       isNew = true
     } else {
-      subtitle = isQueryEmpty ? 'Brak nowych postów' : ''
+      subtitle = isQueryEmpty ? 'Aktywny(a)' : ''
     }
 
     const avatarUrl = user.avatar || '/default-avatar.png'
 
     return {
       id: user.id,
-      name: `${user.firstName} ${user.lastName}`,
+      name: `${user.firstName} ${user.lastName}`.trim(),
       avatarUrl: avatarUrl,
       subtitle: subtitle,
       isNew: isNew,
@@ -268,6 +248,6 @@ const handleSelect = (id: string | number) => {
 }
 
 const handleRemove = (id: string | number) => {
-  searchHistory.value = searchHistory.value.filter((item) => String(item.id) !== String(id))
+  contacts.value = contacts.value.filter((item) => String(item.id) !== String(id))
 }
 </script>

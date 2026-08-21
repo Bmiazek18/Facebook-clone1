@@ -1,212 +1,49 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { useQuery, useMutation, useApolloClient } from '@vue/apollo-composable'
+import { useMutation, useApolloClient } from '@vue/apollo-composable'
 import { useAuthStore } from '@/stores/auth'
 import type { Group, GroupRole } from '@/types/Group'
-import { gql } from 'graphql-tag'
-
-const GET_GROUPS = gql`
-  query GetGroups($limit: Int, $offset: Int) {
-    getGroups(limit: $limit, offset: $offset) {
-      id
-      name
-      description
-      privacy
-      image
-      membersCount
-      lastActive
-      newPostsToday
-      newPostsMonth
-      newMembersWeek
-      createdAge
-    }
-  }
-`
-
-const GET_GROUP_BY_ID = gql`
-  query GetGroupById($id: ID!) {
-    getGroupById(id: $id) {
-      id
-      name
-      description
-      privacy
-      image
-      membersCount
-      lastActive
-      newPostsToday
-      newPostsMonth
-      newMembersWeek
-      createdAge
-    }
-  }
-`
-
-const GET_GROUP_OVERVIEW = gql`
-  query GetGroupOverview($groupId: ID!) {
-    getGroupOverview(groupId: $groupId) {
-      groupId
-      reportedItemsCount
-      moderationAlertsCount
-      pendingPostsCount
-      pendingRequestsCount
-      groupStatusViolationCount
-      postsCount7Days
-      commentsCount7Days
-      reactionsCount7Days
-      postsTrend
-      commentsTrend
-      reactionsTrend
-      activeMembersChart
-      chartCategories
-    }
-  }
-`
-
-const CREATE_GROUP = gql`
-  mutation CreateGroup($input: CreateGroupInput!) {
-    createGroup(input: $input) {
-      id
-      name
-      description
-      privacy
-      image
-      membersCount
-      lastActive
-      newPostsToday
-      newPostsMonth
-      newMembersWeek
-      createdAge
-    }
-  }
-`
-
-const JOIN_GROUP = gql`
-  mutation JoinGroup($groupId: ID!, $userId: ID!) {
-    joinGroup(groupId: $groupId, userId: $userId)
-  }
-`
-
-const LEAVE_GROUP = gql`
-  mutation LeaveGroup($groupId: ID!, $userId: ID!) {
-    leaveGroup(groupId: $groupId, userId: $userId)
-  }
-`
-
-const GET_GROUP_MEMBERSHIP = gql`
-  query GetGroupMembership($groupId: ID!, $userId: ID!) {
-    getGroupMembership(groupId: $groupId, userId: $userId)
-  }
-`
-
-const GET_PENDING_REQUESTS = gql`
-  query GetPendingRequests($groupId: ID!) {
-    getPendingRequests(groupId: $groupId)
-  }
-`
-
-const GET_GROUP_MEMBERS = gql`
-  query GetGroupMembers($groupId: ID!) {
-    getGroupMembers(groupId: $groupId) {
-      userId
-      role
-      joinedAt
-      isFriend
-    }
-  }
-`
-
-const APPROVE_GROUP_REQUEST = gql`
-  mutation ApproveGroupRequest($groupId: ID!, $userId: ID!, $adminId: ID!) {
-    approveGroupRequest(groupId: $groupId, userId: $userId, adminId: $adminId)
-  }
-`
-
-const REJECT_GROUP_REQUEST = gql`
-  mutation RejectGroupRequest($groupId: ID!, $userId: ID!, $adminId: ID!) {
-    rejectGroupRequest(groupId: $groupId, userId: $userId, adminId: $adminId)
-  }
-`
-
-const REMOVE_GROUP_MEMBER = gql`
-  mutation RemoveGroupMember($groupId: ID!, $userId: ID!, $adminId: ID!) {
-    removeGroupMember(groupId: $groupId, userId: $userId, adminId: $adminId)
-  }
-`
-
-const UPDATE_GROUP_MEMBER_ROLE = gql`
-  mutation UpdateGroupMemberRole($groupId: ID!, $userId: ID!, $role: GroupRole!, $adminId: ID!) {
-    updateGroupMemberRole(groupId: $groupId, userId: $userId, role: $role, adminId: $adminId)
-  }
-`
-
-const GET_GROUP_RULES = gql`
-  query GetGroupRules($groupId: ID!) {
-    getGroupRules(groupId: $groupId) {
-      id
-      title
-      description
-      orderIndex
-    }
-  }
-`
-
-const CREATE_GROUP_RULE = gql`
-  mutation CreateGroupRule($groupId: ID!, $title: String!, $description: String!) {
-    createGroupRule(groupId: $groupId, title: $title, description: $description) {
-      id
-      title
-      description
-      orderIndex
-    }
-  }
-`
-
-const UPDATE_GROUP_RULES_ORDER = gql`
-  mutation UpdateGroupRulesOrder($groupId: ID!, $ruleIds: [ID!]!) {
-    updateGroupRulesOrder(groupId: $groupId, ruleIds: $ruleIds)
-  }
-`
-
-const DELETE_GROUP_RULE = gql`
-  mutation DeleteGroupRule($ruleId: ID!) {
-    deleteGroupRule(ruleId: $ruleId)
-  }
-`
-
-const GET_GROUP_ACTIVITY_LOGS = gql`
-  query GetGroupActivityLogs($groupId: ID!) {
-    getGroupActivityLogs(groupId: $groupId) {
-      id
-      groupId
-      actorId
-      actorName
-      text
-      note
-      time
-      date
-    }
-  }
-`
-
-const LOG_GROUP_ACTIVITY = gql`
-  mutation LogGroupActivity($groupId: ID!, $text: String!, $note: String, $actorId: ID!, $actorName: String!) {
-    logGroupActivity(groupId: $groupId, text: $text, note: $note, actorId: $actorId, actorName: $actorName) {
-      id
-      groupId
-      actorId
-      actorName
-      text
-      note
-      time
-      date
-    }
-  }
-`
+import {
+  GET_GROUPS,
+  GET_GROUP_BY_ID,
+  GET_GROUP_OVERVIEW,
+  CREATE_GROUP,
+  JOIN_GROUP,
+  LEAVE_GROUP,
+  GET_GROUP_MEMBERSHIP,
+  GET_PENDING_REQUESTS,
+  GET_GROUP_MEMBERS,
+  APPROVE_GROUP_REQUEST,
+  REJECT_GROUP_REQUEST,
+  REMOVE_GROUP_MEMBER,
+  UPDATE_GROUP_MEMBER_ROLE,
+  GET_GROUP_RULES,
+  CREATE_GROUP_RULE,
+  UPDATE_GROUP_RULES_ORDER,
+  DELETE_GROUP_RULE,
+  GET_GROUP_ACTIVITY_LOGS,
+  LOG_GROUP_ACTIVITY
+} from '@/graphql/groups'
 
 export const useGroupsStore = defineStore('groups', () => {
   const groups = ref<Group[]>([])
   const authStore = useAuthStore()
   const apollo = useApolloClient()
+
+  const mapGraphQLGroupToGroup = (g: any): Group => ({
+    id: g.id,
+    name: g.name,
+    description: g.description || '',
+    members: g.membersCount || 0,
+    privacy: g.privacy || 'public',
+    image: g.image || '',
+    images: g.image ? [g.image] : [],
+    lastActive: g.lastActive || '1 min temu',
+    newPostsToday: g.newPostsToday || 0,
+    newPostsMonth: g.newPostsMonth || 0,
+    newMembersWeek: g.newMembersWeek || '',
+    createdAge: g.createdAge || ''
+  })
 
   const fetchGroups = async () => {
     try {
@@ -217,20 +54,7 @@ export const useGroupsStore = defineStore('groups', () => {
         fetchPolicy: 'network-only'
       })
       if (result?.data?.getGroups) {
-        groups.value = result.data.getGroups.map((g: any) => ({
-          id: g.id,
-          name: g.name,
-          description: g.description,
-          members: g.membersCount || 0,
-          privacy: g.privacy || 'public',
-          image: g.image,
-          images: [g.image],
-          lastActive: g.lastActive || '1 min temu',
-          newPostsToday: g.newPostsToday || 0,
-          newPostsMonth: g.newPostsMonth || 0,
-          newMembersWeek: g.newMembersWeek || '',
-          createdAge: g.createdAge || ''
-        }))
+        groups.value = result.data.getGroups.map(mapGraphQLGroupToGroup)
       }
     } catch (e) {
       console.error('Failed to fetch groups:', e)
@@ -252,20 +76,7 @@ export const useGroupsStore = defineStore('groups', () => {
       })
       if (result?.data?.getGroupById) {
         const g = result.data.getGroupById
-        const groupObj: Group = {
-          id: g.id,
-          name: g.name,
-          description: g.description,
-          members: g.membersCount || 0,
-          privacy: g.privacy || 'public',
-          image: g.image,
-          images: [g.image],
-          lastActive: g.lastActive || '1 min temu',
-          newPostsToday: g.newPostsToday || 0,
-          newPostsMonth: g.newPostsMonth || 0,
-          newMembersWeek: g.newMembersWeek || '',
-          createdAge: g.createdAge || ''
-        }
+        const groupObj = mapGraphQLGroupToGroup(g)
         const index = groups.value.findIndex((grp) => grp.id === id)
         if (index !== -1) {
           groups.value[index] = groupObj
@@ -294,20 +105,7 @@ export const useGroupsStore = defineStore('groups', () => {
       })
       if (result?.data?.createGroup) {
         const g = result.data.createGroup
-        const newGroup: Group = {
-          id: g.id,
-          name: g.name,
-          description: g.description,
-          members: g.membersCount || 0,
-          privacy: g.privacy || 'public',
-          image: g.image,
-          images: [g.image],
-          lastActive: g.lastActive || '1 min temu',
-          newPostsToday: g.newPostsToday || 0,
-          newPostsMonth: g.newPostsMonth || 0,
-          newMembersWeek: g.newMembersWeek || '',
-          createdAge: g.createdAge || ''
-        }
+        const newGroup = mapGraphQLGroupToGroup(g)
         groups.value.push(newGroup)
         return newGroup
       }

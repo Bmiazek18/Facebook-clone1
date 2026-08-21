@@ -3,6 +3,13 @@ import { ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'nuxt/app'
 import { onClickOutside } from '@vueuse/core'
 import { useAuthStore } from '@/stores/auth'
+import { useApolloClient } from '@vue/apollo-composable'
+import {
+  GET_SEARCH_HISTORY,
+  SEARCH_USERS,
+  RECORD_SEARCH,
+  DELETE_SEARCH_HISTORY_ITEM
+} from '@/graphql/search'
 
 // Ikony
 import SearchInput from '@/components/common/SearchInput.vue'
@@ -12,8 +19,6 @@ import StorefrontOutline from 'vue-material-design-icons/StorefrontOutline.vue'
 import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue'
 import StarBoxOutlineIcon from 'vue-material-design-icons/StarBoxOutline.vue'
-import VideoIcon from 'vue-material-design-icons/Video.vue'
-import ContactList from '@/components/friends/ContactList.vue'
 import NavbarRight from '~/layouts/navbar/NavbarRight.vue'
 
 type ActiveMenuType = 'profile' | 'notifications' | 'message' | null
@@ -35,37 +40,23 @@ const isSearching = ref(false)
 // History searches loaded from backend
 const recentSearches = ref<any[]>([])
 
+const apolloClient = useApolloClient().resolveClient()
+
 const fetchSearchHistory = async () => {
   try {
     const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
-    const response = await fetch('/graphql', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const { data } = await apolloClient.query({
+      query: GET_SEARCH_HISTORY,
+      variables: {
+        userId: currentUserId
       },
-      body: JSON.stringify({
-        query: `
-          query GetSearchHistory($userId: ID) {
-            getSearchHistory(userId: $userId) {
-              id
-              firstName
-              lastName
-              avatar
-              newPostsCount
-            }
-          }
-        `,
-        variables: {
-          userId: currentUserId
-        }
-      }),
+      fetchPolicy: 'cache-and-network'
     })
 
-    const result = await response.json()
-    if (result.data?.getSearchHistory) {
-      recentSearches.value = result.data.getSearchHistory.map((user: any) => ({
+    if (data?.getSearchHistory) {
+      recentSearches.value = data.getSearchHistory.map((user: any) => ({
         id: user.id,
-        name: `${user.firstName} ${user.lastName}`,
+        name: `${user.firstName} ${user.lastName}`.trim(),
         avatar: user.avatar || '/default-avatar.png',
         newPostsCount: user.newPostsCount || 0,
       })).slice(0, 8)
@@ -75,28 +66,43 @@ const fetchSearchHistory = async () => {
   }
 }
 
-const recordSearchOnBackend = async (userId: string) => {
+const removeFromRecent = async (userId: string) => {
   try {
     const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
-    await fetch('/graphql', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: `
-          mutation RecordSearch($searchedUserId: ID!, $searchingUserId: ID) {
-            recordSearch(searchedUserId: $searchedUserId, searchingUserId: $searchingUserId)
-          }
-        `,
-        variables: {
-          searchedUserId: userId,
-          searchingUserId: currentUserId
-        }
-      }),
+    
+    // Update local state immediately for instant feedback
+    recentSearches.value = recentSearches.value.filter(item => item.id !== userId)
+
+    await apolloClient.mutate({
+      mutation: DELETE_SEARCH_HISTORY_ITEM,
+      variables: {
+        searchedUserId: userId,
+        searchingUserId: currentUserId
+      }
     })
   } catch (error) {
-    console.error('Failed to record search on backend:', error)
+    console.error('Failed to delete search history item:', error)
+  }
+}
+
+const clearAllRecent = async () => {
+  try {
+    // Delete each locally stored item one by one on backend
+    const itemsToDelete = [...recentSearches.value]
+    recentSearches.value = []
+    
+    for (const item of itemsToDelete) {
+      const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
+      await apolloClient.mutate({
+        mutation: DELETE_SEARCH_HISTORY_ITEM,
+        variables: {
+          searchedUserId: item.id,
+          searchingUserId: currentUserId
+        }
+      })
+    }
+  } catch (error) {
+    console.error('Failed to clear search history:', error)
   }
 }
 
@@ -109,14 +115,6 @@ watch(isSearchFocused, (focused) => {
     fetchSearchHistory()
   }
 })
-
-const removeFromRecent = (userId: string) => {
-  recentSearches.value = recentSearches.value.filter(item => item.id !== userId)
-}
-
-const clearAllRecent = () => {
-  recentSearches.value = []
-}
 
 onClickOutside(navLeft, () => {
   isSearchFocused.value = false
@@ -136,35 +134,19 @@ const performLiveSearch = async () => {
   isSearching.value = true
   try {
     const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
-    const response = await fetch('/graphql', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const { data } = await apolloClient.query({
+      query: SEARCH_USERS,
+      variables: {
+        query,
+        currentUserId,
       },
-      body: JSON.stringify({
-        query: `
-          query SearchUsers($query: String!, $currentUserId: ID!) {
-            searchUsers(query: $query, currentUserId: $currentUserId) {
-              id
-              firstName
-              lastName
-              avatar
-              newPostsCount
-            }
-          }
-        `,
-        variables: {
-          query,
-          currentUserId,
-        },
-      }),
+      fetchPolicy: 'cache-first'
     })
 
-    const result = await response.json()
-    if (result.data?.searchUsers) {
-      searchResults.value = result.data.searchUsers.map((user: any) => ({
+    if (data?.searchUsers) {
+      searchResults.value = data.searchUsers.map((user: any) => ({
         id: user.id,
-        name: `${user.firstName} ${user.lastName}`,
+        name: `${user.firstName} ${user.lastName}`.trim(),
         avatar: user.avatar || '/default-avatar.png',
         newPostsCount: user.newPostsCount || 0,
       }))
@@ -172,15 +154,32 @@ const performLiveSearch = async () => {
       searchResults.value = []
     }
   } catch (error) {
-    console.error('Live search failed:', error)
+    console.error('Failed to perform live search:', error)
     searchResults.value = []
   } finally {
     isSearching.value = false
   }
 }
 
-watch(searchInput, () => {
-  performLiveSearch()
+let searchDebounceTimeout: any = null
+
+watch(searchInput, (newValue) => {
+  if (searchDebounceTimeout) {
+    clearTimeout(searchDebounceTimeout)
+  }
+
+  if (!newValue.trim()) {
+    searchResults.value = []
+    isSearching.value = false
+    return
+  }
+
+  // Set isSearching to true immediately so the UI shows a loading spinner
+  isSearching.value = true
+
+  searchDebounceTimeout = setTimeout(() => {
+    performLiveSearch()
+  }, 300)
 })
 
 const handleSearchSubmit = () => {
@@ -190,12 +189,25 @@ const handleSearchSubmit = () => {
   }
 }
 
-const goToProfile = async (user: { id: string, name: string, avatar: string }) => {
-  await recordSearchOnBackend(user.id)
+const goToProfile = (user: { id: string, name: string, avatar: string }) => {
+  try {
+    const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
+    apolloClient.mutate({
+      mutation: RECORD_SEARCH,
+      variables: {
+        searchedUserId: user.id,
+        searchingUserId: currentUserId
+      }
+    }).then(() => {
+      fetchSearchHistory()
+    }).catch(err => console.error('Failed to record search:', err))
+  } catch (error) {
+    console.error('Failed to record search:', error)
+  }
+
   router.push('/profile/' + user.id)
   isSearchFocused.value = false
   searchInput.value = ''
-  fetchSearchHistory()
 }
 </script>
 

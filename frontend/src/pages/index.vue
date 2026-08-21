@@ -33,52 +33,47 @@ const { data: result, error } = await useAsyncQuery<any>(GET_HOME_DATA, {
   offset: 0
 })
 
-// Przetwarzanie danych pobranych z GraphQL
-const populateFeed = (data: any) => {
-  if (!data) return
-  const feed = (data.getFeed ?? []).filter(Boolean)
-  postsStore.posts = feed.map((post: any) => {
-    let formattedReactions: Record<string, number[]> = {}
-    let reactionUserNames: Record<string, string[]> = {}
-    if (Array.isArray(post.reactions)) {
-      post.reactions.forEach((r: any) => {
-        const type = r.reactionType.toLowerCase()
-        formattedReactions[type] = r.userIds.map(String)
-        if (Array.isArray(r.users)) {
-          reactionUserNames[type] = r.users.map((u: any) =>
-            [u.firstName, u.lastName].filter(Boolean).join(' ') || 'Użytkownik'
-          )
-        }
-      })
-    } else if (post.reactions) {
-      formattedReactions = post.reactions
-    }
-
-    return {
-      ...post,
-      reactions: formattedReactions,
-      rawReactions: post.reactions,
-      reactionUserNames,
-      stats: {
-        reactions: Object.values(formattedReactions).flat().length,
-        comments: post.commentCount ?? 0,
-        shares: post.shareCount ?? 0,
+// Helper to format GraphQL post data into frontend model
+const formatPost = (post: any) => {
+  let formattedReactions: Record<string, number[]> = {}
+  let reactionUserNames: Record<string, string[]> = {}
+  
+  if (Array.isArray(post.reactions)) {
+    post.reactions.forEach((r: any) => {
+      const type = r.reactionType.toLowerCase()
+      formattedReactions[type] = (r.userIds ?? []).map(String)
+      if (Array.isArray(r.users)) {
+        reactionUserNames[type] = r.users.map((u: any) =>
+          [u.firstName, u.lastName].filter(Boolean).join(' ') || 'Użytkownik'
+        )
       }
-    }
-  })
+    })
+  } else if (post.reactions) {
+    formattedReactions = post.reactions
+  }
 
-  if (data.getActiveStories) {
-    storiesStore.userStories = processActiveStories(data.getActiveStories ?? [], String(currentUserId.value))
+  return {
+    ...post,
+    reactions: formattedReactions,
+    rawReactions: post.reactions,
+    reactionUserNames,
+    stats: {
+      reactions: Object.values(formattedReactions).flat().length,
+      comments: post.commentCount ?? 0,
+      shares: post.shareCount ?? 0,
+    }
   }
 }
 
-if (result.value) {
-  populateFeed(result.value)
-}
-
+// Synchronizacja danych GraphQL ze sklepami stanu (Store)
 watch(result, (newVal) => {
-  if (newVal) populateFeed(newVal)
-})
+  if (newVal) {
+    postsStore.posts = (newVal.getFeed ?? []).filter(Boolean).map(formatPost)
+    if (newVal.getActiveStories) {
+      storiesStore.userStories = processActiveStories(newVal.getActiveStories, String(currentUserId.value))
+    }
+  }
+}, { immediate: true })
 
 const friends = computed(() => result.value?.getFriends ?? [])
 const birthdayUsers = computed(() => result.value?.getBirthdayUsers ?? [])
@@ -125,23 +120,7 @@ const loadMorePosts = async () => {
     }
 
     // Formatowanie nowych postów i dodanie do stoiska
-    const formattedNewPosts = newPosts.map((post: any) => {
-      let formattedReactions: Record<string, number[]> = {}
-      if (Array.isArray(post.reactions)) {
-        post.reactions.forEach((r: any) => {
-          formattedReactions[r.reactionType.toLowerCase()] = r.userIds.map(String)
-        })
-      }
-      return {
-        ...post,
-        reactions: formattedReactions,
-        stats: {
-          reactions: Object.values(formattedReactions).flat().length,
-          comments: post.commentCount ?? 0,
-          shares: post.shareCount ?? 0,
-        }
-      }
-    })
+    const formattedNewPosts = newPosts.map(formatPost)
 
     postsStore.posts = [...postsStore.posts, ...formattedNewPosts]
   } catch (e) {
