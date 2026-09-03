@@ -119,10 +119,39 @@ def pil_to_base64(img: Image.Image) -> str:
     img.save(buffered, format="PNG")
     return base64.b64encode(buffered.getvalue()).decode()
 
-# --- ZARZĄDZANIE KOLEJKĄ I BLOKADA GPU (DEDYKOWANY WORKER GPU) ---
-GPU_LOCK = asyncio.Lock()
-active_tasks_count = 0
-waiting_queue_count = 0
+# --- INTELIGENTNY SCHEDULER VRAM DLA JEDNOCZESNYCH ZADAŃ (LLM + ABR) ---
+HEAVY_GPU_LOCK = asyncio.Lock()          # Wyłączność dla ciężkich zadań generowania obrazów (Stable Diffusion)
+TEXT_LLM_SEMAPHORE = asyncio.Semaphore(4) # Współbieżne zapytania LLM / BERT (do 4 na raz)
+VIDEO_ABR_SEMAPHORE = asyncio.Semaphore(2) # Współbieżne transkodowanie wideo (do 2 na raz)
+
+active_llm_tasks = 0
+active_video_tasks = 0
+active_sd_tasks = 0
+waiting_sd_queue = 0
+
+def get_vram_info():
+    if DEVICE == "cuda" and torch.cuda.is_available():
+        try:
+            free_b, total_b = torch.cuda.mem_get_info()
+            allocated_b = torch.cuda.memory_allocated()
+            reserved_b = torch.cuda.memory_reserved()
+            return {
+                "free_mb": round(free_b / (1024 * 1024), 2),
+                "total_mb": round(total_b / (1024 * 1024), 2),
+                "allocated_mb": round(allocated_b / (1024 * 1024), 2),
+                "reserved_mb": round(reserved_b / (1024 * 1024), 2)
+            }
+        except Exception:
+            pass
+    return {"free_mb": 8192.0, "total_mb": 8192.0, "allocated_mb": 0.0, "reserved_mb": 0.0}
+
+def ensure_vram_headroom(required_mb: float = 3500.0):
+    """Zwalnia cache PyTorch jeśli wolny VRAM jest poniżej wymaganego progu."""
+    if DEVICE == "cuda" and torch.cuda.is_available():
+        vram = get_vram_info()
+        if vram["free_mb"] < required_mb:
+            print(f"[VRAM SCHEDULER] Zwalniam cache VRAM (obecnie wolne: {vram['free_mb']} MB, wymagane: {required_mb} MB)...")
+            torch.cuda.empty_cache()
 
 # --- KOLEJKA BATCH DLA BERT TOXICITY ---
 request_queue = asyncio.Queue()
@@ -130,6 +159,7 @@ BATCH_SIZE = 32
 BATCH_TIMEOUT_SEC = 0.005
 
 async def batch_processor():
+    global active_llm_tasks
     while True:
         item = await request_queue.get()
         batch = [item]
@@ -147,23 +177,26 @@ async def batch_processor():
         texts = [x[0] for x in batch]
         futures = [x[1] for x in batch]
         
-        try:
-            if bert_moderator:
-                results = bert_moderator(texts)
-                for future, res in zip(futures, results):
-                    if not future.done():
-                        future.set_result(res)
-            else:
+        async with TEXT_LLM_SEMAPHORE:
+            active_llm_tasks += 1
+            try:
+                if bert_moderator:
+                    results = bert_moderator(texts)
+                    for future, res in zip(futures, results):
+                        if not future.done():
+                            future.set_result(res)
+                else:
+                    for future in futures:
+                        if not future.done():
+                            future.set_result({"label": "non-toxic", "score": 0.0})
+            except Exception as e:
                 for future in futures:
                     if not future.done():
-                        future.set_result({"label": "non-toxic", "score": 0.0})
-        except Exception as e:
-            for future in futures:
-                if not future.done():
-                    future.set_exception(e)
-        finally:
-            for _ in range(len(batch)):
-                request_queue.task_done()
+                        future.set_exception(e)
+            finally:
+                active_llm_tasks = max(0, active_llm_tasks - 1)
+                for _ in range(len(batch)):
+                    request_queue.task_done()
 
 @app.on_event("startup")
 async def startup_event():
@@ -171,37 +204,43 @@ async def startup_event():
 
 @app.get("/health")
 def health():
+    vram = get_vram_info()
     return {
         "status": "UP",
         "device": DEVICE,
-        "gpu_available": torch.cuda.is_available() or torch.backends.mps.is_available()
+        "gpu_available": torch.cuda.is_available() or torch.backends.mps.is_available(),
+        "vram_free_mb": vram["free_mb"],
+        "vram_allocated_mb": vram["allocated_mb"]
     }
 
 @app.get("/queue/status")
 @app.get("/gpu/status")
 def get_gpu_queue_status():
-    vram_allocated = 0
-    vram_reserved = 0
-    total_vram = 0
+    vram = get_vram_info()
     device_name = "CPU"
-    
     if DEVICE == "cuda" and torch.cuda.is_available():
         device_name = torch.cuda.get_device_name(0)
-        vram_allocated = round(torch.cuda.memory_allocated(0) / (1024 * 1024), 2)
-        vram_reserved = round(torch.cuda.memory_reserved(0) / (1024 * 1024), 2)
-        total_vram = round(torch.cuda.get_device_properties(0).total_memory / (1024 * 1024), 2)
+
+    # Sprawdzamy czy VRAM pozwala na równoczesne zadania
+    can_run_concurrent_abr = vram["free_mb"] >= 500.0
 
     return {
         "device": DEVICE,
         "device_name": device_name,
-        "active_gpu_task": GPU_LOCK.locked(),
-        "waiting_in_queue": waiting_queue_count,
-        "vram_allocated_mb": vram_allocated,
-        "vram_reserved_mb": vram_reserved,
-        "total_vram_mb": total_vram
+        "vram_free_mb": vram["free_mb"],
+        "vram_allocated_mb": vram["allocated_mb"],
+        "vram_reserved_mb": vram["reserved_mb"],
+        "total_vram_mb": vram["total_mb"],
+        "active_tasks": {
+            "llm_text": active_llm_tasks,
+            "video_abr": active_video_tasks,
+            "image_sd": active_sd_tasks
+        },
+        "waiting_in_sd_queue": waiting_sd_queue,
+        "parallel_abr_and_llm_allowed": can_run_concurrent_abr
     }
 
-# --- ENDPOINT 1: MODERACJA TEKSTU (BERT) ---
+# --- ENDPOINT 1: MODERACJA TEKSTU I LLM (Działa równolegle z ABR) ---
 @app.post("/predict")
 async def predict(request: InferenceRequest):
     loop = asyncio.get_running_loop()
@@ -215,23 +254,25 @@ async def predict(request: InferenceRequest):
             BERT_MODERATION_DURATION.observe(duration)
         return {
             "label": result["label"],
-            "score": float(result["score"])
+            "score": float(result["score"]),
+            "duration_ms": round(duration * 1000, 2)
         }
     except Exception as e:
         return {"error": str(e)}
 
-# --- ENDPOINT 2: GENEROWANIE I INPAINTING OBRAZÓW (STABLE DIFFUSION) ---
+# --- ENDPOINT 2: GENEROWANIE OBRAZÓW STABLE DIFFUSION (Wymaga rezerwacji dużej pamięci VRAM) ---
 @app.post("/generate-image")
 @app.post("/generate")
 async def generate_image(request: GenerationRequest):
-    global waiting_queue_count, active_tasks_count
-    waiting_queue_count += 1
+    global waiting_sd_queue, active_sd_tasks
+    waiting_sd_queue += 1
     start_time = asyncio.get_event_loop().time()
-    
-    # Bezpieczna synchronizacja: tylko jedno zadanie generowania GPU na raz (ochrona przed OOM)
-    async with GPU_LOCK:
-        waiting_queue_count = max(0, waiting_queue_count - 1)
-        active_tasks_count += 1
+
+    # Oczekiwanie na wyłączność VRAM dla Stable Diffusion
+    async with HEAVY_GPU_LOCK:
+        waiting_sd_queue = max(0, waiting_sd_queue - 1)
+        active_sd_tasks += 1
+        ensure_vram_headroom(required_mb=3500.0)
         try:
             tokenizer, models = get_sd_models()
             import pipeline
@@ -284,7 +325,7 @@ async def generate_image(request: GenerationRequest):
             traceback.print_exc()
             raise HTTPException(status_code=500, detail=str(e))
         finally:
-            active_tasks_count = max(0, active_tasks_count - 1)
+            active_sd_tasks = max(0, active_sd_tasks - 1)
             if DEVICE == "cuda" and torch.cuda.is_available():
                 if GPU_VRAM_ALLOCATED_BYTES:
                     GPU_VRAM_ALLOCATED_BYTES.set(torch.cuda.memory_allocated())
