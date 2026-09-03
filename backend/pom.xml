@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.0</version>
+		<version>3.3.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.facebook</groupId>
@@ -15,6 +15,7 @@
 
 	<properties>
 		<java.version>21</java.version>
+		<lombok.version>1.18.34</lombok.version>
 		<dgs.version>12.0.1</dgs.version>
 		<federation-graphql-java-support.version>6.2.1</federation-graphql-java-support.version>
 		<graphqlcodegen.version>3.9.0</graphqlcodegen.version>
@@ -67,6 +68,14 @@
 	<build>
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.13.0</version>
+					<configuration>
+						<parameters>true</parameters>
+					</configuration>
+				</plugin>
 				<plugin>
 					<groupId>io.github.deweyjose</groupId>
 					<artifactId>graphqlcodegen-maven-plugin</artifactId>
