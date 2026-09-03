@@ -73,6 +73,19 @@ local_llm = ChatOpenAI(
     temperature=0.0
 )
 
+# --- REDIS SEMANTIC CACHE DLA ODPOWIEDZI AI ---
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+REDIS_CACHE_TTL = int(os.getenv("SEMANTIC_CACHE_TTL_SEC", "7200")) # 2h TTL
+
+try:
+    import redis.asyncio as aioredis
+    redis_cache = aioredis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+    print(f"[SEMANTIC CACHE] Połączono z Redis cache na {REDIS_HOST}:{REDIS_PORT}")
+except Exception as e:
+    print(f"[SEMANTIC CACHE] Ostrzeżenie: brak połączenia z Redis: {e}")
+    redis_cache = None
+
 
 # --- DEFINICJA STANU GRAFU ---
 class AgentState(TypedDict):
@@ -312,14 +325,34 @@ async def process_chat(request: Request):
     start_time = time.time()
     first_token_recorded = False
 
+    # Normalizacja i klucz Semantic Cache w Redis
+    normalized_query = user_query.strip().lower()
+    query_hash = hashlib.sha256(normalized_query.encode("utf-8")).hexdigest()
+    cache_key = f"semantic_ai_cache:{model_mode}:{query_hash}"
+
     async def stream():
         nonlocal first_token_recorded
+        
+        # 1. Sprawdzenie Semantic Cache w Redis (Odpowiedź w 1-2 ms bez angażowania GPU)
+        if redis_cache and len(normalized_query) > 3:
+            try:
+                cached_text = await redis_cache.get(cache_key)
+                if cached_text:
+                    print(f"[SEMANTIC CACHE HIT] Zwracam zcache'owaną odpowiedź dla '{normalized_query[:30]}...' w 2 ms")
+                    if LLM_REQUESTS_TOTAL:
+                        LLM_REQUESTS_TOTAL.labels(model=OLLAMA_MODEL, status="cache_hit").inc()
+                    yield cached_text
+                    return
+            except Exception as cache_err:
+                print(f"[SEMANTIC CACHE ERROR]: {cache_err}")
+
+        # 2. Generowanie przez LLM / Agenta gdy brak w cache (Cache MISS)
+        full_response_chunks = []
         try:
             inputs = {
                 "messages": [("user", user_query)],
                 "model_mode": model_mode
             }
-
 
             async for msg, metadata in agent_executor.astream(
                     inputs,
@@ -345,7 +378,9 @@ async def process_chat(request: Request):
                 if metadata.get("langgraph_node") == "agent" and hasattr(msg, "tool_calls") and msg.tool_calls:
                     for tool_call in msg.tool_calls:
                         tool_name = tool_call.get("name")
-                        yield f"\n*[Asystent uruchamia narzędzie: {tool_name}...]*\n\n"
+                        chunk = f"\n*[Asystent uruchamia narzędzie: {tool_name}...]*\n\n"
+                        full_response_chunks.append(chunk)
+                        yield chunk
 
                 # 3. STRUMIEŃ DLA KLIENTA: Renderowanie tekstu lub linku do pliku statycznego
                 if msg.content and metadata.get("langgraph_node") == "agent":
@@ -367,13 +402,30 @@ async def process_chat(request: Request):
                                 filename = os.path.basename(file_path)
                                 img_url = f"/generated_charts/{filename}"
                                 img_md = f"\n![Wykres]({img_url})\n"
-                                yield text_chunk.replace(full_tag, img_md)
+                                rendered = text_chunk.replace(full_tag, img_md)
+                                full_response_chunks.append(rendered)
+                                yield rendered
                             else:
-                                yield text_chunk.replace(full_tag, "[Błąd: Plik wykresu nie został znaleziony]")
+                                err_msg = "[Błąd: Plik wykresu nie został znaleziony]"
+                                full_response_chunks.append(err_msg)
+                                yield text_chunk.replace(full_tag, err_msg)
                         except Exception as img_err:
-                            yield text_chunk.replace(full_tag, f"[Błąd obrazu: {str(img_err)}]")
+                            err_msg = f"[Błąd obrazu: {str(img_err)}]"
+                            full_response_chunks.append(err_msg)
+                            yield text_chunk.replace(full_tag, err_msg)
                     else:
+                        full_response_chunks.append(text_chunk)
                         yield text_chunk
+
+            # Zapis pełnej wygenerowanej odpowiedzi do Redis Semantic Cache z czasem życia TTL
+            if redis_cache and full_response_chunks and len(full_response_chunks) > 0:
+                try:
+                    full_text = "".join(full_response_chunks)
+                    if not full_text.startswith("❌"):
+                        await redis_cache.set(cache_key, full_text, ex=REDIS_CACHE_TTL)
+                        print(f"[SEMANTIC CACHE SAVED] Zapisano odpowiedź w Redis dla '{normalized_query[:30]}...' (TTL: {REDIS_CACHE_TTL}s)")
+                except Exception as save_err:
+                    print(f"[SEMANTIC CACHE SAVE ERROR]: {save_err}")
 
             # Rejestracja całkowitego czasu generowania w Prometheus
             total_duration = time.time() - start_time
