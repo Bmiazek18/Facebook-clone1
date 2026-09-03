@@ -172,7 +172,7 @@ spec:
   source:
     repoURL: https://github.com/rabbitmq/cluster-operator.git
     targetRevision: v2.8.0
-    path: config/render
+    path: config/default
   destination:
     server: https://kubernetes.default.svc
     namespace: rabbitmq-system
