@@ -27,13 +27,10 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (userRepository.count() > 0) {
-            log.info("Database already seeded, skipping user seeding.");
-            return;
-        }
-        log.info("Resetting and seeding 20 initial users...");
+        log.info("Verifying and seeding initial users including testuser (e1088d18-971c-4bbf-a6ea-b7692fc3f412)...");
 
         List<UserSeedData> seedList = List.of(
+                new UserSeedData(UUID.fromString("e1088d18-971c-4bbf-a6ea-b7692fc3f412"), "testuser", "testuser@lab-bm.com", "Test", "User", "1995-05-15"),
                 new UserSeedData("testuser1", "testuser1@example.com", "Piotr", "Kowalski", "1995-03-12"),
                 new UserSeedData("testuser2", "testuser2@example.com", "Anna", "Nowak", "1998-07-24"),
                 new UserSeedData("testuser3", "testuser3@example.com", "Jan", "Wiśniewski", "1992-11-05"),
@@ -62,17 +59,35 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         for (UserSeedData seed : seedList) {
             UUID deterministicId = seed.customId != null ? seed.customId : UUID.nameUUIDFromBytes(seed.username.getBytes());
-            User user = User.builder()
-                    .id(deterministicId)
-                    .username(seed.username)
-                    .email(seed.email)
-                    .password("password") // default password
-                    .firstName(seed.firstName)
-                    .lastName(seed.lastName)
-                    .birthDate(seed.birthDate)
-                    .build();
-            user = userRepository.save(user);
-            log.info("Seeded user {} with ID {}", seed.username, user.getId());
+            Optional<User> existing = userRepository.findById(deterministicId);
+            if (existing.isEmpty()) {
+                existing = userRepository.findByUsername(seed.username);
+            }
+            if (existing.isEmpty()) {
+                existing = userRepository.findByEmail(seed.email);
+            }
+
+            User user;
+            if (existing.isPresent()) {
+                user = existing.get();
+            } else {
+                user = User.builder()
+                        .id(deterministicId)
+                        .username(seed.username)
+                        .email(seed.email)
+                        .password("Password123!") // default password
+                        .firstName(seed.firstName)
+                        .lastName(seed.lastName)
+                        .birthDate(seed.birthDate)
+                        .bio("Welcome to Facebook Clone!")
+                        .location("Warsaw, Poland")
+                        .gender("CUSTOM")
+                        .pronouns("they/them")
+                        .relationshipStatus("SINGLE")
+                        .build();
+                user = userRepository.save(user);
+                log.info("Seeded user {} with ID {}", seed.username, user.getId());
+            }
             users.add(user);
         }
 
@@ -105,45 +120,46 @@ public class DatabaseSeeder implements CommandLineRunner {
     private void seedFriendships(List<User> users) {
         log.info("Seeding Neo4j friendships between test users...");
         
-        // testuser4 (index 3) is friends with everyone else
-        User u4 = users.get(3);
-        for (int i = 0; i < users.size(); i++) {
-            if (i != 3) {
-                makeFriends(u4.getId(), users.get(i).getId());
+        // testuser (index 0, e1088d18-971c-4bbf-a6ea-b7692fc3f412) is friends with users 1-6
+        User testUser = users.get(0);
+        for (int i = 1; i <= Math.min(6, users.size() - 1); i++) {
+            makeFriends(testUser.getId(), users.get(i).getId());
+        }
+
+        // Pending friend requests sent to testUser
+        if (users.size() > 8) {
+            sendPendingFriendRequest(users.get(7).getId(), testUser.getId());
+            sendPendingFriendRequest(users.get(8).getId(), testUser.getId());
+        }
+
+        // testuser4 (index 4) is friends with everyone else
+        if (users.size() > 4) {
+            User u4 = users.get(4);
+            for (int i = 0; i < users.size(); i++) {
+                if (i != 4 && i != 0) {
+                    makeFriends(u4.getId(), users.get(i).getId());
+                }
             }
         }
 
-        // Add additional friendships for mutual connections
-        // testuser1 (index 0) with 2 (Anna), 3 (Jan), 5 (Michal)
-        makeFriends(users.get(0).getId(), users.get(1).getId());
-        makeFriends(users.get(0).getId(), users.get(2).getId());
-        makeFriends(users.get(0).getId(), users.get(4).getId());
-
-        // testuser2 (index 1) with 3 (Jan), 6 (Agnieszka)
-        makeFriends(users.get(1).getId(), users.get(2).getId());
-        makeFriends(users.get(1).getId(), users.get(5).getId());
-
-        // testuser3 (index 2) with 7 (Tomasz)
-        makeFriends(users.get(2).getId(), users.get(6).getId());
-
-        // testuser5 (index 4) with 6 (Agnieszka), 8 (Malgorzata)
-        makeFriends(users.get(4).getId(), users.get(5).getId());
-        makeFriends(users.get(4).getId(), users.get(7).getId());
-
-        // testuser7 (index 6) with 9 (Marcin), 10 (Karolina)
-        makeFriends(users.get(6).getId(), users.get(8).getId());
-        makeFriends(users.get(6).getId(), users.get(9).getId());
-
-        // friendships for new test users
-        if (users.size() >= 20) {
-            makeFriends(users.get(10).getId(), users.get(11).getId()); // testuser11 - testuser12
-            makeFriends(users.get(10).getId(), users.get(12).getId()); // testuser11 - testuser13
-            makeFriends(users.get(11).getId(), users.get(13).getId()); // testuser12 - testuser14
-            makeFriends(users.get(14).getId(), users.get(15).getId()); // testuser15 - testuser16
-            makeFriends(users.get(16).getId(), users.get(17).getId()); // testuser17 - testuser18
-            makeFriends(users.get(18).getId(), users.get(19).getId()); // testuser19 - testuser20
+        // Additional mutual friendships
+        if (users.size() > 3) {
+            makeFriends(users.get(1).getId(), users.get(2).getId());
+            makeFriends(users.get(1).getId(), users.get(3).getId());
+            makeFriends(users.get(2).getId(), users.get(3).getId());
         }
+    }
 
+    private void sendPendingFriendRequest(java.util.UUID senderId, java.util.UUID receiverId) {
+        try {
+            socialGraphGrpcStub.sendFriendRequest(com.facebook.socialgraph.grpc.FriendRequestMsg.newBuilder()
+                    .setSenderId(senderId.toString())
+                    .setReceiverId(receiverId.toString())
+                    .build());
+            log.info("Sent pending friend request from {} to {}", senderId, receiverId);
+        } catch (Exception e) {
+            log.warn("Failed to send pending friend request from {} to {}: {}", senderId, receiverId, e.getMessage());
+        }
     }
 
     private void makeFriends(java.util.UUID user1Id, java.util.UUID user2Id) {
