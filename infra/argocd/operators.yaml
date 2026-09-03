@@ -174,13 +174,15 @@ spec:
     chart: rabbitmq-cluster-operator
     targetRevision: 4.3.26
     helm:
-      parameters:
-        - name: clusterOperator.image.tag
-          value: "latest"
-        - name: image.tag
-          value: "latest"
-        - name: msgTopologyOperator.enabled
-          value: "false"
+      valuesObject:
+        clusterOperator:
+          image:
+            registry: docker.io
+            repository: rabbitmqoperator/cluster-operator
+            tag: "2.8.0"
+            digest: ""
+        msgTopologyOperator:
+          enabled: false
   destination:
     server: https://kubernetes.default.svc
     namespace: rabbitmq-system
