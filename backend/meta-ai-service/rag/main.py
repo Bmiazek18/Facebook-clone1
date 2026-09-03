@@ -1,0 +1,421 @@
+import os
+import sys
+import time
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+try:
+    from config.sentry import init_sentry
+    init_sentry(service_name="rag")
+except ImportError:
+    pass
+
+try:
+    from config.observability import (
+        setup_observability,
+        get_langfuse_callback,
+        tracer,
+        LLM_REQUESTS_TOTAL,
+        LLM_TTFT_SECONDS,
+        LLM_GENERATION_DURATION,
+        TOOL_EXECUTIONS_TOTAL
+    )
+except ImportError:
+    setup_observability = lambda app: None
+    get_langfuse_callback = lambda **kw: None
+    tracer = None
+    LLM_REQUESTS_TOTAL = None
+    LLM_TTFT_SECONDS = None
+    LLM_GENERATION_DURATION = None
+    TOOL_EXECUTIONS_TOTAL = None
+
+import base64
+import hashlib
+import re
+import uvicorn
+import json
+import sqlite3
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from datetime import datetime
+from contextlib import asynccontextmanager
+
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+from langchain_openai import ChatOpenAI
+from langchain.tools import tool
+from langchain_core.messages import HumanMessage, BaseMessage
+from langchain_community.tools import DuckDuckGoSearchRun
+
+from typing import Annotated, Sequence, List, Literal, TypedDict
+from pydantic import BaseModel, Field
+from langgraph.graph.message import add_messages
+from langgraph.graph import StateGraph, START, END
+from langgraph.prebuilt import ToolNode
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+
+# --- GLOBALNA ZMIENNA DLA AGENTA ---
+agent_executor = None
+DB_PATH = "chat_history.db"
+CHARTS_DIR = "generated_charts"  # Zmienna pomocnicza dla czytelności
+
+# --- CONFIG INTERFEJSÓW KLIENTÓW ---
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+
+local_llm = ChatOpenAI(
+    base_url=OLLAMA_BASE_URL,
+    api_key="ollama",
+    model=OLLAMA_MODEL,
+    temperature=0.0
+)
+
+
+# --- DEFINICJA STANU GRAFU ---
+class AgentState(TypedDict):
+    messages: Annotated[Sequence[BaseMessage], add_messages]
+    chat_title: str
+    model_mode: str
+
+
+# --- STRUKTURA PYDANTIC DLA STRUKTURYZOWANEGO REZULTATU ---
+class ChartConfig(BaseModel):
+    title: str = Field(
+        description="Tytuł wykresu opisujący co przedstawiają dane, np. 'Cena chleba w weekend'"
+    )
+    type: Literal["bar", "line", "pie"] = Field(
+        description="Typ wykresu: 'bar' (słupkowy), 'line' (liniowy) lub 'pie' (kołowy)"
+    )
+    labels: List[str] = Field(
+        description="Etykiety dla osi X lub sekcji wykresu kołowego, np. ['Piątek', 'Sobota']"
+    )
+    values: List[float] = Field(
+        description="Wartości liczbowe odpowiadające etykietom (musi być ich dokładnie tyle samo co etykiet)"
+    )
+    dark_mode: bool = Field(
+        default=True,
+        description="True jeśli wykres ma pasować do ciemnego motywu aplikacji, False dla jasnego motywu"
+    )
+
+
+# --- FUNKCJA GENERUJĄCA TYTUŁ CZATU ---
+async def generate_chat_title(user_query: str, assistant_response: str) -> str:
+    try:
+        prompt = (
+            f"Na podstawie poniższego pytania użytkownika oraz odpowiedzi asystenta, "
+            f"wygeneruj bardzo krótki, maksymalnie 3-5 wyrazowy tytuł dla tej konwersacji w języku polskim. "
+            f"Tytuł ma streszczać esencję rozmowy. Nie używaj cudzysłowów, ponumerowań ani dodatkowych słów. "
+            f"Zwróć wyłącznie sam tekst tytułu.\n\n"
+            f"Pytanie użytkownika: {user_query}\n\n"
+            f"Odpowiedź asystenta: {assistant_response}"
+        )
+        title_llm = ChatOpenAI(
+            base_url=OLLAMA_BASE_URL,
+            api_key="ollama",
+            model=OLLAMA_MODEL,
+            temperature=0.5
+        )
+        response = await title_llm.ainvoke([HumanMessage(content=prompt)])
+        title = response.content.strip().strip('"').strip("'").strip()
+        return title if title else "Nowa rozmowa"
+    except Exception as e:
+        print(f"Błąd podczas generowania tytułu: {e}")
+        return "Nowa rozmowa"
+
+
+# --- IMPORT NARZĘDZI AGENTA ---
+from tools import agent_tools
+
+
+# --- WĘZŁY GRAFU ---
+async def call_model(state: AgentState):
+    messages = state["messages"]
+    mode = state.get("model_mode", "Flash")
+
+    if mode == "Thinking":
+        system_content = (
+            "Jesteś zaawansowanym asystentem AI. Przed sformułowaniem finalnej odpowiedzi "
+            "zawsze dokładnie przemyśl i przeanalizuj problem krok po kroku w sekcji <think>...</think>. "
+            "Po zamknięciu tagu </think> przedstaw ostateczną, czytelną odpowiedź w języku polskim. "
+            "Jeśli użytkownik prosi o wykres lub dane, użyj narzędzia `generate_and_save_chart`. "
+            "Jeśli użytkownik pyta o wgrane dokumenty lub PDF, użyj narzędzia `search_pdf_knowledge_base`."
+        )
+    else:
+        system_content = (
+            "Jesteś pomocnym asystentem, który odpowiada wyłącznie w języku polskim. "
+            "Odpowiadaj bezpośrednio, precyzyjnie i zwięźle. "
+            "Jeśli użytkownik prosi o wykres, diagram lub zestawienie danych, użyj narzędzia `generate_and_save_chart`. "
+            "Jeśli użytkownik pyta o wgrane dokumenty lub PDF, użyj narzędzia `search_pdf_knowledge_base`."
+        )
+
+    system_msg = {"role": "system", "content": system_content}
+    filtered_messages = [m for m in messages if getattr(m, "type", "") != "system"]
+    messages = [system_msg] + filtered_messages
+
+    model_with_tools = local_llm.bind_tools(agent_tools)
+    response = await model_with_tools.ainvoke(messages)
+    return {"messages": [response]}
+
+
+
+async def route_or_generate_title(state: AgentState):
+    if state.get("chat_title") and state["chat_title"] != "Nowa rozmowa":
+        return {}
+
+    user_messages = [m for m in state["messages"] if m.type == "human"]
+    ai_messages = [m for m in state["messages"] if m.type == "ai" and m.content]
+
+    if len(user_messages) == 1 and ai_messages:
+        user_query = user_messages[0].content
+        assistant_response = ai_messages[-1].content
+        title = await generate_chat_title(user_query, assistant_response)
+        print(f"[METADATA] Wygenerowano tytuł: '{title}'")
+        return {"chat_title": title}
+
+    return {}
+
+
+def should_continue(state: AgentState) -> Literal["tools", "generate_title"]:
+    last_message = state["messages"][-1]
+    if last_message.tool_calls:
+        return "tools"
+    return "generate_title"
+
+
+# --- ASYNCHRONICZNY LIFESPAN I INICJALIZACJA GRAFU ---
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global agent_executor
+    async with AsyncSqliteSaver.from_conn_string(DB_PATH) as chat_memory_db:
+        print("Uruchamianie StateGraph z asynchroniczną bazą...")
+
+        workflow = StateGraph(AgentState)
+
+        workflow.add_node("agent", call_model)
+        workflow.add_node("tools", ToolNode(agent_tools))
+        workflow.add_node("generate_title", route_or_generate_title)
+
+        workflow.add_edge(START, "agent")
+        workflow.add_conditional_edges("agent", should_continue)
+        workflow.add_edge("tools", "agent")
+        workflow.add_edge("generate_title", END)
+
+        agent_executor = workflow.compile(checkpointer=chat_memory_db)
+        yield
+    print("Połączenie z bazą zostało zamknięte.")
+
+
+app = FastAPI(title="Meta AI - RAG & Agent Orchestrator", version="1.0.0", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Inicjalizacja Prometheus & OpenTelemetry
+setup_observability(app)
+
+# --- SERWOWANIE PLIKÓW STATYCZNYCH ---
+if not os.path.exists(CHARTS_DIR):
+    os.makedirs(CHARTS_DIR)
+
+app.mount("/generated_charts", StaticFiles(directory=CHARTS_DIR), name="generated_charts")
+
+
+# --- ENDPOINT: LISTA WĄTKÓW CZATU ---
+@app.get("/chat-threads")
+async def get_chat_threads():
+    if not os.path.exists(DB_PATH):
+        return {"threads": []}
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT thread_id FROM checkpoints GROUP BY thread_id ORDER BY max(checkpoint_id) DESC")
+        rows = cursor.fetchall()
+        conn.close()
+
+        threads_list = []
+        for row in rows:
+            thread_id = row[0]
+            state = await agent_executor.aget_state({"configurable": {"thread_id": thread_id}})
+            title = state.values.get("chat_title", "Nowa rozmowa") if state and state.values else "Nowa rozmowa"
+
+            threads_list.append({
+                "thread_id": thread_id,
+                "title": title
+            })
+
+        return {"threads": threads_list}
+    except Exception as e:
+        print(f"Błąd podczas pobierania listy wątków: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- ENDPOINT: HISTORIA CZATU ---
+@app.get("/chat-history/{thread_id}")
+async def get_chat_history(thread_id: str):
+    if agent_executor is None:
+        raise HTTPException(status_code=503, detail="Agent nie jest jeszcze zainicjalizowany.")
+
+    config = {"configurable": {"thread_id": thread_id}}
+    try:
+        state = await agent_executor.aget_state(config)
+
+        if not state or "messages" not in state.values:
+            return {"messages": [], "title": "Nowa rozmowa"}
+
+        chat_title = state.values.get("chat_title", "Nowa rozmowa")
+        formatted_messages = []
+        base_timestamp = int(datetime.now().timestamp() * 1000)
+
+        for index, msg in enumerate(state.values["messages"]):
+            if msg.type in ["human", "ai"]:
+                role = "user" if msg.type == "human" else "assistant"
+
+                if msg.type == "ai" and not msg.content and hasattr(msg, 'tool_calls') and msg.tool_calls:
+                    continue
+
+                formatted_messages.append({
+                    "id": base_timestamp + index,
+                    "role": role,
+                    "content": str(msg.content)
+                })
+
+        return {"messages": formatted_messages, "title": chat_title}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Błąd odczytu historii: {str(e)}")
+
+
+# --- ENDPOINT: PROCESOWANIE I STRUMIENIOWANIE CZATU ---
+@app.post("/process-chat")
+async def process_chat(request: Request):
+    data = await request.json()
+    user_query = data.get("query", "")
+    thread_id = data.get("thread_id", "default_session")
+    model_mode = data.get("model", "Flash")
+
+    # Langfuse Callback Tracing
+    langfuse_handler = get_langfuse_callback(session_id=thread_id)
+    callbacks = [langfuse_handler] if langfuse_handler else []
+
+    config = {
+        "configurable": {"thread_id": thread_id},
+        "callbacks": callbacks
+    }
+
+    start_time = time.time()
+    first_token_recorded = False
+
+    async def stream():
+        nonlocal first_token_recorded
+        try:
+            inputs = {
+                "messages": [("user", user_query)],
+                "model_mode": model_mode
+            }
+
+
+            async for msg, metadata in agent_executor.astream(
+                    inputs,
+                    config=config,
+                    stream_mode="messages"
+            ):
+                # Zapis TTFT (Time To First Token) dla metryk Prometheusa
+                if not first_token_recorded and msg.content:
+                    ttft = time.time() - start_time
+                    first_token_recorded = True
+                    if LLM_TTFT_SECONDS:
+                        LLM_TTFT_SECONDS.labels(model=OLLAMA_MODEL).observe(ttft)
+
+                # 1. DEBUGOWANIE W KONSOLI SERWERA
+                if metadata.get("langgraph_node") == "tools":
+                    print("\n" + "=" * 60)
+                    print(f" LOG: ODPOWIEDŹ Z NARZĘDZIA PRZEKAZANA DO LLM:")
+                    print("=" * 60)
+                    print(msg.content)
+                    print("=" * 60 + "\n")
+
+                # 2. STRUMIEŃ DLA KLIENTA: Informacja o uruchomieniu narzędzia
+                if metadata.get("langgraph_node") == "agent" and hasattr(msg, "tool_calls") and msg.tool_calls:
+                    for tool_call in msg.tool_calls:
+                        tool_name = tool_call.get("name")
+                        yield f"\n*[Asystent uruchamia narzędzie: {tool_name}...]*\n\n"
+
+                # 3. STRUMIEŃ DLA KLIENTA: Renderowanie tekstu lub linku do pliku statycznego
+                if msg.content and metadata.get("langgraph_node") == "agent":
+                    if hasattr(msg, "tool_calls") and msg.tool_calls:
+                        continue
+                    if msg.content.strip().startswith('{"name":') or msg.content.strip().startswith('{"arguments":'):
+                        continue
+
+                    text_chunk = str(msg.content)
+
+                    pattern = r"__CHART_FILE__:(.*?)__"
+                    match = re.search(pattern, text_chunk)
+
+                    if match:
+                        full_tag = match.group(0)
+                        file_path = match.group(1)
+                        try:
+                            if os.path.exists(file_path):
+                                filename = os.path.basename(file_path)
+                                img_url = f"/generated_charts/{filename}"
+                                img_md = f"\n![Wykres]({img_url})\n"
+                                yield text_chunk.replace(full_tag, img_md)
+                            else:
+                                yield text_chunk.replace(full_tag, "[Błąd: Plik wykresu nie został znaleziony]")
+                        except Exception as img_err:
+                            yield text_chunk.replace(full_tag, f"[Błąd obrazu: {str(img_err)}]")
+                    else:
+                        yield text_chunk
+
+            # Rejestracja całkowitego czasu generowania w Prometheus
+            total_duration = time.time() - start_time
+            if LLM_GENERATION_DURATION:
+                LLM_GENERATION_DURATION.labels(model=OLLAMA_MODEL).observe(total_duration)
+            if LLM_REQUESTS_TOTAL:
+                LLM_REQUESTS_TOTAL.labels(model=OLLAMA_MODEL, status="success").inc()
+
+        except Exception as e:
+            if LLM_REQUESTS_TOTAL:
+                LLM_REQUESTS_TOTAL.labels(model=OLLAMA_MODEL, status="error").inc()
+            print(f"\n[CRITICAL ERROR IN STREAM]: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            yield f"\n\n❌ **Wystąpił błąd podczas generowania odpowiedzi:** {str(e)}\n"
+
+    return StreamingResponse(stream(), media_type="text/plain")
+
+
+# --- ENDPOINT: DELEGACJA DO GPU INFERENCE-SERVICE (STABLE DIFFUSION) ---
+INFERENCE_SERVICE_URL = os.getenv("INFERENCE_SERVICE_URL", "http://inference-service:8000")
+
+@app.post("/generate-image")
+@app.post("/generate")
+async def proxy_generate_image(request: Request):
+    """
+    Logika Meta AI: walidacja zapytania i oddelegowanie wykonania GPU do inference-service.
+    """
+    try:
+        body = await request.json()
+        import httpx
+        async with httpx.AsyncClient(timeout=180.0) as client:
+            resp = await client.post(f"{INFERENCE_SERVICE_URL}/generate-image", json=body)
+            if resp.status_code != 200:
+                raise HTTPException(status_code=resp.status_code, detail=resp.text)
+            return resp.json()
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[META-AI -> INFERENCE-SERVICE GPU ERROR]: {e}")
+        raise HTTPException(status_code=500, detail=f"Błąd komunikacji z GPU inference-service: {str(e)}")
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

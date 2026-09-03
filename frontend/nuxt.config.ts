@@ -31,6 +31,7 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxtjs/apollo',
+    '@nuxt/icon',
   ],
 
  apollo: {

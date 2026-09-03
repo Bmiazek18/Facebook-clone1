@@ -22,6 +22,38 @@ node_modules/
 .nuxt/
 .output/
 dist/
+.pnpm-store/
+.turbo/
+
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+*.egg-info/
+
+# AI / ML Models, Data & Caches
+embedding_data/
+chroma_db/
+generated_charts/
+*.safetensors
+*.pt
+*.pth
+*.onnx
+*.bin
+
+# Databases & Storage
+*.sqlite
+*.sqlite3
+*.db
+*.rdb
 
 # Java / Maven
 target/
@@ -47,5 +79,3 @@ override.tf.json
 # Helm
 *.tgz
 charts/**/charts/
- # python
-__pycache__/

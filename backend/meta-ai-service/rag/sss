@@ -1,0 +1,448 @@
+import base64
+import io
+import chromadb
+import hashlib
+import unicodedata
+import re
+import requests
+import uvicorn
+import os
+import json  # Dodane do parsowania danych wykresu
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
+from openai import OpenAI
+from rank_bm25 import BM25Okapi
+from sentence_transformers import CrossEncoder
+import glob
+from datetime import datetime
+from langchain_community.tools import DuckDuckGoSearchRun
+from contextlib import asynccontextmanager
+
+# Konfiguracja Matplotlib dla środowisk bez GUI (serwerowych)
+import matplotlib
+
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+# Docling i LangChain
+from docling.document_converter import DocumentConverter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_openai import ChatOpenAI
+from langchain.tools import tool
+from langchain_core.messages import HumanMessage
+
+# LangGraph - Podstawowe komponenty i Pamięć Asynchroniczna
+from langgraph.prebuilt import create_react_agent
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+
+# --- GLOBALNA ZMIENNA DLA AGENTA ---
+# Agent zostanie w pełni skompilowany wewnątrz funkcji lifespan (startu aplikacji)
+agent_executor = None
+
+# --- CONFIG INTERFEJSÓW KLIENTÓW ---
+embed_client = OpenAI(base_url="http://localhost:8085", api_key="brak")
+
+# Ustawiamy temperaturę na 0.0, aby model trzymał się faktów i nie halucynował
+local_llm = ChatOpenAI(
+    base_url="http://localhost:11434/v1",
+    api_key="ollama",
+    model="qwen2.5:7b",
+    temperature=0.0
+)
+reranker = CrossEncoder('BAAI/bge-reranker-v2-m3', max_length=512)
+chroma_client = chromadb.PersistentClient(path="./chroma_db")
+collection = chroma_client.get_or_create_collection(name="pdf_documents", metadata={"hnsw:space": "cosine"})
+
+
+# --- FUNKCJE POMOCNICZE (TEKST I EMBEDDINGI) ---
+
+def strip_excessive_spaces(text):
+    return re.sub(r' {3,}', '  ', text)
+
+
+def clean_polish_text(text):
+    text = unicodedata.normalize('NFC', text)
+    chars_to_fix = ['ą', 'ę', 'ć', 'ś', 'ź', 'ż', 'ó', 'ł', 'ń']
+    for char in chars_to_fix:
+        text = text.replace(f" {char}", char)
+    return text
+
+
+def get_embedding(text, is_query=False):
+    prefix = "query: " if is_query else "passage: "
+    try:
+        response = embed_client.embeddings.create(
+            input=[f"{prefix}{text[:2000]}"],
+            model="ipipan/silver-retriever-base-v1"
+        )
+        return response.data[0].embedding
+    except Exception as e:
+        print(f"Embedding error: {e}")
+        return [0.0] * 768
+
+
+# --- HYBRYDOWE PRZETWARZANIE PDF ---
+
+def extract_and_chunk_pdf(source_input, is_b64=True):
+    try:
+        if is_b64:
+            if "base64," in source_input: source_input = source_input.split("base64,")[1]
+            pdf_data = io.BytesIO(base64.b64decode(source_input))
+        else:
+            pdf_data = source_input
+
+        converter = DocumentConverter()
+        result = converter.convert(pdf_data)
+
+        raw_md = result.document.export_to_markdown()
+        md_cleaned = clean_polish_text(raw_md)
+        md_compact = strip_excessive_spaces(md_cleaned)
+
+        blocks = md_compact.split("\n\n")
+
+        final_chunks = []
+        for block in blocks:
+            block = block.strip()
+            if not block: continue
+
+            if "|" in block:
+                final_chunks.append(block)
+            else:
+                sentence_splitter = RecursiveCharacterTextSplitter(
+                    separators=[". ", "! ", "? "],
+                    chunk_size=500,
+                    chunk_overlap=0
+                )
+                sentences = sentence_splitter.split_text(block)
+                for s in sentences:
+                    s_clean = s.strip()
+                    if len(s_clean) > 15:
+                        if not s_clean.endswith(('.', '!', '?')): s_clean += "."
+                        final_chunks.append(s_clean)
+
+        return final_chunks, [{"source_type": "hybrid_markdown"} for _ in final_chunks]
+    except Exception as e:
+        print(f"Błąd parsera: {e}")
+        return [], []
+
+
+# --- NARZĘDZIA AGENTA ---
+
+@tool
+def get_current_date_and_time(query: str = "") -> str:
+    """
+    Zwraca aktualną datę i godzinę systemową.
+    Użyj tego narzędzia ZAWSZE, gdy użytkownik używa słów związanych z czasem, takich jak:
+    'dzisiaj', 'wczoraj', 'jutro', 'w tym tygodniu', 'w zeszłym tygodniu', 'w następnym tygodniu',
+    'w tym miesiącu', 'aktualny rok', 'plany na weekend', 'za dwa dni'.
+    Model MUSI wywołać to narzędzie, aby dowiedzieć się, jaki jest obecny dzień, zanim zaplanuje cokolwiek innego.
+    """
+    now = datetime.now()
+    return f"Aktualna data i godzina to: {now.strftime('%Y-%m-%d %H:%M:%S')}, dzień tygodnia: {now.strftime('%A')}."
+
+
+@tool
+def get_required_project_facts(query: str):
+    """
+    Szuka informacji w dokumentach projektowych.
+    Zwraca zdania lub całe tabele wraz z REF_ID do podświetlenia.
+    """
+    try:
+        query_vector = get_embedding(query, is_query=True)
+        v_results = collection.query(query_embeddings=[query_vector], n_results=3)
+
+        found_ids = v_results['ids'][0]
+        distances = v_results['distances'][0] if 'distances' in v_results else [0.0]
+
+        # Walidacja dopasowania kosinusowego w celu uniknięcia wstrzykiwania szumu do pytań typu small talk
+        if not found_ids or (len(distances) > 0 and distances[0] > 0.75):
+            return "W lokalnej dokumentacji nie ma żadnych informacji na ten temat. Odpowiedz użytkownikowi wyłącznie na podstawie własnej wiedzy ogólnej lub historii waszej rozmowy."
+
+        all_context_blocks = []
+        already_added = set()
+
+        for d_id in found_ids:
+            parts = d_id.split("_")
+            base_name = "_".join(parts[:-1])
+            try:
+                current_idx = int(parts[-1])
+            except ValueError:
+                continue
+
+            start_idx = max(0, current_idx - 2)
+            end_idx = current_idx + 3
+
+            window_ids = [f"{base_name}_{i}" for i in range(start_idx, end_idx)]
+            window_data = collection.get(ids=window_ids)
+
+            sorted_items = sorted(
+                zip(window_data['ids'], window_data['documents']),
+                key=lambda x: int(x[0].split("_")[-1])
+            )
+
+            for wid, doc in sorted_items:
+                if wid not in already_added:
+                    all_context_blocks.append(f"=== BLOK DANYCH (REF_ID: {wid}) ===\n{doc}\n")
+                    already_added.add(wid)
+
+        context_to_llm = "\n".join(all_context_blocks)
+        print(f"\n[RAG WINDOW] Pobrano {len(already_added)} unikalnych bloków dla zapytania.")
+
+        prompt = (
+            f"Poniżej znajdują się fragmenty dokumentacji (wraz z ich ID):\n\n"
+            f"{context_to_llm}\n"
+            "ZADANIE:\n"
+            "Odpowiedz na pytanie użytkownika. Jeśli pytanie wymaga obliczeń "
+            "(np. ID = indeks mod 5), wykonaj je krok po kroku.\n"
+            "BARDZO WAŻNE: Po każdej informacji (zdaniu, wyniku, wierszu tabeli) "
+            "podaj tag [REF_ID](tutaj_id_bloku), z którego ta informacja pochodzi. "
+            "Jeśli informacja wynika z kilku bloków, podaj wszystkie pasujące ID."
+        )
+        return prompt
+
+    except Exception as e:
+        print(f"❌ Błąd w get_required_project_facts: {e}")
+        return "Wystąpił błąd podczas przeszukiwania dokumentacji."
+
+
+@tool
+def generate_and_save_chart(chart_config_json: str) -> str:
+    """
+    Generuje wykres na podstawie konfiguracji JSON i zwraca znacznik ścieżki.
+    Struktura JSON: {"title": "Tytuł", "type": "bar"|"line"|"pie", "labels": [], "values": []}
+    """
+    try:
+        output_dir = "generated_charts"
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        config = json.loads(chart_config_json)
+        title = config.get("title", "Wykres")
+        chart_type = config.get("type", "bar").lower()
+        labels = config.get("labels", [])
+        values = config.get("values", [])
+
+        if not labels or not values:
+            return "Błąd: Brak danych do wykresu."
+
+        plt.figure(figsize=(10, 6))
+        plt.rcParams['font.family'] = 'sans-serif'
+
+        if chart_type == "bar":
+            plt.bar(labels, values, color='skyblue', edgecolor='black')
+        elif chart_type == "line":
+            plt.plot(labels, values, marker='o', color='green')
+        elif chart_type == "pie":
+            plt.pie(values, labels=labels, autopct='%1.1f%%')
+
+        plt.title(title)
+        plt.tight_layout()
+
+        filename = f"chart_{hashlib.md5(title.encode()).hexdigest()[:8]}.png"
+        file_path = os.path.join(output_dir, filename)
+
+        plt.savefig(file_path, dpi=150)
+        plt.close()
+
+        return f"__CHART_FILE__:{file_path}__"
+
+    except Exception as e:
+        plt.close()
+        return f"Błąd generowania: {str(e)}"
+
+
+web_search_tool = DuckDuckGoSearchRun(
+    name="web_search",
+    description="Użyj tego narzędzia do wyszukiwania aktualnych informacji w internecie, których nie ma w lokalnych dokumentach."
+)
+
+agent_tools = [
+    get_required_project_facts,
+    generate_and_save_chart,
+    get_current_date_and_time,
+    web_search_tool
+]
+
+# ODCHUDZONY SYSTEM PROMPT DLA REKURENCYJNEJ PAMIĘCI MODELI Klasy 7B
+SYSTEM_PROMPT = (
+    "Jesteś pomocnym asystentem, który odpowiada wyłącznie w języku polskim.\n"
+    "Twoim głównym zadaniem jest pamiętanie przebiegu całej rozmowy. "
+    "Zawsze czytaj historię waszych wcześniejszych wiadomości i jeśli użytkownik "
+    "pyta o fakty podane wcześniej (np. swoje imię, poprzednie pytania), "
+    "odpowiedz na podstawie tej historii."
+)
+
+
+# --- ASYNCHRONICZNY LIFESPAN DLA AKTYWNEGO POŁĄCZENIA DB ---
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global agent_executor
+    async with AsyncSqliteSaver.from_conn_string("chat_history.db") as chat_memory_db:
+        print("Asynchroniczna baza danych punktów kontrolnych LangGraph została uruchomiona.")
+
+        agent_executor = create_react_agent(
+            local_llm,
+            agent_tools,
+            prompt=SYSTEM_PROMPT,
+            checkpointer=chat_memory_db
+        )
+        yield
+
+    print("Połączenie z asynchroniczną bazą danych historii zostało zamknięte.")
+
+
+app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# --- ENDPOINT: HISTORIA CZATU DLA FRONTENDU ---
+
+@app.get("/chat-history/{thread_id}")
+async def get_chat_history(thread_id: str):
+    if agent_executor is None:
+        raise HTTPException(status_code=503, detail="Agent nie jest jeszcze zainicjalizowany.")
+
+    config = {"configurable": {"thread_id": thread_id}}
+    try:
+        state = await agent_executor.aget_state(config)
+        if not state or "messages" not in state.values:
+            return {"messages": []}
+
+        formatted_messages = []
+        for msg in state.values["messages"]:
+            if msg.type in ["human", "ai"]:
+                role = "user" if msg.type == "human" else "assistant"
+
+                if msg.type == "ai" and not msg.content and msg.tool_calls:
+                    continue
+                if role == "assistant" and "Zgodnie z dokumentacją, wirtualny świat" in str(msg.content):
+                    continue
+
+                formatted_messages.append({
+                    "id": int(datetime.now().timestamp() * 1000) + len(formatted_messages),
+                    "role": role,
+                    "content": str(msg.content)
+                })
+
+        return {"messages": formatted_messages}
+    except Exception as e:
+        print(f"Błąd podczas pobierania historii: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- ENDPOINT: PROCESOWANIE I STRUMIENIOWANIE CZATU ---
+
+@app.post("/process-chat")
+async def process_chat(request: Request):
+    data = await request.json()
+    print(request)
+    user_query = data.get("query", "")
+    files = data.get("files", [])
+    thread_id = data.get("thread_id", "default_session")
+
+    # Indeksowanie plików PDF przesyłanych w locie
+    for file in files:
+        if not collection.get(where={"source": file['name']})['ids']:
+            chunks, _ = extract_and_chunk_pdf(file['url'])
+            if chunks:
+                ids = [f"{hashlib.md5(file['name'].encode()).hexdigest()}_{i}" for i in range(len(chunks))]
+                embeddings = [get_embedding(c) for c in chunks]
+                collection.add(embeddings=embeddings, documents=chunks,
+                               metadatas=[{"source": file['name']} for _ in chunks], ids=ids)
+
+    # --- ROZBUDOWANA DIAGNOSTYKA HISTORII W TERMINALU BACKENDU ---
+    print("\n" + "=" * 60)
+    print(f"[BACKEND DB LOG] Nowe żądanie od thread_id: {thread_id}")
+    print(f"[BACKEND DB LOG] Treść najnowszego pytania: '{user_query}'")
+    print("-" * 60)
+
+    try:
+        current_db_state = await agent_executor.aget_state({"configurable": {"thread_id": thread_id}})
+        if current_db_state and "messages" in current_db_state.values:
+            history_messages = current_db_state.values["messages"]
+            print(f"[BACKEND DB LOG] Stan SQLite: Znaleziono {len(history_messages)} wiadomości przed tym zapytaniem.")
+            print("[BACKEND DB LOG] === PEŁNY PRZEBIEG DOTYCHCZASOWEJ ROZMOWY Z BAZY ===")
+
+            for index, m in enumerate(history_messages):
+                if m.type == "human":
+                    label = "👤 UŻYTKOWNIK"
+                elif m.type == "ai":
+                    if not m.content and m.tool_calls:
+                        continue
+                    label = "✦ ASYSTENT"
+                else:
+                    label = f"⚙️ SYSTEM ({m.type})"
+
+                print(f"  {index + 1}. [{label}]: {str(m.content).strip()}")
+            print("[BACKEND DB LOG] ===================================================")
+        else:
+            print("[BACKEND DB LOG] Stan SQLite: Brak historii dla tego wątku (Rozpoczynamy nową rozmowę).")
+    except Exception as db_err:
+        print(f"❌ [BACKEND DB LOG] Błąd odczytu bazy: {db_err}")
+    print("=" * 60 + "\n")
+
+    async def stream():
+        config = {"configurable": {"thread_id": thread_id}}
+
+        # Słownik z listą krotek jako standardowy format wejściowy zapobiegający konfliktom LangGraph
+        inputs = {"messages": [("user", user_query)]}
+
+        async for msg, metadata in agent_executor.astream(
+                inputs,
+                config=config,
+                stream_mode="messages"
+        ):
+            if msg.content and metadata.get("langgraph_node") == "agent":
+                text_chunk = str(msg.content)
+
+                # Parsowanie tagów wykresów z Matplotlib za pomocą Regex
+                pattern = r"__CHART_FILE__:(.*?)__"
+                match = re.search(pattern, text_chunk)
+
+                if match:
+                    full_tag = match.group(0)
+                    file_path = match.group(1)
+
+                    try:
+                        if os.path.exists(file_path):
+                            with open(file_path, "rb") as img_f:
+                                b64 = base64.b64encode(img_f.read()).decode('utf-8')
+                                img_md = f"\n![Wykres](data:image/png;base64,{b64})\n"
+                                yield text_chunk.replace(full_tag, img_md)
+                        else:
+                            yield text_chunk.replace(full_tag, "[Błąd: Plik wykresu nie został znaleziony]")
+                    except Exception as e:
+                        yield text_chunk.replace(full_tag, f"[Błąd obrazu: {str(e)}]")
+                else:
+                    yield text_chunk
+
+    return StreamingResponse(stream(), media_type="text/plain")
+
+
+def ingest_data_folder():
+    if not os.path.exists("data"):
+        os.makedirs("data")
+        return
+    pdf_files = [f for f in os.listdir("data") if f.endswith(".pdf")]
+    for f_name in pdf_files:
+        print(f"Indeksowanie lokalne: {f_name}")
+        collection.delete(where={"source": f_name})
+        chunks, _ = extract_and_chunk_pdf(os.path.join("data", f_name), is_b64=False)
+        if chunks:
+            ids = [f"{hashlib.md5(f_name.encode()).hexdigest()}_{i}" for i in range(len(chunks))]
+            embeddings = [get_embedding(c) for c in chunks]
+            collection.add(embeddings=embeddings, documents=chunks,
+                           metadatas=[{"source": f_name} for _ in chunks], ids=ids)
+    print("Baza gotowa.")
+
+
+if __name__ == "__main__":
+    ingest_data_folder()
+    uvicorn.run(app, host="0.0.0.0", port=8000) dodaj tu żebym jak nowy chat po odpowiedzi generował tytuł konwersacji. ten tytuł ma być zapisywany w meta. chce po stronie frontend moc szybko dostać listę nazw chatu.

@@ -1,8 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - frontend.yaml
+  - operators.yaml
+  - observability.yaml
   - keycloak.yaml
   - backend.yaml
-  - observability.yaml
+  - frontend.yaml
+
 

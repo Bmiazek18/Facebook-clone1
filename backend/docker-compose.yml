@@ -508,11 +508,21 @@ services:
 
   inference-service:
     build:
-      context: .
-      dockerfile: ./inference-service/Dockerfile
+      context: ./inference-service
+      dockerfile: Dockerfile
     container_name: inference-service-compose
     ports:
-      - "8000:8000"
+      - "8001:8000"
+    environment:
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318/v1/traces
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 -O /dev/null http://localhost:8000/health || exit 1"]
       interval: 10s
@@ -520,6 +530,53 @@ services:
       retries: 15
     networks:
       - gateway-net
+
+  chroma:
+    image: chromadb/chroma:0.6.3
+    container_name: chroma-server-compose
+    ports:
+      - "8005:8000"
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSISTENCE_DIRECTORY=/chroma/chroma
+      - ANONYMIZED_TELEMETRY=FALSE
+    volumes:
+      - chromadata:/chroma/chroma
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8000/api/v1/heartbeat\")' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gateway-net
+
+  meta-ai-service:
+    build:
+      context: ./meta-ai-service
+      dockerfile: Dockerfile
+    container_name: meta-ai-service-compose
+    ports:
+      - "8000:8000"
+    environment:
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434/v1}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}
+      INFERENCE_SERVICE_URL: http://inference-service:8000
+      CHROMA_HOST: chroma
+      CHROMA_PORT: 8000
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318/v1/traces
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY:-}
+      LANGFUSE_HOST: ${LANGFUSE_HOST:-https://cloud.langfuse.com}
+    depends_on:
+      - inference-service
+      - chroma
+    volumes:
+      - meta_ai_data:/app/rag
+    networks:
+      - gateway-net
+
 
   socialgraph-service:
     build:
@@ -1053,6 +1110,8 @@ volumes:
   meilidata:
   postgres-data-v18:
   clickhousedata:
+  meta_ai_data:
+  chromadata:
 
 networks:
   gateway-net:

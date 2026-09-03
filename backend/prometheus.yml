@@ -16,3 +16,11 @@ scrape_configs:
           - 'chat-service:8083'
           - 'feed-service:8085'
           - 'analytics-service:8095'
+
+  - job_name: 'ai-services'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    static_configs:
+      - targets:
+          - 'meta-ai-service:8000'
+          - 'inference-service:8000'
