@@ -119,6 +119,11 @@ def pil_to_base64(img: Image.Image) -> str:
     img.save(buffered, format="PNG")
     return base64.b64encode(buffered.getvalue()).decode()
 
+# --- ZARZĄDZANIE KOLEJKĄ I BLOKADA GPU (DEDYKOWANY WORKER GPU) ---
+GPU_LOCK = asyncio.Lock()
+active_tasks_count = 0
+waiting_queue_count = 0
+
 # --- KOLEJKA BATCH DLA BERT TOXICITY ---
 request_queue = asyncio.Queue()
 BATCH_SIZE = 32
@@ -172,6 +177,30 @@ def health():
         "gpu_available": torch.cuda.is_available() or torch.backends.mps.is_available()
     }
 
+@app.get("/queue/status")
+@app.get("/gpu/status")
+def get_gpu_queue_status():
+    vram_allocated = 0
+    vram_reserved = 0
+    total_vram = 0
+    device_name = "CPU"
+    
+    if DEVICE == "cuda" and torch.cuda.is_available():
+        device_name = torch.cuda.get_device_name(0)
+        vram_allocated = round(torch.cuda.memory_allocated(0) / (1024 * 1024), 2)
+        vram_reserved = round(torch.cuda.memory_reserved(0) / (1024 * 1024), 2)
+        total_vram = round(torch.cuda.get_device_properties(0).total_memory / (1024 * 1024), 2)
+
+    return {
+        "device": DEVICE,
+        "device_name": device_name,
+        "active_gpu_task": GPU_LOCK.locked(),
+        "waiting_in_queue": waiting_queue_count,
+        "vram_allocated_mb": vram_allocated,
+        "vram_reserved_mb": vram_reserved,
+        "total_vram_mb": total_vram
+    }
+
 # --- ENDPOINT 1: MODERACJA TEKSTU (BERT) ---
 @app.post("/predict")
 async def predict(request: InferenceRequest):
@@ -195,64 +224,73 @@ async def predict(request: InferenceRequest):
 @app.post("/generate-image")
 @app.post("/generate")
 async def generate_image(request: GenerationRequest):
+    global waiting_queue_count, active_tasks_count
+    waiting_queue_count += 1
     start_time = asyncio.get_event_loop().time()
-    try:
-        tokenizer, models = get_sd_models()
-        import pipeline
+    
+    # Bezpieczna synchronizacja: tylko jedno zadanie generowania GPU na raz (ochrona przed OOM)
+    async with GPU_LOCK:
+        waiting_queue_count = max(0, waiting_queue_count - 1)
+        active_tasks_count += 1
+        try:
+            tokenizer, models = get_sd_models()
+            import pipeline
 
-        img_item = request.images[0]
-        input_image = base64_to_pil(img_item.image_base64).resize((512, 512))
+            img_item = request.images[0]
+            input_image = base64_to_pil(img_item.image_base64).resize((512, 512))
 
-        mask = Image.new("L", (512, 512), 0)
-        if img_item.mask_coords:
-            draw = ImageDraw.Draw(mask)
-            c = img_item.mask_coords
-            draw.rectangle([
-                int(c.x),
-                int(c.y),
-                int(c.x + c.w),
-                int(c.y + c.h)
-            ], fill=255)
+            mask = Image.new("L", (512, 512), 0)
+            if img_item.mask_coords:
+                draw = ImageDraw.Draw(mask)
+                c = img_item.mask_coords
+                draw.rectangle([
+                    int(c.x),
+                    int(c.y),
+                    int(c.x + c.w),
+                    int(c.y + c.h)
+                ], fill=255)
 
-        final_prompt = f"{request.prompt}, {img_item.description}".strip(", ")
+            final_prompt = f"{request.prompt}, {img_item.description}".strip(", ")
 
-        output_array = pipeline.generate(
-            prompt=final_prompt,
-            uncond_prompt="blurry, low quality, distorted, deformed",
-            input_image=input_image,
-            mask_image=mask,
-            strength=0.99,
-            do_cfg=True,
-            cfg_scale=12,
-            sampler_name="ddpm",
-            n_inference_steps=50,
-            seed=42,
-            models=models,
-            device=DEVICE,
-            idle_device="cpu",
-            tokenizer=tokenizer,
-        )
+            output_array = pipeline.generate(
+                prompt=final_prompt,
+                uncond_prompt="blurry, low quality, distorted, deformed",
+                input_image=input_image,
+                mask_image=mask,
+                strength=0.99,
+                do_cfg=True,
+                cfg_scale=12,
+                sampler_name="ddpm",
+                n_inference_steps=50,
+                seed=42,
+                models=models,
+                device=DEVICE,
+                idle_device="cpu",
+                tokenizer=tokenizer,
+            )
 
-        result_img = Image.fromarray(output_array)
-        duration = asyncio.get_event_loop().time() - start_time
-        if SD_GENERATION_DURATION:
-            SD_GENERATION_DURATION.observe(duration)
+            result_img = Image.fromarray(output_array)
+            duration = asyncio.get_event_loop().time() - start_time
+            if SD_GENERATION_DURATION:
+                SD_GENERATION_DURATION.observe(duration)
 
-        return {
-            "status": "success",
-            "image": pil_to_base64(result_img)
-        }
-    except Exception as e:
-        print("--- BŁĄD INFERENCE GPU ---")
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        if DEVICE == "cuda" and torch.cuda.is_available():
-            if GPU_VRAM_ALLOCATED_BYTES:
-                GPU_VRAM_ALLOCATED_BYTES.set(torch.cuda.memory_allocated())
-            torch.cuda.empty_cache()
-        elif DEVICE == "mps" and hasattr(torch, "mps") and hasattr(torch.mps, "empty_cache"):
-            torch.mps.empty_cache()
+            return {
+                "status": "success",
+                "image": pil_to_base64(result_img),
+                "duration_seconds": round(duration, 2)
+            }
+        except Exception as e:
+            print("--- BŁĄD INFERENCE GPU ---")
+            traceback.print_exc()
+            raise HTTPException(status_code=500, detail=str(e))
+        finally:
+            active_tasks_count = max(0, active_tasks_count - 1)
+            if DEVICE == "cuda" and torch.cuda.is_available():
+                if GPU_VRAM_ALLOCATED_BYTES:
+                    GPU_VRAM_ALLOCATED_BYTES.set(torch.cuda.memory_allocated())
+                torch.cuda.empty_cache()
+            elif DEVICE == "mps" and hasattr(torch, "mps") and hasattr(torch.mps, "empty_cache"):
+                torch.mps.empty_cache()
 
 if __name__ == "__main__":
     import uvicorn
