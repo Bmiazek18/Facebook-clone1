@@ -91,3 +91,15 @@ variable "github_repo_password" {
   type        = string
   sensitive   = true
 }
+
+variable "enable_gpu_passthrough" {
+  description = "Włącz przekazywanie karty NVIDIA RTX 3070 do kontenera LXC i K3s"
+  type        = bool
+  default     = true
+}
+
+variable "proxmox_host_ip" {
+  description = "Adres IP hosta Proxmox do konfiguracji GPU przez SSH (opcjonalny, domyślnie IP z endpointu)"
+  type        = string
+  default     = ""
+}

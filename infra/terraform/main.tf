@@ -175,7 +175,55 @@ resource "proxmox_virtual_environment_container" "k3s_cluster" {
       "      prune: true",
       "      selfHeal: true",
       "EOF",
+      "echo '=== 12. Konfiguracja NVIDIA GPU & Device Plugin dla K3s ==='",
+      "if [ \"${var.enable_gpu_passthrough}\" = \"true\" ]; then",
+      "  apt-get update -y && (apt-get install -y nvidia-utils-535 || apt-get install -y nvidia-utils-550 || apt-get install -y nvidia-utils-headless-535 || true)",
+      "  k3s kubectl apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.14.5/deployments/static/gpu-operator/k8s-device-plugin.yaml",
+      "fi",
       "echo '=== Pelna inicjalizacja i automatyzacja zakonczona sukcesem! ==='",
+    ]
+  }
+}
+
+resource "null_resource" "proxmox_host_gpu_passthrough" {
+  count = var.enable_gpu_passthrough ? 1 : 0
+
+  depends_on = [proxmox_virtual_environment_container.k3s_cluster]
+
+  connection {
+    type        = "ssh"
+    user        = "root"
+    private_key = file(pathexpand(var.ssh_private_key))
+    host        = var.proxmox_host_ip != "" ? var.proxmox_host_ip : regex("https?://([^:/]+)", var.proxmox_endpoint)[0]
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "set -e",
+      "echo '=== Konfiguracja NVIDIA Passthrough na hoście Proxmox ==='",
+      "modprobe nvidia || true",
+      "modprobe nvidia_uvm || true",
+      "modprobe nvidia_modeset || true",
+      "mkdir -p /etc/modules-load.d",
+      "grep -q 'nvidia-uvm' /etc/modules-load.d/nvidia.conf 2>/dev/null || echo -e 'nvidia\\nnvidia-uvm\\nnvidia-modeset' >> /etc/modules-load.d/nvidia.conf",
+      "CONF_FILE='/etc/pve/lxc/${var.container_vm_id}.conf'",
+      "if ! grep -q 'NVIDIA GPU Passthrough' \"$CONF_FILE\"; then",
+      "  echo 'Dopisywanie regul GPU do konfiguracji kontenera ${var.container_vm_id}...'",
+      "  cat <<'EOF' >> \"$CONF_FILE\"",
+      "# NVIDIA GPU Passthrough",
+      "lxc.cgroup2.devices.allow: c 195:* rwm",
+      "lxc.cgroup2.devices.allow: c 234:* rwm",
+      "lxc.cgroup2.devices.allow: c 508:* rwm",
+      "lxc.cgroup2.devices.allow: c 10:200 rwm",
+      "lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file",
+      "lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file",
+      "lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file",
+      "lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,optional,create=file",
+      "EOF",
+      "  echo 'Restartowanie kontenera ${var.container_vm_id} w celu zaaplikowania GPU...'",
+      "  pct reboot ${var.container_vm_id} || true",
+      "fi",
+      "echo 'NVIDIA GPU Passthrough zostal skonfigurowany pomyslnie na Proxmoxie!'"
     ]
   }
 }
