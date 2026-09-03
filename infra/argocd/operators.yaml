@@ -92,9 +92,8 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://docs.altinity.com/clickhouse-operator/
-    chart: altinity-clickhouse-operator
-    targetRevision: 0.24.4
+    repoURL: https://clickhouse.github.io/charts/
+    chart: clickhouse-operator
   destination:
     server: https://kubernetes.default.svc
     namespace: clickhouse-operator
