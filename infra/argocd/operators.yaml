@@ -170,9 +170,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/rabbitmq/cluster-operator.git
-    targetRevision: v2.8.0
-    path: config/default
+    repoURL: https://charts.bitnami.com/bitnami
+    chart: rabbitmq-cluster-operator
+    targetRevision: 4.3.26
   destination:
     server: https://kubernetes.default.svc
     namespace: rabbitmq-system
