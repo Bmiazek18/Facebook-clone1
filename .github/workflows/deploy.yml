@@ -56,9 +56,64 @@ jobs:
               - 'backend/socialgraph-edge-service/**'
               - 'backend/shared-proto/**'
               - 'backend/pom.xml'
+            chat-service:
+              - 'backend/chat-service/**'
+              - 'backend/shared-proto/**'
+              - 'backend/pom.xml'
+            chat-edge-service:
+              - 'backend/chat-edge-service/**'
+              - 'backend/shared-proto/**'
+              - 'backend/pom.xml'
+            feed-service:
+              - 'backend/feed-service/**'
+              - 'backend/shared-proto/**'
+              - 'backend/pom.xml'
+            feed-edge-service:
+              - 'backend/feed-edge-service/**'
+              - 'backend/shared-proto/**'
+              - 'backend/pom.xml'
+            groups-service:
+              - 'backend/groups-service/**'
+              - 'backend/shared-proto/**'
+              - 'backend/pom.xml'
+            marketplace-service:
+              - 'backend/marketplace-service/**'
+              - 'backend/shared-proto/**'
+              - 'backend/pom.xml'
+            marketplace-edge-service:
+              - 'backend/marketplace-edge-service/**'
+              - 'backend/shared-proto/**'
+              - 'backend/pom.xml'
+            notification-service:
+              - 'backend/notification-service/**'
+              - 'backend/shared-proto/**'
+              - 'backend/pom.xml'
+            search-service:
+              - 'backend/search-service/**'
+              - 'backend/shared-proto/**'
+              - 'backend/pom.xml'
+            analytics-service:
+              - 'backend/analytics-service/**'
+              - 'backend/shared-proto/**'
+              - 'backend/pom.xml'
+            video-abr-service:
+              - 'backend/video-abr-service/**'
+              - 'backend/shared-proto/**'
+            linkguard-service:
+              - 'backend/linkguard-service/**'
+              - 'backend/shared-proto/**'
+            recommend-service:
+              - 'backend/recommend-service/**'
+            inference-service:
+              - 'backend/inference-service/**'
+            meta-ai-service:
+              - 'backend/meta-ai-service/**'
             router_changed:
               - 'backend/user-edge-service/**'
               - 'backend/socialgraph-edge-service/**'
+              - 'backend/chat-edge-service/**'
+              - 'backend/feed-edge-service/**'
+              - 'backend/marketplace-edge-service/**'
               - 'backend/shared-proto/**'
               - 'backend/pom.xml'
               - 'backend/router.yaml'
@@ -191,12 +246,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        module: ${{ github.event_name == 'workflow_dispatch' && fromJson('["user-service","user-edge-service","socialgraph-service","socialgraph-edge-service"]') || fromJson(needs.detect-changes.outputs.backend_modules) }}
+        module: ${{ github.event_name == 'workflow_dispatch' && fromJson('["user-service","user-edge-service","socialgraph-service","socialgraph-edge-service","chat-service","chat-edge-service","feed-service","feed-edge-service","groups-service","marketplace-service","marketplace-edge-service","notification-service","search-service","analytics-service","video-abr-service","linkguard-service","recommend-service","inference-service","meta-ai-service"]') || fromJson(needs.detect-changes.outputs.backend_modules) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Set up Java (for Maven builds)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -213,11 +268,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Determine Docker Context & Build Options
+        id: context
+        run: |
+          if [ "${{ matrix.module }}" = "inference-service" ] || [ "${{ matrix.module }}" = "meta-ai-service" ] || [ "${{ matrix.module }}" = "recommend-service" ]; then
+            echo "context=./backend/${{ matrix.module }}" >> "$GITHUB_OUTPUT"
+            echo "dockerfile=./backend/${{ matrix.module }}/Dockerfile" >> "$GITHUB_OUTPUT"
+          else
+            echo "context=./backend" >> "$GITHUB_OUTPUT"
+            echo "dockerfile=./backend/${{ matrix.module }}/Dockerfile" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build and push backend module image
         uses: docker/build-push-action@v6
         with:
-          context: ./backend
-          file: ./backend/${{ matrix.module }}/Dockerfile
+          context: ${{ steps.context.outputs.context }}
+          file: ${{ steps.context.outputs.dockerfile }}
           platforms: linux/amd64
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-${{ matrix.module }}:${{ github.sha }}
@@ -282,7 +348,7 @@ jobs:
         if: ${{ needs.detect-changes.outputs.has_backend == 'true' || github.event_name == 'workflow_dispatch' }}
         run: |
           MODULES='${{ needs.detect-changes.outputs.backend_modules }}'
-          [ "${{ github.event_name }}" = "workflow_dispatch" ] && MODULES='["user-service","user-edge-service","socialgraph-service","socialgraph-edge-service"]'
+          [ "${{ github.event_name }}" = "workflow_dispatch" ] && MODULES='["user-service","user-edge-service","socialgraph-service","socialgraph-edge-service","chat-service","chat-edge-service","feed-service","feed-edge-service","groups-service","marketplace-service","marketplace-edge-service","notification-service","search-service","analytics-service","video-abr-service","linkguard-service","recommend-service","inference-service","meta-ai-service"]'
 
           VALUES_FILE="gitops-repo/charts/backend/values.yaml"
 
@@ -291,6 +357,21 @@ jobs:
             ["user-edge-service"]="userEdgeService"
             ["socialgraph-service"]="socialgraphService"
             ["socialgraph-edge-service"]="socialgraphEdgeService"
+            ["chat-service"]="chatService"
+            ["chat-edge-service"]="chatEdgeService"
+            ["feed-service"]="feedService"
+            ["feed-edge-service"]="feedEdgeService"
+            ["groups-service"]="groupsService"
+            ["marketplace-service"]="marketplaceService"
+            ["marketplace-edge-service"]="marketplaceEdgeService"
+            ["notification-service"]="notificationService"
+            ["search-service"]="searchService"
+            ["analytics-service"]="analyticsService"
+            ["video-abr-service"]="videoAbrService"
+            ["linkguard-service"]="linkguardService"
+            ["recommend-service"]="recommendService"
+            ["inference-service"]="inferenceService"
+            ["meta-ai-service"]="metaAiService"
           )
 
           for module in $(echo "$MODULES" | jq -r '.[]'); do
