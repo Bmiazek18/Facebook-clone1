@@ -19,11 +19,14 @@ import { trace, SpanStatusCode, type Span } from '@opentelemetry/api'
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
 
-  const baseEndpoint =
-    config.public.otelEndpoint as string | undefined
+  const rawEndpoint = config.public.otelEndpoint as string | undefined
+  if (!rawEndpoint) {
+    return
+  }
 
-  const otelEndpoint =
-    `${(baseEndpoint || 'http://localhost:4318').replace(/\/$/, '')}/v1/traces`
+  const otelEndpoint = rawEndpoint.endsWith('/v1/traces')
+    ? rawEndpoint
+    : `${rawEndpoint.replace(/\/$/, '')}/v1/traces`
 
   /*
    * ------------------------------------------------------------

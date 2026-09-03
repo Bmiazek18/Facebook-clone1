@@ -16,7 +16,7 @@ export default defineNuxtConfig({
       mqttUrl: process.env.NUXT_PUBLIC_MQTT_URL || 'ws://localhost:8080/mqtt',
       storageUrl: process.env.NUXT_PUBLIC_STORAGE_URL || 'http://localhost:9000',
       sentryDsn: process.env.NUXT_PUBLIC_SENTRY_DSN || '',
-      otelEndpoint: process.env.NUXT_PUBLIC_OTEL_ENDPOINT || 'http://localhost:4318/v1/traces',
+      otelEndpoint: process.env.NUXT_PUBLIC_OTEL_ENDPOINT || 'http://localhost:4318',
     }
   },
 
