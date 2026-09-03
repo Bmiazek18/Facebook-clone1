@@ -173,6 +173,14 @@ spec:
     repoURL: https://charts.bitnami.com/bitnami
     chart: rabbitmq-cluster-operator
     targetRevision: 4.3.26
+    helm:
+      parameters:
+        - name: clusterOperator.image.tag
+          value: "latest"
+        - name: image.tag
+          value: "latest"
+        - name: msgTopologyOperator.enabled
+          value: "false"
   destination:
     server: https://kubernetes.default.svc
     namespace: rabbitmq-system
