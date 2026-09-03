@@ -9,6 +9,12 @@ on:
       - "keycloak/**"
       - "backend/**"
   workflow_dispatch:
+    inputs:
+      rebuild_all:
+        description: "Force build and push all services, frontend, and keycloak"
+        required: false
+        type: boolean
+        default: true
 
 env:
   REGISTRY: ghcr.io
@@ -25,7 +31,7 @@ jobs:
       nuxt: ${{ steps.filter.outputs.nuxt }}
       keycloak: ${{ steps.filter.outputs.keycloak }}
       backend_modules: ${{ steps.pack.outputs.modules }}
-      has_backend: ${{ steps.pack.outputs.modules != '[]' }}
+      has_backend: ${{ steps.pack.outputs.has_backend }}
       router_changed: ${{ steps.filter.outputs.router_changed }}
     steps:
       - name: Checkout repository
@@ -116,15 +122,22 @@ jobs:
               - 'backend/marketplace-edge-service/**'
               - 'backend/shared-proto/**'
               - 'backend/pom.xml'
-              - 'backend/router.yaml'
-              - 'backend/main.rhai'
+              - 'backend/supergraph.graphql'
               - 'backend/supergraph-config.yaml'
 
       - name: Pack backend module list
         id: pack
         run: |
-          MODULES=$(echo '${{ steps.filter.outputs.changes }}' | jq -c 'map(select(. != "nuxt" and . != "keycloak" and . != "router_changed"))')
+          MODULES=$(echo '${{ steps.filter.outputs.changes }}' | jq -c 'map(select(. != "nuxt" and . != "keycloak" and . != "router_changed")) // []')
+          if [ -z "$MODULES" ] || [ "$MODULES" = "null" ]; then
+            MODULES="[]"
+          fi
           echo "modules=$MODULES" >> "$GITHUB_OUTPUT"
+          if [ "$MODULES" != "[]" ]; then
+            echo "has_backend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_backend=false" >> "$GITHUB_OUTPUT"
+          fi
 
   # ========================================================
   # KROK 2A: Budowanie Frontendu (Nuxt)
@@ -157,7 +170,9 @@ jobs:
           file: ./frontend/Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-frontend:${{ github.sha }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-frontend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-frontend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -229,7 +244,9 @@ jobs:
           file: ./keycloak/Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-keycloak:${{ github.sha }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-keycloak:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-keycloak:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -286,7 +303,9 @@ jobs:
           file: ${{ steps.context.outputs.dockerfile }}
           platforms: linux/amd64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-${{ matrix.module }}:${{ github.sha }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-${{ matrix.module }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-${{ matrix.module }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -329,19 +348,20 @@ jobs:
             yq -i ".keycloak.image = \"${IMAGE}:${{ github.sha }}\"" "$FILE"
           fi
 
-      # 3. Supergraph Rover Compose
-      - name: Set up Rover
-        if: ${{ needs.detect-changes.outputs.router_changed == 'true' || github.event_name == 'workflow_dispatch' }}
-        uses: apollographql/rover-actions/install-rover-cli@v1
-
-      - name: Compose Supergraph
+      # 3. Supergraph Schema & Router Config Sync
+      - name: Sync Supergraph Schema
         if: ${{ needs.detect-changes.outputs.router_changed == 'true' || github.event_name == 'workflow_dispatch' }}
         run: |
           mkdir -p gitops-repo/charts/backend/files
-          rover supergraph compose \
-            --config backend/supergraph-config.yaml \
-            --output gitops-repo/charts/backend/files/supergraph.graphql \
-            --elv2-license accept
+          if [ -f "backend/supergraph.graphql" ]; then
+            cp backend/supergraph.graphql gitops-repo/charts/backend/files/supergraph.graphql
+          fi
+          if [ -f "backend/router.yaml" ]; then
+            cp backend/router.yaml gitops-repo/charts/backend/files/router.yaml
+          fi
+          if [ -f "backend/main.rhai" ]; then
+            cp backend/main.rhai gitops-repo/charts/backend/files/main.rhai
+          fi
 
       # 4. Aktualizacja Tagów Backendów
       - name: Update Backend Helm Tags
@@ -378,8 +398,8 @@ jobs:
             KEY="${SERVICE_MAP[$module]}"
             if [ -n "$KEY" ]; then
               REPO="${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/facebook-clone-${module}"
-              yq -i ".${KEY}.image.repository = \"${REPO}\"" "$VALUES_FILE"
-              yq -i ".${KEY}.image.tag = \"${{ github.sha }}\"" "$VALUES_FILE"
+              yq -i ".images.${KEY}.repository = \"${REPO}\"" "$VALUES_FILE"
+              yq -i ".images.${KEY}.tag = \"${{ github.sha }}\"" "$VALUES_FILE"
             fi
           done
 
