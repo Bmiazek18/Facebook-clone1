@@ -96,12 +96,12 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/ClickHouse/clickhouse-operator.git
-    targetRevision: main
-    path: config/default
+    repoURL: https://docs.altinity.com/clickhouse-operator/
+    chart: altinity-clickhouse-operator
+    targetRevision: 0.24.4
   destination:
     server: https://kubernetes.default.svc
-    namespace: clickhouse-operator-system
+    namespace: clickhouse-operator
   syncPolicy:
     automated:
       prune: true
