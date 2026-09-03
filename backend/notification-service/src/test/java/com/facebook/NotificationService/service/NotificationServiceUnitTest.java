@@ -1,7 +1,9 @@
 package com.facebook.NotificationService.service;
 
 import com.facebook.NotificationService.model.Notification;
+import com.facebook.NotificationService.model.WebPushSubscription;
 import com.facebook.NotificationService.repository.NotificationRepository;
+import com.facebook.NotificationService.repository.WebPushSubscriptionRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,8 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,6 +26,9 @@ class NotificationServiceUnitTest {
 
     @Mock
     private NotificationRepository notificationRepository;
+
+    @Mock
+    private WebPushSubscriptionRepository webPushSubscriptionRepository;
 
     @Mock
     private RedisTemplate<String, String> redisTemplate;
@@ -37,77 +42,25 @@ class NotificationServiceUnitTest {
     @Mock
     private ObjectMapper objectMapper;
 
+    @Mock
+    private MqttNotificationPublisher mqttNotificationPublisher;
+
+    @Mock
+    private WebPushService webPushService;
+
     private NotificationService notificationService;
 
     @BeforeEach
     void setUp() {
-        notificationService = new NotificationService(notificationRepository, redisTemplate, topic, objectMapper);
-    }
-
-    @Test
-    void testValidateTicket_Success() {
-        String ticket = "test-ticket-123";
-        String userId = "user-123";
-        String key = "ticket:" + ticket;
-
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get(key)).thenReturn(userId);
-
-        boolean isValid = notificationService.validateTicket(userId, ticket);
-
-        assertTrue(isValid);
-        verify(redisTemplate).delete(key);
-    }
-
-    @Test
-    void testValidateTicket_Bypass() {
-        boolean isValid = notificationService.validateTicket("user-123", "bypass-load-test");
-        assertTrue(isValid);
-    }
-
-    @Test
-    void testValidateTicket_InvalidTicket() {
-        String ticket = "invalid-ticket";
-        String userId = "user-123";
-        String key = "ticket:" + ticket;
-
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get(key)).thenReturn(null);
-
-        boolean isValid = notificationService.validateTicket(userId, ticket);
-
-        assertFalse(isValid);
-        verify(redisTemplate, never()).delete(anyString());
-    }
-
-    @Test
-    void testValidateTicket_WrongUser() {
-        String ticket = "test-ticket-123";
-        String userId = "user-123";
-        String wrongUserId = "user-999";
-        String key = "ticket:" + ticket;
-
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get(key)).thenReturn(userId);
-
-        boolean isValid = notificationService.validateTicket(wrongUserId, ticket);
-
-        assertFalse(isValid);
-        verify(redisTemplate, never()).delete(anyString());
-    }
-
-    @Test
-    void testValidateTicket_EmptyTicket() {
-        assertFalse(notificationService.validateTicket("user-123", ""));
-        assertFalse(notificationService.validateTicket("user-123", null));
-    }
-
-    @Test
-    void testSubscribe_Success() {
-        String userId = "user-123";
-        SseEmitter emitter = notificationService.subscribe(userId);
-
-        assertNotNull(emitter);
+        notificationService = new NotificationService(
+                notificationRepository,
+                webPushSubscriptionRepository,
+                redisTemplate,
+                topic,
+                objectMapper,
+                mqttNotificationPublisher,
+                webPushService
+        );
     }
 
     @Test
@@ -167,5 +120,40 @@ class NotificationServiceUnitTest {
         assertEquals(message, result.getMessage());
         assertFalse(result.isRead());
         verify(notificationRepository).save(existingNotification);
+    }
+
+    @Test
+    void testRegisterSubscription() {
+        String userId = "user-123";
+        String endpoint = "https://fcm.googleapis.com/fcm/send/test";
+        String p256dh = "key-p256dh";
+        String auth = "key-auth";
+
+        when(webPushSubscriptionRepository.findByEndpoint(endpoint)).thenReturn(Optional.empty());
+        when(webPushSubscriptionRepository.save(any(WebPushSubscription.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        WebPushSubscription sub = notificationService.registerSubscription(userId, endpoint, p256dh, auth);
+
+        assertNotNull(sub);
+        assertEquals(userId, sub.getUserId());
+        assertEquals(endpoint, sub.getEndpoint());
+        verify(webPushSubscriptionRepository).save(any(WebPushSubscription.class));
+    }
+
+    @Test
+    void testUnsubscribe() {
+        String endpoint = "https://fcm.googleapis.com/fcm/send/test";
+        notificationService.unsubscribe(endpoint);
+        verify(webPushSubscriptionRepository).deleteByEndpoint(endpoint);
+    }
+
+    @Test
+    void testGetNotificationsForUser() {
+        String userId = "user-123";
+        when(notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)).thenReturn(List.of());
+        List<Notification> list = notificationService.getNotificationsForUser(userId);
+        assertNotNull(list);
+        verify(notificationRepository).findByUserIdOrderByCreatedAtDesc(userId);
     }
 }
