@@ -96,11 +96,12 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://clickhouse.github.io/charts/
-    chart: clickhouse-operator
+    repoURL: https://github.com/ClickHouse/clickhouse-operator.git
+    targetRevision: main
+    path: config/default
   destination:
     server: https://kubernetes.default.svc
-    namespace: clickhouse-operator
+    namespace: clickhouse-operator-system
   syncPolicy:
     automated:
       prune: true
