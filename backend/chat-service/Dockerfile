@@ -7,18 +7,18 @@ COPY pom.xml .
 COPY shared-proto shared-proto
 COPY chat-service chat-service
 COPY user-service/pom.xml user-service/pom.xml
-COPY search-service/pom.xml search-service/pom.xml
-COPY groups-service/pom.xml groups-service/pom.xml
-COPY chat-service/pom.xml chat-service/pom.xml
-COPY chat-edge-service/pom.xml chat-edge-service/pom.xml
-COPY socialgraph-service/pom.xml socialgraph-service/pom.xml
-COPY notification-service/pom.xml notification-service/pom.xml
-COPY feed-service/pom.xml feed-service/pom.xml
 COPY user-edge-service/pom.xml user-edge-service/pom.xml
+COPY socialgraph-service/pom.xml socialgraph-service/pom.xml
 COPY socialgraph-edge-service/pom.xml socialgraph-edge-service/pom.xml
+COPY search-service/pom.xml search-service/pom.xml
+COPY feed-service/pom.xml feed-service/pom.xml
 COPY feed-edge-service/pom.xml feed-edge-service/pom.xml
+COPY chat-edge-service/pom.xml chat-edge-service/pom.xml
+COPY notification-service/pom.xml notification-service/pom.xml
 COPY analytics-service/pom.xml analytics-service/pom.xml
-
+COPY groups-service/pom.xml groups-service/pom.xml
+COPY marketplace-service/pom.xml marketplace-service/pom.xml
+COPY marketplace-edge-service/pom.xml marketplace-edge-service/pom.xml
 # Build only the chat-service and its dependencies
 RUN mvn clean package -pl chat-service -am -DskipTests && \
     rm -f chat-service/target/*-plain.jar
