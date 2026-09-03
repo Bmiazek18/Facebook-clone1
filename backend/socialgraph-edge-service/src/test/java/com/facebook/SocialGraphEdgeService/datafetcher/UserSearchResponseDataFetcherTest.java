@@ -35,7 +35,7 @@ public class UserSearchResponseDataFetcherTest {
     @Autowired
     private FriendRequestDataFetcher friendRequestDataFetcher;
 
-    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    @org.springframework.boot.test.mock.mockito.MockBean
     private com.facebook.socialgraph.grpc.SocialGraphGrpcServiceGrpc.SocialGraphGrpcServiceBlockingStub socialGraphGrpcStub;
 
     @BeforeEach

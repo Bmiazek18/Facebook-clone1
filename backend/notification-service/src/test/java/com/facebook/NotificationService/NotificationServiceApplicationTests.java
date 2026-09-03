@@ -29,14 +29,20 @@ class NotificationServiceApplicationTests {
     @Autowired
     private NotificationRepository notificationRepository;
 
-    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    @org.springframework.boot.test.mock.mockito.MockBean
     private org.springframework.data.redis.core.RedisTemplate<String, String> redisTemplate;
 
-    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    @org.springframework.boot.test.mock.mockito.MockBean
     private org.springframework.data.redis.listener.ChannelTopic topic;
 
-    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    @org.springframework.boot.test.mock.mockito.MockBean
     private org.springframework.data.redis.listener.RedisMessageListenerContainer redisContainer;
+
+    @org.springframework.boot.test.mock.mockito.MockBean
+    private com.facebook.NotificationService.service.MqttNotificationPublisher mqttNotificationPublisher;
+
+    @org.springframework.boot.test.mock.mockito.MockBean
+    private com.facebook.NotificationService.service.WebPushService webPushService;
 
     @Test
     void contextLoads() {

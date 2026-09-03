@@ -46,16 +46,16 @@ class UserServiceApplicationTests {
 	@Autowired
 	private com.facebook.UserService.service.UserActiveService userActiveService;
 
-	@org.springframework.test.context.bean.override.mockito.MockitoBean
+	@org.springframework.boot.test.mock.mockito.MockBean
 	private SocialGraphClient socialGraphClient;
 
-	@org.springframework.test.context.bean.override.mockito.MockitoBean
+	@org.springframework.boot.test.mock.mockito.MockBean
 	private SearchServiceClient searchServiceClient;
 
-	@org.springframework.test.context.bean.override.mockito.MockitoBean
+	@org.springframework.boot.test.mock.mockito.MockBean
 	private com.facebook.UserService.service.MinioService minioService;
 
-	@org.springframework.test.context.bean.override.mockito.MockitoBean
+	@org.springframework.boot.test.mock.mockito.MockBean
 	private org.springframework.data.redis.core.StringRedisTemplate redisTemplate;
 
 	private final java.util.Map<String, String> fakeRedis = new java.util.concurrent.ConcurrentHashMap<>();

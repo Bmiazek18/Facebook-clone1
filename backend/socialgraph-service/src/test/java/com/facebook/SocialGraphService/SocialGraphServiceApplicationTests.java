@@ -10,7 +10,7 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 class SocialGraphServiceApplicationTests {
 
-    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    @org.springframework.boot.test.mock.mockito.MockBean
     private org.neo4j.driver.Driver neo4jDriver;
 
     @Test
