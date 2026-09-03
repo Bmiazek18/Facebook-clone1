@@ -20,7 +20,19 @@ export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
 
   const rawEndpoint = config.public.otelEndpoint as string | undefined
-  if (!rawEndpoint) {
+  if (!rawEndpoint || rawEndpoint === 'disabled' || rawEndpoint === 'false') {
+    return
+  }
+
+  // Prevent Mixed Content blocking when site is served over HTTPS
+  if (
+    typeof window !== 'undefined' &&
+    window.location.protocol === 'https:' &&
+    rawEndpoint.startsWith('http://')
+  ) {
+    console.warn(
+      `[OpenTelemetry] Insecure HTTP endpoint (${rawEndpoint}) blocked on HTTPS page (${window.location.origin}). Disabling browser tracing.`,
+    )
     return
   }
 
