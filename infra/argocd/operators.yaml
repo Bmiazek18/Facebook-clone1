@@ -241,6 +241,7 @@ spec:
     targetRevision: 0.16.2
     helm:
       values: |
+        runtimeClassName: nvidia
         flags:
           deviceDiscoveryStrategy: "nvml"
         config:

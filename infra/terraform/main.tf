@@ -38,7 +38,7 @@ resource "proxmox_virtual_environment_container" "k3s_cluster" {
 
   disk {
     datastore_id = "local-lvm"
-    size         = 60
+    size         = 100
   }
 
   operating_system {
@@ -215,7 +215,14 @@ resource "null_resource" "proxmox_host_gpu_passthrough" {
       "# NVIDIA GPU Passthrough",
       "lxc.cgroup2.devices.allow: c 195:* rwm",
       "lxc.cgroup2.devices.allow: c 234:* rwm",
+      "lxc.cgroup2.devices.allow: c 238:* rwm",
+      "lxc.cgroup2.devices.allow: c 239:* rwm",
+      "lxc.cgroup2.devices.allow: c 240:* rwm",
+      "lxc.cgroup2.devices.allow: c 241:* rwm",
+      "lxc.cgroup2.devices.allow: c 242:* rwm",
       "lxc.cgroup2.devices.allow: c 508:* rwm",
+      "lxc.cgroup2.devices.allow: c 510:* rwm",
+      "lxc.cgroup2.devices.allow: c 511:* rwm",
       "lxc.cgroup2.devices.allow: c 10:200 rwm",
       "lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file",
       "lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file",
