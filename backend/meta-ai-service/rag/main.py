@@ -227,6 +227,11 @@ async def lifespan(app: FastAPI):
     global agent_executor
     async with AsyncSqliteSaver.from_conn_string(DB_PATH) as chat_memory_db:
         print("Uruchamianie StateGraph z asynchroniczną bazą...")
+        if hasattr(chat_memory_db, "setup"):
+            try:
+                await chat_memory_db.setup()
+            except Exception as e:
+                print(f"[LIFESPAN] setup() checkpointer error: {e}")
 
         workflow = StateGraph(AgentState)
 
@@ -272,6 +277,10 @@ async def get_chat_threads():
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='checkpoints'")
+        if not cursor.fetchone():
+            conn.close()
+            return {"threads": []}
         cursor.execute("SELECT thread_id FROM checkpoints GROUP BY thread_id ORDER BY max(checkpoint_id) DESC")
         rows = cursor.fetchall()
         conn.close()
