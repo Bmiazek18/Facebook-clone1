@@ -226,8 +226,7 @@ resource "null_resource" "proxmox_host_gpu_passthrough" {
       "pct stop ${var.container_vm_id} || true",
       "sleep 3",
       "pct start ${var.container_vm_id} || true",
-      "echo 'Oczekiwanie na uruchomienie API Kubernetes wewnątrz LXC...'",
-      "until pct exec ${var.container_vm_id} -- k3s kubectl get nodes 2>/dev/null | grep -q 'Ready'; do echo 'API K3s wstaje...'; sleep 3; done",
+      "until pct exec ${var.container_vm_id} -- /usr/local/bin/k3s kubectl get nodes 2>/dev/null | grep -q 'Ready'; do echo 'API K3s wstaje...'; sleep 3; done",
       "echo '=== [3/3] Instalacja bibliotek NVIDIA wewnątrz kontenera LXC ==='",
       "pct exec ${var.container_vm_id} -- bash -c \"set -e; sed -i -E 's/(main|main contrib)$/\\\\1 contrib non-free non-free-firmware/' /etc/apt/sources.list || true; if [ -f /etc/apt/sources.list.d/debian.sources ]; then sed -i -E 's/Components: main( contrib)?( non-free)?( non-free-firmware)?$/Components: main contrib non-free non-free-firmware/g' /etc/apt/sources.list.d/debian.sources; fi; apt-get update -y; DEBIAN_FRONTEND=noninteractive apt-get install -y nvidia-driver-libs libnvidia-ml1 nvidia-smi; echo 'Weryfikacja nvidia-smi wewnątrz LXC:'; nvidia-smi\"",
       "echo '=== Passthrough GPU oraz biblioteki LXC skonfigurowane pomyślnie! ==='"
