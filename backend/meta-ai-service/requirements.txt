@@ -8,6 +8,7 @@ langgraph>=0.1.0
 langgraph-checkpoint>=1.0.0
 langgraph-checkpoint-sqlite>=1.0.0
 duckduckgo-search>=5.0.0
+ddgs>=6.0.0
 matplotlib>=3.8.0
 aiosqlite>=0.20.0
 torch>=2.0.0

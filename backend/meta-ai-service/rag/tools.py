@@ -146,10 +146,16 @@ def generate_and_save_chart(title: str, type: str, labels: list, values: list, d
 
 
 # 3. WYSZUKIWARKA INTERNETOWA DUCKDUCKGO
-web_search_tool = DuckDuckGoSearchRun(
-    name="web_search",
-    description="Użyj tego narzędzia do wyszukiwania aktualnych informacji i faktów w internecie."
-)
+try:
+    web_search_tool = DuckDuckGoSearchRun(
+        name="web_search",
+        description="Użyj tego narzędzia do wyszukiwania aktualnych informacji i faktów w internecie."
+    )
+except Exception as ddg_err:
+    @tool
+    def web_search_tool(query: str) -> str:
+        """Użyj tego narzędzia do wyszukiwania aktualnych informacji i faktów w internecie."""
+        return f"Wyszukiwarka zewnętrzna jest tymczasowo niedostępna ({ddg_err})."
 
 
 # 4. BAZA WEKTOROWA CHROMADB (RAG)
