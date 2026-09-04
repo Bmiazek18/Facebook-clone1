@@ -32,7 +32,7 @@ public class ScyllaDbConfiguration {
 
         CqlSession session = builder.build();
 
-        session.execute("CREATE KEYSPACE IF NOT EXISTS chat WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1} AND tablets = {'enabled': false}");
+        session.execute("CREATE KEYSPACE IF NOT EXISTS chat WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}");
         session.execute("CREATE TABLE IF NOT EXISTS chat.messages (conversation_id uuid, message_id timeuuid, sender_id uuid, message_text text, reactions map<text, text>, reply_to_message_id timeuuid, reply_to_text text, reply_to_sender_id uuid, image_url text, audio_url text, duration int, is_pinned boolean, PRIMARY KEY ((conversation_id), message_id))");
         
         try {

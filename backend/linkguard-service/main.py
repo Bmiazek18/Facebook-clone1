@@ -13,6 +13,7 @@ import socket
 from datetime import datetime
 from urllib.parse import urljoin, urlparse, unquote, quote
 from typing import Optional, List
+from cachetools import TTLCache
 
 # L3 Cache: DNS Caching to prevent duplicate DNS lookups (5 minutes TTL)
 dns_cache = TTLCache(maxsize=1000, ttl=300)

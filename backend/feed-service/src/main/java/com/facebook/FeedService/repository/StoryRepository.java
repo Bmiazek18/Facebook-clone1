@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface StoryRepository extends JpaRepository<StoryEntity, String> {
     List<StoryEntity> findAllByExpiresAtAfterOrderByCreatedAtDesc(Instant now);
-    List<StoryEntity> findAllByAuthorIdAndExpiresAtAfterOrderByCreatedAtDesc(Long authorId, Instant now);
+    List<StoryEntity> findAllByAuthorIdAndExpiresAtAfterOrderByCreatedAtDesc(String authorId, Instant now);
 }

@@ -23,6 +23,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("recommend-service")
 
 app = FastAPI(title="Recommend Service (Feast Feature Store, Qdrant, AutoGluon & Prometheus)", version="1.0.0")
+Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 # Prometheus custom metrics for MLOps tracking
 QDRANT_LATENCY = Histogram("recommend_qdrant_search_latency_seconds", "Latency of Qdrant vector search in seconds")
@@ -160,8 +161,6 @@ def load_autogluon_model():
 
 @app.on_event("startup")
 async def startup_event():
-    # 1. Prometheus Instrumentator (Option B)
-    Instrumentator().instrument(app).expose(app, endpoint="/metrics")
     logger.info("Prometheus FastAPI Instrumentator active under /metrics")
 
     # 2. Initialize ML Pipeline (Option A)
