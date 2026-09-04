@@ -1,8 +1,19 @@
-import { defineEventHandler, proxyRequest } from 'h3'
+import { defineEventHandler, getCookie, proxyRequest } from 'h3'
 import { getValidAccessToken } from '../utils/session'
 
 export default defineEventHandler(async (event) => {
-  const accessToken = await getValidAccessToken(event)
+  let accessToken = await getValidAccessToken(event)
+  if (!accessToken) {
+    const authHeader = event.node.req.headers['authorization']
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      accessToken = authHeader.substring(7)
+    } else {
+      const jwtCookie = getCookie(event, 'jwt_token')
+      if (jwtCookie) {
+        accessToken = jwtCookie
+      }
+    }
+  }
   
   if (!accessToken) {
     event.node.res.statusCode = 401
@@ -13,17 +24,19 @@ export default defineEventHandler(async (event) => {
   event.node.req.headers['authorization'] = `Bearer ${accessToken}`
   try {
     const payloadPart = accessToken.split('.')[1]
-    const payload = JSON.parse(Buffer.from(payloadPart, 'base64').toString('utf8'))
-    if (payload && payload.sub) {
-      event.node.req.headers['x-user-id'] = payload.sub
+    if (payloadPart) {
+      const payload = JSON.parse(Buffer.from(payloadPart, 'base64').toString('utf8'))
+      if (payload && payload.sub) {
+        event.node.req.headers['x-user-id'] = payload.sub
+      }
     }
   } catch (err) {
     console.warn('BFF: Failed to parse JWT for X-User-Id:', err)
   }
 
-  // Forward the request to Kong gateway on http://localhost:8000/graphql with original query string
+  const routerUrl = process.env.APOLLO_ROUTER_URL || process.env.GRAPHQL_URL || 'http://apollo-router.apps.svc.cluster.local:4000/graphql'
   const requestUrl = event.node.req.url || ''
   const queryIndex = requestUrl.indexOf('?')
   const queryString = queryIndex !== -1 ? requestUrl.slice(queryIndex) : ''
-  return proxyRequest(event, `http://localhost:8000/graphql${queryString}`)
+  return proxyRequest(event, `${routerUrl}${queryString}`)
 })
