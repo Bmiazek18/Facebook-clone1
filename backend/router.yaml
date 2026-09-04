@@ -38,3 +38,8 @@ headers:
 rhai:
   scripts: "/dist/config"
   main: "main.rhai"
+
+plugins:
+  custom.jwt_auth:
+    jwks_url: "http://keycloak-service:8080/realms/facebook-clone/protocol/openid-connect/certs"
+    issuer: "https://auth.lab-bm.com/realms/facebook-clone"

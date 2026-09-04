@@ -114,6 +114,8 @@ jobs:
               - 'backend/inference-service/**'
             meta-ai-service:
               - 'backend/meta-ai-service/**'
+            custom-apollo-router:
+              - 'backend/custom-apollo-router/**'
             router_changed:
               - 'backend/user-edge-service/**'
               - 'backend/socialgraph-edge-service/**'
@@ -288,7 +290,7 @@ jobs:
       - name: Determine Docker Context & Build Options
         id: context
         run: |
-          if [ "${{ matrix.module }}" = "inference-service" ] || [ "${{ matrix.module }}" = "meta-ai-service" ] || [ "${{ matrix.module }}" = "recommend-service" ]; then
+          if [ "${{ matrix.module }}" = "inference-service" ] || [ "${{ matrix.module }}" = "meta-ai-service" ] || [ "${{ matrix.module }}" = "recommend-service" ] || [ "${{ matrix.module }}" = "custom-apollo-router" ]; then
             echo "context=./backend/${{ matrix.module }}" >> "$GITHUB_OUTPUT"
             echo "dockerfile=./backend/${{ matrix.module }}/Dockerfile" >> "$GITHUB_OUTPUT"
           else
@@ -392,6 +394,7 @@ jobs:
             ["recommend-service"]="recommendService"
             ["inference-service"]="inferenceService"
             ["meta-ai-service"]="metaAiService"
+            ["custom-apollo-router"]="apolloRouter"
           )
 
           for module in $(echo "$MODULES" | jq -r '.[]'); do
