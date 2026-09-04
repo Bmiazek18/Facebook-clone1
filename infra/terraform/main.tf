@@ -323,14 +323,25 @@ resource "null_resource" "proxmox_host_gpu_passthrough" {
   provisioner "remote-exec" {
     inline = [
       "set -e",
-      "echo '=== [1/5] Wlaczanie repozytoriow non-free na Proxmox VE ==='",
-      "sed -i -E 's/(main|main contrib)$/\\1 contrib non-free non-free-firmware/' /etc/apt/sources.list || true",
+      "echo '=== [1/5] Konfiguracja repozytoriow APT (PVE No-Subscription + non-free) na Proxmox VE ==='",
+      "rm -f /etc/apt/sources.list.d/pve-enterprise.list /etc/apt/sources.list.d/ceph.list 2>/dev/null || true",
+      "if [ -f /etc/apt/sources.list.d/debian.sources ]; then",
+      "  sed -i 's/Components: main$/Components: main contrib non-free non-free-firmware/g' /etc/apt/sources.list.d/debian.sources",
+      "  sed -i 's/Components: main contrib$/Components: main contrib non-free non-free-firmware/g' /etc/apt/sources.list.d/debian.sources",
+      "fi",
+      "if [ -f /etc/apt/sources.list ]; then",
+      "  sed -i -E 's/(main|main contrib)$/\\1 contrib non-free non-free-firmware/' /etc/apt/sources.list || true",
+      "fi",
       "for f in /etc/apt/sources.list.d/*.list; do [ -f \"$f\" ] && sed -i -E 's/(main|main contrib)$/\\1 contrib non-free non-free-firmware/' \"$f\" || true; done",
+      "SUITE=$(grep -oP '(?<=VERSION_CODENAME=)[a-z]+' /etc/os-release 2>/dev/null || echo 'bookworm')",
+      "cat <<EOF_PVE > /etc/apt/sources.list.d/pve-no-subscription.list",
+      "deb http://download.proxmox.com/debian/pve $SUITE pve-no-subscription",
+      "EOF_PVE",
       "apt-get update -y || true",
       "echo '=== [2/5] Instalacja naglowkow kernela i sterownikow NVIDIA na Proxmox ==='",
       "if ! which nvidia-smi >/dev/null 2>&1 || ! lsmod | grep -q nvidia; then",
-      "  echo 'Instaluje pve-headers, build-essential i dkms...'",
-      "  DEBIAN_FRONTEND=noninteractive apt-get install -y proxmox-default-headers pve-headers-$(uname -r) pve-headers dkms build-essential || DEBIAN_FRONTEND=noninteractive apt-get install -y pve-headers build-essential dkms || true",
+      "  echo 'Instaluje naglowki kernela, dkms i build-essential...'",
+      "  DEBIAN_FRONTEND=noninteractive apt-get install -y pve-headers-$(uname -r) proxmox-headers-$(uname -r) proxmox-default-headers pve-headers linux-headers-$(uname -r) dkms build-essential || true",
       "  echo 'Instaluje sterownik nvidia-driver...'",
       "  DEBIAN_FRONTEND=noninteractive apt-get install -y nvidia-driver nvidia-smi nvidia-kernel-dkms firmware-misc-nonfree || true",
       "fi",
@@ -373,7 +384,7 @@ resource "null_resource" "proxmox_host_gpu_passthrough" {
       "until pct status ${var.container_vm_id} | grep -q 'running'; do sleep 2; done",
       "sleep 5",
       "echo '=== [5/5] Inicjalizacja bibliotek NVIDIA i przeladowanie K8s Device Plugin w kontenerze ==='",
-      "pct exec ${var.container_vm_id} -- bash -c \"sed -i -E 's/(main|main contrib)$/\\1 contrib non-free non-free-firmware/' /etc/apt/sources.list || true; apt-get update -y || true; DEBIAN_FRONTEND=noninteractive apt-get install -y nvidia-smi nvidia-driver-libs || true; k3s kubectl rollout restart daemonset nvidia-device-plugin-daemonset -n kube-system || true; k3s kubectl rollout restart daemonset nvidia-dcgm-exporter -n kube-system || true\"",
+      "pct exec ${var.container_vm_id} -- bash -c \"export PATH=\\$PATH:/usr/local/bin:/usr/sbin:/sbin; if [ -f /etc/apt/sources.list.d/debian.sources ]; then sed -i 's/Components: main$/Components: main contrib non-free non-free-firmware/g' /etc/apt/sources.list.d/debian.sources; sed -i 's/Components: main contrib$/Components: main contrib non-free non-free-firmware/g' /etc/apt/sources.list.d/debian.sources; fi; if [ -f /etc/apt/sources.list ]; then sed -i -E 's/(main|main contrib)$/\\1 contrib non-free non-free-firmware/' /etc/apt/sources.list; fi; apt-get update -y || true; DEBIAN_FRONTEND=noninteractive apt-get install -y nvidia-smi nvidia-driver-libs || true; /usr/local/bin/k3s kubectl rollout restart daemonset nvidia-device-plugin-daemonset -n kube-system || true; /usr/local/bin/k3s kubectl rollout restart daemonset nvidia-dcgm-exporter -n kube-system || true\"",
       "echo '=== Pelny NVIDIA GPU Passthrough i konfiguracja K8s zakonczone sukcesem! ==='"
     ]
   }
