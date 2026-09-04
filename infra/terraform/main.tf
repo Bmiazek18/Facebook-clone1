@@ -88,6 +88,8 @@ resource "proxmox_virtual_environment_container" "k3s_cluster" {
       "systemctl daemon-reload || true",
       "echo '=== 4. Instalacja K3s Server ==='",
       "curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.28.9+k3s1 sh -",
+      "ln -sf /usr/local/bin/k3s /usr/bin/k3s",
+      "ln -sf /usr/local/bin/k3s /usr/bin/kubectl",
       "ethtool -K eth0 tx off rx off 2>/dev/null || true",
       "echo '=== 5. Oczekiwanie na gotowosc wezla K3s ==='",
       "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml",
@@ -227,7 +229,7 @@ resource "null_resource" "proxmox_host_gpu_passthrough" {
       "sleep 3",
       "pct start ${var.container_vm_id} || true",
       "until pct exec ${var.container_vm_id} -- /usr/local/bin/k3s kubectl get nodes 2>/dev/null | grep -q 'Ready'; do echo 'API K3s wstaje...'; sleep 3; done",
-      "echo '=== [3/3] Dopasowanie wersji bibliotek NVIDIA wewnątrz kontenera LXC ==='",
+      "echo '=== [3/3] Dopasowanie wersji bibliotek NVIDIA oraz instalacja NVIDIA Container Toolkit wewnątrz kontenera LXC ==='",
       "DRIVER_VER=$(nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -n1 | tr -d '[:space:]')",
       "echo \"Wykryto wersje sterownika hosta: $DRIVER_VER\"",
       "RUN_FILE=\"/tmp/NVIDIA-Linux-x86_64-$DRIVER_VER.run\"",
@@ -236,10 +238,12 @@ resource "null_resource" "proxmox_host_gpu_passthrough" {
       "  wget -q \"https://us.download.nvidia.com/XFree86/Linux-x86_64/$DRIVER_VER/NVIDIA-Linux-x86_64-$DRIVER_VER.run\" -O \"$RUN_FILE\" || true",
       "fi",
       "pct push ${var.container_vm_id} \"$RUN_FILE\" /tmp/nvidia-installer.run",
-      "pct exec ${var.container_vm_id} -- bash -c \"DEBIAN_FRONTEND=noninteractive apt-get purge -y 'nvidia*' 'libnvidia*' 'glx-alternative-*' 2>/dev/null || true; chmod +x /tmp/nvidia-installer.run; /tmp/nvidia-installer.run --no-kernel-module -s --no-questions; rm -f /tmp/nvidia-installer.run; ldconfig\"",
+      "pct exec ${var.container_vm_id} -- bash -c \"DEBIAN_FRONTEND=noninteractive apt-get purge -y 'nvidia*' 'libnvidia*' 'glx-alternative-*' 2>/dev/null || true; chmod +x /tmp/nvidia-installer.run; /tmp/nvidia-installer.run --no-kernel-module -s --no-questions; rm -f /tmp/nvidia-installer.run; ldconfig; ln -sf /usr/local/bin/k3s /usr/bin/k3s || true; ln -sf /usr/local/bin/k3s /usr/bin/kubectl || true\"",
+      "echo 'Instalacja nvidia-container-toolkit i konfiguracja containerd...'",
+      "pct exec ${var.container_vm_id} -- bash -c \"curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg 2>/dev/null || true; curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | tee /etc/apt/sources.list.d/nvidia-container-toolkit.list || true; apt-get update -y || true; DEBIAN_FRONTEND=noninteractive apt-get install -y nvidia-container-toolkit || true; nvidia-ctk runtime configure --runtime=containerd || true; systemctl restart k3s || true\"",
       "echo 'Weryfikacja nvidia-smi wewnątrz kontenera LXC:'",
       "pct exec ${var.container_vm_id} -- nvidia-smi",
-      "echo '=== Passthrough GPU oraz biblioteki LXC skonfigurowane pomyślnie z pełną zgodnością wersji! ==='"
+      "echo '=== Passthrough GPU, biblioteki LXC oraz NVIDIA Container Toolkit skonfigurowane pomyślnie! ==='"
     ]
   }
 }
