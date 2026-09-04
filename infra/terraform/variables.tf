@@ -42,19 +42,19 @@ variable "container_ip" {
 variable "container_cores" {
   type        = number
   description = "Liczba rdzeni CPU przydzielonych do kontenera LXC"
-  default     = 6
+  default     = 8
 }
 
 variable "container_memory" {
   type        = number
   description = "Pamięć RAM (MB) przydzielona do kontenera LXC"
-  default     = 16384
+  default     = 24576
 }
 
 variable "container_swap" {
   type        = number
   description = "Pamięć SWAP (MB) przydzielona do kontenera LXC"
-  default     = 4096
+  default     = 8192
 }
 
 variable "gateway_ip" {
