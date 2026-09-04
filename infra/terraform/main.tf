@@ -353,7 +353,7 @@ resource "null_resource" "proxmox_host_gpu_passthrough" {
       "  echo 'Pobieranie i instalacja oficjalnego sterownika NVIDIA (.run)...'",
       "  wget -q https://us.download.nvidia.com/XFree86/Linux-x86_64/570.86.16/NVIDIA-Linux-x86_64-570.86.16.run -O /tmp/NVIDIA-installer.run",
       "  chmod +x /tmp/NVIDIA-installer.run",
-      "  /tmp/NVIDIA-installer.run --dkms -s --no-questions || true",
+      "  /tmp/NVIDIA-installer.run -m=kernel-open --dkms -s --no-questions || /tmp/NVIDIA-installer.run --dkms -s --no-questions || true",
       "  rm -f /tmp/NVIDIA-installer.run",
       "fi",
       "echo 'Ladowanie modulow NVIDIA...'",
