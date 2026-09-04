@@ -241,10 +241,14 @@ spec:
     targetRevision: 0.16.2
     helm:
       values: |
+        flags:
+          deviceDiscoveryStrategy: "nvml"
         config:
           map:
             default: |-
               version: v1
+              flags:
+                deviceDiscoveryStrategy: "nvml"
               sharing:
                 timeSlicing:
                   resources:
