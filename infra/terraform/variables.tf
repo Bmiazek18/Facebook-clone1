@@ -42,7 +42,7 @@ variable "container_ip" {
 variable "container_cores" {
   type        = number
   description = "Liczba rdzeni CPU przydzielonych do kontenera LXC"
-  default     = 8
+  default     = 12
 }
 
 variable "container_memory" {
