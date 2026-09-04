@@ -1,6 +1,7 @@
 # router.yaml
 supergraph:
   listen: 0.0.0.0:4000
+  path: /graphql
   introspection: true
 
 cors:
