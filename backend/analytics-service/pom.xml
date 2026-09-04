@@ -30,7 +30,11 @@
             <groupId>com.clickhouse</groupId>
             <artifactId>clickhouse-jdbc</artifactId>
             <version>0.6.5</version>
-            <classifier>all</classifier>
+        </dependency>
+        <dependency>
+            <groupId>com.clickhouse</groupId>
+            <artifactId>clickhouse-http-client</artifactId>
+            <version>0.6.5</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.kafka</groupId>
