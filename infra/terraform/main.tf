@@ -63,7 +63,7 @@ resource "proxmox_virtual_environment_container" "k3s_cluster" {
       "set -e",
       "echo '=== 1. Czekam na siec i instaluje zaleznosci ==='",
       "until systemctl is-active --quiet systemd-resolved || systemctl is-active --quiet networking; do sleep 2; done",
-      "apt-get update -y && apt-get install -y curl git iptables ethtool wget",
+      "apt-get update -y && apt-get install -y curl git iptables ethtool wget gpg gnupg",
       "sysctl -w net.ipv4.ip_forward=1 || true",
       "iptables -P FORWARD ACCEPT",
       "echo '=== 2. Przygotowanie srodowiska LXC dla K3s ==='",
@@ -240,9 +240,10 @@ resource "null_resource" "proxmox_host_gpu_passthrough" {
       "pct push ${var.container_vm_id} \"$RUN_FILE\" /tmp/nvidia-installer.run",
       "pct exec ${var.container_vm_id} -- bash -c \"DEBIAN_FRONTEND=noninteractive apt-get purge -y 'nvidia*' 'libnvidia*' 'glx-alternative-*' 2>/dev/null || true; chmod +x /tmp/nvidia-installer.run; /tmp/nvidia-installer.run --no-kernel-module -s --no-questions; rm -f /tmp/nvidia-installer.run; ldconfig; ln -sf /usr/local/bin/k3s /usr/bin/k3s || true; ln -sf /usr/local/bin/k3s /usr/bin/kubectl || true\"",
       "echo 'Instalacja nvidia-container-toolkit i konfiguracja containerd...'",
-      "pct exec ${var.container_vm_id} -- bash -c \"curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg 2>/dev/null || true; curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | tee /etc/apt/sources.list.d/nvidia-container-toolkit.list || true; apt-get update -y || true; DEBIAN_FRONTEND=noninteractive apt-get install -y nvidia-container-toolkit || true; nvidia-ctk runtime configure --runtime=containerd || true; systemctl restart k3s || true\"",
-      "echo 'Weryfikacja nvidia-smi wewnątrz kontenera LXC:'",
+      "pct exec ${var.container_vm_id} -- bash -c \"rm -f /etc/apt/sources.list.d/nvidia* /usr/share/keyrings/nvidia* /etc/apt/trusted.gpg.d/nvidia*; apt-get update -y; DEBIAN_FRONTEND=noninteractive apt-get install -y gpg gnupg curl; mkdir -p /usr/share/keyrings /etc/cdi; curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg; echo 'deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/stable/deb/amd64 /' > /etc/apt/sources.list.d/nvidia-container-toolkit.list; apt-get update -y; DEBIAN_FRONTEND=noninteractive apt-get install -y nvidia-container-toolkit; nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml; nvidia-ctk runtime configure --runtime=containerd; systemctl restart k3s\"",
+      "echo 'Weryfikacja nvidia-smi oraz nvidia-ctk wewnątrz kontenera LXC:'",
       "pct exec ${var.container_vm_id} -- nvidia-smi",
+      "pct exec ${var.container_vm_id} -- nvidia-ctk --version",
       "echo '=== Passthrough GPU, biblioteki LXC oraz NVIDIA Container Toolkit skonfigurowane pomyślnie! ==='"
     ]
   }

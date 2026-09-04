@@ -223,3 +223,47 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nvidia-device-plugin
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-3"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://nvidia.github.io/k8s-device-plugin
+    chart: nvidia-device-plugin
+    targetRevision: 0.16.2
+    helm:
+      values: |
+        config:
+          name: default
+          map:
+            default: |-
+              version: v1
+              sharing:
+                timeSlicing:
+                  resources:
+                    - name: nvidia.com/gpu
+                      replicas: 4
+        tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
+          - key: nvidia.com/gpu
+            operator: Exists
+            effect: NoSchedule
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
