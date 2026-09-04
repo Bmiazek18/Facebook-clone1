@@ -34,11 +34,18 @@ export default defineNuxtConfig({
     '@nuxt/icon',
   ],
 
- apollo: {
-  clients: {
-    default: '~/apollo/default.ts',
+  apollo: {
+    clients: {
+      default: {
+        httpEndpoint: process.env.NUXT_PUBLIC_API_URL ? `${process.env.NUXT_PUBLIC_API_URL}/graphql` : 'https://api.lab-bm.com/graphql',
+        browserHttpEndpoint: process.env.NUXT_PUBLIC_API_URL ? `${process.env.NUXT_PUBLIC_API_URL}/graphql` : 'https://api.lab-bm.com/graphql',
+        tokenStorage: 'cookie',
+        tokenName: 'jwt_token',
+        authType: 'Bearer',
+        authHeader: 'Authorization',
+      },
+    },
   },
-},
 
   css: [
     '~/assets/main.css',
