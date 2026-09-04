@@ -228,7 +228,11 @@ resource "null_resource" "proxmox_host_gpu_passthrough" {
       "pct start ${var.container_vm_id} || true",
       "until pct exec ${var.container_vm_id} -- /usr/local/bin/k3s kubectl get nodes 2>/dev/null | grep -q 'Ready'; do echo 'API K3s wstaje...'; sleep 3; done",
       "echo '=== [3/3] Instalacja bibliotek NVIDIA wewnątrz kontenera LXC ==='",
-      "pct exec ${var.container_vm_id} -- bash -c \"set -e; sed -i -E 's/(main|main contrib)$/\\\\1 contrib non-free non-free-firmware/' /etc/apt/sources.list || true; if [ -f /etc/apt/sources.list.d/debian.sources ]; then sed -i -E 's/Components: main( contrib)?( non-free)?( non-free-firmware)?$/Components: main contrib non-free non-free-firmware/g' /etc/apt/sources.list.d/debian.sources; fi; apt-get update -y; DEBIAN_FRONTEND=noninteractive apt-get install -y nvidia-driver-libs libnvidia-ml1 nvidia-smi; echo 'Weryfikacja nvidia-smi wewnątrz LXC:'; nvidia-smi\"",
+      "pct exec ${var.container_vm_id} -- bash -c \"cat <<'EOF_APT' > /etc/apt/sources.list.d/debian-full.list\ndeb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware\ndeb http://deb.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware\ndeb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware\nEOF_APT\napt-get update -y || true; DEBIAN_FRONTEND=noninteractive apt-get install -y nvidia-smi libnvidia-ml1 || true\"",
+      "if [ -f /usr/bin/nvidia-smi ]; then pct push ${var.container_vm_id} /usr/bin/nvidia-smi /usr/bin/nvidia-smi || true; pct exec ${var.container_vm_id} -- chmod +x /usr/bin/nvidia-smi || true; fi",
+      "pct exec ${var.container_vm_id} -- ldconfig || true",
+      "echo 'Weryfikacja nvidia-smi wewnątrz kontenera LXC:'",
+      "pct exec ${var.container_vm_id} -- nvidia-smi || true",
       "echo '=== Passthrough GPU oraz biblioteki LXC skonfigurowane pomyślnie! ==='"
     ]
   }
