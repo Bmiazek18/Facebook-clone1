@@ -48,7 +48,7 @@ variable "container_cores" {
 variable "container_memory" {
   type        = number
   description = "Pamięć RAM (MB) przydzielona do kontenera LXC"
-  default     = 24576
+  default     = 26624
 }
 
 variable "container_swap" {
