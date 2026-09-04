@@ -43,7 +43,7 @@
         <!-- Netflix DGS GraphQL Starter -->
         <dependency>
             <groupId>com.netflix.graphql.dgs</groupId>
-            <artifactId>dgs-starter</artifactId>
+            <artifactId>graphql-dgs-spring-boot-starter</artifactId>
         </dependency>
 
         <dependency>
