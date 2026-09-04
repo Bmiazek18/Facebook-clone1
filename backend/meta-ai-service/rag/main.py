@@ -90,9 +90,14 @@ local_llm = ChatOpenAI(
     temperature=0.0
 )
 
-# --- REDIS SEMANTIC CACHE DLA ODPOWIEDZI AI ---
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
-REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+_raw_redis_port = os.getenv("REDIS_PORT", "6379")
+if "://" in _raw_redis_port:
+    _raw_redis_port = _raw_redis_port.split(":")[-1]
+try:
+    REDIS_PORT = int(_raw_redis_port)
+except Exception:
+    REDIS_PORT = 6379
 REDIS_CACHE_TTL = int(os.getenv("SEMANTIC_CACHE_TTL_SEC", "7200")) # 2h TTL
 
 try:
