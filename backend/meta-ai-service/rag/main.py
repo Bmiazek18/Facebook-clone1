@@ -54,13 +54,25 @@ from typing import Annotated, Sequence, List, Literal, TypedDict
 from pydantic import BaseModel, Field
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
+from contextlib import asynccontextmanager
+
 try:
     from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-except ImportError:
+except Exception:
     try:
-        from langgraph.checkpoint.sqlite import SqliteSaver as AsyncSqliteSaver
-    except ImportError:
-        from langgraph.checkpoint.memory import MemorySaver as AsyncSqliteSaver
+        from langgraph_checkpoint_sqlite.aio import AsyncSqliteSaver
+    except Exception:
+        try:
+            from langgraph.checkpoint.sqlite import SqliteSaver as AsyncSqliteSaver
+        except Exception:
+            from langgraph.checkpoint.memory import MemorySaver
+            class AsyncSqliteSaver(MemorySaver):
+                @classmethod
+                def from_conn_string(cls, conn_string):
+                    @asynccontextmanager
+                    async def _cm():
+                        yield cls()
+                    return _cm()
 
 # --- GLOBALNA ZMIENNA DLA AGENTA ---
 agent_executor = None
