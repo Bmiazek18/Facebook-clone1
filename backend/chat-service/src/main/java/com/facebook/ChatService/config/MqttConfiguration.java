@@ -3,10 +3,13 @@ package com.facebook.ChatService.config;
 import com.facebook.ChatService.service.ChatMessageHandler;
 import org.eclipse.paho.client.mqttv3.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Configuration
 public class MqttConfiguration {
@@ -26,12 +29,15 @@ public class MqttConfiguration {
     @Value("${mqtt.password:}")
     private String password;
 
+    private IMqttClient client;
+    private MqttConnectOptions options;
+
     @Bean
     public IMqttClient mqttClient(ChatMessageHandler chatMessageHandler) throws MqttException {
         String uniqueClientId = clientId + "-" + UUID.randomUUID().toString().substring(0, 8);
-        IMqttClient client = new MqttClient(brokerUrl, uniqueClientId);
+        client = new MqttClient(brokerUrl, uniqueClientId);
 
-        MqttConnectOptions options = new MqttConnectOptions();
+        options = new MqttConnectOptions();
         options.setAutomaticReconnect(true);
         options.setCleanSession(true);
         options.setConnectionTimeout(10);
@@ -68,7 +74,24 @@ public class MqttConfiguration {
             }
         });
 
-        client.connect(options);
         return client;
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void connectOnReady() {
+        CompletableFuture.runAsync(() -> {
+            int retries = 0;
+            while (retries < 20 && client != null && !client.isConnected()) {
+                try {
+                    Thread.sleep(2000);
+                    client.connect(options);
+                    System.out.println("Chat MQTT Client: Successfully connected to broker: " + brokerUrl);
+                    break;
+                } catch (Exception e) {
+                    retries++;
+                    System.err.println("Chat MQTT Client: Retrying connection (" + retries + "/20): " + e.getMessage());
+                }
+            }
+        });
     }
 }
