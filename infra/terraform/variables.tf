@@ -39,6 +39,24 @@ variable "container_ip" {
   default     = "192.168.0.200/24"
 }
 
+variable "container_cores" {
+  type        = number
+  description = "Liczba rdzeni CPU przydzielonych do kontenera LXC"
+  default     = 6
+}
+
+variable "container_memory" {
+  type        = number
+  description = "Pamięć RAM (MB) przydzielona do kontenera LXC"
+  default     = 16384
+}
+
+variable "container_swap" {
+  type        = number
+  description = "Pamięć SWAP (MB) przydzielona do kontenera LXC"
+  default     = 4096
+}
+
 variable "gateway_ip" {
   type        = string
   description = "Brama domyślna (IP routera)"

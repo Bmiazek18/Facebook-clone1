@@ -28,12 +28,12 @@ resource "proxmox_virtual_environment_container" "k3s_cluster" {
   }
 
   cpu {
-    cores = 4
+    cores = var.container_cores
   }
 
   memory {
-    dedicated = 8192
-    swap      = 2048
+    dedicated = var.container_memory
+    swap      = var.container_swap
   }
 
   disk {
@@ -53,7 +53,8 @@ resource "proxmox_virtual_environment_container" "k3s_cluster" {
   connection {
     type        = "ssh"
     user        = "root"
-    private_key = file(pathexpand(var.ssh_private_key))
+    password    = var.container_root_password
+    private_key = try(file(pathexpand(var.ssh_private_key)), null)
     host        = split("/", var.container_ip)[0]
   }
 
@@ -177,7 +178,8 @@ resource "proxmox_virtual_environment_container" "k3s_cluster" {
       "EOF",
       "echo '=== 12. Konfiguracja NVIDIA GPU Time-Slicing (4 vGPU) & Device Plugin dla K3s ==='",
       "if [ \"${var.enable_gpu_passthrough}\" = \"true\" ]; then",
-      "  apt-get update -y && (apt-get install -y nvidia-utils-535 || apt-get install -y nvidia-utils-550 || apt-get install -y nvidia-utils-headless-535 || true)",
+      "  sed -i -E 's/(main|main contrib)$/\\1 contrib non-free non-free-firmware/' /etc/apt/sources.list || true",
+      "  apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y nvidia-smi nvidia-driver-libs || true",
       "  k3s kubectl apply -f - <<'EOF_GPU'",
       "apiVersion: v1",
       "kind: ConfigMap",
@@ -215,20 +217,20 @@ resource "proxmox_virtual_environment_container" "k3s_cluster" {
       "        operator: Exists",
       "        effect: NoSchedule",
       "      containers:",
-      "      - image: nvcr.io/nvidia/k8s-device-plugin:v0.14.5",
+      "      - image: nvcr.io/nvidia/k8s-device-plugin:v0.15.0",
       "        name: nvidia-device-plugin-ctr",
       "        env:",
       "          - name: CONFIG_FILE",
       "            value: /etc/config/config.yaml",
       "        securityContext:",
-      "          allowPrivilegeEscalation: false",
-      "          capabilities:",
-      "            drop: [\"ALL\"]",
+      "          privileged: true",
       "        volumeMounts:",
       "        - name: device-plugin",
       "          mountPath: /var/lib/kubelet/device-plugins",
       "        - name: config",
       "          mountPath: /etc/config",
+      "        - name: dev",
+      "          mountPath: /dev",
       "      volumes:",
       "      - name: device-plugin",
       "        hostPath:",
@@ -236,6 +238,9 @@ resource "proxmox_virtual_environment_container" "k3s_cluster" {
       "      - name: config",
       "        configMap:",
       "          name: nvidia-device-plugin-config",
+      "      - name: dev",
+      "        hostPath:",
+      "          path: /dev",
       "EOF_DS",
       "  echo '=== Wdrażanie NVIDIA DCGM Exporter (Metryki GPU dla Prometheus i Grafana) ==='",
       "  k3s kubectl apply -f - <<'EOF_DCGM'",
@@ -310,22 +315,45 @@ resource "null_resource" "proxmox_host_gpu_passthrough" {
   connection {
     type        = "ssh"
     user        = "root"
-    private_key = file(pathexpand(var.ssh_private_key))
+    password    = var.proxmox_password
+    private_key = try(file(pathexpand(var.ssh_private_key)), null)
     host        = var.proxmox_host_ip != "" ? var.proxmox_host_ip : regex("https?://([^:/]+)", var.proxmox_endpoint)[0]
   }
 
   provisioner "remote-exec" {
     inline = [
       "set -e",
-      "echo '=== Konfiguracja NVIDIA Passthrough na hoście Proxmox ==='",
+      "echo '=== [1/5] Wlaczanie repozytoriow non-free na Proxmox VE ==='",
+      "sed -i -E 's/(main|main contrib)$/\\1 contrib non-free non-free-firmware/' /etc/apt/sources.list || true",
+      "for f in /etc/apt/sources.list.d/*.list; do [ -f \"$f\" ] && sed -i -E 's/(main|main contrib)$/\\1 contrib non-free non-free-firmware/' \"$f\" || true; done",
+      "apt-get update -y || true",
+      "echo '=== [2/5] Instalacja naglowkow kernela i sterownikow NVIDIA na Proxmox ==='",
+      "if ! which nvidia-smi >/dev/null 2>&1 || ! lsmod | grep -q nvidia; then",
+      "  echo 'Instaluje pve-headers, build-essential i dkms...'",
+      "  DEBIAN_FRONTEND=noninteractive apt-get install -y proxmox-default-headers pve-headers-$(uname -r) pve-headers dkms build-essential || DEBIAN_FRONTEND=noninteractive apt-get install -y pve-headers build-essential dkms || true",
+      "  echo 'Instaluje sterownik nvidia-driver...'",
+      "  DEBIAN_FRONTEND=noninteractive apt-get install -y nvidia-driver nvidia-smi nvidia-kernel-dkms firmware-misc-nonfree || true",
+      "fi",
+      "echo 'Ladowanie modulow NVIDIA...'",
       "modprobe nvidia || true",
       "modprobe nvidia_uvm || true",
       "modprobe nvidia_modeset || true",
       "mkdir -p /etc/modules-load.d",
-      "grep -q 'nvidia-uvm' /etc/modules-load.d/nvidia.conf 2>/dev/null || echo -e 'nvidia\\nnvidia-uvm\\nnvidia-modeset' >> /etc/modules-load.d/nvidia.conf",
+      "cat <<'EOF_MOD' > /etc/modules-load.d/nvidia.conf",
+      "nvidia",
+      "nvidia-uvm",
+      "nvidia-modeset",
+      "EOF_MOD",
+      "cat <<'EOF_UDEV' > /etc/udev/rules.d/70-nvidia.rules",
+      "KERNEL==\"nvidia*\", MODE=\"0666\"",
+      "KERNEL==\"nvidia-uvm*\", MODE=\"0666\"",
+      "EOF_UDEV",
+      "udevadm control --reload-rules || true",
+      "udevadm trigger || true",
+      "nvidia-smi || true",
+      "echo '=== [3/5] Dopisywanie regul GPU do konfiguracji kontenera LXC ${var.container_vm_id} ==='",
       "CONF_FILE='/etc/pve/lxc/${var.container_vm_id}.conf'",
       "if ! grep -q 'NVIDIA GPU Passthrough' \"$CONF_FILE\"; then",
-      "  echo 'Dopisywanie regul GPU do konfiguracji kontenera ${var.container_vm_id}...'",
       "  cat <<'EOF' >> \"$CONF_FILE\"",
       "# NVIDIA GPU Passthrough",
       "lxc.cgroup2.devices.allow: c 195:* rwm",
@@ -336,11 +364,17 @@ resource "null_resource" "proxmox_host_gpu_passthrough" {
       "lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file",
       "lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file",
       "lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,optional,create=file",
+      "lxc.mount.entry: /dev/nvidia-modeset dev/nvidia-modeset none bind,optional,create=file",
       "EOF",
-      "  echo 'Restartowanie kontenera ${var.container_vm_id} w celu zaaplikowania GPU...'",
-      "  pct reboot ${var.container_vm_id} || true",
       "fi",
-      "echo 'NVIDIA GPU Passthrough zostal skonfigurowany pomyslnie na Proxmoxie!'"
+      "echo '=== [4/5] Restart kontenera ${var.container_vm_id} w celu podpiecia urzadzen GPU ==='",
+      "pct reboot ${var.container_vm_id} || pct start ${var.container_vm_id} || true",
+      "echo 'Czekam na uruchomienie kontenera...'",
+      "until pct status ${var.container_vm_id} | grep -q 'running'; do sleep 2; done",
+      "sleep 5",
+      "echo '=== [5/5] Inicjalizacja bibliotek NVIDIA i przeladowanie K8s Device Plugin w kontenerze ==='",
+      "pct exec ${var.container_vm_id} -- bash -c \"sed -i -E 's/(main|main contrib)$/\\1 contrib non-free non-free-firmware/' /etc/apt/sources.list || true; apt-get update -y || true; DEBIAN_FRONTEND=noninteractive apt-get install -y nvidia-smi nvidia-driver-libs || true; k3s kubectl rollout restart daemonset nvidia-device-plugin-daemonset -n kube-system || true; k3s kubectl rollout restart daemonset nvidia-dcgm-exporter -n kube-system || true\"",
+      "echo '=== Pelny NVIDIA GPU Passthrough i konfiguracja K8s zakonczone sukcesem! ==='"
     ]
   }
 }
