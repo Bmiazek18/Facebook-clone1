@@ -242,7 +242,6 @@ spec:
     helm:
       values: |
         config:
-          name: default
           map:
             default: |-
               version: v1
