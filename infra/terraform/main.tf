@@ -227,13 +227,19 @@ resource "null_resource" "proxmox_host_gpu_passthrough" {
       "sleep 3",
       "pct start ${var.container_vm_id} || true",
       "until pct exec ${var.container_vm_id} -- /usr/local/bin/k3s kubectl get nodes 2>/dev/null | grep -q 'Ready'; do echo 'API K3s wstaje...'; sleep 3; done",
-      "echo '=== [3/3] Instalacja bibliotek NVIDIA wewnątrz kontenera LXC ==='",
-      "pct exec ${var.container_vm_id} -- bash -c \"cat <<'EOF_APT' > /etc/apt/sources.list.d/debian-full.list\ndeb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware\ndeb http://deb.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware\ndeb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware\nEOF_APT\napt-get update -y || true; DEBIAN_FRONTEND=noninteractive apt-get install -y nvidia-smi libnvidia-ml1 || true\"",
-      "if [ -f /usr/bin/nvidia-smi ]; then pct push ${var.container_vm_id} /usr/bin/nvidia-smi /usr/bin/nvidia-smi || true; pct exec ${var.container_vm_id} -- chmod +x /usr/bin/nvidia-smi || true; fi",
-      "pct exec ${var.container_vm_id} -- ldconfig || true",
+      "echo '=== [3/3] Dopasowanie wersji bibliotek NVIDIA wewnątrz kontenera LXC ==='",
+      "DRIVER_VER=$(nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -n1 | tr -d '[:space:]')",
+      "echo \"Wykryto wersje sterownika hosta: $DRIVER_VER\"",
+      "RUN_FILE=\"/tmp/NVIDIA-Linux-x86_64-$DRIVER_VER.run\"",
+      "if [ ! -f \"$RUN_FILE\" ]; then",
+      "  echo 'Pobieranie instalatora NVIDIA dla kontenera...'",
+      "  wget -q \"https://us.download.nvidia.com/XFree86/Linux-x86_64/$DRIVER_VER/NVIDIA-Linux-x86_64-$DRIVER_VER.run\" -O \"$RUN_FILE\" || true",
+      "fi",
+      "pct push ${var.container_vm_id} \"$RUN_FILE\" /tmp/nvidia-installer.run",
+      "pct exec ${var.container_vm_id} -- bash -c \"DEBIAN_FRONTEND=noninteractive apt-get purge -y 'nvidia*' 'libnvidia*' 'glx-alternative-*' 2>/dev/null || true; chmod +x /tmp/nvidia-installer.run; /tmp/nvidia-installer.run --no-kernel-module -s --no-questions; rm -f /tmp/nvidia-installer.run; ldconfig\"",
       "echo 'Weryfikacja nvidia-smi wewnątrz kontenera LXC:'",
-      "pct exec ${var.container_vm_id} -- nvidia-smi || true",
-      "echo '=== Passthrough GPU oraz biblioteki LXC skonfigurowane pomyślnie! ==='"
+      "pct exec ${var.container_vm_id} -- nvidia-smi",
+      "echo '=== Passthrough GPU oraz biblioteki LXC skonfigurowane pomyślnie z pełną zgodnością wersji! ==='"
     ]
   }
 }
