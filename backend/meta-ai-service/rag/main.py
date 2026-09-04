@@ -53,9 +53,14 @@ from langchain_community.tools import DuckDuckGoSearchRun
 from typing import Annotated, Sequence, List, Literal, TypedDict
 from pydantic import BaseModel, Field
 from langgraph.graph.message import add_messages
-from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+try:
+    from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+except ImportError:
+    try:
+        from langgraph.checkpoint.sqlite import SqliteSaver as AsyncSqliteSaver
+    except ImportError:
+        from langgraph.checkpoint.memory import MemorySaver as AsyncSqliteSaver
 
 # --- GLOBALNA ZMIENNA DLA AGENTA ---
 agent_executor = None
