@@ -13,10 +13,9 @@ import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
 
 const isOwner = inject('isOwner', true)
 
-// --- MOCKOWE DANE AKTUALNEJ SZKOŁY ŚREDNIEJ (Zrzut ekranu 08.18.22) ---
 const highSchoolData = ref({
   name: 'Zespół Szkół nr 3 im. Władysława Stanisława Reymonta w Łukowie',
-  logo: 'https://via.placeholder.com/40', // Tutaj w realnym kodzie dasz poprawny url awatara/logo
+  logo: 'https://via.placeholder.com/40',
 })
 
 // --- STANY EDYCJI SEKCJI ---

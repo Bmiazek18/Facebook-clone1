@@ -86,7 +86,6 @@ const emit = defineEmits(['close', 'select-user'])
 
 const searchQuery = ref('')
 
-// Mockowane dane odwzorowujące zdjęcie
 const users = ref([
   {
     id: 1,

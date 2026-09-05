@@ -38,7 +38,6 @@ const props = defineProps<{
 
 const emit = defineEmits(['close', 'select-user'])
 
-// Mock list matching database contacts
 const contacts = [
   {
     id: '7f23f5b8-87fb-4250-9ba9-6b5ed04afff0',

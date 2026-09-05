@@ -212,7 +212,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 
 // Import ikon
@@ -234,7 +234,6 @@ const isGroupsOpen = ref(false)
 
 const searchQuery = ref('')
 
-// Rozbudowana lista mock-users
 const users = ref([
   { id: 1, name: 'Przemek Krasucki', avatar: 'https://i.pravatar.cc/150?u=1' },
   { id: 2, name: 'Mikołaj Niedziela', avatar: 'https://i.pravatar.cc/150?u=2' },
@@ -253,7 +252,7 @@ const users = ref([
   { id: 15, name: 'Szymon Trochowski', avatar: 'https://i.pravatar.cc/150?u=15' },
 ])
 
-const selectedIds = ref([3]) // Mateusz Piszcz domyślnie zaznaczony dla testów
+const selectedIds = ref<number[]>([])
 
 // Filtrowanie z lewej strony
 const filteredUsers = computed(() => {

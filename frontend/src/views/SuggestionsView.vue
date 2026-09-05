@@ -25,16 +25,6 @@
                 @change="onUserIdChange"
                 class="w-48 bg-theme-bg-tertiary border border-theme-border rounded-lg px-2.5 py-1.5 text-theme-text text-center focus:outline-none focus:ring-2 focus:ring-[#1877f2] font-semibold"
               />
-              <span
-                class="px-2.5 py-1 text-[12px] font-semibold rounded-full"
-                :class="
-                  isBackendMode
-                    ? 'bg-green-500/10 text-green-500 border border-green-500/20'
-                    : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
-                "
-              >
-                {{ isBackendMode ? 'Backend (Neo4j)' : 'Mock (Lokalny)' }}
-              </span>
             </div>
           </div>
         </div>
@@ -84,9 +74,7 @@ import FriendsSidebar from '../components/friends/FriendsSidebar.vue'
 import FriendCard from '../components/friends/PeopleYouMayKnowCard.vue'
 import { useNotify } from '@/composables/shared/useNotify'
 import { useAuthStore } from '@/stores/auth'
-import { getAllUsers } from '@/utils/users'
-import { getApolloClient } from '@/utils/apollo'
-import { gql } from 'graphql-tag'
+import { usersApi } from '@/api/users'
 import type { Person } from '@/types/Person'
 
 const { t } = useI18n()
@@ -95,7 +83,6 @@ const authStore = useAuthStore()
 const config = useRuntimeConfig()
 
 const currentUserId = ref<string | number>(authStore.currentUserId || '1')
-const isBackendMode = ref(false)
 const isLoading = ref(false)
 const people = ref<Person[]>([])
 
@@ -106,50 +93,11 @@ const onUserIdChange = () => {
   }
 }
 
-const loadMockSuggestions = () => {
-  isBackendMode.value = false
-  const allUsers = getAllUsers()
-  // Filter out current user and return suggestions
-  people.value = allUsers
-    .filter((u) => String(u.id) !== String(currentUserId.value))
-    .map((u) => ({
-      id: u.id,
-      name: u.name,
-      imageUrl:
-        u.avatar ||
-        `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random&color=fff`,
-      commonFriends: u.mutualFriendsCount || Math.floor(Math.random() * 15),
-      isFriend: false,
-    }))
-}
-
 const fetchSuggestions = async () => {
   isLoading.value = true
   try {
-    const apolloClient = getApolloClient()
-    const { data } = await apolloClient.query({
-      query: gql`
-        query GetFriendSuggestions($currentUserId: ID!) {
-          getFriendSuggestions(currentUserId: $currentUserId) {
-            userId
-            mutualFriendsCount
-            user {
-              id
-              firstName
-              lastName
-              avatarId
-            }
-          }
-        }
-      `,
-      variables: {
-        currentUserId: String(currentUserId.value),
-      },
-      fetchPolicy: 'network-only',
-    })
-
-    const suggestions = data?.getFriendSuggestions || []
-    if (suggestions.length === 0) {
+    const suggestions = await usersApi.getFriendSuggestions(currentUserId.value)
+    if (!suggestions || suggestions.length === 0) {
       people.value = []
     } else {
       people.value = suggestions.map((s: any) => {
@@ -170,41 +118,19 @@ const fetchSuggestions = async () => {
         }
       })
     }
-    isBackendMode.value = true
   } catch (err: any) {
-    console.warn('GraphQL suggestions query failed, falling back to mock data:', err)
-    loadMockSuggestions()
+    console.error('Failed to fetch friend suggestions:', err)
+    people.value = []
   } finally {
     isLoading.value = false
   }
 }
 
 const handleAddFriend = async (id: string | number) => {
-  console.log('Adding friend:', id)
   try {
-    if (isBackendMode.value) {
-      const apolloClient = getApolloClient()
-      const { data } = await apolloClient.mutate({
-        mutation: gql`
-          mutation SendFriendRequest($senderId: ID!, $receiverId: ID!) {
-            sendFriendRequest(senderId: $senderId, receiverId: $receiverId) {
-              success
-              message
-            }
-          }
-        `,
-        variables: {
-          senderId: String(currentUserId.value),
-          receiverId: String(id),
-        },
-      })
-
-      const success = (data as any)?.sendFriendRequest?.success
-      const message = (data as any)?.sendFriendRequest?.message
-
-      if (!success) {
-        throw new Error(message || 'Failed to send friend request')
-      }
+    const res = await usersApi.sendFriendRequest(currentUserId.value, id)
+    if (!res?.success) {
+      throw new Error(res?.message || 'Failed to send friend request')
     }
 
     notify.success('Wysłano zaproszenie do grona znajomych!')

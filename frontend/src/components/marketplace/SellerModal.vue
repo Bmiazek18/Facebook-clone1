@@ -21,7 +21,6 @@ import FacebookIcon from 'vue-material-design-icons/Facebook.vue'
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue'
 import MenuDownIcon from 'vue-material-design-icons/MenuDown.vue'
 
-// Połączone dane profilowe (mockowane na podstawie zrzutów ekranu)
 const defaultProfile = {
   name: 'Igor Kucharski',
   joinedYear: '2017',

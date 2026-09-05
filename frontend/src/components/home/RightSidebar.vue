@@ -8,8 +8,7 @@ import HoverScrollbar from '@/components/common/HoverScrollbar.vue'
 import { useTheme } from '@/composables/shared/useTheme'
 import { useChatStore } from '@/stores/chat'
 import { useAuthStore } from '@/stores/auth'
-import { getApolloClient } from '@/utils/apollo'
-import { gql } from 'graphql-tag'
+import { usersApi } from '@/api/users'
 import SponsoredAds from './SponsoredAds.vue'
 import FriendRequestsWidget from './FriendRequestsWidget.vue'
 
@@ -55,22 +54,8 @@ const fetchActiveStatuses = async () => {
   const contactUserIds = list.map((friend: any) => String(friend.id))
 
   try {
-    const apolloClient = getApolloClient()
-    const { data } = await apolloClient.query({
-      query: gql`
-        query GetActiveStatuses($userIds: [ID!]!) {
-          getActiveStatuses(userIds: $userIds) {
-            userId
-            active
-            lastActiveText
-          }
-        }
-      `,
-      variables: { userIds: contactUserIds },
-      fetchPolicy: 'network-only',
-    })
+    const statuses = await usersApi.getActiveStatuses(contactUserIds)
 
-    const statuses = data?.getActiveStatuses || []
     const activeStatusMap = new Map<string, boolean>()
     statuses.forEach((s: any) => {
       activeStatusMap.set(String(s.userId), s.active)

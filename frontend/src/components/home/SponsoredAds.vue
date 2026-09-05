@@ -8,7 +8,7 @@
     <!-- Lista reklam -->
     <div class="space-y-4">
       <a
-        v-for="ad in mockAds"
+        v-for="ad in sponsoredAds"
         :key="ad.id"
         :href="ad.url"
         target="_blank"
@@ -49,7 +49,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-// Interfejs struktury danych reklamy
 interface SponsoredAd {
   id: number
   title: string
@@ -58,14 +57,12 @@ interface SponsoredAd {
   imageUrl: string
 }
 
-// Lokalny MOCK odzwierciedlający dokładnie plik "Zrzut ekranu 2026-06-25 o 13.09.45.png"
-const mockAds = ref<SponsoredAd[]>([
+const sponsoredAds = ref<SponsoredAd[]>([
   {
     id: 1,
     title: 'Join the webinar: Accelerating IaC with AI: Smarter...',
     displayUrl: 'https://promisegroup.com/webinar',
     url: 'https://promisegroup.com/webinar',
-    // Przykładowy stabilny placeholder pasujący kolorystycznie do niebieskiego tła pierwszej reklamy
     imageUrl: 'https://picsum.photos/seed/promise/200/200',
   },
   {
@@ -73,7 +70,6 @@ const mockAds = ref<SponsoredAd[]>([
     title: 'Twój kolejny projekt może być z USA.',
     displayUrl: 'app.terminal.io/onboarding',
     url: 'https://app.terminal.io/onboarding',
-    // Przykładowy placeholder pasujący do jasnego tła drugiej reklamy z postacią dewelopera
     imageUrl: 'https://picsum.photos/seed/terminal/200/200',
   },
 ])

@@ -56,7 +56,7 @@
 
     <!-- Zawartość zakładki: PLIKI (stylizowana pod zrzut ekranu) -->
     <div v-else-if="activeTab === 'files'" class="flex-1 overflow-y-auto custom-scrollbar">
-      <div v-for="file in mockFiles" :key="file.id" class="flex items-center px-4 py-3 hover:bg-gray-50 transition border-b border-gray-100 cursor-pointer">
+      <div v-for="file in fileList" :key="file.id" class="flex items-center px-4 py-3 hover:bg-gray-50 transition border-b border-gray-100 cursor-pointer">
         <!-- Ikona pliku w zaokrąglonym boksie -->
         <div class="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 mr-3 text-gray-800">
           <FileDocumentOutlineIcon :size="26" />
@@ -73,7 +73,7 @@
         </div>
       </div>
 
-      <div v-if="mockFiles.length === 0" class="text-center py-10 text-gray-500 text-sm">
+      <div v-if="fileList.length === 0" class="text-center py-10 text-gray-500 text-sm">
         Brak plików
       </div>
     </div>
@@ -100,8 +100,7 @@ interface FileItem {
 
 const activeTab = ref<'media' | 'files'>('media')
 
-// Dane testowe zdjęć
-const mockDatabase = ref<Photo[]>([
+const photoDatabase = ref<Photo[]>([
   { id: 1, url: 'https://picsum.photos/300?random=1', uploadDate: '2025-12-20T10:00:00' },
   { id: 2, url: 'https://picsum.photos/300?random=2', uploadDate: '2025-12-15T14:30:00' },
   { id: 3, url: 'https://picsum.photos/300?random=3', uploadDate: '2025-11-28T11:20:00' },
@@ -110,8 +109,7 @@ const mockDatabase = ref<Photo[]>([
   { id: 6, url: 'https://picsum.photos/300?random=6', uploadDate: '2023-01-05T18:00:00' },
 ])
 
-// Dane testowe plików (wzorowane na Twoim zrzucie ekranu)
-const mockFiles = ref<FileItem[]>([
+const fileList = ref<FileItem[]>([
   { id: 1, name: '2024_certyfikat_klubowy (1).pdf', size: 396000, uploadDate: '2025-01-10T10:00:00' },
   { id: 2, name: 'IC-bilet-WN55711702.pdf', size: 114000, uploadDate: '2025-01-09T10:00:00' },
   { id: 3, name: 'IC-bilet-WN55711845.pdf', size: 114000, uploadDate: '2025-01-08T10:00:00' },
@@ -131,7 +129,7 @@ const formatFileSize = (bytes: number) => {
 }
 
 const groupedPhotos = computed(() => {
-  const sorted = [...mockDatabase.value].sort((a, b) => {
+  const sorted = [...photoDatabase.value].sort((a, b) => {
     return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
   })
 

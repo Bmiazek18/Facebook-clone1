@@ -147,7 +147,7 @@ const reactionsList = computed<ReactionUser[]>(() => {
               userName: [u.firstName, u.lastName].filter(Boolean).join(' ') || 'Użytkownik',
               emoji,
               avatarUrl: u.avatar || '/default-avatar.png',
-              mutualFriends: u.mutualFriendsCount // Upewnij się, że backend to zwraca, w przeciwnym razie usuń lub zmockuj
+              mutualFriends: u.mutualFriendsCount || 0
             })
           }
         })
@@ -160,7 +160,7 @@ const reactionsList = computed<ReactionUser[]>(() => {
               userName: user.name,
               emoji,
               avatarUrl: user.avatar,
-              mutualFriends: Math.floor(Math.random() * 20) // Mock dla wspólnych znajomych (usuń na produkcji)
+              mutualFriends: user.mutualFriendsCount || 0
             })
           }
         })
@@ -181,7 +181,7 @@ const reactionsList = computed<ReactionUser[]>(() => {
             userName: user.name,
             emoji: reactionIcons[type]?.emoji || '👍',
             avatarUrl: user.avatar,
-            mutualFriends: Math.floor(Math.random() * 20) // Mock dla wspólnych znajomych (usuń na produkcji)
+            mutualFriends: user.mutualFriendsCount || 0
           })
         }
       })

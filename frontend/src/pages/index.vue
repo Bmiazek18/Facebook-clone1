@@ -2,7 +2,7 @@
 import { ref, watch, computed, provide, type ComponentPublicInstance } from 'vue'
 import { useRouter, onBeforeRouteLeave, type RouteLocation } from 'vue-router'
 import { useWindowVirtualizer } from '@tanstack/vue-virtual'
-import { GET_HOME_DATA } from '@/graphql/home'
+import { GET_INITIAL_SHELL_DATA, GET_FEED_POSTS } from '@/graphql/home'
 import { processActiveStories } from '@/utils/stories'
 import { processPostsIntoReels } from '@/utils/reels'
 
@@ -19,6 +19,7 @@ import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import { useCreatePostStore } from '~/stores/createPost'
 import { useAuthStore } from '@/stores/auth'
 import { usePostsStore, useStoriesStore } from '@/composables/feed/useAppState'
+import { getApolloClient } from '@/utils/apollo'
 
 const authStore = useAuthStore()
 const currentUserId = computed(() => String(authStore.currentUserId || '123'))
@@ -27,17 +28,30 @@ const postsPerPage = 5
 const postsStore = usePostsStore()
 const storiesStore = useStoriesStore()
 
-const { data: result, error } = await useAsyncQuery<any>(GET_HOME_DATA, {
-  currentUserId: currentUserId.value,
-  limit: postsPerPage,
-  offset: 0
+// 1. Initial Shell Data (Stories, Friends, Birthdays) - Splash Screen Phase
+const { data: result, error } = await useAsyncQuery<any>(GET_INITIAL_SHELL_DATA, {
+  currentUserId: currentUserId.value
 })
+
+// Synchronize initial shell data
+watch(
+  result,
+  (newVal) => {
+    if (newVal?.getActiveStories) {
+      storiesStore.userStories = processActiveStories(newVal.getActiveStories, String(currentUserId.value))
+    }
+  },
+  { immediate: true }
+)
+
+const friends = computed(() => result.value?.getFriends ?? [])
+const birthdayUsers = computed(() => result.value?.getBirthdayUsers ?? [])
 
 // Helper to format GraphQL post data into frontend model
 const formatPost = (post: any) => {
   let formattedReactions: Record<string, number[]> = {}
   let reactionUserNames: Record<string, string[]> = {}
-  
+
   if (Array.isArray(post.reactions)) {
     post.reactions.forEach((r: any) => {
       const type = r.reactionType.toLowerCase()
@@ -65,47 +79,57 @@ const formatPost = (post: any) => {
   }
 }
 
-// Synchronizacja danych GraphQL ze sklepami stanu (Store)
-watch(result, (newVal) => {
-  if (newVal) {
-    postsStore.posts = (newVal.getFeed ?? []).filter(Boolean).map(formatPost)
-    if (newVal.getActiveStories) {
-      storiesStore.userStories = processActiveStories(newVal.getActiveStories, String(currentUserId.value))
-    }
-  }
-}, { immediate: true })
-
-const friends = computed(() => result.value?.getFriends ?? [])
-const birthdayUsers = computed(() => result.value?.getBirthdayUsers ?? [])
-
-const allPosts = computed(() => postsStore.posts)
-const allStories = computed(() => storiesStore.allUserStories)
-const allReels = computed(() => processPostsIntoReels(postsStore.posts, String(currentUserId.value)))
-
-provide('allPosts', allPosts)
-provide('allStories', allStories)
-
-// =========================================
-// 2. INFINITE SCROLL (Dla dalszego dociągania postów)
-// =========================================
+// 2. Async Feed Loading (Non-blocking posts stream)
+const isFeedLoading = ref(postsStore.posts.length === 0)
+const feedError = ref<any>(null)
 const isFetchingMore = ref(false)
 const hasMore = ref(true)
 
-// Do paginacji używamy tradycyjnego klienta Apollo z Nuxta
-const nuxtApp = useNuxtApp()
+const fetchInitialFeed = async () => {
+  if (postsStore.posts.length > 0) {
+    isFeedLoading.value = false
+    return
+  }
+
+  isFeedLoading.value = true
+  try {
+    const apolloClient = getApolloClient()
+    const { data } = await apolloClient.query({
+      query: GET_FEED_POSTS,
+      variables: {
+        currentUserId: currentUserId.value,
+        limit: postsPerPage,
+        offset: 0
+      },
+      fetchPolicy: 'network-only'
+    })
+
+    const initialPosts = (data?.getFeed ?? []).filter(Boolean)
+    postsStore.posts = initialPosts.map(formatPost)
+    if (initialPosts.length < postsPerPage) {
+      hasMore.value = false
+    }
+  } catch (err) {
+    console.error('Failed to load initial feed:', err)
+    feedError.value = err
+  } finally {
+    isFeedLoading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchInitialFeed()
+})
 
 const loadMorePosts = async () => {
-  if (isFetchingMore.value || !hasMore.value) return
+  if (isFetchingMore.value || !hasMore.value || isFeedLoading.value) return
 
   isFetchingMore.value = true
 
   try {
-    // Odwołanie do domyślnego klienta Apollo w Nuxt
-    const apolloClient = nuxtApp.$apollo?.defaultClient
-    if (!apolloClient) return
-
+    const apolloClient = getApolloClient()
     const { data: fetchMoreResult } = await apolloClient.query({
-      query: GET_HOME_DATA,
+      query: GET_FEED_POSTS,
       variables: {
         currentUserId: currentUserId.value,
         limit: postsPerPage,
@@ -119,9 +143,7 @@ const loadMorePosts = async () => {
       return
     }
 
-    // Formatowanie nowych postów i dodanie do stoiska
     const formattedNewPosts = newPosts.map(formatPost)
-
     postsStore.posts = [...postsStore.posts, ...formattedNewPosts]
   } catch (e) {
     console.error('Błąd paginacji Apollo:', e)
@@ -249,8 +271,13 @@ const handleCancelLeave = () => {
             <CreateBox />
             <StoriesList :stories="allStories" />
 
-            <div v-if="error" class="p-4 bg-red-50 text-red-600 rounded-lg text-center my-4">
-              Wystąpił błąd: {{ error.message }}
+            <div v-if="error || feedError" class="p-4 bg-red-50 text-red-600 rounded-lg text-center my-4">
+              Wystąpił błąd podczas ładowania postów: {{ error?.message || feedError?.message }}
+            </div>
+
+            <!-- Feed Skeleton Loading State -->
+            <div v-else-if="isFeedLoading && allPosts.length === 0" class="space-y-4 pt-2">
+              <PostSkeleton v-for="n in 3" :key="n" />
             </div>
 
             <div

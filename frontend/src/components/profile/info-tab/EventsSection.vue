@@ -12,7 +12,7 @@ const searchQuery = ref('')
 const isFocused = ref(false)
 const selectedHobbies = ref<string[]>([])
 
-// --- MOCK POPULARNYCH HOBBY ---
+// --- POPULARNE HOBBY ---
 const popularHobbies = ref([
   { id: 1, name: 'Słuchanie muzyki', count: '10.0K innych' },
   { id: 2, name: 'Podróżowanie', count: '10.0K innych' },
