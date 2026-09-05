@@ -100,10 +100,14 @@ public class DatabaseSeeder implements CommandLineRunner {
         for (int attempt = 1; attempt <= 12; attempt++) {
             try {
                 for (User user : users) {
+                    String userCity = user.getCity() != null ? user.getCity() : (user.getLocation() != null ? user.getLocation() : "");
+                    String userSchool = user.getHighSchool() != null ? user.getHighSchool() : (user.getSchool() != null ? user.getSchool() : "");
                     socialGraphGrpcStub.createUserNode(com.facebook.socialgraph.grpc.CreateNodeRequest.newBuilder()
                             .setUserId(String.valueOf(user.getId()))
                             .setUsername(user.getUsername())
                             .setBirthDate(user.getBirthDate() != null ? user.getBirthDate() : "")
+                            .setCity(userCity)
+                            .setHighSchool(userSchool)
                             .build());
                 }
                 seedFriendships(users);

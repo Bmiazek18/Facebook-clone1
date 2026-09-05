@@ -26,12 +26,25 @@ public class FriendSuggestionDataFetcher {
     private SocialGraphGrpcServiceGrpc.SocialGraphGrpcServiceBlockingStub socialGraphGrpcStub;
 
     @DgsQuery
-    public List<UserSearchResponse> getFriends(@InputArgument String userId) {
-        log.info("Edge: Fetching friends via gRPC for user: {}", userId);
+    public List<UserSearchResponse> getFriends(@InputArgument String userId,
+                                               @InputArgument String filterType,
+                                               @InputArgument Integer limit,
+                                               @InputArgument Integer offset) {
+        log.info("Edge: Fetching friends via gRPC for user: {}, filter: {}, limit: {}, offset: {}", userId, filterType, limit, offset);
         try {
-            com.facebook.socialgraph.grpc.GetFriendsResponse response = socialGraphGrpcStub.getFriends(com.facebook.socialgraph.grpc.GetFriendsRequest.newBuilder()
-                    .setUserId(userId)
-                    .build());
+            var reqBuilder = com.facebook.socialgraph.grpc.GetFriendsRequest.newBuilder()
+                    .setUserId(userId);
+            if (filterType != null && !filterType.isBlank()) {
+                reqBuilder.setFilterType(filterType);
+            }
+            if (limit != null && limit > 0) {
+                reqBuilder.setLimit(limit);
+            }
+            if (offset != null && offset >= 0) {
+                reqBuilder.setOffset(offset);
+            }
+
+            com.facebook.socialgraph.grpc.GetFriendsResponse response = socialGraphGrpcStub.getFriends(reqBuilder.build());
 
             // Zamiast Map<String, Object> zwracamy wygenerowany typ UserSearchResponse
             return response.getFriendIdsList().stream()

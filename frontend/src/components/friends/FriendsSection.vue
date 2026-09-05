@@ -89,50 +89,33 @@ const myHighSchool = computed(() => {
     .toLowerCase()
 })
 
+const apiFilterType = computed(() => {
+  if (currentPageType.value === 'friends_high_school') return 'HIGH_SCHOOL'
+  if (currentPageType.value === 'friends_current_city') return 'CURRENT_CITY'
+  if (currentPageType.value === 'friends_birthdays') return 'BIRTHDAYS'
+  return 'ALL'
+})
+
 const filteredFriendsList = computed(() => {
   let list = effectiveFriendsList.value
 
-  // Filter based on tab when in full view
+  // Add subtitle formatting based on tab when in full view
   if (props.isFullView) {
     if (currentPageType.value === 'friends_birthdays') {
-      list = list
-        .filter((f) => !!f.birthDate)
-        .map((f) => ({
-          ...f,
-          subtitle: `Urodziny: ${f.birthDate}`,
-        }))
+      list = list.map((f) => ({
+        ...f,
+        subtitle: f.birthDate ? `Urodziny: ${f.birthDate}` : '',
+      }))
     } else if (currentPageType.value === 'friends_high_school') {
-      list = list
-        .filter((f) => {
-          const friendSchool = (f.highSchool || f.school || '').toLowerCase()
-          if (myHighSchool.value && friendSchool) {
-            return (
-              friendSchool.includes(myHighSchool.value) ||
-              myHighSchool.value.includes(friendSchool)
-            )
-          }
-          return !!friendSchool
-        })
-        .map((f) => ({
-          ...f,
-          subtitle: `Szkoła: ${f.highSchool || f.school || 'Szkoła średnia'}`,
-        }))
+      list = list.map((f) => ({
+        ...f,
+        subtitle: `Szkoła: ${f.highSchool || f.school || 'Szkoła średnia'}`,
+      }))
     } else if (currentPageType.value === 'friends_current_city') {
-      list = list
-        .filter((f) => {
-          const friendCity = (f.city || f.location || f.hometown || '').toLowerCase()
-          if (myCity.value && friendCity) {
-            return (
-              friendCity.includes(myCity.value) ||
-              myCity.value.includes(friendCity)
-            )
-          }
-          return !!friendCity
-        })
-        .map((f) => ({
-          ...f,
-          subtitle: `Mieszka w: ${f.city || f.location || f.hometown}`,
-        }))
+      list = list.map((f) => ({
+        ...f,
+        subtitle: `Mieszka w: ${f.city || f.location || f.hometown || ''}`,
+      }))
     }
   }
 
@@ -148,7 +131,8 @@ const fetchFriends = async () => {
   if (!targetUserId.value) return
   isLoading.value = true
   try {
-    const list = await usersApi.getFriends(targetUserId.value)
+    const filter = props.isFullView ? apiFilterType.value : 'ALL'
+    const list = await usersApi.getFriends(targetUserId.value, filter)
     if (list && Array.isArray(list) && list.length > 0) {
       internalFriends.value = list.map((f: any) => ({
         id: f.id,
@@ -181,7 +165,7 @@ onMounted(() => {
   }
 })
 
-watch(targetUserId, () => {
+watch([targetUserId, currentPageType], () => {
   if (!props.friendsList || props.friendsList.length === 0) {
     fetchFriends()
   }

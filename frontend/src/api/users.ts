@@ -112,10 +112,15 @@ export const usersApi = {
     return data?.deleteSearchHistoryItem
   },
 
-  async getFriends(userId: string | number) {
+  async getFriends(userId: string | number, filterType?: string, limit?: number, offset?: number) {
     const data = await apiClient.query<{ getFriends: any[] }>(
       GET_FRIENDS,
-      { userId: String(userId) },
+      {
+        userId: String(userId),
+        filterType: filterType || undefined,
+        limit: limit || undefined,
+        offset: offset || undefined
+      },
       { fetchPolicy: 'network-only' }
     )
     return data?.getFriends || []

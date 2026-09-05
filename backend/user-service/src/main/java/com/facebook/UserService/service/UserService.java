@@ -124,10 +124,14 @@ public class UserService {
 
     private void createSocialGraphNode(User user, String birthDate) {
         try {
+            String userCity = user.getCity() != null ? user.getCity() : (user.getLocation() != null ? user.getLocation() : "");
+            String userSchool = user.getHighSchool() != null ? user.getHighSchool() : (user.getSchool() != null ? user.getSchool() : "");
             com.facebook.socialgraph.grpc.CreateNodeRequest grpcRequest = com.facebook.socialgraph.grpc.CreateNodeRequest.newBuilder()
                     .setUserId(String.valueOf(user.getId()))
                     .setUsername(user.getUsername())
                     .setBirthDate(birthDate != null ? birthDate : "")
+                    .setCity(userCity)
+                    .setHighSchool(userSchool)
                     .build();
             socialGraphGrpcStub.createUserNode(grpcRequest);
             log.info("Successfully created Social Graph node for user: {}", user.getId());

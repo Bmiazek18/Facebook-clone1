@@ -4,7 +4,7 @@ type Query {
     getBirthdayUsers(currentUserId: ID!): [BirthdayUser!]!
     getFriendSuggestions(currentUserId: ID!): [FriendSuggestion!]!
     getFriendRequests(currentUserId: ID!): [FriendSuggestion!]!
-    getFriends(userId: ID!): [UserSearchResponse!]!
+    getFriends(userId: ID!, filterType: String, limit: Int, offset: Int): [UserSearchResponse!]!
 }
 
 type Mutation {

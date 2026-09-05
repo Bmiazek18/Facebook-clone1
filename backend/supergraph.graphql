@@ -923,7 +923,7 @@ type Query
   getBirthdayUsers(currentUserId: ID!): [BirthdayUser!]! @join__field(graph: SOCIALGRAPH)
   getFriendRequests(currentUserId: ID!): [FriendSuggestion!]! @join__field(graph: SOCIALGRAPH)
   getFriendSuggestions(currentUserId: ID!): [FriendSuggestion!]! @join__field(graph: SOCIALGRAPH)
-  getFriends(userId: ID!): [UserSearchResponse!]! @join__field(graph: SOCIALGRAPH)
+  getFriends(filterType: String, limit: Int, offset: Int, userId: ID!): [UserSearchResponse!]! @join__field(graph: SOCIALGRAPH)
   detectLanguage(text: String!): String! @join__field(graph: USERS)
   getActiveStatuses(userIds: [ID!]!): [UserActiveStatus!]! @join__field(graph: USERS)
   getListing(id: ID!): Listing @join__field(graph: USERS)

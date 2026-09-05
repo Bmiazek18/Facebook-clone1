@@ -28,6 +28,8 @@ public class SocialGraphGrpcServiceImpl extends SocialGraphGrpcServiceGrpc.Socia
     public void createUserNode(CreateNodeRequest request, StreamObserver<CreateNodeResponse> responseObserver) {
         String userId = request.getUserId();
         String birthDate = request.getBirthDate();
+        String city = request.getCity();
+        String highSchool = request.getHighSchool();
         
         // Extract month from birthDate (expected format yyyy-MM-dd)
         String month = "UNKNOWN";
@@ -41,22 +43,42 @@ public class SocialGraphGrpcServiceImpl extends SocialGraphGrpcServiceGrpc.Socia
         }
 
         System.out.println("gRPC Server: Creating user node in Neo4j for User ID: " 
-                + userId + ", Birth Date: " + birthDate + ", Month: " + month);
+                + userId + ", Birth Date: " + birthDate + ", Month: " + month
+                + ", City: " + city + ", HighSchool: " + highSchool);
 
         final String finalMonth = month;
         final String finalBirthDate = birthDate != null ? birthDate : "";
+        final String finalCity = city != null ? city.trim() : "";
+        final String finalHighSchool = highSchool != null ? highSchool.trim() : "";
 
         try (Session session = neo4jDriver.session()) {
-            session.executeWrite(tx -> tx.run(
-                "MERGE (u:User {userId: $userId}) " +
-                "SET u.birthDate = $birthDate, u.month = $month " +
-                "RETURN u",
-                Values.parameters("userId", userId, "birthDate", finalBirthDate, "month", finalMonth)
-            ).consume());
+            session.executeWrite(tx -> {
+                tx.run(
+                    "MERGE (u:User {userId: $userId}) " +
+                    "SET u.birthDate = $birthDate, u.month = $month " +
+                    "WITH u " +
+                    "FOREACH (_ IN CASE WHEN $city <> '' THEN [1] ELSE [] END | " +
+                    "   MERGE (c:City {name: $city}) " +
+                    "   MERGE (u)-[:LIVES_IN]->(c) " +
+                    ") " +
+                    "FOREACH (_ IN CASE WHEN $highSchool <> '' THEN [1] ELSE [] END | " +
+                    "   MERGE (s:School {name: $highSchool}) " +
+                    "   MERGE (u)-[:ATTENDED_HIGH_SCHOOL]->(s) " +
+                    ")",
+                    Values.parameters(
+                        "userId", userId,
+                        "birthDate", finalBirthDate,
+                        "month", finalMonth,
+                        "city", finalCity,
+                        "highSchool", finalHighSchool
+                    )
+                ).consume();
+                return null;
+            });
 
             CreateNodeResponse response = CreateNodeResponse.newBuilder()
                     .setSuccess(true)
-                    .setMessage("Node created in Neo4j successfully for userId: " + userId)
+                    .setMessage("Node and relationships created in Neo4j successfully for userId: " + userId)
                     .build();
 
             responseObserver.onNext(response);
@@ -299,15 +321,38 @@ public class SocialGraphGrpcServiceImpl extends SocialGraphGrpcServiceGrpc.Socia
     public void getFriends(com.facebook.socialgraph.grpc.GetFriendsRequest request,
                            StreamObserver<com.facebook.socialgraph.grpc.GetFriendsResponse> responseObserver) {
         String userIdStr = request.getUserId();
+        String filterType = request.getFilterType();
+        int limit = request.getLimit() > 0 ? request.getLimit() : 50;
+        int offset = Math.max(0, request.getOffset());
+
         com.facebook.socialgraph.grpc.GetFriendsResponse.Builder responseBuilder =
                 com.facebook.socialgraph.grpc.GetFriendsResponse.newBuilder();
 
         try (Session session = neo4jDriver.session()) {
             session.executeRead(tx -> {
+                String cypher;
+                if ("HIGH_SCHOOL".equalsIgnoreCase(filterType)) {
+                    cypher = "MATCH (me:User {userId: $userId})-[:FRIEND]-(f:User)-[:ATTENDED_HIGH_SCHOOL]->(s:School)<-[:ATTENDED_HIGH_SCHOOL]-(me) " +
+                             "RETURN DISTINCT f.userId AS friendId " +
+                             "SKIP $offset LIMIT $limit";
+                } else if ("CURRENT_CITY".equalsIgnoreCase(filterType)) {
+                    cypher = "MATCH (me:User {userId: $userId})-[:FRIEND]-(f:User)-[:LIVES_IN]->(c:City)<-[:LIVES_IN]-(me) " +
+                             "RETURN DISTINCT f.userId AS friendId " +
+                             "SKIP $offset LIMIT $limit";
+                } else if ("BIRTHDAYS".equalsIgnoreCase(filterType)) {
+                    cypher = "MATCH (me:User {userId: $userId})-[:FRIEND]-(f:User) " +
+                             "WHERE f.birthDate IS NOT NULL AND f.birthDate <> '' " +
+                             "RETURN DISTINCT f.userId AS friendId " +
+                             "SKIP $offset LIMIT $limit";
+                } else {
+                    cypher = "MATCH (u:User {userId: $userId})-[:FRIEND]-(f:User) " +
+                             "RETURN DISTINCT f.userId AS friendId " +
+                             "SKIP $offset LIMIT $limit";
+                }
+
                 var result = tx.run(
-                        "MATCH (u:User {userId: $userId})-[:FRIEND]-(f:User) " +
-                        "RETURN DISTINCT f.userId AS friendId",
-                        Values.parameters("userId", userIdStr)
+                        cypher,
+                        Values.parameters("userId", userIdStr, "offset", offset, "limit", limit)
                 );
                 while (result.hasNext()) {
                     var record = result.next();

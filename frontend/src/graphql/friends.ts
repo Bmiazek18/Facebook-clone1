@@ -1,8 +1,8 @@
 import gql from 'graphql-tag'
 
 export const GET_FRIENDS = gql`
-  query GetFriends($userId: ID!) {
-    getFriends(userId: $userId) {
+  query GetFriends($userId: ID!, $filterType: String, $limit: Int, $offset: Int) {
+    getFriends(userId: $userId, filterType: $filterType, limit: $limit, offset: $offset) {
       id
       firstName
       lastName

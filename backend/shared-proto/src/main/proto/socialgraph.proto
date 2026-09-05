@@ -20,6 +20,8 @@ message CreateNodeRequest {
   string userId = 1;
   string username = 2;
   string birthDate = 3;
+  string city = 4;
+  string highSchool = 5;
 }
 
 message CreateNodeResponse {
@@ -80,6 +82,9 @@ message FriendRequestResponse {
 
 message GetFriendsRequest {
   string userId = 1;
+  string filterType = 2;
+  int32 limit = 3;
+  int32 offset = 4;
 }
 
 message GetFriendsResponse {
