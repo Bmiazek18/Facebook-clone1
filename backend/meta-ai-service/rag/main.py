@@ -221,10 +221,30 @@ def should_continue(state: AgentState) -> Literal["tools", "generate_title"]:
     return "generate_title"
 
 
+def init_db():
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS user_threads (
+                thread_id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                title TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_user_threads_user_id ON user_threads(user_id)")
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"[DB INIT ERROR]: {e}")
+
+
 # --- ASYNCHRONICZNY LIFESPAN I INICJALIZACJA GRAFU ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global agent_executor
+    init_db()
     async with AsyncSqliteSaver.from_conn_string(DB_PATH) as chat_memory_db:
         print("Uruchamianie StateGraph z asynchroniczną bazą...")
         if hasattr(chat_memory_db, "setup"):
@@ -282,28 +302,47 @@ async def get_generated_chart(filename: str):
         raise HTTPException(status_code=404, detail=f"Chart '{filename}' not found in MinIO: {e}")
 
 
-# --- ENDPOINT: LISTA WĄTKÓW CZATU ---
+# --- ENDPOINT: LISTA WĄTKÓW CZATU DLA UŻYTKOWNIKA ---
 @app.get("/chat-threads")
-async def get_chat_threads():
+async def get_chat_threads(request: Request):
+    user_id = request.headers.get("x-user-id") or request.query_params.get("user_id")
     if not os.path.exists(DB_PATH):
         return {"threads": []}
 
     try:
+        init_db()
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='checkpoints'")
-        if not cursor.fetchone():
-            conn.close()
-            return {"threads": []}
-        cursor.execute("SELECT thread_id FROM checkpoints GROUP BY thread_id ORDER BY max(checkpoint_id) DESC")
-        rows = cursor.fetchall()
+        
+        rows = []
+        if user_id:
+            cursor.execute("SELECT thread_id, title FROM user_threads WHERE user_id = ? ORDER BY updated_at DESC", (user_id,))
+            rows = cursor.fetchall()
+            if not rows:
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='checkpoints'")
+                if cursor.fetchone():
+                    cursor.execute("SELECT thread_id FROM checkpoints WHERE thread_id LIKE ? GROUP BY thread_id ORDER BY max(checkpoint_id) DESC", (f"%{user_id}%",))
+                    rows = cursor.fetchall()
+        else:
+            cursor.execute("SELECT thread_id, title FROM user_threads ORDER BY updated_at DESC")
+            rows = cursor.fetchall()
+            if not rows:
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='checkpoints'")
+                if cursor.fetchone():
+                    cursor.execute("SELECT thread_id FROM checkpoints GROUP BY thread_id ORDER BY max(checkpoint_id) DESC")
+                    rows = cursor.fetchall()
         conn.close()
 
         threads_list = []
         for row in rows:
             thread_id = row[0]
-            state = await agent_executor.aget_state({"configurable": {"thread_id": thread_id}})
-            title = state.values.get("chat_title", "Nowa rozmowa") if state and state.values else "Nowa rozmowa"
+            existing_title = row[1] if len(row) > 1 and row[1] else None
+
+            if not existing_title or existing_title == "Nowa rozmowa":
+                state = await agent_executor.aget_state({"configurable": {"thread_id": thread_id}})
+                title = state.values.get("chat_title", "Nowa rozmowa") if state and state.values else "Nowa rozmowa"
+            else:
+                title = existing_title
 
             threads_list.append({
                 "thread_id": thread_id,
@@ -358,6 +397,24 @@ async def process_chat(request: Request):
     user_query = data.get("query", "")
     thread_id = data.get("thread_id", "default_session")
     model_mode = data.get("model", "Flash")
+    user_id = request.headers.get("x-user-id") or data.get("user_id") or "anonymous"
+
+    # Zapis powiązania wątku z użytkownikiem
+    try:
+        init_db()
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO user_threads (thread_id, user_id, title, updated_at)
+            VALUES (?, ?, ?, datetime('now'))
+            ON CONFLICT(thread_id) DO UPDATE SET
+                user_id = CASE WHEN user_threads.user_id = 'anonymous' AND excluded.user_id != 'anonymous' THEN excluded.user_id ELSE user_threads.user_id END,
+                updated_at = datetime('now')
+        """, (thread_id, user_id, "Nowa rozmowa"))
+        conn.commit()
+        conn.close()
+    except Exception as db_err:
+        print(f"[DB SAVE THREAD ERROR]: {db_err}")
 
     # Langfuse Callback Tracing
     langfuse_handler = get_langfuse_callback(session_id=thread_id)

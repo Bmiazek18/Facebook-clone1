@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, nextTick, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import LLMInput from '@/components/meta-ai/LLMInput.vue'
 import CodeBlock from '@/components/meta-ai/CodeBlock.vue'
 import PdfPreview from '@/components/meta-ai/PdfPreview.vue'
@@ -57,12 +58,20 @@ const initNewChat = () => {
   ]
 }
 
+const authStore = useAuthStore()
+
 const loadExistingChat = async (threadId: string) => {
   if (!threadId) return
   currentThreadId.value = threadId
   
   try {
-    const response = await fetch(`/api/chat-history/${threadId}`)
+    const uid = String(authStore.currentUserId || '')
+    const url = uid
+      ? `/api/chat-history/${threadId}?user_id=${encodeURIComponent(uid)}`
+      : `/api/chat-history/${threadId}`
+    const response = await fetch(url, {
+      headers: uid ? { 'x-user-id': uid } : {}
+    })
     if (response.ok) {
       const data = await response.json()
       
@@ -265,12 +274,17 @@ const startChat = async (text: string, model: string = 'Flash', images: string[]
   abortController = new AbortController()
   
   try {
+    const uid = String(authStore.currentUserId || '')
     const response = await fetch('/api/process-chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(uid ? { 'x-user-id': uid } : {})
+      },
       body: JSON.stringify({ 
         query: text, 
         thread_id: currentThreadId.value,
+        user_id: uid,
         model: model
       }),
       signal: abortController.signal

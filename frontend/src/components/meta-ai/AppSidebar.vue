@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useSidebar } from '@/composables/useSidebar'
+import { useAuthStore } from '@/stores/auth'
+import { usersApi } from '@/api/users'
 
 const router = useRouter()
 const route = useRoute()
 const { isExpanded, toggleSidebar } = useSidebar()
+const authStore = useAuthStore()
 
 interface ChatThread {
   thread_id: string
@@ -13,10 +16,59 @@ interface ChatThread {
 }
 const recentChats = ref<ChatThread[]>([])
 const activeThreadId = ref<string | null>(null)
+const userProfile = ref<any>(null)
+
+const currentUserId = computed(() => String(authStore.currentUserId || ''))
+
+const userDisplayName = computed(() => {
+  if (userProfile.value?.firstName || userProfile.value?.lastName) {
+    return [userProfile.value.firstName, userProfile.value.lastName].filter(Boolean).join(' ')
+  }
+  if (authStore.currentUser?.name) {
+    return authStore.currentUser.name
+  }
+  return 'Użytkownik'
+})
+
+const userUsername = computed(() => {
+  if (userProfile.value?.username) return userProfile.value.username
+  return userDisplayName.value.toLowerCase().replace(/\s+/g, '.')
+})
+
+const userAvatar = computed(() => {
+  return (
+    userProfile.value?.avatar ||
+    authStore.currentUser?.avatar ||
+    '/default-avatar.png'
+  )
+})
+
+const userLocation = computed(() => {
+  return (
+    userProfile.value?.city ||
+    userProfile.value?.location ||
+    userProfile.value?.hometown ||
+    'Polska'
+  )
+})
+
+const loadUserProfile = async () => {
+  if (!currentUserId.value) return
+  try {
+    const u = await usersApi.getUserById(currentUserId.value)
+    if (u) {
+      userProfile.value = u
+    }
+  } catch (err) {
+    console.warn('Failed to load user profile in meta-ai sidebar:', err)
+  }
+}
 
 const fetchChats = async () => {
   try {
-    const response = await fetch('/api/chat-threads')
+    const uid = currentUserId.value
+    const url = uid ? `/api/chat-threads?user_id=${encodeURIComponent(uid)}` : '/api/chat-threads'
+    const response = await fetch(url)
     if (response.ok) {
       const data = await response.json()
       recentChats.value = data.threads || []
@@ -37,9 +89,23 @@ const createNewChat = async () => {
 }
 
 onMounted(() => {
+  loadUserProfile()
   fetchChats()
   if (route.params.id) {
     activeThreadId.value = route.params.id as string
+  }
+})
+
+watch(currentUserId, () => {
+  loadUserProfile()
+  fetchChats()
+})
+
+watch(() => route.params.id, (newId) => {
+  if (newId) {
+    activeThreadId.value = newId as string
+  } else {
+    activeThreadId.value = null
   }
 })
 
@@ -189,36 +255,38 @@ defineExpose({ fetchChats })
       <!-- LOKALIZACJA -->
       <div v-if="isExpanded" class="flex flex-col text-[11px] text-[#737373] px-2 py-2 border-b border-white/[0.05] mb-2 font-light">
         <div class="flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-[#737373]"></span>
-          <span class="text-[#a3a3a3] hover:text-white cursor-pointer underline">Gdańsk, Poland</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span>
+          <span class="text-[#a3a3a3] hover:text-white cursor-pointer underline">{{ userLocation }}</span>
         </div>
-        <span class="text-[#525252] text-[10.5px] mt-0.5">Z Twojego adresu IP</span>
-        <span class="underline cursor-pointer text-[#60a5fa] hover:text-[#93c5fd] text-[10.5px] mt-0.5">Zaktualizuj lokalizację</span>
+        <span class="text-[#525252] text-[10.5px] mt-0.5">Z Twojego profilu</span>
       </div>
 
       <!-- KONTO UŻYTKOWNIKA -->
       <div
+        @click="router.push(currentUserId ? `/profile/${currentUserId}` : '/profile')"
         :class="[
           'flex items-center justify-between rounded-lg hover:bg-white/[0.05] p-2 transition-colors cursor-pointer w-full',
           !isExpanded && 'justify-center p-1'
         ]"
+        :title="userDisplayName"
       >
         <div class="flex items-center gap-3 min-w-0">
           <div class="w-8 h-8 rounded-full overflow-hidden bg-[#262626] shrink-0 border border-white/10 flex items-center justify-center">
             <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces"
-              alt="Avatar"
+              :src="userAvatar"
+              :alt="userDisplayName"
               class="w-full h-full object-cover"
             />
           </div>
           <span v-if="isExpanded" class="text-[13.5px] font-normal text-[#ececec] truncate">
-            bartosz.miazek.7
+            {{ userUsername }}
           </span>
         </div>
 
         <button
           v-if="isExpanded"
           class="text-[#a3a3a3] hover:text-[#ececec] transition-colors p-1"
+          @click.stop="router.push(currentUserId ? `/profile/${currentUserId}` : '/profile')"
         >
           <Icon name="lucide:bell" size="18" />
         </button>
