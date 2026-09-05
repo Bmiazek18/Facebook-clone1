@@ -146,9 +146,7 @@ import { useEventsStore } from '@/stores/events'
 import type { Post } from '@/types/Post'
 import { processPostsIntoReels } from '@/utils/reels'
 import { useAuthStore } from '@/stores/auth'
-
-// Import PostItem for recursive rendering
-const PostItem = defineAsyncComponent(() => import('./PostItem.vue'))
+import PostItem from './PostItem.vue'
 
 const props = withDefaults(
   defineProps<{

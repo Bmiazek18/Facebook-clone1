@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { feedApi } from '@/api/feed'
+import { processPostsIntoReels } from '@/utils/reels'
 
 export const usePostsStore = defineStore('posts', () => {
   const authStore = useAuthStore()
@@ -42,10 +43,15 @@ export const usePostsStore = defineStore('posts', () => {
     }
   }
 
+  const reels = computed(() => processPostsIntoReels(posts.value, String(authStore.currentUserId)))
+  const getReelById = (id: string) => reels.value.find((r) => r.id === id)
+
   return {
     posts,
+    reels,
     currentUser,
     getPostById,
+    getReelById,
     addPost,
     removePost,
     voteOnPoll,

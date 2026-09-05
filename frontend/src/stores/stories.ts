@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { feedApi } from '@/api/feed'
+import type { PostData, ReelData } from '@/types/StoryElement'
 import {
   encodeStoryMetadata,
   parseStoryMetadata,
@@ -18,6 +19,38 @@ export const useStoriesStore = defineStore('stories', () => {
   const userStories = ref<any[]>([])
   const allUserStories = computed(() => userStories.value)
   const currentUserId = computed(() => String(authStore.currentUserId || ''))
+
+  // Story sharing state (for cross-page story creation)
+  const pendingPost = ref<PostData | null>(null)
+  const pendingReel = ref<ReelData | null>(null)
+
+  const setPostToShare = (post: PostData) => {
+    pendingPost.value = post
+  }
+
+  const setReelToShare = (reel: ReelData) => {
+    pendingReel.value = reel
+  }
+
+  const getPendingPost = () => {
+    const post = pendingPost.value
+    pendingPost.value = null
+    return post
+  }
+
+  const getPendingReel = () => {
+    const reel = pendingReel.value
+    pendingReel.value = null
+    return reel
+  }
+
+  const clearPendingPost = () => {
+    pendingPost.value = null
+  }
+
+  const clearPendingReel = () => {
+    pendingReel.value = null
+  }
 
   const getUserStories = (userId: string) => {
     return userStories.value.find((us) => String(us.userId) === String(userId)) || null
@@ -166,5 +199,13 @@ export const useStoriesStore = defineStore('stories', () => {
     currentUserId,
     getUserStories,
     addStory,
+    pendingPost,
+    pendingReel,
+    setPostToShare,
+    setReelToShare,
+    getPendingPost,
+    getPendingReel,
+    clearPendingPost,
+    clearPendingReel,
   }
 })
