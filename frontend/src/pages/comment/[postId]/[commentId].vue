@@ -2,7 +2,7 @@
   <Teleport to="body">
     <div
       v-if="!loading && currentPost"
-      class="fixed inset-0 z-[500] flex bg-black overflow-hidden select-none text-[#050505]"
+      class="fixed inset-0 z-[500] flex bg-black overflow-hidden select-none text-theme-text"
     >
       <!-- PRZYCISKI INTERFEJSU (OVERLAY) -->
       <div class="absolute top-0 left-0 right-0 h-14 z-[510] flex items-center justify-between px-4 pointer-events-none">
@@ -39,22 +39,22 @@
         <!-- PRAWO: PANEL BOCZNY -->
         <div
           v-if="!isFullScreen"
-          class="w-[360px] h-full bg-white shrink-0 flex flex-col z-10 shadow-xl"
+          class="w-[360px] h-full bg-theme-bg-secondary text-theme-text border-l border-theme-border shrink-0 flex flex-col z-10 shadow-xl"
         >
           <HoverScrollbar maxHeight="100%" class="flex-1 overflow-y-auto">
             <!-- Autor -->
             <div class="pt-16">
               <div class="flex items-start justify-between p-4 border-t border-theme-border">
                 <div class="flex items-center gap-2.5">
-                  <UserAvatar v-if="currentPost.author" :user="currentPost.author" :size="40" />
+                  <UserAvatar v-if="currentPost.author" :user="currentPost.author" :size="40" class="shrink-0 border border-theme-border" />
                   <div class="flex flex-col">
-                    <div class="font-semibold text-[15px] text-[#050505] hover:underline cursor-pointer">
+                    <div class="font-semibold text-[15px] text-theme-text hover:underline cursor-pointer">
                       {{ currentPost.author?.firstName }} {{ currentPost.author?.lastName }}
                     </div>
-                    <div class="flex items-center text-[13px] text-[#65676B] mt-0.5">
+                    <div class="flex items-center text-[13px] text-theme-text-secondary mt-0.5">
                       <FormattedDate :date="currentPost.date" />
                       <span class="mx-1 font-bold">·</span>
-                      <Earth :size="14" />
+                      <Earth :size="14" class="text-theme-text-secondary" />
                     </div>
                   </div>
                 </div>
@@ -62,12 +62,12 @@
             </div>
 
             <!-- Treść -->
-            <div class="px-4 pb-3 text-[15px] text-[#050505] whitespace-pre-wrap">
+            <div class="px-4 pb-3 text-[15px] text-theme-text whitespace-pre-wrap">
               {{ currentPost.content }}
             </div>
 
             <!-- Statystyki -->
-            <div class="mx-4 flex items-center justify-between py-2.5 text-[#65676B] text-[14px]">
+            <div class="mx-4 flex items-center justify-between py-2.5 text-theme-text-secondary text-[14px] border-b border-theme-border">
               <div class="flex items-center cursor-pointer hover:underline">
                 <div class="bg-[#1877F2] rounded-full w-[18px] h-[18px] flex items-center justify-center mr-1.5">
                   <ThumbUp class="text-white" :size="10" />
@@ -75,14 +75,14 @@
                 <span>{{ likesCount }}</span>
               </div>
 
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-3 text-theme-text-secondary">
                 <div v-if="currentPost.commentCount > 0" class="flex items-center gap-1">
                   <span>{{ currentPost.commentCount }}</span>
-                  <CommentTextMultiple :size="16" />
+                  <CommentTextMultiple :size="16" class="text-theme-text-secondary" />
                 </div>
                 <div v-if="currentPost.shareCount > 0" class="flex items-center gap-1">
                   <span>{{ currentPost.shareCount }}</span>
-                  <Share :size="16" class="transform scale-x-[-1]" />
+                  <Share :size="16" class="text-theme-text-secondary transform scale-x-[-1]" />
                 </div>
               </div>
             </div>
@@ -108,7 +108,7 @@
           </HoverScrollbar>
 
           <!-- Input dodawania komentarza -->
-          <div class="p-3 border-t border-[#CED0D4] bg-white sticky bottom-0 z-20">
+          <div class="p-3 border-t border-theme-border bg-theme-bg-secondary sticky bottom-0 z-20">
             <CommentReplyInput :post-id="currentPost.id" />
           </div>
         </div>

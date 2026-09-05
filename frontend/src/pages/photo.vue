@@ -25,7 +25,7 @@
     <!-- GŁÓWNY WIDOK GALERII -->
     <div
       v-else-if="galleryReady"
-      class="fixed inset-0 z-[500] flex bg-black overflow-hidden select-none text-[#050505]"
+      class="fixed inset-0 z-[500] flex bg-black overflow-hidden select-none text-theme-text"
     >
       <div
         class="absolute top-0 left-0 right-0 h-14 z-[510] flex items-center justify-between px-4 pointer-events-none"
@@ -63,7 +63,7 @@
 
         <div
           v-if="!isFullScreen && (currentPost || isStandalone)"
-          class="w-[360px] h-full bg-white shrink-0 flex flex-col z-10 shadow-xl"
+          class="w-[360px] h-full bg-theme-bg-secondary text-theme-text border-l border-theme-border shrink-0 flex flex-col z-10 shadow-xl"
         >
           <HoverScrollbar maxHeight="100%" class="flex-1 overflow-y-auto">
             <div class="pt-16">
@@ -73,41 +73,41 @@
                     v-if="resolvedAuthor"
                     :user="resolvedAuthor"
                     :size="40"
-                    class="shrink-0 hover:brightness-95 border border-gray-200"
+                    class="shrink-0 hover:brightness-95 border border-theme-border"
                   />
                   <div class="flex flex-col">
                     <div
-                      class="font-semibold text-[15px] text-[#050505] leading-5 cursor-pointer hover:underline"
+                      class="font-semibold text-[15px] text-theme-text leading-5 cursor-pointer hover:underline"
                       @click="goToAuthorProfile"
                     >
                       {{ resolvedAuthor?.name || 'Użytkownik' }}
                     </div>
-                    <div class="flex items-center text-[13px] text-[#65676B] font-normal mt-0.5">
+                    <div class="flex items-center text-[13px] text-theme-text-secondary font-normal mt-0.5">
                       <template v-if="isStandalone">
                         <span>{{ standaloneLabel }}</span>
                       </template>
                       <template v-else-if="currentPost">
                         <FormattedDate :date="currentPost.date" />
                         <span class="mx-1 font-bold">·</span>
-                        <Earth :size="14" class="text-[#65676B]" />
+                        <Earth :size="14" class="text-theme-text-secondary" />
                       </template>
                     </div>
                   </div>
                 </div>
 
-                <button class="text-[#65676B] hover:bg-gray-100 rounded-full p-2 transition-colors">
+                <button class="text-theme-text-secondary hover:bg-theme-hover rounded-full p-2 transition-colors">
                   <DotsHorizontal :size="20" />
                 </button>
               </div>
             </div>
 
             <template v-if="currentPost">
-              <div class="px-4 pb-3 text-[15px] text-[#050505] whitespace-pre-wrap leading-normal">
+              <div class="px-4 pb-3 text-[15px] text-theme-text whitespace-pre-wrap leading-normal">
                 {{ currentPost.content }}
               </div>
 
               <div
-                class="mx-4 flex items-center justify-between py-2.5 text-[#65676B] text-[14px] border-b border-theme-border"
+                class="mx-4 flex items-center justify-between py-2.5 text-theme-text-secondary text-[14px] border-b border-theme-border"
               >
                 <div class="flex items-center cursor-pointer hover:underline select-none">
                   <div
@@ -115,23 +115,23 @@
                   >
                     <ThumbUp class="text-white" :size="10" />
                   </div>
-                  <span class="text-[#65676B] font-normal">{{ likesCount || 0 }}</span>
+                  <span class="text-theme-text-secondary font-normal">{{ likesCount || 0 }}</span>
                 </div>
 
-                <div class="flex items-center gap-3 text-[14px] text-[#65676B] select-none">
+                <div class="flex items-center gap-3 text-[14px] text-theme-text-secondary select-none">
                   <div
                     v-if="commentsCount > 0"
                     class="flex items-center gap-1 cursor-pointer hover:underline"
                   >
                     <span>{{ commentsCount }}</span>
-                    <CommentTextMultiple :size="16" class="text-[#8C9199]" />
+                    <CommentTextMultiple :size="16" class="text-theme-text-secondary" />
                   </div>
                   <div
                     v-if="sharesCount > 0"
                     class="flex items-center gap-1 cursor-pointer hover:underline"
                   >
                     <span>{{ sharesCount }}</span>
-                    <Share :size="16" class="text-[#8C9199] transform scale-x-[-1]" />
+                    <Share :size="16" class="text-theme-text-secondary transform scale-x-[-1]" />
                   </div>
                 </div>
               </div>
@@ -156,14 +156,14 @@
               </div>
             </template>
 
-            <div v-else class="px-4 pb-4 text-[15px] text-[#65676B] leading-normal">
+            <div v-else class="px-4 pb-4 text-[15px] text-theme-text-secondary leading-normal">
               {{ standaloneDescription }}
             </div>
           </HoverScrollbar>
 
           <div
             v-if="currentPost"
-            class="p-3 border-t border-[#CED0D4] bg-white sticky bottom-0 z-20 shadow-[0_-2px_6px_rgba(0,0,0,0.02)]"
+            class="p-3 border-t border-theme-border bg-theme-bg-secondary sticky bottom-0 z-20 shadow-[0_-2px_6px_rgba(0,0,0,0.02)]"
           >
             <CommentReplyInput ref="commentInputRef" :post-id="currentPost.id" />
           </div>
@@ -171,7 +171,7 @@
 
         <div
           v-if="!isFullScreen && (currentPost || isStandalone)"
-          class="hidden md:block w-20 border-l border-theme-border bg-white shrink-0"
+          class="hidden md:block w-20 border-l border-theme-border bg-theme-bg-secondary shrink-0"
         ></div>
       </div>
     </div>
