@@ -1,5 +1,5 @@
 import gql from 'graphql-tag'
-import { useMutation } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 
 const GENERATE_TICKET = gql`
   mutation GenerateTicket($userId: ID!) {
@@ -8,10 +8,12 @@ const GENERATE_TICKET = gql`
 `
 
 export function useGenerateTicket() {
-  const { mutate } = useMutation(GENERATE_TICKET)
-
   async function generateTicket(userId: string): Promise<string> {
-    const result = await mutate({ userId: String(userId) })
+    const client = getApolloClient()
+    const result = await client.mutate({
+      mutation: GENERATE_TICKET,
+      variables: { userId: String(userId) },
+    })
     const ticket = result?.data?.generateTicket
     if (!ticket) {
       throw new Error('Failed to generate ticket')

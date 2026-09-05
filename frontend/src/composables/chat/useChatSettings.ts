@@ -1,7 +1,7 @@
 import { ref } from 'vue'
-import { useApolloClient } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
 import { useChatStore } from '@/stores/chat'
+import { getApolloClient } from '@/utils/apollo'
 
 export interface ChatSettings {
   chatId: string | number
@@ -46,7 +46,7 @@ export function useChatSettings() {
   }
 
   function saveCustomization(apiUrl: string, headers: Record<string, string>, conversationId: string, emoji?: string, themeId?: number, participantIds?: string[]) {
-    const apolloClient = useApolloClient().resolveClient()
+    const apolloClient = getApolloClient()
     const senderId = String(headers['X-User-Id'] || headers['x-user-id'] || '').replace('user_', '')
     const cleanConversationId = String(conversationId).replace('user_', '')
     const cleanParticipantIds = participantIds ? participantIds.map(pid => String(pid).replace('user_', '')) : []
@@ -69,7 +69,7 @@ export function useChatSettings() {
   }
 
   function saveNickname(apiUrl: string, headers: Record<string, string>, conversationId: string, userId: string, nickname: string, participantIds?: string[]) {
-    const apolloClient = useApolloClient().resolveClient()
+    const apolloClient = getApolloClient()
     const senderId = String(headers['X-User-Id'] || headers['x-user-id'] || '').replace('user_', '')
     const cleanConversationId = String(conversationId).replace('user_', '')
     const cleanUserId = String(userId).replace('user_', '')

@@ -1,6 +1,6 @@
 import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed, type Ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useMutation } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { gql } from 'graphql-tag'
 import type { Story } from '@/types/Story'
 import { getLocalViewedStories } from '@/utils/stories'
@@ -31,7 +31,17 @@ export function useStoryPlayback(
   isVideo: any,
 ) {
   const authStore = useAuthStore()
-  const { mutate: markStoryViewed } = useMutation(MARK_STORY_VIEWED)
+  const markStoryViewed = async (vars: { storyId: string; viewerId: string }) => {
+    try {
+      const client = getApolloClient()
+      await client.mutate({
+        mutation: MARK_STORY_VIEWED,
+        variables: vars,
+      })
+    } catch (e) {
+      console.error('Failed to mark story as viewed:', e)
+    }
+  }
   const router = useRouter()
   const route = useRoute()
 

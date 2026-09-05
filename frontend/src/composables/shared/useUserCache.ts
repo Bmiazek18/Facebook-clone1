@@ -1,6 +1,6 @@
 import { ref } from 'vue'
-import { useApolloClient } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
+import { getApolloClient } from '@/utils/apollo'
 
 export const usersCache = ref<Record<string, { id: string, name: string, avatar: string, note?: string }>>({})
 
@@ -20,7 +20,7 @@ export function useUserCache() {
     }
 
     try {
-      const apolloClient = useApolloClient().resolveClient()
+      const apolloClient = getApolloClient()
       const res = await apolloClient.query({
         query: gql`
           query GetUserById($userId: ID!) {

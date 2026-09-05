@@ -1,8 +1,8 @@
 import { ref, watch, computed } from 'vue'
 import type { Ref } from 'vue'
-import { useApolloClient } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
 import type { User } from '@/utils/users'
+import { getApolloClient } from '@/utils/apollo'
 
 export function useUserTagging() {
   const searchTerm = ref<string | null>(null)
@@ -18,7 +18,7 @@ export function useUserTagging() {
     }
 
     try {
-      const apolloClient = useApolloClient().resolveClient()
+      const apolloClient = getApolloClient()
       const res = await apolloClient.query({
         query: gql`
           query SearchUsers($query: String!) {

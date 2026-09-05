@@ -14,7 +14,7 @@ import { useUserCache } from '@/composables/shared/useUserCache'
 import { useChatCalls } from '@/composables/chat/useChatCalls'
 import { useChatSettings } from '@/composables/chat/useChatSettings'
 import { useChatApi } from '@/composables/chat/useChatApi'
-import { useApolloClient } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { gql } from 'graphql-tag'
 import { MARK_INBOX_AS_READ } from '@/graphql/chat'
 import { decryptMessage, encryptMessage } from '@/utils/e2ee'
@@ -544,7 +544,7 @@ export const useConversationsStore = defineStore('conversations', () => {
           const cleanActiveIdForRead = String(activeChatId.value || '').replace('user_', '')
           const cleanLogicalIdForRead = String(logicalChatId).replace('user_', '')
           if (newMsg.sender !== 'me' && cleanActiveIdForRead === cleanLogicalIdForRead) {
-            const apolloClient = useApolloClient().resolveClient()
+            const apolloClient = getApolloClient()
             apolloClient.mutate({
               mutation: MARK_INBOX_AS_READ,
               variables: {
@@ -783,7 +783,7 @@ export const useConversationsStore = defineStore('conversations', () => {
   async function fetchChatSettings(chatId: string | number) {
     if (!import.meta.client) return
     const conversationId = getSymmetricConversationId(chatId)
-    const apolloClient = useApolloClient().resolveClient()
+    const apolloClient = getApolloClient()
     try {
       const res = await apolloClient.query({
         query: gql`
@@ -881,7 +881,7 @@ export const useConversationsStore = defineStore('conversations', () => {
     const conversationId = getSymmetricConversationId(chatId)
     const cleanCurrentUserUuid = String(authStore.currentUserId || '1').replace('user_', '')
     const cleanChatId = String(chatId).replace('user_', '')
-    const apolloClient = useApolloClient().resolveClient()
+    const apolloClient = getApolloClient()
 
     try {
       await apolloClient.mutate({
@@ -1055,7 +1055,7 @@ export const useConversationsStore = defineStore('conversations', () => {
     const cleanCurrentUserUuid = String(currentUserUuid.value).replace('user_', '')
     const cleanSelectedUserId = String(selectedUser.id).replace('user_', '')
 
-    const apolloClient = useApolloClient().resolveClient()
+    const apolloClient = getApolloClient()
 
     await apolloClient.mutate({
       mutation: gql`
@@ -1100,7 +1100,7 @@ export const useConversationsStore = defineStore('conversations', () => {
   }
 
   async function leaveGroup(chatId: string | number) {
-    const apolloClient = useApolloClient().resolveClient()
+    const apolloClient = getApolloClient()
     const cleanCurrentUserUuid = String(currentUserUuid.value).replace('user_', '')
     const cleanChatId = String(chatId).replace('user_', '')
     try {

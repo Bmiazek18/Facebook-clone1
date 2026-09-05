@@ -1,7 +1,7 @@
-import { useMutation } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
 import { usePostsStore } from '@/composables/feed/useAppState'
 import { useAuthStore } from '@/stores/auth'
+import { getApolloClient } from '@/utils/apollo'
 
 export type ProfilePhotoKind = 'avatar' | 'cover'
 
@@ -93,7 +93,6 @@ const CREATE_PROFILE_PHOTO_POST = gql`
 `
 
 export function useProfilePhotoPost() {
-  const { mutate: createPostMutate } = useMutation(CREATE_PROFILE_PHOTO_POST)
   const postsStore = usePostsStore()
   const authStore = useAuthStore()
 
@@ -101,42 +100,51 @@ export function useProfilePhotoPost() {
     const authorId = String(authStore.currentUserId || '')
     if (!authorId || !mediaSrc) return null
 
-    const result = await createPostMutate({
-      input: {
-        content: profilePhotoContent(kind),
-        authorId,
-        media: [{ src: mediaSrc, altText: profilePhotoAlt(kind), tags: [] }],
-        isAnonymous: false,
-        visibility: 'PUBLIC',
-        allowedUserIds: [],
-        taggedUsersIds: [],
-      },
-    })
-
-    const created = result?.data?.createPost
-    if (created) {
-      const currentUser = authStore.currentUser
-      postsStore.addPost({
-        ...created,
-        author: {
-          id: authorId,
-          firstName: (currentUser as any)?.firstName || currentUser?.name?.split(' ')[0] || '',
-          lastName: (currentUser as any)?.lastName || currentUser?.name?.split(' ').slice(1).join(' ') || '',
-          avatar: currentUser?.avatar || mediaSrc,
-          name: currentUser?.name || 'Użytkownik',
+    try {
+      const client = getApolloClient()
+      const result = await client.mutate({
+        mutation: CREATE_PROFILE_PHOTO_POST,
+        variables: {
+          input: {
+            content: profilePhotoContent(kind),
+            authorId,
+            media: [{ src: mediaSrc, altText: profilePhotoAlt(kind), tags: [] }],
+            isAnonymous: false,
+            visibility: 'PUBLIC',
+            allowedUserIds: [],
+            taggedUsersIds: [],
+          },
         },
-        authorId,
-        comments: [],
-        stats: {
-          likes: 0,
-          comments: created.commentCount ?? 0,
-          shares: created.shareCount ?? 0,
-        },
-        reactions: created.reactions || [],
       })
-    }
 
-    return created || null
+      const created = result?.data?.createPost
+      if (created) {
+        const currentUser = authStore.currentUser
+        postsStore.addPost({
+          ...created,
+          author: {
+            id: authorId,
+            firstName: (currentUser as any)?.firstName || currentUser?.name?.split(' ')[0] || '',
+            lastName: (currentUser as any)?.lastName || currentUser?.name?.split(' ').slice(1).join(' ') || '',
+            avatar: currentUser?.avatar || mediaSrc,
+            name: currentUser?.name || 'Użytkownik',
+          },
+          authorId,
+          comments: [],
+          stats: {
+            likes: 0,
+            comments: created.commentCount ?? 0,
+            shares: created.shareCount ?? 0,
+          },
+          reactions: created.reactions || [],
+        })
+      }
+
+      return created || null
+    } catch (err) {
+      console.error('Failed to create profile photo post:', err)
+      return null
+    }
   }
 
   const resolveProfilePhotoPost = async (opts: {

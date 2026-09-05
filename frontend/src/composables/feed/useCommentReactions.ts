@@ -1,8 +1,8 @@
 import { computed, isRef } from 'vue'
-import { useMutation } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
 import { useAuthStore } from '@/stores/auth'
 import type { ReactionType } from '@/types/Post'
+import { getApolloClient } from '@/utils/apollo'
 
 const REACT_TO_COMMENT_MUTATION = gql`
   mutation ReactToComment($input: CommentReactionInput!) {
@@ -12,7 +12,6 @@ const REACT_TO_COMMENT_MUTATION = gql`
 
 export const useCommentReactions = (commentInput: any) => {
   const authStore = useAuthStore()
-  const { mutate: reactToComment } = useMutation(REACT_TO_COMMENT_MUTATION)
 
   const currentUserId = computed(() => String(authStore.currentUserId))
 
@@ -61,11 +60,15 @@ export const useCommentReactions = (commentInput: any) => {
     comment.userReaction = reaction || undefined
 
     try {
-      await reactToComment({
-        input: {
-          commentId: String(comment.id),
-          userId: String(userId),
-          reactionType: reaction,
+      const client = getApolloClient()
+      await client.mutate({
+        mutation: REACT_TO_COMMENT_MUTATION,
+        variables: {
+          input: {
+            commentId: String(comment.id),
+            userId: String(userId),
+            reactionType: reaction,
+          },
         },
       })
     } catch (e) {

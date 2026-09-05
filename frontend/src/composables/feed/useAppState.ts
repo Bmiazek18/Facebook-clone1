@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { processPostsIntoReels } from '@/utils/reels'
 import { useAuthStore } from '@/stores/auth'
-import { useMutation } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
 import { VOTE_ON_POLL_MUTATION } from '@/graphql/groups'
 import {
@@ -10,6 +9,7 @@ import {
   parseStoryMetadata,
   type StoryMetadata,
 } from '@/utils/storyMetadata'
+import { getApolloClient } from '@/utils/apollo'
 
 const CREATE_STORY_MUTATION = gql`
   mutation CreateStory($input: CreateStoryInput!) {
@@ -59,14 +59,16 @@ export const usePostsStore = defineStore('posts', () => {
     posts.value = posts.value.filter((p) => String(p.id) !== String(id))
   }
 
-  const { mutate: voteOnPollMutate } = useMutation(VOTE_ON_POLL_MUTATION)
-
   const voteOnPoll = async (postId: string, optionId: string, userId: string) => {
     try {
-      const result = await voteOnPollMutate({
-        postId,
-        optionId,
-        userId,
+      const client = getApolloClient()
+      const result = await client.mutate({
+        mutation: VOTE_ON_POLL_MUTATION,
+        variables: {
+          postId,
+          optionId,
+          userId,
+        },
       })
       if (result?.data?.voteOnPoll) {
         const updatedPost = result.data.voteOnPoll
@@ -105,8 +107,6 @@ export const useStoriesStore = defineStore('stories', () => {
   const getUserStories = (userId: string) => {
     return userStories.value.find((us) => String(us.userId) === String(userId)) || null
   }
-
-  const { mutate: createStoryMutate } = useMutation(CREATE_STORY_MUTATION)
 
   const normalizeTusFilePath = (uploadUrl: string) => {
     let serverPath = uploadUrl || ''
@@ -228,12 +228,16 @@ export const useStoriesStore = defineStore('stories', () => {
           })
         : storyData.text || ''
 
-      const result = await createStoryMutate({
-        input: {
-          authorId,
-          mediaUrl,
-          mediaType,
-          text: textPayload,
+      const client = getApolloClient()
+      const result = await client.mutate({
+        mutation: CREATE_STORY_MUTATION,
+        variables: {
+          input: {
+            authorId,
+            mediaUrl,
+            mediaType,
+            text: textPayload,
+          },
         },
       })
 

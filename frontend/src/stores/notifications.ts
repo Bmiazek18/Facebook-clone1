@@ -1,13 +1,14 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { useQuery, useMutation } from '@vue/apollo-composable'
+import { ref, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import gql from 'graphql-tag'
 import type { Notification } from '@/types/Notification'
+import { getApolloClient } from '@/utils/apollo'
 
 export const useNotificationsStore = defineStore('notifications', () => {
   const authStore = useAuthStore()
   const notifications = ref<Notification[]>([])
+  const loading = ref(false)
 
   const GET_NOTIFICATIONS = gql`
     query GetNotifications($userId: ID!) {
@@ -35,24 +36,32 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
   `
 
-  const variables = computed(() => ({
-    userId: String(authStore.currentUserId)
-  }))
-
-  const { onResult, loading, refetch } = useQuery(GET_NOTIFICATIONS, variables, () => ({
-    enabled: !!authStore.currentUserId,
-    fetchPolicy: 'cache-and-network',
-  }))
-
-  onResult((queryResult) => {
-    notifications.value = (queryResult.data?.getNotifications || []).map((n: any) => ({ ...n }))
-  })
-
-  const { mutate: markAsReadMutation } = useMutation(MARK_NOTIFICATION_AS_READ)
+  const refetch = async () => {
+    const userId = authStore.currentUserId
+    if (!userId) return
+    loading.value = true
+    try {
+      const client = getApolloClient()
+      const res = await client.query({
+        query: GET_NOTIFICATIONS,
+        variables: { userId: String(userId) },
+        fetchPolicy: 'network-only',
+      })
+      notifications.value = (res.data?.getNotifications || []).map((n: any) => ({ ...n }))
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err)
+    } finally {
+      loading.value = false
+    }
+  }
 
   const markAsRead = async (id: string) => {
     try {
-      await markAsReadMutation({ id })
+      const client = getApolloClient()
+      await client.mutate({
+        mutation: MARK_NOTIFICATION_AS_READ,
+        variables: { id: String(id) },
+      })
       const notif = notifications.value.find((n) => String(n.id) === String(id))
       if (notif) {
         notif.read = true
@@ -72,6 +81,17 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
   if (import.meta.client) {
     window.addEventListener('new-notification', handleNewNotificationEvent)
+    watch(
+      () => authStore.currentUserId,
+      (newId) => {
+        if (newId) {
+          refetch()
+        } else {
+          notifications.value = []
+        }
+      },
+      { immediate: true },
+    )
   }
 
   return {

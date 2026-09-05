@@ -67,8 +67,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useOnline, useEventListener } from '@vueuse/core'
-import { useMutation } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
 
 import MainNavLayout from './layouts/MainNavLayouts.vue'
 import ProfileIcon from './components/profile/ProfileIcon.vue'

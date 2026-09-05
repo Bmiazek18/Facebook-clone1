@@ -1,4 +1,4 @@
-import { useApolloClient } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { gql } from 'graphql-tag'
 import { useChatStorage } from '@/composables/chat/useChatStorage'
 import { useUserCache } from '@/composables/shared/useUserCache'
@@ -61,7 +61,10 @@ export function useChatApi(currentUserUuid: { value: string }, chats: any, messa
   const chatStorage = useChatStorage()
   const userCache = useUserCache()
   const chatMqtt = useChatMqtt()
-  const apolloClient = useApolloClient().resolveClient()
+  const apolloClient = {
+    query: (options: any) => getApolloClient().query(options),
+    mutate: (options: any) => getApolloClient().mutate(options),
+  }
   // Same-origin BFF adds the access token from the HTTP-only session cookie.
   const apiUrl = import.meta.env.VITE_BFF_API_URL || ''
 

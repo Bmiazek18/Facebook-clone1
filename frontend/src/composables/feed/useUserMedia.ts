@@ -1,6 +1,6 @@
 import { ref } from 'vue'
-import { useApolloClient } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
+import { getApolloClient } from '@/utils/apollo'
 
 export interface UserMediaItem {
   id: string
@@ -51,7 +51,6 @@ const GET_USER_ALBUMS_QUERY = gql`
 `
 
 export function useUserMedia() {
-  const { client } = useApolloClient()
   const mediaItems = ref<UserMediaItem[]>([])
   const albums = ref<UserAlbum[]>([])
   const loading = ref(false)
@@ -71,6 +70,7 @@ export function useUserMedia() {
     loading.value = true
 
     try {
+      const client = getApolloClient()
       const { data } = await client.query({
         query: GET_USER_MEDIA_QUERY,
         variables: {
@@ -108,6 +108,7 @@ export function useUserMedia() {
 
   async function fetchAlbums(userId: string) {
     try {
+      const client = getApolloClient()
       const { data } = await client.query({
         query: GET_USER_ALBUMS_QUERY,
         variables: { userId: String(userId) },

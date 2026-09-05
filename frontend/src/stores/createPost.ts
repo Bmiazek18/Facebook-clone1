@@ -6,7 +6,7 @@ import type { ImageTagType } from '@/types/Post'
 import * as tus from 'tus-js-client'
 import { useAuthStore } from '@/stores/auth'
 import { usePostsStore } from '@/composables/feed/useAppState'
-import { useMutation } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { gql } from 'graphql-tag'
 import { useI18n } from 'vue-i18n'
 import type { PostData } from '@/types/StoryElement'
@@ -337,94 +337,6 @@ export const useCreatePostStore = defineStore('createPost', () => {
     }
   `
 
-  const { mutate: createPost } = useMutation(CREATE_POST_MUTATION, {
-    update: (cache, { data }) => {
-      const createdPost = data?.createPost
-      if (!createdPost) return
-
-      const authStore = useAuthStore()
-      const currentUser = authStore.currentUser
-
-      const firstName = postData.value.isAnonymous
-        ? (t('post.anonymousUser') || 'Anonim')
-        : ((currentUser as any)?.firstName || currentUser?.name?.split(' ')[0] || '')
-
-      const lastName = postData.value.isAnonymous
-        ? ''
-        : ((currentUser as any)?.lastName || currentUser?.name?.split(' ').slice(1).join(' ') || '')
-
-      const authorData = {
-        __typename: 'User',
-        id: String(currentUser?.id || authStore.currentUserId),
-        firstName,
-        lastName,
-        avatarId: postData.value.isAnonymous
-          ? '/img/anonymous-avatar.png'
-          : (currentUser?.avatar || (currentUser as any)?.avatarId || '/default-avatar.png'),
-      }
-
-      const newPostWithAuthor = {
-        ...createdPost,
-        author: authorData,
-        targetId: postData.value.targetId || null,
-        targetType: postData.value.targetType || null,
-        visibility: postData.value.privacy || 'PUBLIC',
-        allowedUserIds: [],
-        reactions: (createdPost.reactions || []).map((r: any) => ({
-          ...r,
-          users: []
-        }))
-      }
-
-      cache.modify({
-        fields: {
-          getFeed(existingFeedRefs = [], { readField }) {
-            const newPostRef = cache.writeFragment({
-              data: newPostWithAuthor,
-              fragment: gql`
-                fragment NewFeedPost on Post {
-                  id
-                  authorId
-                  author {
-                    id
-                    firstName
-                    lastName
-                    avatarId
-                  }
-                  content
-                  date
-                  timestamp
-                  isAnonymous
-                  targetId
-                  targetType
-                  commentCount
-                  shareCount
-                  visibility
-                  allowedUserIds
-                  reactions {
-                    reactionType
-                    userIds
-                    users {
-                      id
-                      firstName
-                      lastName
-                    }
-                  }
-                }
-              `
-            })
-
-            if (existingFeedRefs.some((ref: any) => readField('id', ref) === createdPost.id)) {
-              return existingFeedRefs
-            }
-
-            return [newPostRef, ...existingFeedRefs]
-          }
-        }
-      })
-    }
-  })
-
   async function publishPost() {
     uiState.value.isSubmitting = true // <-- DODANE: Włączenie loadera
 
@@ -466,41 +378,127 @@ export const useCreatePostStore = defineStore('createPost', () => {
       : []
 
     try {
-      const result = await createPost({
-        input: {
-          content: postData.value.content,
-          authorId,
-          media: isSharing ? [] : mediaList,
-          isAnonymous: !!postData.value.isAnonymous,
-          targetId: isSharing ? originalPost!.id : (postData.value.targetId || undefined),
-          targetType: isSharing ? 'post' : (postData.value.targetType || undefined),
-          visibility: postData.value.privacy || 'PUBLIC',
-          allowedUserIds: [],
-          taggedUsersIds,
-          context: postData.value.feeling || postData.value.location || postData.value.poll ? {
-            feeling: postData.value.feeling ? {
-              emoji: postData.value.feeling.emoji,
-              label: postData.value.feeling.label,
+      const client = getApolloClient()
+      const result = await client.mutate({
+        mutation: CREATE_POST_MUTATION,
+        variables: {
+          input: {
+            content: postData.value.content,
+            authorId,
+            media: isSharing ? [] : mediaList,
+            isAnonymous: !!postData.value.isAnonymous,
+            targetId: isSharing ? originalPost!.id : (postData.value.targetId || undefined),
+            targetType: isSharing ? 'post' : (postData.value.targetType || undefined),
+            visibility: postData.value.privacy || 'PUBLIC',
+            allowedUserIds: [],
+            taggedUsersIds,
+            context: postData.value.feeling || postData.value.location || postData.value.poll ? {
+              feeling: postData.value.feeling ? {
+                emoji: postData.value.feeling.emoji,
+                label: postData.value.feeling.label,
+              } : null,
+              location: postData.value.location ? {
+                title: postData.value.location.title,
+                subtitle: postData.value.location.subtitle || '',
+                type: postData.value.location.type || '',
+                lat: postData.value.location.lat || '',
+                lon: postData.value.location.lon || '',
+              } : null,
+              poll: postData.value.poll ? {
+                question: postData.value.poll.question || postData.value.content,
+                options: postData.value.poll.options
+                  .filter(opt => opt.text.trim().length > 0)
+                  .map((opt, idx) => ({
+                    id: `opt_${Date.now()}_${idx}`,
+                    text: opt.text,
+                    votes: []
+                  }))
+              } : null,
             } : null,
-            location: postData.value.location ? {
-              title: postData.value.location.title,
-              subtitle: postData.value.location.subtitle || '',
-              type: postData.value.location.type || '',
-              lat: postData.value.location.lat || '',
-              lon: postData.value.location.lon || '',
-            } : null,
-            poll: postData.value.poll ? {
-              question: postData.value.poll.question || postData.value.content,
-              options: postData.value.poll.options
-                .filter(opt => opt.text.trim().length > 0)
-                .map((opt, idx) => ({
-                  id: `opt_${Date.now()}_${idx}`,
-                  text: opt.text,
-                  votes: []
-                }))
-            } : null,
-          } : null,
-          scheduledPublishTime: postData.value.scheduledPublishTime || undefined,
+            scheduledPublishTime: postData.value.scheduledPublishTime || undefined,
+          }
+        },
+        update: (cache, { data }) => {
+          const createdPost = data?.createPost
+          if (!createdPost) return
+
+          const firstName = postData.value.isAnonymous
+            ? (t('post.anonymousUser') || 'Anonim')
+            : ((currentUser as any)?.firstName || currentUser?.name?.split(' ')[0] || '')
+
+          const lastName = postData.value.isAnonymous
+            ? ''
+            : ((currentUser as any)?.lastName || currentUser?.name?.split(' ').slice(1).join(' ') || '')
+
+          const authorData = {
+            __typename: 'User',
+            id: String(currentUser?.id || authStore.currentUserId),
+            firstName,
+            lastName,
+            avatarId: postData.value.isAnonymous
+              ? '/img/anonymous-avatar.png'
+              : (currentUser?.avatar || (currentUser as any)?.avatarId || '/default-avatar.png'),
+          }
+
+          const newPostWithAuthor = {
+            ...createdPost,
+            author: authorData,
+            targetId: postData.value.targetId || null,
+            targetType: postData.value.targetType || null,
+            visibility: postData.value.privacy || 'PUBLIC',
+            allowedUserIds: [],
+            reactions: (createdPost.reactions || []).map((r: any) => ({
+              ...r,
+              users: []
+            }))
+          }
+
+          cache.modify({
+            fields: {
+              getFeed(existingFeedRefs = [], { readField }) {
+                const newPostRef = cache.writeFragment({
+                  data: newPostWithAuthor,
+                  fragment: gql`
+                    fragment NewFeedPost on Post {
+                      id
+                      authorId
+                      author {
+                        id
+                        firstName
+                        lastName
+                        avatarId
+                      }
+                      content
+                      date
+                      timestamp
+                      isAnonymous
+                      targetId
+                      targetType
+                      commentCount
+                      shareCount
+                      visibility
+                      allowedUserIds
+                      reactions {
+                        reactionType
+                        userIds
+                        users {
+                          id
+                          firstName
+                          lastName
+                        }
+                      }
+                    }
+                  `
+                })
+
+                if (existingFeedRefs.some((ref: any) => readField('id', ref) === createdPost.id)) {
+                  return existingFeedRefs
+                }
+
+                return [newPostRef, ...existingFeedRefs]
+              }
+            }
+          })
         }
       })
 

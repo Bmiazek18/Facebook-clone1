@@ -1,8 +1,8 @@
 import { ref, watch } from 'vue'
 import type { Ref } from 'vue'
-import { useApolloClient } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
 import type { User } from '@/utils/users'
+import { getApolloClient } from '@/utils/apollo'
 
 export function useUserSearch(searchTerm: Ref<string>) {
   const matchingUsers = ref<User[]>([])
@@ -18,9 +18,10 @@ export function useUserSearch(searchTerm: Ref<string>) {
 
       isLoading.value = true
       try {
-        const apolloClient = useApolloClient().resolveClient()
+        const apolloClient = getApolloClient()
         const res = await apolloClient.query({
           query: gql`
+            query SearchUsers($query: String!) {
               searchUsers(query: $query) {
                 id
                 firstName
