@@ -274,7 +274,22 @@ export const useCreatePostStore = defineStore('createPost', () => {
   })
 
   async function publishPost() {
-    uiState.value.isSubmitting = true // <-- DODANE: Włączenie loadera
+    uiState.value.isSubmitting = true
+
+    // Wait for any in-flight TUS uploads to complete
+    const hasBlobImages = postData.value.images.some(img => !img.serverPath && img.url.startsWith('blob:'))
+    if (hasBlobImages) {
+      console.log('Waiting for TUS uploads to finish before publishing post...')
+      const maxWaitMs = 60000
+      const startTime = Date.now()
+      while (postData.value.images.some(img => !img.serverPath && img.url.startsWith('blob:'))) {
+        if (Date.now() - startTime > maxWaitMs) {
+          uiState.value.isSubmitting = false
+          throw new Error('Przesyłanie plików przekroczyło limit czasu. Spróbuj ponownie.')
+        }
+        await new Promise(resolve => setTimeout(resolve, 300))
+      }
+    }
 
     const authStore = useAuthStore()
     const postsStore = usePostsStore()
