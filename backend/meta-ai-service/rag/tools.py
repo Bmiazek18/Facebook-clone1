@@ -131,13 +131,26 @@ def generate_and_save_chart(title: str, type: str, labels: list, values: list, d
         filename = f"chart_{hashlib.md5(title.encode()).hexdigest()[:8]}.png"
         file_path = os.path.join(CHARTS_DIR, filename)
 
+        # 1. Zapisz do pamięci (BytesIO) dla MinIO
+        import io
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', dpi=150, transparent=True)
         plt.savefig(file_path, dpi=150, transparent=True)
         plt.close()
+        buf.seek(0)
+        image_bytes = buf.getvalue()
+
+        # 2. Upload do MinIO (bucket generated-charts)
+        try:
+            from rag.minio_client import upload_chart_to_minio
+            upload_chart_to_minio(filename, image_bytes)
+        except Exception as minio_err:
+            print(f"[MinIO] Ostrzeżenie: Nie udało się zapisać wykresu w MinIO: {minio_err}")
 
         if TOOL_EXECUTIONS_TOTAL:
             TOOL_EXECUTIONS_TOTAL.labels(tool_name="generate_and_save_chart", status="success").inc()
 
-        return f"__CHART_FILE__:{file_path}__"
+        return f"__CHART_FILE__:{filename}__"
     except Exception as e:
         plt.close()
         if TOOL_EXECUTIONS_TOTAL:

@@ -261,11 +261,25 @@ app.add_middleware(
 # Inicjalizacja Prometheus & OpenTelemetry
 setup_observability(app)
 
-# --- SERWOWANIE PLIKÓW STATYCZNYCH ---
+# --- SERWOWANIE WYKRESÓW Z MINIO I LOKALNEGO CACHE ---
 if not os.path.exists(CHARTS_DIR):
     os.makedirs(CHARTS_DIR)
 
-app.mount("/generated_charts", StaticFiles(directory=CHARTS_DIR), name="generated_charts")
+@app.get("/generated_charts/{filename}")
+@app.get("/api/generated_charts/{filename}")
+async def get_generated_chart(filename: str):
+    local_path = os.path.join(CHARTS_DIR, filename)
+    if os.path.exists(local_path):
+        return FileResponse(local_path, media_type="image/png")
+    try:
+        from rag.minio_client import get_chart_from_minio
+        resp = get_chart_from_minio(filename)
+        data = resp.read()
+        resp.close()
+        resp.release_conn()
+        return Response(content=data, media_type="image/png")
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"Chart '{filename}' not found in MinIO: {e}")
 
 
 # --- ENDPOINT: LISTA WĄTKÓW CZATU ---
@@ -428,23 +442,12 @@ async def process_chat(request: Request):
 
                     if match:
                         full_tag = match.group(0)
-                        file_path = match.group(1)
-                        try:
-                            if os.path.exists(file_path):
-                                filename = os.path.basename(file_path)
-                                img_url = f"/generated_charts/{filename}"
-                                img_md = f"\n![Wykres]({img_url})\n"
-                                rendered = text_chunk.replace(full_tag, img_md)
-                                full_response_chunks.append(rendered)
-                                yield rendered
-                            else:
-                                err_msg = "[Błąd: Plik wykresu nie został znaleziony]"
-                                full_response_chunks.append(err_msg)
-                                yield text_chunk.replace(full_tag, err_msg)
-                        except Exception as img_err:
-                            err_msg = f"[Błąd obrazu: {str(img_err)}]"
-                            full_response_chunks.append(err_msg)
-                            yield text_chunk.replace(full_tag, err_msg)
+                        filename = os.path.basename(match.group(1))
+                        img_url = f"/api/generated_charts/{filename}"
+                        img_md = f"\n![Wykres]({img_url})\n"
+                        rendered = text_chunk.replace(full_tag, img_md)
+                        full_response_chunks.append(rendered)
+                        yield rendered
                     else:
                         full_response_chunks.append(text_chunk)
                         yield text_chunk
