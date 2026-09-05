@@ -420,7 +420,7 @@ export const feedApi = {
       `,
       {
         currentUserId: String(currentUserId),
-        hashtag: hashtag || null
+        hashtag: hashtag ? String(hashtag).replace(/^#/, '') : null
       },
       { fetchPolicy: 'network-only' }
     )

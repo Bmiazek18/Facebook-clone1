@@ -1,0 +1,20 @@
+# =========================================================================
+# Enterprise Remote State Backend (MinIO / AWS S3 / Ceph)
+# =========================================================================
+# Aby włączyć zdalny stan Terraform z blokadą (State Locking):
+# 1. Skopiuj ten plik jako backend.tf: cp backend.tf.example backend.tf
+# 2. Utwórz bucket "terraform-state" w MinIO na Proxmoxie
+# 3. Uruchom: terraform init -migrate-state
+
+terraform {
+  backend "s3" {
+    bucket                      = "terraform-state"
+    key                         = "homelab/k3s-platform.tfstate"
+    region                      = "main"
+    endpoint                    = "http://192.168.0.200:9000" # Adres instancji MinIO
+    skip_credentials_validation = true
+    skip_metadata_api_check     = true
+    skip_region_validation      = true
+    force_path_style            = true
+  }
+}

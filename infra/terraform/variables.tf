@@ -121,3 +121,9 @@ variable "proxmox_host_ip" {
   type        = string
   default     = ""
 }
+
+variable "auto_run_ansible" {
+  description = "Flaga uruchamiania Ansible bezpośrednio z poziomu Terraform (local-exec). W CI/CD zalecane false."
+  type        = bool
+  default     = false
+}

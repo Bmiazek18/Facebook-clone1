@@ -1,0 +1,201 @@
+name: Infrastructure CI/CD Pipeline
+
+on:
+  push:
+    paths:
+      - 'infra/**'
+    branches:
+      - main
+  pull_request:
+    paths:
+      - 'infra/**'
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      terraform_action:
+        description: 'Terraform Action (plan or apply)'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+      skip_ansible:
+        description: 'Skip Ansible configuration step'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: infra-deploy
+  cancel-in-progress: false
+
+jobs:
+  # ========================================================
+  # STAGE 1: Linting, Security & Syntax Validation
+  # ========================================================
+  validate:
+    name: Lint & Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.x"
+
+      - name: Check Terraform Formatting
+        run: |
+          cd infra/terraform
+          terraform fmt -check
+
+      - name: Initialize & Validate Terraform
+        run: |
+          cd infra/terraform
+          terraform init -backend=false
+          terraform validate
+
+      - name: Setup Python for Ansible
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+
+      - name: Install Ansible & Linting Tools
+        run: |
+          pip install ansible-core ansible-lint
+
+      - name: Ansible Syntax Check
+        run: |
+          cd infra/ansible
+          ansible-playbook -i inventory.ini.example playbook.yml --syntax-check
+
+  # ========================================================
+  # STAGE 2: Terraform Plan & Provisioning
+  # ========================================================
+  terraform:
+    name: Terraform Provisioning
+    needs: validate
+    runs-on: [self-hosted, linux] # Runs inside homelab network (or runner with VPN/Tailscale access)
+    outputs:
+      container_ip: ${{ steps.tf_outputs.outputs.container_ip }}
+      proxmox_host_ip: ${{ steps.tf_outputs.outputs.proxmox_host_ip }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.x"
+
+      - name: Terraform Init
+        run: |
+          cd infra/terraform
+          terraform init
+
+      - name: Terraform Plan
+        if: ${{ github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.terraform_action == 'plan') }}
+        run: |
+          cd infra/terraform
+          terraform plan \
+            -var "proxmox_password=${{ secrets.PROXMOX_PASSWORD }}" \
+            -var "container_root_password=${{ secrets.CONTAINER_ROOT_PASSWORD }}" \
+            -var "cloudflare_tunnel_token=${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}" \
+            -var "github_repo_username=${{ secrets.GH_REPO_USERNAME }}" \
+            -var "github_repo_password=${{ secrets.GH_REPO_PASSWORD }}"
+
+      - name: Terraform Apply
+        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.terraform_action == 'apply') }}
+        run: |
+          cd infra/terraform
+          terraform apply -auto-approve \
+            -var "proxmox_password=${{ secrets.PROXMOX_PASSWORD }}" \
+            -var "container_root_password=${{ secrets.CONTAINER_ROOT_PASSWORD }}" \
+            -var "cloudflare_tunnel_token=${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}" \
+            -var "github_repo_username=${{ secrets.GH_REPO_USERNAME }}" \
+            -var "github_repo_password=${{ secrets.GH_REPO_PASSWORD }}"
+
+      - name: Extract Terraform Outputs
+        id: tf_outputs
+        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.terraform_action == 'apply') }}
+        run: |
+          cd infra/terraform
+          C_IP=$(terraform output -raw container_ip 2>/dev/null || echo "")
+          P_IP=$(terraform output -raw proxmox_host_ip 2>/dev/null || echo "")
+          echo "container_ip=$C_IP" >> "$GITHUB_OUTPUT"
+          echo "proxmox_host_ip=$P_IP" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Generated Inventory Artifact
+        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.terraform_action == 'apply') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ansible-inventory
+          path: infra/ansible/inventory.ini
+
+  # ========================================================
+  # STAGE 3: Ansible OS Configuration & K3s Setup
+  # ========================================================
+  ansible:
+    name: Ansible Configuration
+    needs: terraform
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.terraform_action == 'apply' && inputs.skip_ansible != true) }}
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Inventory Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ansible-inventory
+          path: infra/ansible
+
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Wait for SSH Availability
+        run: |
+          HOST="${{ needs.terraform.outputs.container_ip }}"
+          if [ -n "$HOST" ]; then
+            echo "Waiting for SSH on $HOST:22 ..."
+            for i in {1..30}; do
+              if nc -z -w 2 "$HOST" 22 2>/dev/null; then
+                echo "SSH port 22 is open on $HOST"
+                break
+              fi
+              sleep 2
+            done
+          fi
+
+      - name: Run Ansible Playbook
+        run: |
+          cd infra/ansible
+          ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.ini playbook.yml \
+            -e "cloudflare_tunnel_token=${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}" \
+            -e "github_repo_username=${{ secrets.GH_REPO_USERNAME }}" \
+            -e "github_repo_password=${{ secrets.GH_REPO_PASSWORD }}"
+
+  # ========================================================
+  # STAGE 4: Health Check & GitOps Verification
+  # ========================================================
+  verify-cluster:
+    name: Verify Cluster & GitOps
+    needs: ansible
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.terraform_action == 'apply') }}
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: Verify K3s Node Status
+        run: |
+          kubectl get nodes -o wide
+          kubectl get pods -n kube-system
+
+      - name: Verify ArgoCD Platform Applications
+        run: |
+          kubectl get applications -n argocd
