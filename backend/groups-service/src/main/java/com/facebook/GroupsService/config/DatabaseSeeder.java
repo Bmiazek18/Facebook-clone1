@@ -149,10 +149,11 @@ public class DatabaseSeeder implements CommandLineRunner {
             java.util.UUID.nameUUIDFromBytes("testuser1".getBytes()).toString()
         );
 
-        List<String> allGroupIds = List.of(
+        java.util.Set<String> allGroupIds = new java.util.HashSet<>(List.of(
             GROUP_FRONTEND_ID, GROUP_VUE_ID, GROUP_TAILWIND_ID, GROUP_KOLEGIUM_SEDZIOW_ID, GROUP_TANIE_LOTY_ID,
             "1", "2", "3", "4", "5"
-        );
+        ));
+        groupRepository.findAll().forEach(g -> allGroupIds.add(g.getId()));
 
         for (String adminId : adminUserIds) {
             for (String gId : allGroupIds) {
