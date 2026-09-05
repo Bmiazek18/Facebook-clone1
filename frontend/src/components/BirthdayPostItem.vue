@@ -6,7 +6,7 @@
         v-for="comment in (post.comments || [])"
         :key="comment.id"
         :comment="comment"
-        :postAvatarSrc="currentUserAvatar"
+        :postAutor="post.author?.name || ''"
         :depth="0"
         :postId="post.id"
         @react="handleCommentReaction"
@@ -24,7 +24,7 @@
       @close="closeLinkModal"
       v-if="isLinkModalVisible"
     >
-      <LinkModal :targetUrl="linkModalData" />
+      <LinkModal :targetUrl="linkModalData || ''" />
     </BaseModal>
   </div>
 </template>
@@ -34,7 +34,8 @@ import CommentItem from '@/components/feed/comment/CommentItem.vue'
 import type { Post } from '@/types/Post'
 import CommentReplyInput from '@/components/feed/comment/CommentReplyInput.vue'
 import { computed } from 'vue'
-import { usePostsStore } from '@/composables/feed/useAppState'
+import { usePostsStore } from '@/stores/posts'
+import { useAuthStore } from '@/stores/auth'
 import { useCommentsStore } from '@/stores/comments'
 import { getUserById } from '@/utils/users'
 import { useLinkModal } from '@/composables/ui/useLinkModal'
@@ -52,28 +53,25 @@ const props = withDefaults(
 )
 
 const postsStore = usePostsStore()
+const authStore = useAuthStore()
 const commentsStore = useCommentsStore()
 const { isLinkModalVisible, linkModalData, showLinkModal, closeLinkModal } = useLinkModal()
+
+const currentUserAvatar = computed(() => authStore.currentUser?.avatar || '/default-avatar.png')
 
 const handleCommentReaction = (event: {
   commentId: string
   reaction: string | null
   oldReaction: string | null
 }) => {
-  if (!props.post?.id) return
-  postsStore.handleCommentReaction(
-    props.post.id,
-    event.commentId,
-    event.reaction,
-    event.oldReaction,
-  )
+  // Comment reactions are handled inside CommentItem composable
 }
 
 const handleCommentReply = (event: { author: { id: number; name: string }; commentId: string }) => {
-  if (commentsStore.activeReplyInput === event.commentId) {
+  if (commentsStore.activeReplyInput === Number(event.commentId)) {
     commentsStore.clearReplyingTo()
   } else {
-    commentsStore.setReplyingTo(event.author, event.commentId)
+    commentsStore.setReplyingTo(event.author, Number(event.commentId))
   }
 }
 

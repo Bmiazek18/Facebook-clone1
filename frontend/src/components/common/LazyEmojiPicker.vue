@@ -2,7 +2,6 @@
 import { ref, onMounted, shallowRef, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseModal from './BaseModal.vue'
-import { Emoji } from 'emoji-mart-vue-fast/src'
 
 const { t } = useI18n()
 const showModal = ref(false)
@@ -19,10 +18,10 @@ const emit = defineEmits<{
 }>()
 
 // --- REAKTYWNOŚĆ: LOKALNA KOPIA ---
-// To pozwala na natychmiastową zmianę ikon bez błędów propsów
 const localReactions = ref<string[]>(props.customReactions ? [...props.customReactions] : [])
 
 const Picker = shallowRef<any>(null)
+const EmojiComponent = shallowRef<any>(null)
 const emojiIndex = shallowRef<any>(null)
 const isLoaded = ref(false)
 
@@ -33,13 +32,15 @@ const activeIndex = ref<number>(0)
 const selectedNative = ref<string | null>(null)
 
 onMounted(async () => {
-  const [{ Picker: PickerComponent, EmojiIndex }, { default: data }] = await Promise.all([
+  const [emojiMart, { default: data }] = await Promise.all([
     import('emoji-mart-vue-fast/src'),
     import('emoji-mart-vue-fast/data/all.json'),
   ])
 
+  const { Picker: PickerComp, EmojiIndex, Emoji: EmojiComp } = emojiMart as any
   emojiIndex.value = new EmojiIndex(data)
-  Picker.value = PickerComponent
+  Picker.value = PickerComp
+  EmojiComponent.value = EmojiComp
   isLoaded.value = true
 })
 
@@ -165,7 +166,8 @@ watch(isLoaded, async (loaded) => {
           </button>
         </div>
         <div class="reactions-list">
-          <Emoji
+          <component
+            :is="EmojiComponent"
             v-for="emoji in props.customReactions.slice(0, 6)"
             :key="emoji"
             :data="emojiIndex"
@@ -195,7 +197,14 @@ watch(isLoaded, async (loaded) => {
             :class="{ 'is-active': activeIndex === index }"
             @click="selectEditSlot(emoji, index)"
           >
-            <Emoji v-if="emojiIndex" :data="emojiIndex" :emoji="emoji" set="facebook" :size="32" />
+            <component
+              :is="EmojiComponent"
+              v-if="emojiIndex && EmojiComponent"
+              :data="emojiIndex"
+              :emoji="emoji"
+              set="facebook"
+              :size="32"
+            />
           </div>
         </div>
         <p class="text-[14px] text-gray-500 mt-4 text-center">

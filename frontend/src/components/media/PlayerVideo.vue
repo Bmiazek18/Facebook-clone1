@@ -212,7 +212,7 @@ import Cog from 'vue-material-design-icons/Cog.vue'
 import ChevronRight from 'vue-material-design-icons/ChevronRight.vue'
 import ChevronLeft from 'vue-material-design-icons/ChevronLeft.vue'
 import Speedometer from 'vue-material-design-icons/Speedometer.vue'
-import Tune from 'vue-material-design-icons/Tune.vue'
+import { useIntersectionObserver } from '@vueuse/core'
 import { useImpressionTracker } from '@/composables/analytics/useImpressionTracker'
 
 const config = useRuntimeConfig()
@@ -495,11 +495,30 @@ function toggleFullscreen(): void {
   }
 }
 
+let stopObserver: (() => void) | null = null
+
 onMounted(() => {
   initVideoPlayer()
+
+  if (video.value && !isLightbox) {
+    const { stop } = useIntersectionObserver(
+      video,
+      ([{ isIntersecting }]) => {
+        if (!isIntersecting && video.value && !video.value.paused) {
+          video.value.pause()
+        }
+      },
+      { threshold: 0.25 }
+    )
+    stopObserver = stop
+  }
 })
 
 onUnmounted(() => {
+  if (stopObserver) {
+    stopObserver()
+    stopObserver = null
+  }
   if (hlsInstance) {
     hlsInstance.destroy()
   }

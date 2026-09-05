@@ -5,8 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
-import lottie from 'lottie-web'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 
 const props = defineProps({
   animationData: { type: Object, required: true },
@@ -14,31 +13,48 @@ const props = defineProps({
   loop: { type: Boolean, default: false },
 })
 
-const container = ref(null)
+const container = ref<HTMLElement | null>(null)
 let anim: any = null
 
-onMounted(() => {
+onMounted(async () => {
+  if (!container.value) return
+  const lottieModule = await import('lottie-web')
+  const lottie = lottieModule.default || lottieModule
+  if (!container.value) return
+
   anim = lottie.loadAnimation({
-    container: container.value!,
+    container: container.value,
     renderer: 'svg',
     autoplay: true,
     animationData: props.animationData,
     rendererSettings: {
       progressiveLoad: true,
       hideOnTransparent: true,
-      preserveAspectRatio: 'xMidYMid meet', // Zapobiega rozciąganiu
+      preserveAspectRatio: 'xMidYMid meet',
     },
   })
 })
 
-// Restart animacji przy każdej zmianie (np. gdy użytkownik ponownie kliknie)
+onUnmounted(() => {
+  if (anim) {
+    anim.destroy()
+    anim = null
+  }
+})
+
+// Restart animacji przy każdej zmianie
 watch(
   () => props.animationData,
-  () => {
+  async () => {
+    if (!container.value) return
+    const lottieModule = await import('lottie-web')
+    const lottie = lottieModule.default || lottieModule
     if (anim) {
       anim.destroy()
+    }
+    if (container.value) {
       anim = lottie.loadAnimation({
-        container: container.value!,
+        container: container.value,
         renderer: 'svg',
         loop: props.loop,
         autoplay: true,
