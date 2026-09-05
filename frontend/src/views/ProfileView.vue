@@ -293,21 +293,33 @@ const friendsList = ref<any[]>([])
 const fetchProfileFriends = async () => {
   const userId = String(userIdParam.value || auth.currentUserId)
   const currentUserId = String(auth.currentUser?.id || auth.currentUserId || '1')
-  const response = await fetch('http://localhost:8080/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      query: `query ProfileFriends($userId: ID!, $currentUserId: ID!) { getFriends(userId: $userId) { id firstName lastName avatarId mutualFriendsCount(currentUserId: $currentUserId) } }`,
+  try {
+    const apolloClient = useApolloClient().resolveClient()
+    const { data } = await apolloClient.query({
+      query: gql`
+        query ProfileFriends($userId: ID!, $currentUserId: ID!) {
+          getFriends(userId: $userId) {
+            id
+            firstName
+            lastName
+            avatar
+            avatarId
+            mutualFriendsCount(currentUserId: $currentUserId)
+          }
+        }
+      `,
       variables: { userId, currentUserId },
-    }),
-  })
-  const result = await response.json()
-  friendsList.value = (result.data?.getFriends || []).map((friend: any) => ({
-    id: friend.id,
-    name: `${friend.firstName} ${friend.lastName}`,
-    avatar: `http://localhost:8080/api/users/avatar/${friend.avatarId || 'default-avatar.svg'}`,
-    mutualFriendsCount: friend.mutualFriendsCount,
-  }))
+      fetchPolicy: 'network-only',
+    })
+    friendsList.value = (data?.getFriends || []).map((friend: any) => ({
+      id: friend.id,
+      name: `${friend.firstName} ${friend.lastName}`,
+      avatar: friend.avatar || (friend.avatarId ? `/api/users/avatar/${friend.avatarId}` : '/default-avatar.png'),
+      mutualFriendsCount: friend.mutualFriendsCount,
+    }))
+  } catch (err) {
+    console.warn('Failed to fetch profile friends:', err)
+  }
 }
 
 const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109]

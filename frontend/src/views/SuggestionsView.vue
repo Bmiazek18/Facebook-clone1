@@ -85,6 +85,8 @@ import FriendCard from '../components/friends/PeopleYouMayKnowCard.vue'
 import { useNotify } from '@/composables/shared/useNotify'
 import { useAuthStore } from '@/stores/auth'
 import { getAllUsers } from '@/utils/users'
+import { useApolloClient } from '@vue/apollo-composable'
+import { gql } from 'graphql-tag'
 import type { Person } from '@/types/Person'
 
 const { t } = useI18n()
@@ -124,38 +126,29 @@ const loadMockSuggestions = () => {
 const fetchSuggestions = async () => {
   isLoading.value = true
   try {
-    const response = await fetch(config.public.apiUrl + '/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: `
-          query GetFriendSuggestions($currentUserId: ID!) {
-            getFriendSuggestions(currentUserId: $currentUserId) {
-              userId
-              mutualFriendsCount
-              user {
-                id
-                firstName
-                lastName
-                avatarId
-              }
+    const apolloClient = useApolloClient().resolveClient()
+    const { data } = await apolloClient.query({
+      query: gql`
+        query GetFriendSuggestions($currentUserId: ID!) {
+          getFriendSuggestions(currentUserId: $currentUserId) {
+            userId
+            mutualFriendsCount
+            user {
+              id
+              firstName
+              lastName
+              avatarId
             }
           }
-        `,
-        variables: {
-          currentUserId: String(currentUserId.value),
-        },
-      }),
+        }
+      `,
+      variables: {
+        currentUserId: String(currentUserId.value),
+      },
+      fetchPolicy: 'network-only',
     })
 
-    const resJson = await response.json()
-    if (resJson.errors && resJson.errors.length > 0) {
-      throw new Error(resJson.errors[0].message)
-    }
-
-    const suggestions = resJson.data?.getFriendSuggestions || []
+    const suggestions = data?.getFriendSuggestions || []
     if (suggestions.length === 0) {
       people.value = []
     } else {
@@ -190,34 +183,24 @@ const handleAddFriend = async (id: string | number) => {
   console.log('Adding friend:', id)
   try {
     if (isBackendMode.value) {
-      const response = await fetch('http://localhost:8080/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: `
-            mutation SendFriendRequest($senderId: ID!, $receiverId: ID!) {
-              sendFriendRequest(senderId: $senderId, receiverId: $receiverId) {
-                success
-                message
-              }
+      const apolloClient = useApolloClient().resolveClient()
+      const { data } = await apolloClient.mutate({
+        mutation: gql`
+          mutation SendFriendRequest($senderId: ID!, $receiverId: ID!) {
+            sendFriendRequest(senderId: $senderId, receiverId: $receiverId) {
+              success
+              message
             }
-          `,
-          variables: {
-            senderId: String(currentUserId.value),
-            receiverId: String(id),
-          },
-        }),
+          }
+        `,
+        variables: {
+          senderId: String(currentUserId.value),
+          receiverId: String(id),
+        },
       })
 
-      const resJson = await response.json()
-      if (resJson.errors && resJson.errors.length > 0) {
-        throw new Error(resJson.errors[0].message)
-      }
-
-      const success = resJson.data?.sendFriendRequest?.success
-      const message = resJson.data?.sendFriendRequest?.message
+      const success = (data as any)?.sendFriendRequest?.success
+      const message = (data as any)?.sendFriendRequest?.message
 
       if (!success) {
         throw new Error(message || 'Failed to send friend request')

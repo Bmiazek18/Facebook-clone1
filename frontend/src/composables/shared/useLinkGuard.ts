@@ -3,7 +3,7 @@ import { useEventListener } from '@vueuse/core'
 
 export function useLinkGuard() {
   const isVerifying = ref(false)
-  const GRAPHQL_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/linkguard/graphql`
+  const GRAPHQL_URL = '/api/linkguard/graphql'
 
   const SAFE_DOMAINS = new Set([
     "google.com", "facebook.com", "github.com", "youtube.com", "wikipedia.org",

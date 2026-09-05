@@ -14,9 +14,11 @@ import SellerModal from '@/components/marketplace/SellerModal.vue'
 import CustomInput from '@/components/common/CustomInput.vue'
 import CustomTextarea from '@/components/common/CustomTextarea.vue'
 import CustomDropdown from '@/components/common/CustomDropdown.vue'
-import MediaLightbox from '@/components/chat/messageBox/MediaLightbox.vue'
 import { useAuthStore } from '@/stores/auth'
 import AppCloseHeader from '@/layouts/AppCloseHeader.vue'
+import { useApolloClient } from '@vue/apollo-composable'
+import { gql } from 'graphql-tag'
+import { useRouter } from 'nuxt/app'
 
 // --- TYPY ---
 
@@ -153,37 +155,27 @@ const publishListing = async () => {
 
     let mappedCategory = form.category || 'tools'
 
-    const response = await fetch('http://localhost:8080/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: `
-          mutation CreateListing($input: CreateListingInput!) {
-            createListing(input: $input) {
-              id
-            }
+    const apolloClient = useApolloClient().resolveClient()
+    await apolloClient.mutate({
+      mutation: gql`
+        mutation CreateListing($input: CreateListingInput!) {
+          createListing(input: $input) {
+            id
           }
-        `,
-        variables: {
-          input: {
-            title: form.title,
-            price: parseFloat(form.price) || 0.0,
-            category: mappedCategory.toUpperCase(),
-            condition: mappedCondition,
-            description: form.description || '',
-            latitude: 52.0689,
-            longitude: 19.3824,
-          },
+        }
+      `,
+      variables: {
+        input: {
+          title: form.title,
+          price: parseFloat(form.price) || 0.0,
+          category: mappedCategory.toUpperCase(),
+          condition: mappedCondition,
+          description: form.description || '',
+          latitude: 52.0689,
+          longitude: 19.3824,
         },
-      }),
+      },
     })
-
-    const resJson = await response.json()
-    if (resJson.errors && resJson.errors.length > 0) {
-      throw new Error(resJson.errors[0].message)
-    }
 
     router.push('/marketplace')
   } catch (err) {

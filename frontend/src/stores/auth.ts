@@ -193,7 +193,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     // Request signed Page Access Token from backend (Token Exchange)
     try {
-      const res: any = await fetch(`http://localhost:8080/api/pages/${pageId}/token`, {
+      const res: any = await fetch(`/api/pages/${pageId}/token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -228,7 +228,7 @@ export const useAuthStore = defineStore('auth', () => {
   const fetchUserPages = async () => {
     if (!originalUserId.value || originalUserId.value === '0') return
     try {
-      const res = await fetch(`http://localhost:8080/api/users/${originalUserId.value}/pages`, {
+      const res = await fetch(`/api/users/${originalUserId.value}/pages`, {
         headers: {
           'X-User-Id': originalUserId.value,
         }
@@ -241,7 +241,7 @@ export const useAuthStore = defineStore('auth', () => {
           // If acting as page, ensure token is loaded from Redis if missing
           if (isActingAsPage.value && activePageId.value && !activePageToken.value) {
             try {
-              const activeRes: any = await fetch(`http://localhost:8080/api/pages/active-token`, {
+              const activeRes: any = await fetch(`/api/pages/active-token`, {
                 headers: { 'X-User-Id': originalUserId.value }
               }).then(r => r.json())
               if (activeRes?.active && activeRes.accessToken) {
@@ -267,7 +267,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     // Clear active page session in Redis on backend
     try {
-      await fetch(`http://localhost:8080/api/pages/active-token`, {
+      await fetch(`/api/pages/active-token`, {
         method: 'DELETE',
         headers: {
           'X-User-Id': originalUserId.value,

@@ -62,7 +62,7 @@ const loadExistingChat = async (threadId: string) => {
   currentThreadId.value = threadId
   
   try {
-    const response = await fetch(`http://localhost:8000/chat-history/${threadId}`)
+    const response = await fetch(`/api/chat-history/${threadId}`)
     if (response.ok) {
       const data = await response.json()
       
@@ -216,7 +216,7 @@ const renderSimpleToken = (token: any) => {
   content = content.replace(/\\\(([\s\S]*?)\\\)/g, (m, eq) => latexRenderer(m, eq, false))
   content = content.replace(/\$\.(.*?)\$\$/gs, (m, eq) => latexRenderer(m, eq, true))
 
-  content = content.replace(/\]\(generated_charts\//g, '](http://localhost:8000/generated_charts/')
+  content = content.replace(/\]\(generated_charts\//g, '](/api/generated_charts/')
 
   let html = marked.parse(content, { breaks: true }) as string
   
@@ -265,7 +265,7 @@ const startChat = async (text: string, model: string = 'Flash', images: string[]
   abortController = new AbortController()
   
   try {
-    const response = await fetch('http://localhost:8000/process-chat', {
+    const response = await fetch('/api/process-chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 

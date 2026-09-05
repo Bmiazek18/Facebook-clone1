@@ -8,6 +8,8 @@ import HoverScrollbar from '@/components/common/HoverScrollbar.vue'
 import { useTheme } from '@/composables/shared/useTheme'
 import { useChatStore } from '@/stores/chat'
 import { useAuthStore } from '@/stores/auth'
+import { useApolloClient } from '@vue/apollo-composable'
+import { gql } from 'graphql-tag'
 import SponsoredAds from './SponsoredAds.vue'
 import FriendRequestsWidget from './FriendRequestsWidget.vue'
 
@@ -53,25 +55,22 @@ const fetchActiveStatuses = async () => {
   const contactUserIds = list.map((friend: any) => String(friend.id))
 
   try {
-    const statusResponse = await fetch(config.public.apiUrl + '/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        query: `
-          query GetActiveStatuses($userIds: [ID!]!) {
-            getActiveStatuses(userIds: $userIds) {
-              userId
-              active
-              lastActiveText
-            }
+    const apolloClient = useApolloClient().resolveClient()
+    const { data } = await apolloClient.query({
+      query: gql`
+        query GetActiveStatuses($userIds: [ID!]!) {
+          getActiveStatuses(userIds: $userIds) {
+            userId
+            active
+            lastActiveText
           }
-        `,
-        variables: { userIds: contactUserIds },
-      }),
+        }
+      `,
+      variables: { userIds: contactUserIds },
+      fetchPolicy: 'network-only',
     })
 
-    const statusJson = await statusResponse.json()
-    const statuses = statusJson.data?.getActiveStatuses || []
+    const statuses = data?.getActiveStatuses || []
     const activeStatusMap = new Map<string, boolean>()
     statuses.forEach((s: any) => {
       activeStatusMap.set(String(s.userId), s.active)

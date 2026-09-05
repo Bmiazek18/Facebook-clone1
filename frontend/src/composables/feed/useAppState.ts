@@ -128,7 +128,7 @@ export const useStoriesStore = defineStore('stories', () => {
     return new Promise((resolve, reject) => {
       const file = new File([blob], `story-${Date.now()}.png`, { type: blob.type })
       const upload = new tus.Upload(file, {
-        endpoint: `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/files/`,
+        endpoint: '/files/',
         retryDelays: [0, 3000, 5000, 10000],
         chunkSize: 2 * 1024 * 1024,
         metadata: {

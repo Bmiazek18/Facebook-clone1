@@ -12,7 +12,7 @@ export function useLinkPreview() {
   const linkPreview = ref<LinkPreviewData | null>(null)
   const isLoadingPreview = ref(false)
   const isPreviewDismissed = ref(false) // Zapobiega ponownemu ładowaniu po usunięciu
-  const GRAPHQL_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/linkguard/graphql`
+  const GRAPHQL_URL = '/api/linkguard/graphql'
 
   const fetchLinkMetadata = async (url: string) => {
     // Jeśli już ładujemy, użytkownik zamknął podgląd lub mamy już dane dla tego URL -> stop

@@ -39,7 +39,7 @@ export interface PageInsightsData {
 
 export function usePageAnalytics(targetPageId?: string) {
   const authStore = useAuthStore()
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+  const apiUrl = ''
 
   const effectivePageId = computed(() => {
     return targetPageId || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce'

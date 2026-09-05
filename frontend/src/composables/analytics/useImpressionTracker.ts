@@ -32,7 +32,7 @@ let flushTimer: any = null
 
 export function useImpressionTracker() {
   const authStore = useAuthStore()
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+  const apiUrl = ''
 
   const flushBuffer = async () => {
     // 1. Flush impressions

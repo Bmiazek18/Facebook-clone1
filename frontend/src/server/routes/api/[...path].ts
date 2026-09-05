@@ -60,6 +60,12 @@ export default defineEventHandler(async (event) => {
       targetBase = process.env.MARKETPLACE_SERVICE_URL || 'http://marketplace-service.apps.svc.cluster.local:8090'
     } else if (path.startsWith('users/') || path.startsWith('user/')) {
       targetBase = process.env.USER_SERVICE_URL || 'http://userservice.apps.svc.cluster.local:8081'
+    } else if (path.startsWith('linkguard/')) {
+      targetBase = process.env.LINKGUARD_SERVICE_URL || 'http://linkguard-service.apps.svc.cluster.local:8086'
+    } else if (path.startsWith('meta-ai/') || path.startsWith('chat-threads') || path.startsWith('chat-history') || path.startsWith('process-chat') || path.startsWith('generated_charts')) {
+      const metaBase = process.env.META_AI_SERVICE_URL || 'http://meta-ai-service.apps.svc.cluster.local:8000'
+      const cleanPath = path.replace(/^meta-ai\//, '')
+      return proxyRequest(event, `${metaBase.replace(/\/+$/, '')}/${cleanPath}${queryString}`)
     } else {
       targetBase = process.env.NUXT_PUBLIC_API_URL || 'http://localhost:8080'
     }
