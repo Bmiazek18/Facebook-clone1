@@ -7,6 +7,16 @@ export const GET_FRIENDS = gql`
       firstName
       lastName
       avatar
+      birthDate
+      gender
+      city
+      location
+      hometown
+      school
+      highSchool
+      work
+      job
+      company
     }
   }
 `

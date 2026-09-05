@@ -48,10 +48,100 @@ const effectiveFriendsList = computed(() => {
   return internalFriends.value
 })
 
+const currentPageType = computed(() => {
+  if (props.pageType) return props.pageType
+  const seg = route.path.replace(/^\//, '').split('/')
+  const last = seg[seg.length - 1]
+  if (
+    [
+      'friends_all',
+      'friends_recent',
+      'friends_birthdays',
+      'friends_high_school',
+      'friends_current_city',
+      'following',
+    ].includes(last)
+  ) {
+    return last
+  }
+  return 'friends_all'
+})
+
+const myCity = computed(() => {
+  return (
+    profileUser?.value?.city ||
+    profileUser?.value?.location ||
+    profileUser?.value?.hometown ||
+    ''
+  )
+    .trim()
+    .toLowerCase()
+})
+
+const myHighSchool = computed(() => {
+  return (
+    profileUser?.value?.highSchool ||
+    profileUser?.value?.school ||
+    profileUser?.value?.education ||
+    ''
+  )
+    .trim()
+    .toLowerCase()
+})
+
 const filteredFriendsList = computed(() => {
-  if (!searchQuery.value.trim()) return effectiveFriendsList.value
-  const q = searchQuery.value.toLowerCase()
-  return effectiveFriendsList.value.filter((f) => f.name.toLowerCase().includes(q))
+  let list = effectiveFriendsList.value
+
+  // Filter based on tab when in full view
+  if (props.isFullView) {
+    if (currentPageType.value === 'friends_birthdays') {
+      list = list
+        .filter((f) => !!f.birthDate)
+        .map((f) => ({
+          ...f,
+          subtitle: `Urodziny: ${f.birthDate}`,
+        }))
+    } else if (currentPageType.value === 'friends_high_school') {
+      list = list
+        .filter((f) => {
+          const friendSchool = (f.highSchool || f.school || '').toLowerCase()
+          if (myHighSchool.value && friendSchool) {
+            return (
+              friendSchool.includes(myHighSchool.value) ||
+              myHighSchool.value.includes(friendSchool)
+            )
+          }
+          return !!friendSchool
+        })
+        .map((f) => ({
+          ...f,
+          subtitle: `Szkoła: ${f.highSchool || f.school || 'Szkoła średnia'}`,
+        }))
+    } else if (currentPageType.value === 'friends_current_city') {
+      list = list
+        .filter((f) => {
+          const friendCity = (f.city || f.location || f.hometown || '').toLowerCase()
+          if (myCity.value && friendCity) {
+            return (
+              friendCity.includes(myCity.value) ||
+              myCity.value.includes(friendCity)
+            )
+          }
+          return !!friendCity
+        })
+        .map((f) => ({
+          ...f,
+          subtitle: `Mieszka w: ${f.city || f.location || f.hometown}`,
+        }))
+    }
+  }
+
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.toLowerCase()
+    list = list.filter((f) => f.name.toLowerCase().includes(q))
+  }
+
+  return list
 })
 
 const fetchFriends = async () => {
@@ -64,6 +154,13 @@ const fetchFriends = async () => {
         id: f.id,
         name: [f.firstName, f.lastName].filter(Boolean).join(' ') || 'Użytkownik',
         avatar: f.avatar || '',
+        birthDate: f.birthDate || '',
+        city: f.city || '',
+        location: f.location || '',
+        hometown: f.hometown || '',
+        school: f.school || '',
+        highSchool: f.highSchool || '',
+        work: f.work || f.job || '',
         isFriend: true,
         mutual: f.mutualCount ?? 0,
         imageId: 35,

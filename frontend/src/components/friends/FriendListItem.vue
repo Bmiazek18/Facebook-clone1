@@ -12,6 +12,12 @@ defineProps<{
     isFriend?: boolean
     imageId?: number
     avatar?: string
+    subtitle?: string
+    birthDate?: string
+    city?: string
+    location?: string
+    school?: string
+    highSchool?: string
   }
 }>()
 </script>
@@ -30,8 +36,14 @@ defineProps<{
         <div>
           <ProfilePopper :user-id="friend.id || 1" :name="friend.name" />
           <div
-            v-if="friend.mutual !== undefined"
-            class="text-[13px] font-medium text-theme-text-secondary hover:underline cursor-pointer"
+            v-if="friend.subtitle"
+            class="text-[13px] font-medium text-theme-text-secondary mt-0.5"
+          >
+            {{ friend.subtitle }}
+          </div>
+          <div
+            v-else-if="friend.mutual !== undefined"
+            class="text-[13px] font-medium text-theme-text-secondary hover:underline cursor-pointer mt-0.5"
           >
             {{ friend.mutual }} wspólnych znajomych
           </div>
