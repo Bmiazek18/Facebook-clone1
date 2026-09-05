@@ -2,6 +2,7 @@ import { apiClient } from './client'
 import type { Group, GroupRole } from '@/types/Group'
 import {
   GET_GROUPS,
+  GET_USER_GROUPS,
   GET_GROUP_BY_ID,
   GET_GROUP_OVERVIEW,
   CREATE_GROUP,
@@ -45,6 +46,15 @@ export const groupsApi = {
       { fetchPolicy: 'network-only' }
     )
     return (data?.getGroups || []).map(mapGraphQLGroupToGroup)
+  },
+
+  async getUserGroups(userId: string): Promise<Group[]> {
+    const data = await apiClient.query<{ getUserGroups: any[] }>(
+      GET_USER_GROUPS,
+      { userId },
+      { fetchPolicy: 'network-only' }
+    )
+    return (data?.getUserGroups || []).map(mapGraphQLGroupToGroup)
   },
 
   async getGroupById(id: string): Promise<Group | null> {

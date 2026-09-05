@@ -6,6 +6,7 @@ import type { Group, GroupRole } from '@/types/Group'
 
 export const useGroupsStore = defineStore('groups', () => {
   const groups = ref<Group[]>([])
+  const userGroups = ref<Group[]>([])
   const authStore = useAuthStore()
 
   const fetchGroups = async () => {
@@ -13,6 +14,19 @@ export const useGroupsStore = defineStore('groups', () => {
       groups.value = await groupsApi.getGroups(100, 0)
     } catch (e) {
       console.error('Failed to fetch groups:', e)
+    }
+  }
+
+  const fetchUserGroups = async (userId?: string) => {
+    const effectiveUserId = userId || String(authStore.currentUserId)
+    if (!effectiveUserId || effectiveUserId === '0') return []
+    try {
+      const result = await groupsApi.getUserGroups(effectiveUserId)
+      userGroups.value = result
+      return result
+    } catch (e) {
+      console.error('Failed to fetch user groups:', e)
+      return []
     }
   }
 
@@ -236,7 +250,9 @@ export const useGroupsStore = defineStore('groups', () => {
 
   return {
     groups,
+    userGroups,
     fetchGroups,
+    fetchUserGroups,
     getGroupById,
     loadGroupDetails,
     addGroup,

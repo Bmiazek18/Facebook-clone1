@@ -18,6 +18,24 @@ export const GET_GROUPS = gql`
   }
 `
 
+export const GET_USER_GROUPS = gql`
+  query GetUserGroups($userId: ID!) {
+    getUserGroups(userId: $userId) {
+      id
+      name
+      description
+      privacy
+      image
+      membersCount
+      lastActive
+      newPostsToday
+      newPostsMonth
+      newMembersWeek
+      createdAge
+    }
+  }
+`
+
 export const GET_GROUP_BY_ID = gql`
   query GetGroupById($id: ID!) {
     getGroupById(id: $id) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGroupsStore } from '@/stores/groups'
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue'
@@ -16,45 +16,48 @@ import ChevronUp from 'vue-material-design-icons/ChevronUp.vue' // Strzałka w g
 import Robot from 'vue-material-design-icons/Robot.vue' // Meta AI (zamiennik)
 
 const auth = useAuthStore()
+const groupsStore = useGroupsStore()
 const showMoreMenu = ref(false)
 const showMoreShortcuts = ref(false)
 
-// Główne Menu (na podstawie Twojego zrzutu)
+// Główne Menu
 const menuItems = [
-  { icon: Robot, label: 'Meta AI', color: '#2ABBA7', isGradient: true, path: '/' }, // Gradient dla AI
+  { icon: Robot, label: 'Meta AI', color: '#2ABBA7', isGradient: true, path: '/' },
   { icon: AccountMultiple, label: 'Znajomi', color: '#1B74E4', path: '/friends' },
-  { icon: CalendarStar, label: 'Wydarzenia', color: '#F3425F', path: '/event' }, // Czerwony
-  { icon: Bookmark, label: 'Zapisane', color: '#A033FF', path: '/' }, // Fioletowy
+  { icon: CalendarStar, label: 'Wydarzenia', color: '#F3425F', path: '/event' },
+  { icon: Bookmark, label: 'Zapisane', color: '#A033FF', path: '/' },
   { icon: StorefrontOutline, label: 'Marketplace', color: '#1B74E4', path: '/marketplace' },
   { icon: ClockTimeTwoOutline, label: 'Wspomnienia', color: '#2ABBA7', path: '/' },
   { icon: AccountGroup, label: 'Grupy', color: '#1B74E4', path: '/groups' },
 ]
 
-const groupsStore = useGroupsStore()
+const loadUserShortcuts = async () => {
+  if (auth.currentUserId && auth.currentUserId !== '0') {
+    await groupsStore.fetchUserGroups(String(auth.currentUserId))
+  }
+}
 
 onMounted(() => {
-  groupsStore.fetchGroups()
+  loadUserShortcuts()
 })
 
-// Lista Skrótów (Przykładowe dane z obrazka lub dynamicznie pobierane z grup)
-const shortcuts = computed(() => {
-  if (groupsStore.groups.length > 0) {
-    return groupsStore.groups.map(g => ({
-      id: g.id,
-      img: g.image || 'https://picsum.photos/40/40?random=1',
-      label: g.name
-    }))
+watch(
+  () => auth.currentUserId,
+  () => {
+    loadUserShortcuts()
   }
-  return [
-    { id: '1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed', img: 'https://picsum.photos/40/40?random=1', label: 'Frontend Developers' },
-    { id: '4b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed', img: 'https://picsum.photos/40/40?random=2', label: 'Kolegium Sędziów BOZPN' },
-    { id: '2b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed', img: 'https://picsum.photos/40/40?random=3', label: 'Vue.js Enthusiasts' },
-    { id: '3b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed', img: 'https://picsum.photos/40/40?random=4', label: 'Tailwind CSS Fans' },
-    { id: '5b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed', img: 'https://picsum.photos/40/40?random=5', label: 'Absurdalnie Tanie Loty' },
-  ]
+)
+
+// Lista Skrótów – wyłącznie grupy, do których należy zalogowany użytkownik
+const shortcuts = computed(() => {
+  return groupsStore.userGroups.map((g) => ({
+    id: g.id,
+    img: g.image || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
+    label: g.name,
+  }))
 })
 
-// Logika wyświetlania (pokaż 5 pierwszych lub wszystkie)
+// Logika wyświetlania
 const visibleMenuItems = computed(() => (showMoreMenu.value ? menuItems : menuItems.slice(0, 5)))
 const visibleShortcuts = computed(() =>
   showMoreShortcuts.value ? shortcuts.value : shortcuts.value.slice(0, 5),
@@ -118,9 +121,9 @@ const visibleShortcuts = computed(() =>
           </button>
         </div>
 
-        <div class="border-b border-theme-border my-4 mx-2"></div>
+        <div v-if="shortcuts.length > 0" class="border-b border-theme-border my-4 mx-2"></div>
 
-        <div class="px-2 pb-4">
+        <div v-if="shortcuts.length > 0" class="px-2 pb-4">
           <div class="flex justify-between items-center mb-2 group">
             <h3
               class="text-[17px] font-medium text-theme-text-secondary group-hover:text-theme-text transition-colors"
