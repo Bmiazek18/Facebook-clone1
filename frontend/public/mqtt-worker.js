@@ -9,6 +9,10 @@ let currentUserId = null;
 let currentBrokerUrl = null;
 let heartbeatInterval = null;
 
+// Offline Outbound Message Queue
+const outboundQueue = [];
+const MAX_QUEUE_SIZE = 100;
+
 // Helper to broadcast message to all active ports
 function broadcast(message) {
   for (const port of ports) {
@@ -30,7 +34,8 @@ self.onconnect = function (e) {
   port.postMessage({
     type: 'STATUS',
     state: connectionState,
-    userId: currentUserId
+    userId: currentUserId,
+    queuedCount: outboundQueue.length,
   });
 
   port.onmessage = function (event) {
@@ -58,6 +63,22 @@ self.onconnect = function (e) {
   port.start();
 };
 
+function flushOutboundQueue() {
+  if (!mqttClient || !mqttClient.connected || outboundQueue.length === 0) return;
+
+  console.log(`[MQTT Worker] Flushing ${outboundQueue.length} queued messages...`);
+  while (outboundQueue.length > 0 && mqttClient && mqttClient.connected) {
+    const item = outboundQueue.shift();
+    try {
+      mqttClient.publish(item.topic, JSON.stringify(item.payload), item.options);
+    } catch (err) {
+      console.error('[MQTT Worker] Failed to flush queued message:', err);
+      outboundQueue.unshift(item);
+      break;
+    }
+  }
+}
+
 function handleConnect(userId, brokerUrl, ticket) {
   currentUserId = userId;
   currentBrokerUrl = brokerUrl;
@@ -71,6 +92,7 @@ function handleConnect(userId, brokerUrl, ticket) {
   if (mqttClient && mqttClient.connected) {
     connectionState = 'CONNECTED';
     broadcast({ type: 'STATUS', state: connectionState, userId });
+    flushOutboundQueue();
     return;
   }
 
@@ -89,6 +111,7 @@ function handleConnect(userId, brokerUrl, ticket) {
       username: ticket,
       password: ticket,
       reconnectPeriod: 0,
+      keepalive: 60,
     });
 
     mqttClient = client;
@@ -99,6 +122,9 @@ function handleConnect(userId, brokerUrl, ticket) {
       client.subscribe('chat/messages/user/' + userId);
       client.subscribe('user/' + userId + '/notifications');
       broadcast({ type: 'STATUS', state: connectionState, userId });
+
+      // Flush offline messages upon successful connection
+      flushOutboundQueue();
 
       // Start presence heartbeat interval inside the Shared Worker
       if (heartbeatInterval) {
@@ -161,7 +187,16 @@ function handlePublish(topic, payload, options) {
   if (mqttClient && mqttClient.connected) {
     mqttClient.publish(topic, JSON.stringify(payload), options);
   } else {
-    console.warn('[MQTT Worker] Cannot publish, client not connected.');
+    if (outboundQueue.length >= MAX_QUEUE_SIZE) {
+      outboundQueue.shift();
+    }
+    outboundQueue.push({
+      topic,
+      payload,
+      options,
+      timestamp: Date.now(),
+    });
+    console.warn(`[MQTT Worker] Offline: Buffered message for topic "${topic}". Queue size: ${outboundQueue.length}`);
   }
 }
 

@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import mqtt from 'mqtt'
 import { useGenerateTicket } from '@/composables/shared/useGenerateTicket'
 
@@ -12,12 +12,65 @@ export function useChatMqtt() {
   let workerPort: MessagePort | null = null
   let messageCallback: ((topic: string, payload: any) => void) | null = null
   let heartbeatInterval: any = null
+  let reconnectTimeout: any = null
+  let retryCount = 0
+  let activeUserId: string | null = null
+
+  // Direct connection offline queue (fallback when SharedWorker is not active)
+  const directOutboundQueue: Array<{ topic: string; payload: any; options?: any }> = []
+
+  function getBackoffDelay(): number {
+    const base = Math.min(30000, 1000 * Math.pow(1.5, retryCount))
+    const jitter = Math.random() * 500
+    retryCount++
+    return base + jitter
+  }
+
+  function resetBackoff() {
+    retryCount = 0
+  }
+
+  function flushDirectQueue() {
+    if (!mqttClient || !mqttClient.connected || directOutboundQueue.length === 0) return
+    console.log(`[Direct MQTT] Flushing ${directOutboundQueue.length} queued messages...`)
+    while (directOutboundQueue.length > 0 && mqttClient && mqttClient.connected) {
+      const item = directOutboundQueue.shift()
+      if (item) {
+        try {
+          mqttClient.publish(item.topic, JSON.stringify(item.payload), item.options)
+        } catch (err) {
+          console.error('[Direct MQTT] Failed to flush message:', err)
+          directOutboundQueue.unshift(item)
+          break
+        }
+      }
+    }
+  }
+
+  // Handle network online event
+  const handleNetworkOnline = () => {
+    console.log('Frontend MQTT: Network restored (online event). Triggering immediate reconnect...')
+    resetBackoff()
+    if (activeUserId && !isMqttConnected.value) {
+      if (reconnectTimeout) clearTimeout(reconnectTimeout)
+      if (workerPort) {
+        reconnectWorker(activeUserId)
+      } else if (messageCallback) {
+        connectMqtt(activeUserId, messageCallback)
+      }
+    }
+  }
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('online', handleNetworkOnline)
+  }
 
   async function connectMqtt(
     userId: string,
     onMessage: (topic: string, payload: any) => void
   ) {
     messageCallback = onMessage
+    activeUserId = userId
 
     if (!userId || userId === '0' || userId === '1') return
 
@@ -30,14 +83,19 @@ export function useChatMqtt() {
           workerPort = worker.port
 
           workerPort.onmessage = (event) => {
-            const data = event.data;
+            const data = event.data
             if (data.type === 'STATUS') {
-              isMqttConnected.value = (data.state === 'CONNECTED')
+              const connected = (data.state === 'CONNECTED')
+              isMqttConnected.value = connected
               console.log(`Frontend MQTT (Worker status): ${data.state}`)
 
-              if (data.state === 'OFFLINE' || data.state === 'DISCONNECTED') {
-                // If worker disconnected or went offline, trigger ticket generation and connect again
-                setTimeout(() => reconnectWorker(userId), 3000)
+              if (connected) {
+                resetBackoff()
+              } else if (data.state === 'OFFLINE' || data.state === 'DISCONNECTED') {
+                const delay = getBackoffDelay()
+                console.warn(`Frontend MQTT: Worker disconnected. Reconnecting in ${(delay / 1000).toFixed(1)}s (retry #${retryCount})...`)
+                if (reconnectTimeout) clearTimeout(reconnectTimeout)
+                reconnectTimeout = setTimeout(() => reconnectWorker(userId), delay)
               }
             } else if (data.type === 'MESSAGE') {
               if (messageCallback) {
@@ -48,7 +106,6 @@ export function useChatMqtt() {
 
           workerPort.start()
 
-          // Register page closure to inform worker
           window.addEventListener('beforeunload', () => {
             if (workerPort) {
               workerPort.postMessage({ type: 'CLOSE' })
@@ -62,7 +119,6 @@ export function useChatMqtt() {
       }
 
       if (workerPort) {
-        // If not connected, get a ticket and send CONNECT message to worker
         if (!isMqttConnected.value) {
           await reconnectWorker(userId)
         }
@@ -92,24 +148,28 @@ export function useChatMqtt() {
         username: ticket,
         password: ticket,
         reconnectPeriod: 0,
+        keepalive: 60,
       })
 
       mqttClient = client
 
       client.on('connect', () => {
         isMqttConnected.value = true
+        resetBackoff()
         console.log('Frontend MQTT: Connected directly to broker.')
         client.subscribe('chat/messages/user/' + userId)
         client.subscribe('user/' + userId + '/notifications')
+
+        // Flush offline queue
+        flushDirectQueue()
 
         // Start presence heartbeat locally when connected directly
         if (heartbeatInterval) {
           clearInterval(heartbeatInterval)
         }
-        
+
         try {
           client.publish('user/presence/heartbeat', JSON.stringify({ userId }))
-          console.log('[Direct MQTT] Sent immediate heartbeat.')
         } catch (err) {
           console.error('[Direct MQTT] Failed to send immediate heartbeat:', err)
         }
@@ -118,7 +178,6 @@ export function useChatMqtt() {
           if (client && client.connected) {
             try {
               client.publish('user/presence/heartbeat', JSON.stringify({ userId }))
-              console.log('[Direct MQTT] Sent heartbeat.')
             } catch (err) {
               console.error('[Direct MQTT] Failed to send heartbeat:', err)
             }
@@ -132,9 +191,11 @@ export function useChatMqtt() {
           clearInterval(heartbeatInterval)
           heartbeatInterval = null
         }
-        console.warn('Frontend MQTT: Connection lost. Reconnecting in 3s...')
+        const delay = getBackoffDelay()
+        console.warn(`Frontend MQTT: Connection lost. Reconnecting in ${(delay / 1000).toFixed(1)}s (retry #${retryCount})...`)
         client.end(true)
-        setTimeout(() => connectMqtt(userId, onMessage), 3000)
+        if (reconnectTimeout) clearTimeout(reconnectTimeout)
+        reconnectTimeout = setTimeout(() => connectMqtt(userId, onMessage), delay)
       })
 
       client.on('error', (err) => {
@@ -145,7 +206,9 @@ export function useChatMqtt() {
         }
         client.end(true)
         isMqttConnected.value = false
-        setTimeout(() => connectMqtt(userId, onMessage), 5000)
+        const delay = getBackoffDelay()
+        if (reconnectTimeout) clearTimeout(reconnectTimeout)
+        reconnectTimeout = setTimeout(() => connectMqtt(userId, onMessage), delay)
       })
 
       client.on('message', (topic, messageBuffer) => {
@@ -158,7 +221,9 @@ export function useChatMqtt() {
       })
     } catch (err) {
       console.error('Failed to establish direct MQTT connection:', err)
-      setTimeout(() => connectMqtt(userId, onMessage), 5000)
+      const delay = getBackoffDelay()
+      if (reconnectTimeout) clearTimeout(reconnectTimeout)
+      reconnectTimeout = setTimeout(() => connectMqtt(userId, onMessage), delay)
     }
   }
 
@@ -166,7 +231,6 @@ export function useChatMqtt() {
     if (!workerPort) return
     try {
       const ticket = await generateTicket(userId)
-
       const brokerUrl = config.public.mqttUrl
       workerPort.postMessage({
         type: 'CONNECT',
@@ -176,10 +240,17 @@ export function useChatMqtt() {
       })
     } catch (err) {
       console.error('Frontend MQTT: Failed to generate ticket for SharedWorker:', err)
+      const delay = getBackoffDelay()
+      if (reconnectTimeout) clearTimeout(reconnectTimeout)
+      reconnectTimeout = setTimeout(() => reconnectWorker(userId), delay)
     }
   }
 
   function disconnectMqtt() {
+    if (reconnectTimeout) {
+      clearTimeout(reconnectTimeout)
+      reconnectTimeout = null
+    }
     if (heartbeatInterval) {
       clearInterval(heartbeatInterval)
       heartbeatInterval = null
@@ -193,6 +264,9 @@ export function useChatMqtt() {
     if (mqttClient) {
       mqttClient.end(true)
       mqttClient = null
+    }
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('online', handleNetworkOnline)
     }
     isMqttConnected.value = false
   }
@@ -211,6 +285,12 @@ export function useChatMqtt() {
       mqttClient.publish(topic, JSON.stringify(payload), options)
       return true
     }
+    // Queue offline message
+    if (directOutboundQueue.length >= 100) {
+      directOutboundQueue.shift()
+    }
+    directOutboundQueue.push({ topic, payload, options })
+    console.warn(`[Direct MQTT] Offline: Buffered message for topic "${topic}".`)
     return false
   }
 

@@ -17,12 +17,14 @@ import com.netflix.graphql.dgs.DgsEntityFetcher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.dataloader.DataLoader;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryRegistry;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @DgsComponent
@@ -62,36 +64,45 @@ public class PostAuthorDataFetcher {
     }
 
     @DgsData(parentType = DgsConstants.POST.TYPE_NAME, field = "author")
-    public UserSearchResponse getAuthor(DgsDataFetchingEnvironment dfe) {
+    public CompletableFuture<UserSearchResponse> getAuthor(DgsDataFetchingEnvironment dfe) {
         Post post = dfe.getSource();
         if (post == null || post.getAuthorId() == null || post.getAuthorId().isEmpty()) {
-            return null;
+            return CompletableFuture.completedFuture(null);
         }
 
-        log.info("Edge: Resolving federated author for Post, authorId: {}", post.getAuthorId());
-        return fetchUser(post.getAuthorId());
+        DataLoader<String, UserSearchResponse> dataLoader = dfe.getDataLoader("userDataLoader");
+        if (dataLoader != null) {
+            return dataLoader.load(post.getAuthorId());
+        }
+        return CompletableFuture.completedFuture(fetchUser(post.getAuthorId()));
     }
 
     @DgsData(parentType = DgsConstants.COMMENT.TYPE_NAME, field = "author")
-    public UserSearchResponse getCommentAuthor(DgsDataFetchingEnvironment dfe) {
+    public CompletableFuture<UserSearchResponse> getCommentAuthor(DgsDataFetchingEnvironment dfe) {
         Comment comment = dfe.getSource();
         if (comment == null || comment.getUserId() == null || comment.getUserId().isEmpty()) {
-            return null;
+            return CompletableFuture.completedFuture(null);
         }
 
-        log.info("Edge: Resolving federated author for Comment, userId: {}", comment.getUserId());
-        return fetchUser(comment.getUserId());
+        DataLoader<String, UserSearchResponse> dataLoader = dfe.getDataLoader("userDataLoader");
+        if (dataLoader != null) {
+            return dataLoader.load(comment.getUserId());
+        }
+        return CompletableFuture.completedFuture(fetchUser(comment.getUserId()));
     }
 
     @DgsData(parentType = DgsConstants.STORY.TYPE_NAME, field = "author")
-    public UserSearchResponse getStoryAuthor(DgsDataFetchingEnvironment dfe) {
+    public CompletableFuture<UserSearchResponse> getStoryAuthor(DgsDataFetchingEnvironment dfe) {
         Story story = dfe.getSource();
         if (story == null || story.getAuthorId() == null || story.getAuthorId().isEmpty()) {
-            return null;
+            return CompletableFuture.completedFuture(null);
         }
 
-        log.info("Edge: Resolving federated author for Story, authorId: {}", story.getAuthorId());
-        return fetchUser(story.getAuthorId());
+        DataLoader<String, UserSearchResponse> dataLoader = dfe.getDataLoader("userDataLoader");
+        if (dataLoader != null) {
+            return dataLoader.load(story.getAuthorId());
+        }
+        return CompletableFuture.completedFuture(fetchUser(story.getAuthorId()));
     }
 
     // Pomocnicza metoda wykorzystująca nasz wspólny EdgeMapper
