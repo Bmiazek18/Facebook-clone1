@@ -99,7 +99,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'nuxt/app'
 import { useAuthStore } from '@/stores/auth'
-import { useApolloClient } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { GET_FRIENDS, GET_FRIEND_SUGGESTIONS } from '@/graphql/friends'
 import { SEARCH_USERS } from '@/graphql/search'
 
@@ -117,17 +117,16 @@ const authStore = useAuthStore()
 
 const contacts = ref<any[]>([])
 
-const apolloClient = useApolloClient().resolveClient()
-
 const fetchContacts = async () => {
   const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
+  const apolloClient = getApolloClient()
   
   try {
     // 1. Fetch real friends from Neo4j (via getFriends query)
     const { data } = await apolloClient.query({
       query: GET_FRIENDS,
       variables: { userId: currentUserId },
-      fetchPolicy: 'cache-and-network'
+      fetchPolicy: 'network-only'
     })
     
     if (data?.getFriends && data.getFriends.length > 0) {
@@ -143,7 +142,7 @@ const fetchContacts = async () => {
     const { data: suggestionData } = await apolloClient.query({
       query: GET_FRIEND_SUGGESTIONS,
       variables: { currentUserId },
-      fetchPolicy: 'cache-and-network'
+      fetchPolicy: 'network-only'
     })
     
     if (suggestionData?.getFriendSuggestions) {

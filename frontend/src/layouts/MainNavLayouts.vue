@@ -3,7 +3,7 @@ import { ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'nuxt/app'
 import { onClickOutside } from '@vueuse/core'
 import { useAuthStore } from '@/stores/auth'
-import { useApolloClient } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import {
   GET_SEARCH_HISTORY,
   SEARCH_USERS,
@@ -40,17 +40,16 @@ const isSearching = ref(false)
 // History searches loaded from backend
 const recentSearches = ref<any[]>([])
 
-const apolloClient = useApolloClient().resolveClient()
-
 const fetchSearchHistory = async () => {
   try {
+    const apolloClient = getApolloClient()
     const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
     const { data } = await apolloClient.query({
       query: GET_SEARCH_HISTORY,
       variables: {
         userId: currentUserId
       },
-      fetchPolicy: 'cache-and-network'
+      fetchPolicy: 'network-only'
     })
 
     if (data?.getSearchHistory) {
@@ -68,6 +67,7 @@ const fetchSearchHistory = async () => {
 
 const removeFromRecent = async (userId: string) => {
   try {
+    const apolloClient = getApolloClient()
     const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
     
     // Update local state immediately for instant feedback
@@ -87,6 +87,7 @@ const removeFromRecent = async (userId: string) => {
 
 const clearAllRecent = async () => {
   try {
+    const apolloClient = getApolloClient()
     // Delete each locally stored item one by one on backend
     const itemsToDelete = [...recentSearches.value]
     recentSearches.value = []
