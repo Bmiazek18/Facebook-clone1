@@ -310,7 +310,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 .date(Instant.now().minusSeconds(3600 * 3).toString()) // 3 hours ago
                 .timestamp(System.currentTimeMillis() - (1000L * 3600 * 3))
                 .isAnonymous(false)
-                .targetId("1")
+                .targetId("1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed")
                 .targetType("Group")
                 .mediaJson(media("https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80"))
                 .build();
@@ -322,7 +322,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 .date(Instant.now().minusSeconds(3600 * 6).toString()) // 6 hours ago
                 .timestamp(System.currentTimeMillis() - (1000L * 3600 * 6))
                 .isAnonymous(false)
-                .targetId("2")
+                .targetId("2b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed")
                 .targetType("Group")
                 .mediaJson(media("https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80"))
                 .build();
@@ -334,7 +334,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 .date(Instant.now().minusSeconds(3600 * 12).toString()) // 12 hours ago
                 .timestamp(System.currentTimeMillis() - (1000L * 3600 * 12))
                 .isAnonymous(false)
-                .targetId("3")
+                .targetId("3b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed")
                 .targetType("Group")
                 .mediaJson("[]")
                 .build();

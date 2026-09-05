@@ -46,11 +46,11 @@ const shortcuts = computed(() => {
     }))
   }
   return [
-    { id: '1', img: 'https://picsum.photos/40/40?random=1', label: 'Basketball FRVR' },
-    { id: '2', img: 'https://picsum.photos/40/40?random=2', label: 'Kolegium Sędziów BOZPN' },
-    { id: '3', img: 'https://picsum.photos/40/40?random=3', label: 'Praca dla początkujących...' },
-    { id: '4', img: 'https://picsum.photos/40/40?random=4', label: 'Reprezentacja Polski...' },
-    { id: '5', img: 'https://picsum.photos/40/40?random=5', label: 'Piłkarski Świat' },
+    { id: '1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed', img: 'https://picsum.photos/40/40?random=1', label: 'Frontend Developers' },
+    { id: '4b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed', img: 'https://picsum.photos/40/40?random=2', label: 'Kolegium Sędziów BOZPN' },
+    { id: '2b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed', img: 'https://picsum.photos/40/40?random=3', label: 'Vue.js Enthusiasts' },
+    { id: '3b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed', img: 'https://picsum.photos/40/40?random=4', label: 'Tailwind CSS Fans' },
+    { id: '5b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed', img: 'https://picsum.photos/40/40?random=5', label: 'Absurdalnie Tanie Loty' },
   ]
 })
 

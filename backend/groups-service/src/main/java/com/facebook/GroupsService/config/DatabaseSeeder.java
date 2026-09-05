@@ -21,56 +21,19 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final com.facebook.GroupsService.repository.AdminAssistRuleRepository ruleRepository;
     private final com.facebook.GroupsService.service.AdminAssistRuleService ruleService;
 
+    public static final String GROUP_FRONTEND_ID = "1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed";
+    public static final String GROUP_VUE_ID = "2b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed";
+    public static final String GROUP_TAILWIND_ID = "3b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed";
+    public static final String GROUP_KOLEGIUM_SEDZIOW_ID = "4b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed";
+    public static final String GROUP_TANIE_LOTY_ID = "5b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed";
+
     @Override
     public void run(String... args) throws Exception {
-        if (ruleRepository.count() == 0) {
-            log.info("Seeding Admin Assist rules...");
-            
-            com.facebook.GroupsService.entity.AdminAssistRuleEntity ageRule = com.facebook.GroupsService.entity.AdminAssistRuleEntity.builder()
-                    .id("rule-age-decline-4")
-                    .groupId("4")
-                    .target(com.facebook.GroupsService.entity.RuleTarget.JOIN_REQUEST)
-                    .action(com.facebook.GroupsService.entity.RuleAction.DECLINE)
-                    .criteria(com.facebook.GroupsService.entity.RuleCriteria.builder()
-                            .minimumAccountAgeDays(30)
-                            .build())
-                    .enabled(true)
-                    .build();
-            ruleService.saveRule(ageRule, "system");
-
-            com.facebook.GroupsService.entity.AdminAssistRuleEntity avatarRule = com.facebook.GroupsService.entity.AdminAssistRuleEntity.builder()
-                    .id("rule-avatar-decline-4")
-                    .groupId("4")
-                    .target(com.facebook.GroupsService.entity.RuleTarget.JOIN_REQUEST)
-                    .action(com.facebook.GroupsService.entity.RuleAction.DECLINE)
-                    .criteria(com.facebook.GroupsService.entity.RuleCriteria.builder()
-                            .requireProfilePicture(true)
-                            .build())
-                    .enabled(true)
-                    .build();
-            ruleService.saveRule(avatarRule, "system");
-
-            // Seed a welcome post rule running every day at 12:00
-            com.facebook.GroupsService.entity.AdminAssistRuleEntity welcomeRule = com.facebook.GroupsService.entity.AdminAssistRuleEntity.builder()
-                    .id("rule-welcome-4")
-                    .groupId("4")
-                    .target(com.facebook.GroupsService.entity.RuleTarget.WELCOME_POST)
-                    .action(com.facebook.GroupsService.entity.RuleAction.PUBLISH)
-                    .criteria(com.facebook.GroupsService.entity.RuleCriteria.builder()
-                            .welcomeMessage("Witajcie w naszej grupie Kolegium Sędziów BOZPN! Życzymy udanych dyskusji.")
-                            .cronExpression("0 0 12 * * ?") // Everyday at 12:00 PM
-                            .build())
-                    .enabled(true)
-                    .build();
-            ruleService.saveRule(welcomeRule, "system");
-        }
-
-        if (groupRepository.count() == 0) {
-            log.info("Seeding groups database...");
+        log.info("Seeding / updating groups database with standard UUIDs...");
 
         List<GroupEntity> groups = List.of(
             GroupEntity.builder()
-                .id("1")
+                .id(GROUP_FRONTEND_ID)
                 .name("Frontend Developers")
                 .description("A group for frontend developers to share knowledge and best practices.")
                 .membersCount(1200)
@@ -80,7 +43,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 .createdAge("2020-03-15")
                 .build(),
             GroupEntity.builder()
-                .id("2")
+                .id(GROUP_VUE_ID)
                 .name("Vue.js Enthusiasts")
                 .description("A group for Vue.js enthusiasts to discuss the latest features and projects.")
                 .membersCount(2500)
@@ -90,7 +53,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 .createdAge("2021-06-01")
                 .build(),
             GroupEntity.builder()
-                .id("3")
+                .id(GROUP_TAILWIND_ID)
                 .name("Tailwind CSS Fans")
                 .description("A group for Tailwind CSS fans to share tips and tricks.")
                 .membersCount(800)
@@ -100,7 +63,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 .createdAge("2022-09-10")
                 .build(),
             GroupEntity.builder()
-                .id("4")
+                .id(GROUP_KOLEGIUM_SEDZIOW_ID)
                 .name("Kolegium Sędziów BOZPN")
                 .description("Oficjalna grupa Kolegium Sędziów BOZPN.")
                 .membersCount(65)
@@ -113,7 +76,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 .createdAge("2015-08-06")
                 .build(),
             GroupEntity.builder()
-                .id("5")
+                .id(GROUP_TANIE_LOTY_ID)
                 .name("Absurdalnie Tanie Loty")
                 .description("Grupa dzieląca się informacjami o najtańszych lotach i okazjach podróżniczych.")
                 .membersCount(95000)
@@ -124,23 +87,61 @@ public class DatabaseSeeder implements CommandLineRunner {
                 .build()
         );
 
-        groupRepository.saveAll(groups);
-
-        // Seed some memberships for user 18 (Bartosz Miazek's UUID 'f92f2541-11bf-383f-8468-d0dfd8787f0b')
-        String userUuid = java.util.UUID.nameUUIDFromBytes("testuser1".getBytes()).toString();
-        
-        List<GroupMemberEntity> members = List.of(
-            GroupMemberEntity.builder().groupId("1").userId(userUuid).role(com.facebook.GroupsService.entity.GroupRole.MEMBER).build(),
-            GroupMemberEntity.builder().groupId("2").userId(userUuid).role(com.facebook.GroupsService.entity.GroupRole.ADMIN).build(),
-            GroupMemberEntity.builder().groupId("4").userId(userUuid).role(com.facebook.GroupsService.entity.GroupRole.MEMBER).build()
-        );
-        
-        groupMemberRepository.saveAll(members);
+        for (GroupEntity g : groups) {
+            if (!groupRepository.existsById(g.getId())) {
+                groupRepository.save(g);
+            }
         }
 
-        // Seed memberships for common user IDs
+        // Seed Admin Assist rules for Kolegium Sędziów BOZPN
+        for (String gId : List.of(GROUP_KOLEGIUM_SEDZIOW_ID, "4")) {
+            String ageRuleId = "rule-age-decline-" + gId;
+            if (!ruleRepository.existsById(ageRuleId)) {
+                ruleService.saveRule(com.facebook.GroupsService.entity.AdminAssistRuleEntity.builder()
+                        .id(ageRuleId)
+                        .groupId(gId)
+                        .target(com.facebook.GroupsService.entity.RuleTarget.JOIN_REQUEST)
+                        .action(com.facebook.GroupsService.entity.RuleAction.DECLINE)
+                        .criteria(com.facebook.GroupsService.entity.RuleCriteria.builder()
+                                .minimumAccountAgeDays(30)
+                                .build())
+                        .enabled(true)
+                        .build(), "system");
+            }
+
+            String avatarRuleId = "rule-avatar-decline-" + gId;
+            if (!ruleRepository.existsById(avatarRuleId)) {
+                ruleService.saveRule(com.facebook.GroupsService.entity.AdminAssistRuleEntity.builder()
+                        .id(avatarRuleId)
+                        .groupId(gId)
+                        .target(com.facebook.GroupsService.entity.RuleTarget.JOIN_REQUEST)
+                        .action(com.facebook.GroupsService.entity.RuleAction.DECLINE)
+                        .criteria(com.facebook.GroupsService.entity.RuleCriteria.builder()
+                                .requireProfilePicture(true)
+                                .build())
+                        .enabled(true)
+                        .build(), "system");
+            }
+
+            String welcomeRuleId = "rule-welcome-" + gId;
+            if (!ruleRepository.existsById(welcomeRuleId)) {
+                ruleService.saveRule(com.facebook.GroupsService.entity.AdminAssistRuleEntity.builder()
+                        .id(welcomeRuleId)
+                        .groupId(gId)
+                        .target(com.facebook.GroupsService.entity.RuleTarget.WELCOME_POST)
+                        .action(com.facebook.GroupsService.entity.RuleAction.PUBLISH)
+                        .criteria(com.facebook.GroupsService.entity.RuleCriteria.builder()
+                                .welcomeMessage("Witajcie w naszej grupie Kolegium Sędziów BOZPN! Życzymy udanych dyskusji.")
+                                .cronExpression("0 0 12 * * ?")
+                                .build())
+                        .enabled(true)
+                        .build(), "system");
+            }
+        }
+
+        // Seed ADMIN memberships for current user and test accounts across all groups
         List<String> adminUserIds = List.of(
-            "e1088d18-971c-4bbf-a6ea-b7692fc3f412", // testuser
+            "e1088d18-971c-4bbf-a6ea-b7692fc3f412", // testuser (current logged-in user in production)
             "7f23f5b8-87fb-4250-9ba9-6b5ed04afff0", // dsd
             "0d4b14bc-1337-490f-ba79-27b62f4fdaf6", // bmiazek
             "1e4332f6-5a7a-3210-b5fb-fb92c7c60cce", // Jan Wiśniewski
@@ -148,8 +149,13 @@ public class DatabaseSeeder implements CommandLineRunner {
             java.util.UUID.nameUUIDFromBytes("testuser1".getBytes()).toString()
         );
 
+        List<String> allGroupIds = List.of(
+            GROUP_FRONTEND_ID, GROUP_VUE_ID, GROUP_TAILWIND_ID, GROUP_KOLEGIUM_SEDZIOW_ID, GROUP_TANIE_LOTY_ID,
+            "1", "2", "3", "4", "5"
+        );
+
         for (String adminId : adminUserIds) {
-            for (String gId : List.of("1", "2", "4", "5")) {
+            for (String gId : allGroupIds) {
                 java.util.Optional<GroupMemberEntity> existingMembership = groupMemberRepository.findByGroupIdAndUserId(gId, adminId);
                 if (existingMembership.isPresent()) {
                     GroupMemberEntity m = existingMembership.get();
@@ -166,33 +172,23 @@ public class DatabaseSeeder implements CommandLineRunner {
             }
         }
 
-        // Add testuser1 to testuser6 to group 4 if they are not there
+        // Add testuser1 to testuser6 to Kolegium Sędziów BOZPN if they are not there
         String[] testUsers = {"testuser1", "testuser2", "testuser3", "testuser4", "testuser5", "testuser6"};
         int[] hoursBack = {8, 6, 4, 2, 1, 10};
         for (int i = 0; i < testUsers.length; i++) {
             String uId = java.util.UUID.nameUUIDFromBytes(testUsers[i].getBytes()).toString();
-            if (!groupMemberRepository.existsByGroupIdAndUserId("4", uId)) {
-                groupMemberRepository.save(GroupMemberEntity.builder()
-                    .groupId("4")
-                    .userId(uId)
-                    .role(com.facebook.GroupsService.entity.GroupRole.MEMBER)
-                    .joinedAt(java.time.Instant.now().minus(hoursBack[i], i == 5 ? java.time.temporal.ChronoUnit.MINUTES : java.time.temporal.ChronoUnit.HOURS))
-                    .build());
+            for (String gId : List.of(GROUP_KOLEGIUM_SEDZIOW_ID, "4")) {
+                if (!groupMemberRepository.existsByGroupIdAndUserId(gId, uId)) {
+                    groupMemberRepository.save(GroupMemberEntity.builder()
+                        .groupId(gId)
+                        .userId(uId)
+                        .role(com.facebook.GroupsService.entity.GroupRole.MEMBER)
+                        .joinedAt(java.time.Instant.now().minus(hoursBack[i], i == 5 ? java.time.temporal.ChronoUnit.MINUTES : java.time.temporal.ChronoUnit.HOURS))
+                        .build());
+                }
             }
         }
 
-        // Ensure group 4 has the updated stats
-        java.util.Optional<GroupEntity> group4Opt = groupRepository.findById("4");
-        if (group4Opt.isPresent()) {
-            GroupEntity g4 = group4Opt.get();
-            g4.setMembersCount(65);
-            g4.setNewPostsToday(2);
-            g4.setNewPostsMonth(24);
-            g4.setNewMembersWeek("Brak nowych członków w ostatnim tygodniu");
-            g4.setCreatedAge("2015-08-06");
-            groupRepository.save(g4);
-        }
-
-        log.info("Groups database seeded successfully.");
+        log.info("Groups database seeded successfully with standard UUIDs and ADMIN permissions.");
     }
 }
