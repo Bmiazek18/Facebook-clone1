@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { getApolloClient } from '@/utils/apollo'
-import { gql } from 'graphql-tag'
+import { usersApi } from '@/api/users'
 import { useUserCache } from '@/composables/shared/useUserCache'
 import { useChatStore } from '@/stores/chat'
 
@@ -84,41 +83,12 @@ const handleOpenChat = () => {
   }
 }
 
-const GET_USER_BY_ID_QUERY = gql`
-  query GetUserByIdForPopper($userId: ID!) {
-    getUserById(userId: $userId) {
-      id
-      firstName
-      lastName
-      avatar
-      city
-      location
-      hometown
-      work
-      job
-      company
-      education
-      school
-      bio
-    }
-  }
-`
-
 const fetchFullUserData = async () => {
   if (!cleanUserId.value || cleanUserId.value === '0' || cleanUserId.value === '00000000-0000-4000-8000-000000000000') return
 
   isLoading.value = true
   try {
-    const client = getApolloClient()
-    const { data } = await client.query({
-      query: GET_USER_BY_ID_QUERY,
-      variables: {
-        userId: cleanUserId.value,
-      },
-      fetchPolicy: 'cache-first',
-    })
-
-    const u = data?.getUserById
+    const u = await usersApi.getUserProfile(cleanUserId.value)
     if (u) {
       const fullName = [u.firstName, u.lastName].filter(Boolean).join(' ').trim() || 'Użytkownik'
       const loc = u.city || u.location || u.hometown || null

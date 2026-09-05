@@ -1,70 +1,16 @@
-import { getApolloClient } from '@/utils/apollo'
-import { gql } from 'graphql-tag'
 import { useChatStorage } from '@/composables/chat/useChatStorage'
 import { useUserCache } from '@/composables/shared/useUserCache'
 import { useChatMqtt } from '@/composables/chat/useChatMqtt'
 import { getSymmetricUuid } from '@/utils/uuid'
 import { type ChatMessage } from '@/types/Message'
-import { GET_INBOX, MARK_INBOX_AS_READ } from '@/graphql/chat'
+import { chatApi } from '@/api/chat'
 import { encryptMessage, decryptMessage } from '@/utils/e2ee'
 import { formatSystemActionText } from '@/utils/contentProcessor'
-
-const GET_CHAT_WITH_USER_QUERY = gql`
-  query GetChatWithUser($userId: ID!, $conversationId: ID!) {
-    getChatWithUser(userId: $userId, conversationId: $conversationId) {
-      user {
-        id
-        firstName
-        lastName
-        avatarId
-        avatar
-      }
-      messages {
-        messageId
-        senderId
-        text
-        time
-        reactionsJson
-        replyToId
-        replyToText
-        replyToSenderId
-        imageUrl
-        audioUrl
-        duration
-        fileUrl
-        fileName
-        fileSize
-        linkUrl
-        systemActionType
-        systemActionPayload
-      }
-      settings {
-        themeId
-        emoji
-        nicknames {
-          userId
-          nickname
-        }
-        participants {
-          id
-          firstName
-          lastName
-          avatar
-        }
-        isGroup
-      }
-    }
-  }
-`
 
 export function useChatApi(currentUserUuid: { value: string }, chats: any, messages: any, lastReadMaps: any) {
   const chatStorage = useChatStorage()
   const userCache = useUserCache()
   const chatMqtt = useChatMqtt()
-  const apolloClient = {
-    query: (options: any) => getApolloClient().query(options),
-    mutate: (options: any) => getApolloClient().mutate(options),
-  }
   // Same-origin BFF adds the access token from the HTTP-only session cookie.
   const apiUrl = import.meta.env.VITE_BFF_API_URL || ''
 
@@ -90,12 +36,7 @@ export function useChatApi(currentUserUuid: { value: string }, chats: any, messa
     if (!import.meta.client) return
     const cleanUserId = String(userId).replace('user_', '')
     try {
-      const result = await apolloClient.query({
-        query: GET_INBOX,
-        variables: { userId: cleanUserId },
-        fetchPolicy: 'network-only'
-      })
-      const data = result?.data?.getInbox
+      const data = await chatApi.getInbox(cleanUserId)
       if (data && Array.isArray(data)) {
         const mappedChats = await Promise.all(data.map(async (item) => {
           const recipientId = item.recipientId ? String(item.recipientId).trim() : ''
@@ -157,18 +98,8 @@ export function useChatApi(currentUserUuid: { value: string }, chats: any, messa
       isGroup = existingChat.type === 'group'
     } else {
       try {
-        const res = await apolloClient.query({
-          query: gql`
-            query GetChatSettings($conversationId: ID!) {
-              getChatSettings(conversationId: $conversationId) {
-                isGroup
-              }
-            }
-          `,
-          variables: { conversationId: String(chatId) },
-          fetchPolicy: 'network-only'
-        })
-        isGroup = !!res.data?.getChatSettings?.isGroup
+        const res = await chatApi.getChatSettings(String(chatId))
+        isGroup = !!res?.isGroup
       } catch (err) {
         console.warn('Failed to fetch chat settings to determine group status:', err)
       }
@@ -201,15 +132,10 @@ export function useChatApi(currentUserUuid: { value: string }, chats: any, messa
       chat.unread = false
     }
 
-    apolloClient.mutate({
-      mutation: MARK_INBOX_AS_READ,
-      variables: {
-        userId: cleanCurrentUserUuid,
-        conversationId: String(conversationId)
-      }
-    }).catch((err) => {
-      console.error('[fetchMessages] Failed to mark chat as read on backend:', err)
-    })
+    chatApi.markInboxAsRead(cleanCurrentUserUuid, conversationId)
+      .catch((err) => {
+        console.error('[fetchMessages] Failed to mark chat as read on backend:', err)
+      })
 
     $fetch<Record<string, string>>(`${apiUrl}/api/chat/receipts`, {
       query: { conversationId },
@@ -224,17 +150,7 @@ export function useChatApi(currentUserUuid: { value: string }, chats: any, messa
     })
 
     try {
-      const { data } = await apolloClient.query({
-        query: GET_CHAT_WITH_USER_QUERY,
-        variables: {
-          userId: cleanUserId,
-          conversationId: conversationId,
-        },
-        fetchPolicy: 'network-only',
-      })
-
-      console.log('[useChatApi fetchMessages] GraphQL query finished. Data received:', data)
-      const chatData = data?.getChatWithUser
+      const chatData = await chatApi.getChatWithUser(cleanUserId, conversationId)
       if (chatData) {
         const settings = chatData.settings
         const isGroup = settings?.isGroup ?? (chats.value.some((c: any) => String(c.id) === String(chatId) && c.type === 'group') || !chatData.user?.firstName)
@@ -518,39 +434,27 @@ if (item.linkUrl && /\/post\//.test(item.linkUrl)) {
       const cleanCurrentUserUuid = String(currentUserUuid.value).replace('user_', '')
       const cleanChatId = String(chatId).replace('user_', '')
 
-      const res = await apolloClient.mutate({
-        mutation: gql`
-          mutation SendChatMessage($input: SendChatMessageInput!) {
-            sendChatMessage(input: $input) {
-              messageId
-            }
-          }
-        `,
-        variables: {
-          input: {
-            senderId: cleanCurrentUserUuid,
-            conversationId: conversationId,
-            text: msg.type === 'poll'
-              ? `POLL:${JSON.stringify(msg.pollData || {})}`
-              : (msg.content ? encryptedContent : null),
-            replyToId: msg.replyToId || null,
-            replyToText: msg.replyToContentSnippet || null,
-            replyToSenderId: msg.replyToSenderId || null,
-            imageUrl: msg.imageUrl || null,
-            audioUrl: msg.audioUrl || null,
-            duration: msg.duration !== undefined && msg.duration !== null ? Number(msg.duration) : null,
-            fileUrl: msg.fileUrl || null,
-            fileName: msg.fileName || null,
-            fileSize: msg.fileSize ? Number(msg.fileSize) : null,
-            linkUrl: msg.linkUrl || null,
-            participantIds: isPrivate
-              ? [cleanCurrentUserUuid, cleanChatId]
-              : (chat?.groupMembers?.map((m: any) => String(m.id || m.userId).replace(/^user_/, '')) || [cleanCurrentUserUuid, cleanChatId]),
-          }
-        }
+      const sentMessageId = await chatApi.sendMessage({
+        senderId: cleanCurrentUserUuid,
+        conversationId: conversationId,
+        text: msg.type === 'poll'
+          ? `POLL:${JSON.stringify(msg.pollData || {})}`
+          : (msg.content ? encryptedContent : null),
+        replyToId: msg.replyToId || null,
+        replyToText: msg.replyToContentSnippet || null,
+        replyToSenderId: msg.replyToSenderId || null,
+        imageUrl: msg.imageUrl || null,
+        audioUrl: msg.audioUrl || null,
+        duration: msg.duration !== undefined && msg.duration !== null ? Number(msg.duration) : null,
+        fileUrl: msg.fileUrl || null,
+        fileName: msg.fileName || null,
+        fileSize: msg.fileSize ? Number(msg.fileSize) : null,
+        linkUrl: msg.linkUrl || null,
+        participantIds: isPrivate
+          ? [cleanCurrentUserUuid, cleanChatId]
+          : (chat?.groupMembers?.map((m: any) => String(m.id || m.userId).replace(/^user_/, '')) || [cleanCurrentUserUuid, cleanChatId]),
       })
 
-      const sentMessageId = String(res.data?.sendChatMessage?.messageId)
       const temporaryIndex = messages.value.findIndex((message: ChatMessage) => message.id === temporaryId)
       const mqttMessage = messages.value.find((message: ChatMessage) => String(message.id) === sentMessageId)
 
@@ -558,7 +462,7 @@ if (item.linkUrl && /\/post\//.test(item.linkUrl)) {
       // wersję tymczasową; w przeciwnym razie nadajemy jej właściwe ID.
       if (mqttMessage) {
         if (temporaryIndex !== -1) messages.value.splice(temporaryIndex, 1)
-      } else if (temporaryIndex !== -1) {
+      } else if (temporaryIndex !== -1 && sentMessageId) {
         messages.value[temporaryIndex] = {
           ...optimisticMessage,
           id: sentMessageId,
@@ -585,19 +489,12 @@ if (item.linkUrl && /\/post\//.test(item.linkUrl)) {
       const cleanCurrentUserUuid = String(currentUserUuid.value).replace('user_', '')
       const cleanChatId = String(chatId).replace('user_', '')
 
-      apolloClient.mutate({
-        mutation: gql`
-          mutation ReactToChatMessage($senderId: ID!, $conversationId: ID!, $messageId: ID!, $reactionEmoji: String!, $participantIds: [ID!]!) {
-            reactToChatMessage(senderId: $senderId, conversationId: $conversationId, messageId: $messageId, reactionEmoji: $reactionEmoji, participantIds: $participantIds)
-          }
-        `,
-        variables: {
-          senderId: cleanCurrentUserUuid,
-          conversationId: String(conversationId),
-          messageId: String(messageId),
-          reactionEmoji: emoji,
-          participantIds: [cleanCurrentUserUuid, cleanChatId],
-        }
+      chatApi.reactToMessage({
+        senderId: cleanCurrentUserUuid,
+        conversationId: String(conversationId),
+        messageId: String(messageId),
+        reactionEmoji: emoji,
+        participantIds: [cleanCurrentUserUuid, cleanChatId],
       }).then(() => {
         console.log('Reaction sent via GraphQL')
       }).catch((err) => {

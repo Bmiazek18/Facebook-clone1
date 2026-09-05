@@ -1,8 +1,7 @@
 import { ref, watch, computed } from 'vue'
 import type { Ref } from 'vue'
-import { gql } from 'graphql-tag'
 import type { User } from '@/utils/users'
-import { getApolloClient } from '@/utils/apollo'
+import { usersApi } from '@/api/users'
 
 export function useUserTagging() {
   const searchTerm = ref<string | null>(null)
@@ -18,25 +17,9 @@ export function useUserTagging() {
     }
 
     try {
-      const apolloClient = getApolloClient()
-      const res = await apolloClient.query({
-        query: gql`
-          query SearchUsers($query: String!) {
-            searchUsers(query: $query) {
-              id
-              firstName
-              lastName
-              avatarId
-              avatar
-            }
-          }
-        `,
-        variables: { query: newSearchTerm || '' },
-        fetchPolicy: 'network-only'
-      })
-
-      if (res.data && res.data.searchUsers) {
-        matchingUsers.value = res.data.searchUsers.map((u: any) => ({
+      const users = await usersApi.searchUsers(newSearchTerm || '', '')
+      if (users) {
+        matchingUsers.value = users.map((u: any) => ({
           id: u.id,
           name: `${u.firstName} ${u.lastName}`,
           avatar: u.avatar || '/default-avatar.png'

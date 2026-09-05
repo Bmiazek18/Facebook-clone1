@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useMutation } from '@vue/apollo-composable'
-import { gql } from 'graphql-tag'
+import { usersApi } from '@/api/users'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
@@ -41,28 +40,14 @@ const toggleMusic = () => {
   }
 }
 
-const UPDATE_PROFILE_MUTATION = gql`
-  mutation UpdateProfile($userId: ID!, $input: UpdateProfileInput!) {
-    updateProfile(userId: $userId, input: $input) {
-      id
-      note
-    }
-  }
-`
-
-const { mutate: updateProfile } = useMutation(UPDATE_PROFILE_MUTATION)
-
 const shareNote = async () => {
   if (charCount.value === 0) return
 
   try {
-    const res = await updateProfile({
-      userId: String(props.userId),
-      input: {
-        note: noteText.value
-      }
+    const updated = await usersApi.updateProfile(props.userId, {
+      note: noteText.value
     })
-    if (res?.data?.updateProfile) {
+    if (updated) {
       emit('close')
       window.location.reload()
     }
@@ -73,13 +58,10 @@ const shareNote = async () => {
 
 const deleteNote = async () => {
   try {
-    const res = await updateProfile({
-      userId: String(props.userId),
-      input: {
-        note: ""
-      }
+    const updated = await usersApi.updateProfile(props.userId, {
+      note: ""
     })
-    if (res?.data?.updateProfile) {
+    if (updated) {
       emit('close')
       window.location.reload()
     }

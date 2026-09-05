@@ -146,8 +146,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Dropdown as VDropdown } from 'floating-vue'
-import { useMutation } from '@vue/apollo-composable'
-import { gql } from 'graphql-tag'
+import { feedApi } from '@/api/feed'
 
 import TranslationRatingDropdown from './TranslationRatingDropdown.vue'
 import ProfilePopper from '@/components/profile/ProfilePopper.vue'
@@ -173,12 +172,6 @@ const handleLinkClick = (url: string) => {
     trackLinkClick(String(props.post.id), authorId, url)
   }
 }
-
-const TRANSLATE_TEXT_MUTATION = gql`
-  mutation TranslateText($text: String!, $targetLanguage: String!) {
-    translateText(text: $text, targetLanguage: $targetLanguage)
-  }
-`
 
 interface CardBackground {
   id: number
@@ -291,8 +284,6 @@ const contentToShow = computed(() => {
   return processedOriginalContent.value
 })
 
-const { mutate: translateTextMutation } = useMutation(TRANSLATE_TEXT_MUTATION)
-
 const translatePost = async () => {
   if (isTranslating.value || isTranslated.value) return
 
@@ -300,13 +291,9 @@ const translatePost = async () => {
     isTranslating.value = true
     translationError.value = false
 
-    const { data } = await translateTextMutation({
-      text: props.post?.content || '',
-      targetLanguage: 'pl',
-    })
-    console.log('Otrzymane dane tłumaczenia:', data)
-    if (data?.translateText) {
-      translatedContent.value = data.translateText
+    const translated = await feedApi.translateText(props.post?.content || '', 'pl')
+    if (translated) {
+      translatedContent.value = translated
       isTranslated.value = true
       isOriginalVisible.value = false
     } else {

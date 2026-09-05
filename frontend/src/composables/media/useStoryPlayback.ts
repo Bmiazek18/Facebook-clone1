@@ -1,7 +1,6 @@
 import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed, type Ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { getApolloClient } from '@/utils/apollo'
-import { gql } from 'graphql-tag'
+import { feedApi } from '@/api/feed'
 import type { Story } from '@/types/Story'
 import { getLocalViewedStories } from '@/utils/stories'
 
@@ -16,12 +15,6 @@ function saveStoryToLocalViewed(storyId: string) {
   } catch (e) {}
 }
 
-const MARK_STORY_VIEWED = gql`
-  mutation MarkStoryAsViewed($storyId: ID!, $viewerId: ID!) {
-    markStoryAsViewed(storyId: $storyId, viewerId: $viewerId)
-  }
-`
-
 export function useStoryPlayback(
   currentUserIndex: any,
   currentStoryIndex: any,
@@ -33,11 +26,7 @@ export function useStoryPlayback(
   const authStore = useAuthStore()
   const markStoryViewed = async (vars: { storyId: string; viewerId: string }) => {
     try {
-      const client = getApolloClient()
-      await client.mutate({
-        mutation: MARK_STORY_VIEWED,
-        variables: vars,
-      })
+      await feedApi.markStoryAsViewed(vars.storyId, vars.viewerId)
     } catch (e) {
       console.error('Failed to mark story as viewed:', e)
     }

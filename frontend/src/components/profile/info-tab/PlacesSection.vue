@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, inject, watch } from 'vue'
-import { useMutation } from '@vue/apollo-composable'
-import { gql } from 'graphql-tag'
+import { usersApi } from '@/api/users'
 
 // Import Twojego customowego inputa (dostosuj ścieżkę według struktury projektu)
 import CustomInput from '@/components/common/CustomInput.vue'
@@ -42,27 +41,12 @@ const isValid = computed(() => {
   return company.value.trim().length > 0 && position.value.trim().length > 0
 })
 
-const UPDATE_PROFILE_MUTATION = gql`
-  mutation UpdateProfile($userId: ID!, $input: UpdateProfileInput!) {
-    updateProfile(userId: $userId, input: $input) {
-      id
-      job
-      company
-    }
-  }
-`
-
-const { mutate: updateProfile } = useMutation(UPDATE_PROFILE_MUTATION)
-
 const handleSave = async () => {
   if (!isValid.value) return
   try {
-    await updateProfile({
-      userId: String(profileUser.value.id),
-      input: {
-        job: position.value,
-        company: company.value
-      }
+    await usersApi.updateProfile(profileUser.value.id, {
+      job: position.value,
+      company: company.value
     })
     if (fetchUserProfile) {
       await fetchUserProfile()

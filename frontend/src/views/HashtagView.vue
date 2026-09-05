@@ -27,61 +27,40 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import PostItem from '@/components/feed/post/PostItem.vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useQuery } from '@vue/apollo-composable'
-import { gql } from 'graphql-tag'
+import { feedApi } from '@/api/feed'
 
 const { t } = useI18n()
 const route = useRoute()
 const authStore = useAuthStore()
 
 const hashtag = computed(() => route.params.hashtag)
+const rawPosts = ref<any[]>([])
 
-const GET_FEED_BY_HASHTAG = gql`
-  query GetFeedByHashtag($currentUserId: ID!, $hashtag: String!) {
-    getFeed(currentUserId: $currentUserId, hashtag: $hashtag) {
-      id
-      authorId
-      author {
-        id
-        firstName
-        lastName
-        avatarId
-        avatar
-      }
-      content
-      date
-      timestamp
-      isAnonymous
-      commentCount
-      shareCount
-      media {
-        src
-        altText
-        backgroundColor
-      }
-      reactions {
-        reactionType
-        userIds
-      }
-    }
+const fetchHashtagFeed = async () => {
+  if (!hashtag.value) return
+  try {
+    const posts = await feedApi.getFeed(authStore.currentUserId, String(hashtag.value))
+    rawPosts.value = posts || []
+  } catch (err) {
+    console.error('Failed to fetch hashtag feed:', err)
   }
-`
+}
 
-const { result } = useQuery(GET_FEED_BY_HASHTAG, () => ({
-  currentUserId: String(authStore.currentUserId),
-  hashtag: String(hashtag.value)
-}), {
-  fetchPolicy: 'network-only'
+onMounted(() => {
+  fetchHashtagFeed()
+})
+
+watch(() => [hashtag.value, authStore.currentUserId], () => {
+  fetchHashtagFeed()
 })
 
 const filteredPosts = computed(() => {
-  const rawPosts = result.value?.getFeed ?? []
-  return rawPosts.map((post: any) => {
+  return rawPosts.value.map((post: any) => {
     let formattedReactions: Record<string, number[]> = {}
     if (Array.isArray(post.reactions)) {
       post.reactions.forEach((r: any) => {

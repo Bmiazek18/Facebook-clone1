@@ -2,8 +2,7 @@
 import { ref, onMounted, onUnmounted, computed, provide, watch } from 'vue'
 import { useRoute, useRouter } from 'nuxt/app'
 import { useI18n } from 'vue-i18n'
-import { getApolloClient } from '@/utils/apollo'
-import { gql } from 'graphql-tag'
+import { usersApi } from '@/api/users'
 
 // --- IMPORTY KOMPONENTÓW ---
 import ImageWithGradient from '@/components/media/ImageWithGradient.vue'
@@ -110,50 +109,7 @@ const fetchUserProfile = async () => {
   const fetchId = idVal ? String(idVal) : String(auth.currentUserId)
 
   try {
-    const client = getApolloClient()
-    const { data } = await client.query({
-      query: gql`
-        query GetUserProfile($userId: ID!) {
-          getUserById(userId: $userId) {
-            id
-            firstName
-            lastName
-            avatarId
-            avatar
-            coverId
-            cover
-            city
-            hometown
-            education
-            bio
-            gender
-            birthDate
-            languages
-            pronouns
-            highSchool
-            job
-            company
-            phone
-            website
-            relationshipStatus
-            relationshipSince
-            partnerName
-            partnerAvatar
-            bioDetails
-            namePronunciation
-            otherNames
-            favoriteQuotes
-            createdAt
-            updatedAt
-            note
-          }
-        }
-      `,
-      variables: { userId: fetchId },
-      fetchPolicy: 'network-only',
-    })
-
-    const u = data?.getUserById
+    const u = await usersApi.getUserProfile(fetchId)
     if (u) {
       graphqlProfileUser.value = {
         ...u,
@@ -294,24 +250,8 @@ const fetchProfileFriends = async () => {
   const userId = String(userIdParam.value || auth.currentUserId)
   const currentUserId = String(auth.currentUser?.id || auth.currentUserId || '1')
   try {
-    const apolloClient = getApolloClient()
-    const { data } = await apolloClient.query({
-      query: gql`
-        query ProfileFriends($userId: ID!, $currentUserId: ID!) {
-          getFriends(userId: $userId) {
-            id
-            firstName
-            lastName
-            avatar
-            avatarId
-            mutualFriendsCount(currentUserId: $currentUserId)
-          }
-        }
-      `,
-      variables: { userId, currentUserId },
-      fetchPolicy: 'network-only',
-    })
-    friendsList.value = (data?.getFriends || []).map((friend: any) => ({
+    const rawFriends = await usersApi.getProfileFriends(userId, currentUserId)
+    friendsList.value = rawFriends.map((friend: any) => ({
       id: friend.id,
       name: `${friend.firstName} ${friend.lastName}`,
       avatar: friend.avatar || (friend.avatarId ? `/api/users/avatar/${friend.avatarId}` : '/default-avatar.png'),

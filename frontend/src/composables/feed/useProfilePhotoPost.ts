@@ -1,7 +1,6 @@
-import { gql } from 'graphql-tag'
 import { usePostsStore } from '@/composables/feed/useAppState'
 import { useAuthStore } from '@/stores/auth'
-import { getApolloClient } from '@/utils/apollo'
+import { usersApi } from '@/api/users'
 
 export type ProfilePhotoKind = 'avatar' | 'cover'
 
@@ -69,29 +68,6 @@ export function findProfilePhotoPost(opts: {
   return [...matches].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))[0]
 }
 
-const CREATE_PROFILE_PHOTO_POST = gql`
-  mutation CreateProfilePhotoPost($input: CreatePostInput!) {
-    createPost(input: $input) {
-      id
-      content
-      authorId
-      date
-      timestamp
-      commentCount
-      shareCount
-      media {
-        src
-        altText
-        backgroundColor
-      }
-      reactions {
-        reactionType
-        userIds
-      }
-    }
-  }
-`
-
 export function useProfilePhotoPost() {
   const postsStore = usePostsStore()
   const authStore = useAuthStore()
@@ -101,23 +77,15 @@ export function useProfilePhotoPost() {
     if (!authorId || !mediaSrc) return null
 
     try {
-      const client = getApolloClient()
-      const result = await client.mutate({
-        mutation: CREATE_PROFILE_PHOTO_POST,
-        variables: {
-          input: {
-            content: profilePhotoContent(kind),
-            authorId,
-            media: [{ src: mediaSrc, altText: profilePhotoAlt(kind), tags: [] }],
-            isAnonymous: false,
-            visibility: 'PUBLIC',
-            allowedUserIds: [],
-            taggedUsersIds: [],
-          },
-        },
+      const created = await usersApi.createProfilePhotoPost({
+        content: profilePhotoContent(kind),
+        authorId,
+        media: [{ src: mediaSrc, altText: profilePhotoAlt(kind), tags: [] }],
+        isAnonymous: false,
+        visibility: 'PUBLIC',
+        allowedUserIds: [],
+        taggedUsersIds: [],
       })
-
-      const created = result?.data?.createPost
       if (created) {
         const currentUser = authStore.currentUser
         postsStore.addPost({

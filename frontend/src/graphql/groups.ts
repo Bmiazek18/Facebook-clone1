@@ -1,6 +1,6 @@
-import { graphql } from '@/gql'
+import gql from 'graphql-tag'
 
-export const GET_GROUPS = graphql(`
+export const GET_GROUPS = gql`
   query GetGroups($limit: Int, $offset: Int) {
     getGroups(limit: $limit, offset: $offset) {
       id
@@ -16,9 +16,9 @@ export const GET_GROUPS = graphql(`
       createdAge
     }
   }
-`)
+`
 
-export const GET_GROUP_BY_ID = graphql(`
+export const GET_GROUP_BY_ID = gql`
   query GetGroupById($id: ID!) {
     getGroupById(id: $id) {
       id
@@ -34,9 +34,9 @@ export const GET_GROUP_BY_ID = graphql(`
       createdAge
     }
   }
-`)
+`
 
-export const GET_GROUP_OVERVIEW = graphql(`
+export const GET_GROUP_OVERVIEW = gql`
   query GetGroupOverview($groupId: ID!) {
     getGroupOverview(groupId: $groupId) {
       groupId
@@ -55,9 +55,9 @@ export const GET_GROUP_OVERVIEW = graphql(`
       chartCategories
     }
   }
-`)
+`
 
-export const CREATE_GROUP = graphql(`
+export const CREATE_GROUP = gql`
   mutation CreateGroup($input: CreateGroupInput!) {
     createGroup(input: $input) {
       id
@@ -73,33 +73,33 @@ export const CREATE_GROUP = graphql(`
       createdAge
     }
   }
-`)
+`
 
-export const JOIN_GROUP = graphql(`
+export const JOIN_GROUP = gql`
   mutation JoinGroup($groupId: ID!, $userId: ID!) {
     joinGroup(groupId: $groupId, userId: $userId)
   }
-`)
+`
 
-export const LEAVE_GROUP = graphql(`
+export const LEAVE_GROUP = gql`
   mutation LeaveGroup($groupId: ID!, $userId: ID!) {
     leaveGroup(groupId: $groupId, userId: $userId)
   }
-`)
+`
 
-export const GET_GROUP_MEMBERSHIP = graphql(`
+export const GET_GROUP_MEMBERSHIP = gql`
   query GetGroupMembership($groupId: ID!, $userId: ID!) {
     getGroupMembership(groupId: $groupId, userId: $userId)
   }
-`)
+`
 
-export const GET_PENDING_REQUESTS = graphql(`
+export const GET_PENDING_REQUESTS = gql`
   query GetPendingRequests($groupId: ID!) {
     getPendingRequests(groupId: $groupId)
   }
-`)
+`
 
-export const GET_GROUP_MEMBERS = graphql(`
+export const GET_GROUP_MEMBERS = gql`
   query GetGroupMembers($groupId: ID!) {
     getGroupMembers(groupId: $groupId) {
       userId
@@ -108,33 +108,33 @@ export const GET_GROUP_MEMBERS = graphql(`
       isFriend
     }
   }
-`)
+`
 
-export const APPROVE_GROUP_REQUEST = graphql(`
+export const APPROVE_GROUP_REQUEST = gql`
   mutation ApproveGroupRequest($groupId: ID!, $userId: ID!, $adminId: ID!) {
     approveGroupRequest(groupId: $groupId, userId: $userId, adminId: $adminId)
   }
-`)
+`
 
-export const REJECT_GROUP_REQUEST = graphql(`
+export const REJECT_GROUP_REQUEST = gql`
   mutation RejectGroupRequest($groupId: ID!, $userId: ID!, $adminId: ID!) {
     rejectGroupRequest(groupId: $groupId, userId: $userId, adminId: $adminId)
   }
-`)
+`
 
-export const REMOVE_GROUP_MEMBER = graphql(`
+export const REMOVE_GROUP_MEMBER = gql`
   mutation RemoveGroupMember($groupId: ID!, $userId: ID!, $adminId: ID!) {
     removeGroupMember(groupId: $groupId, userId: $userId, adminId: $adminId)
   }
-`)
+`
 
-export const UPDATE_GROUP_MEMBER_ROLE = graphql(`
+export const UPDATE_GROUP_MEMBER_ROLE = gql`
   mutation UpdateGroupMemberRole($groupId: ID!, $userId: ID!, $role: GroupRole!, $adminId: ID!) {
     updateGroupMemberRole(groupId: $groupId, userId: $userId, role: $role, adminId: $adminId)
   }
-`)
+`
 
-export const GET_GROUP_RULES = graphql(`
+export const GET_GROUP_RULES = gql`
   query GetGroupRules($groupId: ID!) {
     getGroupRules(groupId: $groupId) {
       id
@@ -143,9 +143,9 @@ export const GET_GROUP_RULES = graphql(`
       orderIndex
     }
   }
-`)
+`
 
-export const CREATE_GROUP_RULE = graphql(`
+export const CREATE_GROUP_RULE = gql`
   mutation CreateGroupRule($groupId: ID!, $title: String!, $description: String!) {
     createGroupRule(groupId: $groupId, title: $title, description: $description) {
       id
@@ -154,21 +154,21 @@ export const CREATE_GROUP_RULE = graphql(`
       orderIndex
     }
   }
-`)
+`
 
-export const UPDATE_GROUP_RULES_ORDER = graphql(`
+export const UPDATE_GROUP_RULES_ORDER = gql`
   mutation UpdateGroupRulesOrder($groupId: ID!, $ruleIds: [ID!]!) {
     updateGroupRulesOrder(groupId: $groupId, ruleIds: $ruleIds)
   }
-`)
+`
 
-export const DELETE_GROUP_RULE = graphql(`
+export const DELETE_GROUP_RULE = gql`
   mutation DeleteGroupRule($ruleId: ID!) {
     deleteGroupRule(ruleId: $ruleId)
   }
-`)
+`
 
-export const GET_GROUP_ACTIVITY_LOGS = graphql(`
+export const GET_GROUP_ACTIVITY_LOGS = gql`
   query GetGroupActivityLogs($groupId: ID!) {
     getGroupActivityLogs(groupId: $groupId) {
       id
@@ -181,9 +181,9 @@ export const GET_GROUP_ACTIVITY_LOGS = graphql(`
       date
     }
   }
-`)
+`
 
-export const LOG_GROUP_ACTIVITY = graphql(`
+export const LOG_GROUP_ACTIVITY = gql`
   mutation LogGroupActivity($groupId: ID!, $text: String!, $note: String, $actorId: ID!, $actorName: String!) {
     logGroupActivity(groupId: $groupId, text: $text, note: $note, actorId: $actorId, actorName: $actorName) {
       id
@@ -196,9 +196,9 @@ export const LOG_GROUP_ACTIVITY = graphql(`
       date
     }
   }
-`)
+`
 
-export const GET_GROUP_FEED = graphql(`
+export const GET_GROUP_FEED = gql`
   query GetGroupFeed($groupId: ID!, $limit: Int, $offset: Int) {
     getGroupFeed(groupId: $groupId, limit: $limit, offset: $offset) {
       id
@@ -258,9 +258,9 @@ export const GET_GROUP_FEED = graphql(`
       }
     }
   }
-`)
+`
 
-export const VOTE_ON_POLL_MUTATION = graphql(`
+export const VOTE_ON_POLL_MUTATION = gql`
   mutation VoteOnPoll($postId: ID!, $optionId: ID!, $userId: ID!) {
     voteOnPoll(postId: $postId, optionId: $optionId, userId: $userId) {
       id
@@ -288,4 +288,4 @@ export const VOTE_ON_POLL_MUTATION = graphql(`
       }
     }
   }
-`)
+`

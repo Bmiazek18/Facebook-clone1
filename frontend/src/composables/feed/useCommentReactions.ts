@@ -1,14 +1,7 @@
 import { computed, isRef } from 'vue'
-import { gql } from 'graphql-tag'
 import { useAuthStore } from '@/stores/auth'
 import type { ReactionType } from '@/types/Post'
-import { getApolloClient } from '@/utils/apollo'
-
-const REACT_TO_COMMENT_MUTATION = gql`
-  mutation ReactToComment($input: CommentReactionInput!) {
-    reactToComment(input: $input)
-  }
-`
+import { feedApi } from '@/api/feed'
 
 export const useCommentReactions = (commentInput: any) => {
   const authStore = useAuthStore()
@@ -60,16 +53,10 @@ export const useCommentReactions = (commentInput: any) => {
     comment.userReaction = reaction || undefined
 
     try {
-      const client = getApolloClient()
-      await client.mutate({
-        mutation: REACT_TO_COMMENT_MUTATION,
-        variables: {
-          input: {
-            commentId: String(comment.id),
-            userId: String(userId),
-            reactionType: reaction,
-          },
-        },
+      await feedApi.reactToComment({
+        commentId: String(comment.id),
+        userId: String(userId),
+        reactionType: reaction,
       })
     } catch (e) {
       console.error(`Failed to save reaction for comment ${comment.id}:`, e)

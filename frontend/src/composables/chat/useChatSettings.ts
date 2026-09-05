@@ -1,7 +1,6 @@
 import { ref } from 'vue'
-import { gql } from 'graphql-tag'
 import { useChatStore } from '@/stores/chat'
-import { getApolloClient } from '@/utils/apollo'
+import { chatApi } from '@/api/chat'
 
 export interface ChatSettings {
   chatId: string | number
@@ -46,50 +45,32 @@ export function useChatSettings() {
   }
 
   function saveCustomization(apiUrl: string, headers: Record<string, string>, conversationId: string, emoji?: string, themeId?: number, participantIds?: string[]) {
-    const apolloClient = getApolloClient()
     const senderId = String(headers['X-User-Id'] || headers['x-user-id'] || '').replace('user_', '')
     const cleanConversationId = String(conversationId).replace('user_', '')
     const cleanParticipantIds = participantIds ? participantIds.map(pid => String(pid).replace('user_', '')) : []
 
-    return apolloClient.mutate({
-      mutation: gql`
-        mutation UpdateChatCustomization($senderId: ID!, $conversationId: ID!, $themeId: Int, $emoji: String, $participantIds: [ID!]!) {
-          updateChatCustomization(senderId: $senderId, conversationId: $conversationId, themeId: $themeId, emoji: $emoji, participantIds: $participantIds)
-        }
-      `,
-      variables: {
-        senderId,
-        conversationId: cleanConversationId,
-        themeId: themeId !== undefined ? themeId : null,
-        emoji: emoji || null,
-        participantIds: cleanParticipantIds
-      }
-    }).then(res => res.data?.updateChatCustomization)
-      .catch(err => console.error('Failed to save customization via GraphQL:', err))
+    return chatApi.updateCustomization({
+      senderId,
+      conversationId: cleanConversationId,
+      themeId: themeId !== undefined ? themeId : null,
+      emoji: emoji || null,
+      participantIds: cleanParticipantIds
+    }).catch(err => console.error('Failed to save customization via GraphQL:', err))
   }
 
   function saveNickname(apiUrl: string, headers: Record<string, string>, conversationId: string, userId: string, nickname: string, participantIds?: string[]) {
-    const apolloClient = getApolloClient()
     const senderId = String(headers['X-User-Id'] || headers['x-user-id'] || '').replace('user_', '')
     const cleanConversationId = String(conversationId).replace('user_', '')
     const cleanUserId = String(userId).replace('user_', '')
     const cleanParticipantIds = participantIds ? participantIds.map(pid => String(pid).replace('user_', '')) : []
 
-    return apolloClient.mutate({
-      mutation: gql`
-        mutation UpdateChatNickname($senderId: ID!, $conversationId: ID!, $userId: ID!, $nickname: String, $participantIds: [ID!]!) {
-          updateChatNickname(senderId: $senderId, conversationId: $conversationId, userId: $userId, nickname: $nickname, participantIds: $participantIds)
-        }
-      `,
-      variables: {
-        senderId,
-        conversationId: cleanConversationId,
-        userId: cleanUserId,
-        nickname: nickname || "",
-        participantIds: cleanParticipantIds
-      }
-    }).then(res => res.data?.updateChatNickname)
-      .catch(err => console.error('Failed to save nickname via GraphQL:', err))
+    return chatApi.updateNickname({
+      senderId,
+      conversationId: cleanConversationId,
+      userId: cleanUserId,
+      nickname: nickname || "",
+      participantIds: cleanParticipantIds
+    }).catch(err => console.error('Failed to save nickname via GraphQL:', err))
   }
 
   function saveGroupNicknames(apiUrl: string, headers: Record<string, string>, conversationId: string, nicknames: Record<string, string>, participantIds?: string[]) {

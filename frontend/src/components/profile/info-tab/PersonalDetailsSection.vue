@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, inject, computed, watch } from 'vue'
-import { useMutation } from '@vue/apollo-composable'
-import { gql } from 'graphql-tag'
+import { usersApi } from '@/api/users'
 
 // Importy ikon (Vue Material Design Icons)
 import MapMarker from 'vue-material-design-icons/MapMarker.vue'
@@ -28,24 +27,6 @@ const props = defineProps<{
 
 const isOwner = inject('isOwner', ref(false))
 const fetchUserProfile = inject<() => Promise<void>>('fetchUserProfile')
-
-// --- APOLO MUTATION ---
-const UPDATE_PROFILE_MUTATION = gql`
-  mutation UpdateProfile($userId: ID!, $input: UpdateProfileInput!) {
-    updateProfile(userId: $userId, input: $input) {
-      id
-      location
-      city
-      hometown
-      gender
-      birthDate
-      languages
-      pronouns
-    }
-  }
-`
-
-const { mutate: updateProfile } = useMutation(UPDATE_PROFILE_MUTATION)
 
 // --- PRYWATNOŚĆ ---
 const showPrivacyModal = ref(false)
@@ -261,11 +242,8 @@ const cancelEditingLocation = () => {
 const saveLocation = async () => {
   if (!isLocationChanged.value) return
   try {
-    await updateProfile({
-      userId: String(props.profileUser.id),
-      input: {
-        location: locationForm.value
-      }
+    await usersApi.updateProfile(props.profileUser.id, {
+      location: locationForm.value
     })
     if (fetchUserProfile) {
       await fetchUserProfile()
@@ -278,11 +256,8 @@ const saveLocation = async () => {
 
 const deleteLocation = async () => {
   try {
-    await updateProfile({
-      userId: String(props.profileUser.id),
-      input: {
-        location: ''
-      }
+    await usersApi.updateProfile(props.profileUser.id, {
+      location: ''
     })
     if (fetchUserProfile) {
       await fetchUserProfile()
@@ -313,11 +288,8 @@ const startEditingGender = () => {
 
 const saveGender = async () => {
   try {
-    await updateProfile({
-      userId: String(props.profileUser.id),
-      input: {
-        gender: genderForm.value
-      }
+    await usersApi.updateProfile(props.profileUser.id, {
+      gender: genderForm.value
     })
     if (fetchUserProfile) {
       await fetchUserProfile()
@@ -335,11 +307,8 @@ const startEditingPronouns = () => {
 
 const savePronouns = async () => {
   try {
-    await updateProfile({
-      userId: String(props.profileUser.id),
-      input: {
-        pronouns: pronounsForm.value
-      }
+    await usersApi.updateProfile(props.profileUser.id, {
+      pronouns: pronounsForm.value
     })
     if (fetchUserProfile) {
       await fetchUserProfile()
@@ -357,11 +326,8 @@ const startEditingHometown = () => {
 
 const saveHometown = async () => {
   try {
-    await updateProfile({
-      userId: String(props.profileUser.id),
-      input: {
-        hometown: hometownForm.value
-      }
+    await usersApi.updateProfile(props.profileUser.id, {
+      hometown: hometownForm.value
     })
     if (fetchUserProfile) {
       await fetchUserProfile()

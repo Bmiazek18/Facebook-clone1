@@ -1,6 +1,5 @@
 import { ref } from 'vue'
-import { gql } from 'graphql-tag'
-import { getApolloClient } from '@/utils/apollo'
+import { usersApi } from '@/api/users'
 
 export const usersCache = ref<Record<string, { id: string, name: string, avatar: string, note?: string }>>({})
 
@@ -20,24 +19,8 @@ export function useUserCache() {
     }
 
     try {
-      const apolloClient = getApolloClient()
-      const res = await apolloClient.query({
-        query: gql`
-          query GetUserById($userId: ID!) {
-            getUserById(userId: $userId) {
-              id
-              firstName
-              lastName
-              avatar
-              note
-            }
-          }
-        `,
-        variables: { userId: cleanId },
-        errorPolicy: 'ignore'
-      })
-      if (res.data && res.data.getUserById) {
-        const u = res.data.getUserById
+      const u = await usersApi.getUserById(cleanId)
+      if (u) {
         const avatarUrl = u.avatar || '/default-avatar.png'
         const mapped = {
           id: u.id,

@@ -4,8 +4,7 @@ import { useRoute, useRouter } from 'nuxt/app'
 import { useAuthStore } from '@/stores/auth'
 import { usePostsStore } from '@/composables/feed/useAppState'
 import { getUserById } from '@/utils/users'
-import { getApolloClient } from '@/utils/apollo'
-import { gql } from 'graphql-tag'
+import { usersApi } from '@/api/users'
 
 // Import components
 import PostItem from '@/components/feed/post/PostItem.vue'
@@ -46,31 +45,10 @@ const performSearch = async () => {
   isSearching.value = true
   try {
     const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1')
-    const apolloClient = getApolloClient()
-    const { data } = await apolloClient.query({
-      query: gql`
-        query SearchUsers($query: String!, $currentUserId: ID!) {
-          searchUsers(query: $query, currentUserId: $currentUserId) {
-            id
-            firstName
-            lastName
-            avatarId
-            avatar
-            inHistory
-            newPostsCount
-            mutualFriendsCount(currentUserId: $currentUserId)
-          }
-        }
-      `,
-      variables: {
-        query,
-        currentUserId,
-      },
-      fetchPolicy: 'network-only',
-    })
+    const users = await usersApi.searchUsers(query, currentUserId)
 
-    if (data?.searchUsers) {
-      searchResults.value = data.searchUsers.map((user: any) => ({
+    if (users) {
+      searchResults.value = users.map((user: any) => ({
         id: user.id,
         name: `${user.firstName} ${user.lastName}`,
         avatar: user.avatar || '/default-avatar.png',

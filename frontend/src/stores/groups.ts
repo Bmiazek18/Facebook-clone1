@@ -1,60 +1,16 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { getApolloClient } from '@/utils/apollo'
+import { groupsApi } from '@/api/groups'
 import { useAuthStore } from '@/stores/auth'
 import type { Group, GroupRole } from '@/types/Group'
-import {
-  GET_GROUPS,
-  GET_GROUP_BY_ID,
-  GET_GROUP_OVERVIEW,
-  CREATE_GROUP,
-  JOIN_GROUP,
-  LEAVE_GROUP,
-  GET_GROUP_MEMBERSHIP,
-  GET_PENDING_REQUESTS,
-  GET_GROUP_MEMBERS,
-  APPROVE_GROUP_REQUEST,
-  REJECT_GROUP_REQUEST,
-  REMOVE_GROUP_MEMBER,
-  UPDATE_GROUP_MEMBER_ROLE,
-  GET_GROUP_RULES,
-  CREATE_GROUP_RULE,
-  UPDATE_GROUP_RULES_ORDER,
-  DELETE_GROUP_RULE,
-  GET_GROUP_ACTIVITY_LOGS,
-  LOG_GROUP_ACTIVITY
-} from '@/graphql/groups'
 
 export const useGroupsStore = defineStore('groups', () => {
   const groups = ref<Group[]>([])
   const authStore = useAuthStore()
 
-  const mapGraphQLGroupToGroup = (g: any): Group => ({
-    id: g.id,
-    name: g.name,
-    description: g.description || '',
-    members: g.membersCount || 0,
-    privacy: g.privacy || 'public',
-    image: g.image || '',
-    images: g.image ? [g.image] : [],
-    lastActive: g.lastActive || '1 min temu',
-    newPostsToday: g.newPostsToday || 0,
-    newPostsMonth: g.newPostsMonth || 0,
-    newMembersWeek: g.newMembersWeek || '',
-    createdAge: g.createdAge || ''
-  })
-
   const fetchGroups = async () => {
     try {
-      const client = getApolloClient()
-      const result = await client.query({
-        query: GET_GROUPS,
-        variables: { limit: 100, offset: 0 },
-        fetchPolicy: 'network-only'
-      })
-      if (result?.data?.getGroups) {
-        groups.value = result.data.getGroups.map(mapGraphQLGroupToGroup)
-      }
+      groups.value = await groupsApi.getGroups(100, 0)
     } catch (e) {
       console.error('Failed to fetch groups:', e)
     }
@@ -67,15 +23,8 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const loadGroupDetails = async (id: string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.query({
-        query: GET_GROUP_BY_ID,
-        variables: { id },
-        fetchPolicy: 'network-only'
-      })
-      if (result?.data?.getGroupById) {
-        const g = result.data.getGroupById
-        const groupObj = mapGraphQLGroupToGroup(g)
+      const groupObj = await groupsApi.getGroupById(id)
+      if (groupObj) {
         const index = groups.value.findIndex((grp) => grp.id === id)
         if (index !== -1) {
           groups.value[index] = groupObj
@@ -92,22 +41,14 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const addGroup = async (groupInput: Omit<Group, 'id' | 'members'>) => {
     try {
-      const client = getApolloClient()
-      const result = await client.mutate({
-        mutation: CREATE_GROUP,
-        variables: {
-          input: {
-            name: groupInput.name,
-            description: groupInput.description || '',
-            privacy: groupInput.privacy,
-            image: groupInput.image || '',
-            creatorId: authStore.currentUserId
-          }
-        }
+      const newGroup = await groupsApi.createGroup({
+        name: groupInput.name,
+        description: groupInput.description || '',
+        privacy: groupInput.privacy,
+        image: groupInput.image || '',
+        creatorId: authStore.currentUserId
       })
-      if (result?.data?.createGroup) {
-        const g = result.data.createGroup
-        const newGroup = mapGraphQLGroupToGroup(g)
+      if (newGroup) {
         groups.value.push(newGroup)
         return newGroup
       }
@@ -119,20 +60,11 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const joinGroup = async (groupId: string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.mutate({
-        mutation: JOIN_GROUP,
-        variables: {
-          groupId,
-          userId: authStore.currentUserId
-        }
-      })
-      if (result?.data?.joinGroup) {
+      const success = await groupsApi.joinGroup(groupId, authStore.currentUserId)
+      if (success) {
         const grp = groups.value.find((g) => g.id === groupId)
-        if (grp) {
-          if (grp.privacy !== 'private') {
-            grp.members++
-          }
+        if (grp && grp.privacy !== 'private') {
+          grp.members++
         }
         return true
       }
@@ -144,15 +76,8 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const leaveGroup = async (groupId: string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.mutate({
-        mutation: LEAVE_GROUP,
-        variables: {
-          groupId,
-          userId: authStore.currentUserId
-        }
-      })
-      if (result?.data?.leaveGroup) {
+      const success = await groupsApi.leaveGroup(groupId, authStore.currentUserId)
+      if (success) {
         const grp = groups.value.find((g) => g.id === groupId)
         if (grp) grp.members = Math.max(0, grp.members - 1)
         return true
@@ -165,13 +90,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const getGroupMembership = async (groupId: string, userId: string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.query({
-        query: GET_GROUP_MEMBERSHIP,
-        variables: { groupId, userId },
-        fetchPolicy: 'network-only'
-      })
-      return result?.data?.getGroupMembership || ''
+      return await groupsApi.getMembership(groupId, userId)
     } catch (e) {
       console.error('Failed to get group membership:', e)
       return ''
@@ -180,13 +99,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const getPendingRequests = async (groupId: string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.query({
-        query: GET_PENDING_REQUESTS,
-        variables: { groupId },
-        fetchPolicy: 'network-only'
-      })
-      return result?.data?.getPendingRequests || []
+      return await groupsApi.getPendingRequests(groupId)
     } catch (e) {
       console.error('Failed to get pending requests:', e)
       return []
@@ -195,16 +108,8 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const approveGroupRequest = async (groupId: string, userId: string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.mutate({
-        mutation: APPROVE_GROUP_REQUEST,
-        variables: {
-          groupId,
-          userId,
-          adminId: authStore.currentUserId
-        }
-      })
-      if (result?.data?.approveGroupRequest) {
+      const success = await groupsApi.approveRequest(groupId, userId, authStore.currentUserId)
+      if (success) {
         const grp = groups.value.find((g) => g.id === groupId)
         if (grp) grp.members++
         return true
@@ -217,16 +122,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const rejectGroupRequest = async (groupId: string, userId: string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.mutate({
-        mutation: REJECT_GROUP_REQUEST,
-        variables: {
-          groupId,
-          userId,
-          adminId: authStore.currentUserId
-        }
-      })
-      return !!result?.data?.rejectGroupRequest
+      return await groupsApi.rejectRequest(groupId, userId, authStore.currentUserId)
     } catch (e) {
       console.error('Failed to reject group request:', e)
     }
@@ -235,13 +131,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const fetchGroupMembers = async (groupId: string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.query({
-        query: GET_GROUP_MEMBERS,
-        variables: { groupId },
-        fetchPolicy: 'network-only'
-      })
-      return result?.data?.getGroupMembers || []
+      return await groupsApi.getMembers(groupId)
     } catch (e) {
       console.error('Failed to fetch group members:', e)
       return []
@@ -250,16 +140,8 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const removeGroupMember = async (groupId: string, userId: string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.mutate({
-        mutation: REMOVE_GROUP_MEMBER,
-        variables: {
-          groupId,
-          userId,
-          adminId: authStore.currentUserId
-        }
-      })
-      if (result?.data?.removeGroupMember) {
+      const success = await groupsApi.removeMember(groupId, userId, authStore.currentUserId)
+      if (success) {
         const grp = groups.value.find((g) => g.id === groupId)
         if (grp) grp.members = Math.max(0, grp.members - 1)
         return true
@@ -272,17 +154,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const updateGroupMemberRole = async (groupId: string, userId: string, role: GroupRole | string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.mutate({
-        mutation: UPDATE_GROUP_MEMBER_ROLE,
-        variables: {
-          groupId,
-          userId,
-          role,
-          adminId: authStore.currentUserId
-        }
-      })
-      return !!result?.data?.updateGroupMemberRole
+      return await groupsApi.updateMemberRole(groupId, userId, role, authStore.currentUserId)
     } catch (e) {
       console.error('Failed to update group member role:', e)
     }
@@ -291,13 +163,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const getGroupOverview = async (groupId: string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.query({
-        query: GET_GROUP_OVERVIEW,
-        variables: { groupId },
-        fetchPolicy: 'network-only'
-      })
-      return result?.data?.getGroupOverview || null
+      return await groupsApi.getOverview(groupId)
     } catch (e) {
       console.error('Failed to get group overview:', e)
       return null
@@ -306,13 +172,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const fetchGroupRules = async (groupId: string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.query({
-        query: GET_GROUP_RULES,
-        variables: { groupId },
-        fetchPolicy: 'network-only'
-      })
-      return result?.data?.getGroupRules || []
+      return await groupsApi.getRules(groupId)
     } catch (e) {
       console.error('Failed to fetch group rules:', e)
       return []
@@ -321,12 +181,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const createGroupRule = async (groupId: string, title: string, description: string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.mutate({
-        mutation: CREATE_GROUP_RULE,
-        variables: { groupId, title, description }
-      })
-      return result?.data?.createGroupRule
+      return await groupsApi.createRule(groupId, title, description)
     } catch (e) {
       console.error('Failed to create group rule:', e)
       return null
@@ -335,12 +190,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const updateGroupRulesOrder = async (groupId: string, ruleIds: string[]) => {
     try {
-      const client = getApolloClient()
-      const result = await client.mutate({
-        mutation: UPDATE_GROUP_RULES_ORDER,
-        variables: { groupId, ruleIds }
-      })
-      return !!result?.data?.updateGroupRulesOrder
+      return await groupsApi.updateRulesOrder(groupId, ruleIds)
     } catch (e) {
       console.error('Failed to update group rules order:', e)
       return false
@@ -349,12 +199,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const deleteGroupRule = async (ruleId: string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.mutate({
-        mutation: DELETE_GROUP_RULE,
-        variables: { ruleId }
-      })
-      return !!result?.data?.deleteGroupRule
+      return await groupsApi.deleteRule(ruleId)
     } catch (e) {
       console.error('Failed to delete group rule:', e)
       return false
@@ -363,13 +208,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const fetchGroupActivityLogs = async (groupId: string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.query({
-        query: GET_GROUP_ACTIVITY_LOGS,
-        variables: { groupId },
-        fetchPolicy: 'network-only'
-      })
-      return result?.data?.getGroupActivityLogs || []
+      return await groupsApi.getActivityLogs(groupId)
     } catch (e) {
       console.error('Failed to fetch group activity logs:', e)
       return []
@@ -378,23 +217,17 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const logGroupActivity = async (groupId: string, text: string, note?: string) => {
     try {
-      const client = getApolloClient()
-      const actorId = authStore.currentUserId || '1'
       const actorName = [authStore.currentUser?.firstName, authStore.currentUser?.lastName]
         .filter(Boolean)
         .join(' ') || 'Test Testowy'
 
-      const result = await client.mutate({
-        mutation: LOG_GROUP_ACTIVITY,
-        variables: {
-          groupId,
-          text,
-          note: note || '',
-          actorId,
-          actorName
-        }
+      return await groupsApi.logActivity({
+        groupId,
+        text,
+        note: note || '',
+        actorId: authStore.currentUserId || '1',
+        actorName
       })
-      return result?.data?.logGroupActivity
     } catch (e) {
       console.error('Failed to log group activity:', e)
       return null

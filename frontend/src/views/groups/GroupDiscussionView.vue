@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import CreateBox from '@/components/create/createPost/CreateBox.vue'
 import PostItem from '@/components/feed/post/PostItem.vue'
@@ -7,10 +7,7 @@ import { usePostsStore } from '@/composables/feed/useAppState'
 import { useI18n } from 'vue-i18n'
 import CommentFilter from '@/components/profile/CommentFilter.vue'
 import type { Group } from '@/types/Group'
-
-import { useQuery } from '@vue/apollo-composable'
-import { gql } from 'graphql-tag'
-import { watch } from 'vue'
+import { groupsApi } from '@/api/groups'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -21,25 +18,36 @@ defineProps<{
   stickyTop?: number
 }>()
 
-import { GET_GROUP_FEED } from '@/graphql/groups'
-
 const groupId = computed(() => route.params.id as string)
-const { result: feedResult, refetch } = useQuery(GET_GROUP_FEED, () => ({
-  groupId: groupId.value,
-  limit: 20,
-  offset: 0
-}), {
-  fetchPolicy: 'network-only'
+const queryPosts = ref<any[]>([])
+
+const fetchFeed = async () => {
+  if (!groupId.value) return
+  try {
+    const feed = await groupsApi.getGroupFeed(groupId.value, 20, 0)
+    queryPosts.value = feed || []
+  } catch (err) {
+    console.error('Failed to fetch group feed:', err)
+  }
+}
+
+onMounted(() => {
+  fetchFeed()
+})
+
+watch(groupId, (newId) => {
+  if (newId) {
+    fetchFeed()
+  }
 })
 
 const groupPosts = computed(() => {
-  const queryPosts = feedResult.value?.getGroupFeed ?? []
   const localPosts = postsStore.posts.filter(
     (p) => p.targetType === 'Group' && String(p.targetId) === String(groupId.value)
   )
 
   const merged = [...localPosts]
-  queryPosts.forEach((qp) => {
+  queryPosts.value.forEach((qp) => {
     if (!merged.some((mp) => String(mp.id) === String(qp.id))) {
       merged.push(qp)
     }
@@ -50,12 +58,6 @@ const groupPosts = computed(() => {
     const timeB = typeof b.timestamp === 'number' ? b.timestamp : new Date(b.timestamp).getTime()
     return timeB - timeA
   })
-})
-
-watch(groupId, (newId) => {
-  if (newId) {
-    refetch({ groupId: newId, limit: 20, offset: 0 })
-  }
 })
 
 const handleDeletePost = (postId: string) => {

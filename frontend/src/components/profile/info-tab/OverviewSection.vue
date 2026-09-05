@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, inject } from 'vue'
 import type { User } from '@/utils/users'
-import { useMutation } from '@vue/apollo-composable'
-import { gql } from 'graphql-tag'
+import { usersApi } from '@/api/users'
 
 // Import ikon z Material Design
 import Pencil from 'vue-material-design-icons/Pencil.vue'
@@ -29,28 +28,14 @@ const pinnedSettings = reactive({
   school: true,
 })
 
-const UPDATE_PROFILE_MUTATION = gql`
-  mutation UpdateProfile($userId: ID!, $input: UpdateProfileInput!) {
-    updateProfile(userId: $userId, input: $input) {
-      id
-      bio
-    }
-  }
-`
-
-const { mutate: updateProfile } = useMutation(UPDATE_PROFILE_MUTATION)
-
 // --- FUNKCJE ZAPISU ---
 const savePinned = () => {
   isEditingPinned.value = false
 }
 const saveBio = async () => {
   try {
-    await updateProfile({
-      userId: String(props.profileUser.id),
-      input: {
-        bio: bioText.value
-      }
+    await usersApi.updateProfile(props.profileUser.id, {
+      bio: bioText.value
     })
     if (fetchUserProfile) {
       await fetchUserProfile()

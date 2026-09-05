@@ -1,6 +1,5 @@
 import { ref } from 'vue'
-import { gql } from 'graphql-tag'
-import { getApolloClient } from '@/utils/apollo'
+import { usersApi } from '@/api/users'
 
 export interface UserMediaItem {
   id: string
@@ -19,36 +18,6 @@ export interface UserAlbum {
   count: number
   coverUrl?: string
 }
-
-const GET_USER_MEDIA_QUERY = gql`
-  query GetUserMedia($userId: ID!, $filter: String, $albumName: String, $limit: Int, $offset: Int) {
-    getUserMedia(userId: $userId, filter: $filter, albumName: $albumName, limit: $limit, offset: $offset) {
-      items {
-        id
-        userId
-        postId
-        mediaUrl
-        mediaType
-        albumName
-        altText
-        createdAt
-        timestamp
-      }
-      totalCount
-      hasMore
-    }
-  }
-`
-
-const GET_USER_ALBUMS_QUERY = gql`
-  query GetUserAlbums($userId: ID!) {
-    getUserAlbums(userId: $userId) {
-      name
-      count
-      coverUrl
-    }
-  }
-`
 
 export function useUserMedia() {
   const mediaItems = ref<UserMediaItem[]>([])
@@ -70,21 +39,8 @@ export function useUserMedia() {
     loading.value = true
 
     try {
-      const client = getApolloClient()
-      const { data } = await client.query({
-        query: GET_USER_MEDIA_QUERY,
-        variables: {
-          userId: String(userId),
-          filter: filter,
-          albumName: albumName || null,
-          limit: limit,
-          offset: offset.value,
-        },
-        fetchPolicy: 'network-only',
-      })
-
-      if (data?.getUserMedia) {
-        const res = data.getUserMedia
+      const res = await usersApi.getUserMedia(userId, filter, albumName, limit, offset.value)
+      if (res) {
         if (reset) {
           mediaItems.value = res.items || []
         } else {
@@ -108,15 +64,7 @@ export function useUserMedia() {
 
   async function fetchAlbums(userId: string) {
     try {
-      const client = getApolloClient()
-      const { data } = await client.query({
-        query: GET_USER_ALBUMS_QUERY,
-        variables: { userId: String(userId) },
-        fetchPolicy: 'network-only',
-      })
-      if (data?.getUserAlbums) {
-        albums.value = data.getUserAlbums
-      }
+      albums.value = await usersApi.getUserAlbums(userId)
     } catch (e) {
       console.error('Failed to fetch user albums:', e)
     }

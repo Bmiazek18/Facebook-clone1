@@ -99,9 +99,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'nuxt/app'
 import { useAuthStore } from '@/stores/auth'
-import { getApolloClient } from '@/utils/apollo'
-import { GET_FRIENDS, GET_FRIEND_SUGGESTIONS } from '@/graphql/friends'
-import { SEARCH_USERS } from '@/graphql/search'
+import { usersApi } from '@/api/users'
 
 const props = withDefaults(
   defineProps<{
@@ -119,18 +117,13 @@ const contacts = ref<any[]>([])
 
 const fetchContacts = async () => {
   const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
-  const apolloClient = getApolloClient()
   
   try {
     // 1. Fetch real friends from Neo4j (via getFriends query)
-    const { data } = await apolloClient.query({
-      query: GET_FRIENDS,
-      variables: { userId: currentUserId },
-      fetchPolicy: 'network-only'
-    })
+    const friends = await usersApi.getFriends(currentUserId)
     
-    if (data?.getFriends && data.getFriends.length > 0) {
-      contacts.value = data.getFriends
+    if (friends && friends.length > 0) {
+      contacts.value = friends
       return
     }
   } catch (err) {
@@ -139,14 +132,10 @@ const fetchContacts = async () => {
 
   // 2. Fallback: If no friends yet, load suggestions (people you may know)
   try {
-    const { data: suggestionData } = await apolloClient.query({
-      query: GET_FRIEND_SUGGESTIONS,
-      variables: { currentUserId },
-      fetchPolicy: 'network-only'
-    })
+    const suggestions = await usersApi.getFriendSuggestions(currentUserId)
     
-    if (suggestionData?.getFriendSuggestions) {
-      contacts.value = suggestionData.getFriendSuggestions
+    if (suggestions && suggestions.length > 0) {
+      contacts.value = suggestions
         .filter((s: any) => s.user)
         .map((s: any) => s.user)
     }
@@ -178,14 +167,7 @@ const fetchSearchResults = async (query: string) => {
   isSearching.value = true
   try {
     const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
-    const { data } = await apolloClient.query({
-      query: SEARCH_USERS,
-      variables: {
-        query,
-        currentUserId,
-      }
-    })
-    searchResults.value = data?.searchUsers || []
+    searchResults.value = await usersApi.searchUsers(query, currentUserId)
   } catch (err) {
     console.error('Failed to search users:', err)
   } finally {

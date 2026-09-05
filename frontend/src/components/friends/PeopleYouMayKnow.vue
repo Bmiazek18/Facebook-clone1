@@ -71,8 +71,7 @@ import { useI18n } from 'vue-i18n'
 import Card from '@/components/friends/PeopleYouMayKnowCard.vue'
 import type { Person } from '@/types/Person'
 import { useCarousel } from '@/composables/media/useCarousel'
-import { getApolloClient } from '@/utils/apollo'
-import { gql } from 'graphql-tag'
+import { usersApi } from '@/api/users'
 import { useAuthStore } from '@/stores/auth'
 
 // i18n
@@ -87,16 +86,6 @@ import PlusCircleIcon from 'vue-material-design-icons/PlusCircle.vue'
 
 const authStore = useAuthStore()
 
-// --- MUTACJA WYSYŁANIA ZAPROSZENIA ---
-const SEND_FRIEND_REQUEST_MUTATION = gql`
-  mutation SendFriendRequest($senderId: ID!, $receiverId: ID!) {
-    sendFriendRequest(senderId: $senderId, receiverId: $receiverId) {
-      success
-      message
-    }
-  }
-`
-
 // --- UŻYCIE COMPOSABLE ---
 const { carouselRef, isStart, isEnd, scrollLeft, scrollRight, checkScrollState } = useCarousel(2)
 
@@ -104,28 +93,9 @@ const people = ref<Person[]>([])
 
 const fetchSuggestions = async () => {
   try {
-    const client = getApolloClient()
-    const { data } = await client.query({
-      query: gql`
-        query GetFriendSuggestions($currentUserId: ID!) {
-          getFriendSuggestions(currentUserId: $currentUserId) {
-            userId
-            mutualFriendsCount
-            user {
-              id
-              firstName
-              lastName
-              avatarId
-              avatar
-            }
-          }
-        }
-      `,
-      variables: { currentUserId: String(authStore.currentUserId) },
-      fetchPolicy: 'network-only',
-    })
+    const suggestions = await usersApi.getFriendSuggestions(authStore.currentUserId || '1')
 
-    people.value = (data?.getFriendSuggestions || []).map((s: any) => {
+    people.value = (suggestions || []).map((s: any) => {
       const u = s.user
       return {
         id: s.userId,
@@ -152,14 +122,7 @@ onMounted(() => {
 
 const handleAddFriend = async (id: string | number) => {
   try {
-    const client = getApolloClient()
-    await client.mutate({
-      mutation: SEND_FRIEND_REQUEST_MUTATION,
-      variables: {
-        senderId: String(authStore.currentUserId),
-        receiverId: String(id),
-      },
-    })
+    await usersApi.sendFriendRequest(authStore.currentUserId || '1', id)
     removeCard(id)
   } catch (err) {
     console.error('Failed to send friend request:', err)

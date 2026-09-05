@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useQuery } from '@vue/apollo-composable'
-import { gql } from '@apollo/client/core'
+import { ref, computed, onMounted, watch } from 'vue'
+import { marketplaceApi } from '@/api/marketplace'
 import MarketplaceLeftSidebar from '@/components/marketplace/MarketplaceLeftSidebar.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import MapRadius from '@/components/marketplace/MapRadius.vue'
@@ -13,6 +12,9 @@ const currentLat = ref(52.0593) // Szerokość geograficzna
 const currentLon = ref(19.2003) // Długość geograficzna
 const currentCityName = ref('Łęczyca') // Nazwa miasta
 const searchQuery = ref('') // Fraza wyszukiwania
+const rawListings = ref<any[]>([])
+const loading = ref(false)
+const error = ref<any>(null)
 
 const openLocationModal = () => {
   showLocationModal.value = true
@@ -26,6 +28,25 @@ const handleRadiusUpdate = (radius: number) => {
   selectedRadius.value = radius
 }
 
+const fetchListings = async () => {
+  loading.value = true
+  error.value = null
+  try {
+    const list = await marketplaceApi.getNearbyListings(
+      currentLat.value,
+      currentLon.value,
+      selectedRadius.value * 1000.0,
+      searchQuery.value
+    )
+    rawListings.value = list || []
+  } catch (err) {
+    console.error('Failed to fetch marketplace listings:', err)
+    error.value = err
+  } finally {
+    loading.value = false
+  }
+}
+
 const handleApply = (radius: number, lat?: number, lon?: number, cityName?: string) => {
   selectedRadius.value = radius
   if (lat !== undefined && lon !== undefined) {
@@ -36,47 +57,21 @@ const handleApply = (radius: number, lat?: number, lon?: number, cityName?: stri
     currentCityName.value = cityName
   }
   closeLocationModal()
-  // W Apollo nie musimy wywoływać funkcji fetch ręcznie – zmiana zmiennych automatycznie odświeży dane!
+  fetchListings()
 }
 
 const handleSearch = (q: string) => {
   searchQuery.value = q
+  fetchListings()
 }
 
-// Definicja zapytania GraphQL
-const GET_NEARBY_LISTINGS = gql`
-  query GetNearbyListings($lat: Float!, $lon: Float!, $radius: Float, $query: String) {
-    getNearbyListings(lat: $lat, lon: $lon, radius: $radius, query: $query) {
-      id
-      title
-      price
-      category
-      condition
-      description
-      latitude
-      longitude
-      createdAt
-    }
-  }
-`
-
-// Użycie Apollo useQuery – automatycznie zarządza cashem i zapobiega niepotrzebnym powtórnym strzałom do API
-const { result, loading, error } = useQuery(GET_NEARBY_LISTINGS, () => ({
-  lat: currentLat.value,
-  lon: currentLon.value,
-  radius: selectedRadius.value * 1000.0, // Przeliczenie na metry
-  query: searchQuery.value,
-}), {
-  // Opcje cache: jeśli zmienne się nie zmieniły, Apollo bierze dane z pamięci podręcznej
-  fetchPolicy: 'cache-first',
-  // Zapobiega ponownemu odpytywaniu przy zmianie focusu okna
-  refetchOnWindowFocus: false,
+onMounted(() => {
+  fetchListings()
 })
 
-// Przekształcenie danych z Apollo na format interfejsu widoku
+// Przekształcenie danych z API na format interfejsu widoku
 const listings = computed(() => {
-  const dataList = result.value?.getNearbyListings || []
-  return dataList.map((item: any) => ({
+  return rawListings.value.map((item: any) => ({
     id: item.id,
     title: item.title,
     price: Number(item.price) === 0 ? 'BEZPŁATNE' : `PLN ${Number(item.price).toLocaleString()}`,

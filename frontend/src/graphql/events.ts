@@ -1,6 +1,6 @@
-import { graphql } from '@/gql'
+import gql from 'graphql-tag'
 
-export const CREATE_EVENT = graphql(`
+export const CREATE_EVENT = gql`
   mutation CreateEvent($input: CreateEventInput!) {
     createEvent(input: $input) {
       id
@@ -28,9 +28,9 @@ export const CREATE_EVENT = graphql(`
       frequency
     }
   }
-`)
+`
 
-export const GET_EVENT_BY_ID = graphql(`
+export const GET_EVENT_BY_ID = gql`
   query GetEventById($id: ID!) {
     getEventById(id: $id) {
       id
@@ -58,9 +58,9 @@ export const GET_EVENT_BY_ID = graphql(`
       frequency
     }
   }
-`)
+`
 
-export const GET_EVENTS = graphql(`
+export const GET_EVENTS = gql`
   query GetEvents($limit: Int, $offset: Int) {
     getEvents(limit: $limit, offset: $offset) {
       id
@@ -88,9 +88,9 @@ export const GET_EVENTS = graphql(`
       frequency
     }
   }
-`)
+`
 
-export const SEARCH_EVENTS = graphql(`
+export const SEARCH_EVENTS = gql`
   query SearchEvents($query: String!) {
     searchEvents(query: $query) {
       id
@@ -118,4 +118,4 @@ export const SEARCH_EVENTS = graphql(`
       frequency
     }
   }
-`)
+`

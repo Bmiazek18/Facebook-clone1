@@ -126,10 +126,9 @@
 
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, provide } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, provide, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useQuery } from '@vue/apollo-composable'
-import { gql } from 'graphql-tag'
+import { feedApi } from '@/api/feed'
 import { processPostsIntoReels } from '@/utils/reels'
 import ReelItem from '../components/feed/reel/ReelItem.vue'
 import ReelInfoPanel from '@/components/feed/reel/ReelInfoPanel.vue'
@@ -141,41 +140,27 @@ import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue'
 const authStore = useAuthStore()
 
 const currentTab = ref('for-you')
+const feedData = ref<any[]>([])
 
-const GET_FEED = gql`
-  query GetFeed($currentUserId: ID!) {
-    getFeed(currentUserId: $currentUserId) {
-      id
-      authorId
-      author {
-        id
-        firstName
-        lastName
-        avatarId
-      }
-      content
-      date
-      timestamp
-      isAnonymous
-      media {
-        src
-        altText
-        backgroundColor
-      }
-      reactions {
-        reactionType
-        userIds
-      }
-    }
+const fetchReelsFeed = async () => {
+  try {
+    const feed = await feedApi.getFeed(authStore.currentUserId)
+    feedData.value = feed || []
+  } catch (err) {
+    console.error('Failed to fetch reels feed:', err)
   }
-`
+}
 
-const { result } = useQuery(GET_FEED, {
-  currentUserId: String(authStore.currentUserId)
+onMounted(() => {
+  fetchReelsFeed()
+})
+
+watch(() => authStore.currentUserId, () => {
+  fetchReelsFeed()
 })
 
 const allPosts = computed(() => {
-  const feed = result.value?.getFeed ?? []
+  const feed = feedData.value ?? []
   return feed.map((post: any) => {
     let formattedReactions: Record<string, number[]> = {}
     if (Array.isArray(post.reactions)) {

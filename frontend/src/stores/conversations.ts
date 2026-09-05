@@ -14,9 +14,7 @@ import { useUserCache } from '@/composables/shared/useUserCache'
 import { useChatCalls } from '@/composables/chat/useChatCalls'
 import { useChatSettings } from '@/composables/chat/useChatSettings'
 import { useChatApi } from '@/composables/chat/useChatApi'
-import { getApolloClient } from '@/utils/apollo'
-import { gql } from 'graphql-tag'
-import { MARK_INBOX_AS_READ } from '@/graphql/chat'
+import { chatApi } from '@/api/chat'
 import { decryptMessage, encryptMessage } from '@/utils/e2ee'
 import { signalStore } from '@/utils/e2ee/signalStore.client'
 import { getSymmetricUuid } from '@/utils/uuid'
@@ -544,14 +542,8 @@ export const useConversationsStore = defineStore('conversations', () => {
           const cleanActiveIdForRead = String(activeChatId.value || '').replace('user_', '')
           const cleanLogicalIdForRead = String(logicalChatId).replace('user_', '')
           if (newMsg.sender !== 'me' && cleanActiveIdForRead === cleanLogicalIdForRead) {
-            const apolloClient = getApolloClient()
-            apolloClient.mutate({
-              mutation: MARK_INBOX_AS_READ,
-              variables: {
-                userId: String(currentUserUuid.value),
-                conversationId: String(convId)
-              }
-            }).catch(err => console.error('Failed to mark message as read:', err))
+            chatApi.markInboxAsRead(String(currentUserUuid.value), String(convId))
+              .catch(err => console.error('Failed to mark message as read:', err))
 
             if (!lastReadMaps.value[logicalChatId]) {
               lastReadMaps.value[logicalChatId] = {}
@@ -783,32 +775,8 @@ export const useConversationsStore = defineStore('conversations', () => {
   async function fetchChatSettings(chatId: string | number) {
     if (!import.meta.client) return
     const conversationId = getSymmetricConversationId(chatId)
-    const apolloClient = getApolloClient()
     try {
-      const res = await apolloClient.query({
-        query: gql`
-          query GetChatSettings($conversationId: ID!) {
-            getChatSettings(conversationId: $conversationId) {
-              themeId
-              emoji
-              nicknames {
-                userId
-                nickname
-              }
-              participants {
-                id
-                firstName
-                lastName
-                avatar
-              }
-              isGroup
-            }
-          }
-        `,
-        variables: { conversationId },
-        fetchPolicy: 'cache-first'
-      })
-      const data = res.data?.getChatSettings
+      const data = await chatApi.getChatSettings(conversationId)
       if (data) {
         const s = chatSettings._getOrCreateSettings(chatId)
         if (data.emoji) {
@@ -881,21 +849,13 @@ export const useConversationsStore = defineStore('conversations', () => {
     const conversationId = getSymmetricConversationId(chatId)
     const cleanCurrentUserUuid = String(authStore.currentUserId || '1').replace('user_', '')
     const cleanChatId = String(chatId).replace('user_', '')
-    const apolloClient = getApolloClient()
 
     try {
-      await apolloClient.mutate({
-        mutation: gql`
-          mutation PinChatMessage($conversationId: ID!, $messageId: ID!, $isPinned: Boolean!, $participantIds: [ID!]!) {
-            pinChatMessage(conversationId: $conversationId, messageId: $messageId, isPinned: $isPinned, participantIds: $participantIds)
-          }
-        `,
-        variables: {
-          conversationId,
-          messageId: String(messageId),
-          isPinned: newPinnedStatus,
-          participantIds: [cleanCurrentUserUuid, cleanChatId],
-        }
+      await chatApi.pinMessage({
+        conversationId,
+        messageId: String(messageId),
+        isPinned: newPinnedStatus,
+        participantIds: [cleanCurrentUserUuid, cleanChatId],
       })
     } catch (err) {
       console.error('Failed to toggle pin state on backend via GraphQL:', err)
@@ -1055,66 +1015,31 @@ export const useConversationsStore = defineStore('conversations', () => {
     const cleanCurrentUserUuid = String(currentUserUuid.value).replace('user_', '')
     const cleanSelectedUserId = String(selectedUser.id).replace('user_', '')
 
-    const apolloClient = getApolloClient()
-
-    await apolloClient.mutate({
-      mutation: gql`
-        mutation SendChatMessage($input: SendChatMessageInput!) {
-          sendChatMessage(input: $input) {
-            messageId
-          }
-        }
-      `,
-      variables: {
-        input: {
-          senderId: cleanCurrentUserUuid,
-          conversationId: String(chatId),
-          text: `SYSTEM_ACTION:ADD_MEMBER:${cleanSelectedUserId}`,
-          participantIds: participantIds
-        }
-      }
+    await chatApi.sendMessage({
+      senderId: cleanCurrentUserUuid,
+      conversationId: String(chatId),
+      text: `SYSTEM_ACTION:ADD_MEMBER:${cleanSelectedUserId}`,
+      participantIds: participantIds
     })
 
     const myKey = await signalStore.getCustomValue<string>(`sender_key_${chatId}_${currentUserUuid.value}`)
     if (myKey) {
       const encryptedBackup = await encryptMessage(`SYSTEM_ACTION:BACKUP_SENDER_KEY:${chatId}:${myKey}`, selectedUser.id, true)
-      await apolloClient.mutate({
-        mutation: gql`
-          mutation SendChatMessage($input: SendChatMessageInput!) {
-            sendChatMessage(input: $input) {
-              messageId
-            }
-          }
-        `,
-        variables: {
-          input: {
-            senderId: cleanCurrentUserUuid,
-            conversationId: getSymmetricUuid(cleanCurrentUserUuid, cleanSelectedUserId),
-            text: encryptedBackup,
-            participantIds: [cleanCurrentUserUuid, cleanSelectedUserId]
-          }
-        }
+      await chatApi.sendMessage({
+        senderId: cleanCurrentUserUuid,
+        conversationId: getSymmetricUuid(cleanCurrentUserUuid, cleanSelectedUserId),
+        text: encryptedBackup,
+        participantIds: [cleanCurrentUserUuid, cleanSelectedUserId]
       })
       console.log(`[addGroupMember] Successfully sent encrypted backup sender_key to ${selectedUser.name}`)
     }
   }
 
   async function leaveGroup(chatId: string | number) {
-    const apolloClient = getApolloClient()
     const cleanCurrentUserUuid = String(currentUserUuid.value).replace('user_', '')
     const cleanChatId = String(chatId).replace('user_', '')
     try {
-      await apolloClient.mutate({
-        mutation: gql`
-          mutation LeaveChat($userId: ID!, $conversationId: ID!) {
-            leaveChat(userId: $userId, conversationId: $conversationId)
-          }
-        `,
-        variables: {
-          userId: cleanCurrentUserUuid,
-          conversationId: cleanChatId
-        }
-      })
+      await chatApi.leaveChat(cleanCurrentUserUuid, cleanChatId)
 
       chats.value = chats.value.filter(c => String(c.id) !== String(chatId))
       if (String(activeChatId.value) === String(chatId)) {

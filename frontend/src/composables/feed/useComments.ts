@@ -1,51 +1,7 @@
-import { gql } from 'graphql-tag'
-import { getApolloClient } from '@/utils/apollo'
+import { feedApi } from '@/api/feed'
 import type { Comment } from '@/types/Post'
 import { useAuthStore } from '@/stores/auth'
 import { usersCache } from '@/composables/shared/useUserCache'
-
-const ADD_COMMENT_MUTATION = gql`
-  mutation AddComment($input: AddCommentInput!) {
-    addComment(input: $input) {
-      id
-      userId
-      content
-      createdAt
-      parentId
-      mediaUrl
-    }
-  }
-`
-
-const GET_COMMENTS_QUERY = gql`
-  query Comments($postId: ID!, $limit: Int) {
-    comments(postId: $postId, limit: $limit) {
-      id
-      userId
-      author {
-        id
-        firstName
-        lastName
-        avatarId
-        avatar
-      }
-      parentId
-      content
-      createdAt
-      reactions {
-        reactionType
-        userIds
-      }
-      mentionedUsers {
-        id
-        firstName
-        lastName
-        avatarId
-        avatar
-      }
-    }
-  }
-`
 
 function findComment(comments: Comment[], commentId: number | string): Comment | null {
   for (const comment of comments) {
@@ -135,17 +91,9 @@ export function useComments() {
   async function fetchCommentsForPost(post: any, limit?: number) {
     if (!post) return
     try {
-      const client = getApolloClient()
-      const { data } = await client.query({
-        query: GET_COMMENTS_QUERY,
-        variables: {
-          postId: String(post.id),
-          limit: limit != null ? limit : null,
-        },
-        fetchPolicy: 'network-only',
-      })
-      if (data?.comments) {
-        post.comments = buildCommentTree(data.comments, String(authStore.currentUserId))
+      const comments = await feedApi.getComments(String(post.id), limit)
+      if (comments) {
+        post.comments = buildCommentTree(comments, String(authStore.currentUserId))
       }
     } catch (e) {
       console.error(`Failed to fetch comments for post ${post.id}:`, e)
@@ -201,20 +149,13 @@ export function useComments() {
     }
 
     try {
-      const client = getApolloClient()
-      const { data } = await client.mutate({
-        mutation: ADD_COMMENT_MUTATION,
-        variables: {
-          input: {
-            postId: String(post.id),
-            userId: String(userId),
-            parentId: parentId == null ? null : String(parentId),
-            content: commentInput.content,
-            mediaUrl: commentInput.image || commentInput.gif || null,
-          },
-        },
+      const savedComment = await feedApi.addComment({
+        postId: String(post.id),
+        userId: String(userId),
+        parentId: parentId == null ? null : String(parentId),
+        content: commentInput.content,
+        mediaUrl: commentInput.image || commentInput.gif || null,
       })
-      const savedComment = data?.addComment
       if (savedComment) {
         // Find the optimistic comment we just added, and update its ID and other fields with actual server values
         const targetList = parentId 

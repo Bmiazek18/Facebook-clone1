@@ -95,8 +95,6 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useQuery } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
 import CloseIcon from 'vue-material-design-icons/Close.vue'
 import AccountPlusIcon from 'vue-material-design-icons/AccountPlus.vue'
 import type { Person } from '@/types/Person'
@@ -121,18 +119,6 @@ defineEmits<{
   (e: 'delete', id: string | number): void
   (e: 'add', id: string | number): void
 }>()
-
-
-
-const GET_COMMON_FRIENDS = gql`
-  query GetCommonFriends($personId: ID!) {
-    commonFriends(personId: $personId) {
-      id
-      name
-    }
-  }
-`
-
 
 const hasRequested = ref(false)
 const loading = ref(true)

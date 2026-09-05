@@ -1,6 +1,6 @@
-import { graphql } from '@/gql'
+import gql from 'graphql-tag'
 
-export const GET_INBOX = graphql(`
+export const GET_INBOX = gql`
   query GetInbox($userId: ID!) {
     getInbox(userId: $userId) {
       conversationId
@@ -11,10 +11,10 @@ export const GET_INBOX = graphql(`
       lastMessageSenderId
     }
   }
-`)
+`
 
-export const MARK_INBOX_AS_READ = graphql(`
+export const MARK_INBOX_AS_READ = gql`
   mutation MarkInboxAsRead($userId: ID!, $conversationId: ID!) {
     markInboxAsRead(userId: $userId, conversationId: $conversationId)
   }
-`)
+`

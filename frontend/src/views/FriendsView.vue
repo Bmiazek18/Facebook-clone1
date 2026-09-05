@@ -60,11 +60,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
-import { useQuery, useMutation } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
+import { usersApi } from '@/api/users'
 
 import FriendsSidebar from '../components/friends/FriendsSidebar.vue'
 import FriendCard from '../components/friends/PeopleYouMayKnowCard.vue'
@@ -75,141 +74,78 @@ const authStore = useAuthStore()
 // Lokalne listy dla optymistycznych aktualizacji interfejsu (np. usuwanie kafelków)
 const friendRequests = ref<any[]>([])
 const friendSuggestions = ref<any[]>([])
+const requestsLoading = ref(false)
+const suggestionsLoading = ref(false)
 
-// ==========================================
-// 1. Definicje zapytań i mutacji GraphQL
-// ==========================================
-const GET_FRIEND_REQUESTS = gql`
-  query GetFriendRequests($currentUserId: ID!) {
-    getFriendRequests(currentUserId: $currentUserId) {
-      userId
-      mutualFriendsCount
-      user {
-        id
-        firstName
-        lastName
-        avatarId
-        avatar
+const fetchRequests = async () => {
+  if (!authStore.currentUserId || String(authStore.currentUserId) === '0') return
+  requestsLoading.value = true
+  try {
+    const reqList = await usersApi.getFriendRequests(authStore.currentUserId)
+    friendRequests.value = reqList.map((item: any) => {
+      const u = item.user
+      const avatarUrl = u?.avatar
+        || `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            (u?.firstName || '') + ' ' + (u?.lastName || '')
+          )}&background=EBF4FF&color=1877F2&bold=true`
+
+      return {
+        id: item.userId,
+        name: u ? `${u.firstName} ${u.lastName}` : `User ${item.userId}`,
+        commonFriends: item.mutualFriendsCount || 0,
+        imageUrl: avatarUrl,
+        isFriend: false,
       }
-    }
+    })
+  } catch (err) {
+    console.error('Failed to fetch friend requests:', err)
+  } finally {
+    requestsLoading.value = false
   }
-`
+}
 
-const GET_FRIEND_SUGGESTIONS = gql`
-  query GetFriendSuggestions($currentUserId: ID!) {
-    getFriendSuggestions(currentUserId: $currentUserId) {
-      userId
-      mutualFriendsCount
-      user {
-        id
-        firstName
-        lastName
-        avatarId
-        avatar
+const fetchSuggestions = async () => {
+  if (!authStore.currentUserId || String(authStore.currentUserId) === '0') return
+  suggestionsLoading.value = true
+  try {
+    const sugList = await usersApi.getFriendSuggestions(authStore.currentUserId)
+    friendSuggestions.value = sugList.map((item: any) => {
+      const u = item.user
+      const avatarUrl = u?.avatar
+        || `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            (u?.firstName || '') + ' ' + (u?.lastName || '')
+          )}&background=EBF4FF&color=1877F2&bold=true`
+
+      return {
+        id: item.userId,
+        name: u ? `${u.firstName} ${u.lastName}` : `User ${item.userId}`,
+        commonFriends: item.mutualFriendsCount || 0,
+        imageUrl: avatarUrl,
+        isFriend: false,
       }
-    }
+    })
+  } catch (err) {
+    console.error('Failed to fetch friend suggestions:', err)
+  } finally {
+    suggestionsLoading.value = false
   }
-`
+}
 
-const ACCEPT_FRIEND_REQUEST = gql`
-  mutation AcceptFriendRequest($senderId: ID!, $receiverId: ID!) {
-    acceptFriendRequest(senderId: $senderId, receiverId: $receiverId) {
-      success
-      message
-    }
-  }
-`
-
-const SEND_FRIEND_REQUEST = gql`
-  mutation SendFriendRequest($senderId: ID!, $receiverId: ID!) {
-    sendFriendRequest(senderId: $senderId, receiverId: $receiverId) {
-      success
-      message
-    }
-  }
-`
-
-// ==========================================
-// 2. Pobieranie danych (Queries)
-// ==========================================
-
-// Reaktywne zmienne dla zapytań
-const queryVariables = computed(() => ({
-  currentUserId: String(authStore.currentUserId),
-}))
-
-// Reaktywne opcje sterujące włączaniem zapytania (tylko, gdy mamy ID)
-const queryOptions = computed(() => ({
-  enabled: !!authStore.currentUserId && String(authStore.currentUserId) !== '0',
-  fetchPolicy: 'cache-and-network' as const,
-}))
-
-// A) Pobieranie zaproszeń
-const { onResult: onRequestsResult, loading: requestsLoading } = useQuery(
-  GET_FRIEND_REQUESTS,
-  queryVariables,
-  queryOptions
-)
-
-onRequestsResult((res) => {
-  const reqList = res.data?.getFriendRequests || []
-  friendRequests.value = reqList.map((item: any) => {
-    const u = item.user
-    const avatarUrl = u?.avatar
-      || `https://ui-avatars.com/api/?name=${encodeURIComponent(
-          (u?.firstName || '') + ' ' + (u?.lastName || '')
-        )}&background=EBF4FF&color=1877F2&bold=true`
-
-    return {
-      id: item.userId,
-      name: u ? `${u.firstName} ${u.lastName}` : `User ${item.userId}`,
-      commonFriends: item.mutualFriendsCount || 0,
-      imageUrl: avatarUrl,
-      isFriend: false,
-    }
-  })
+onMounted(() => {
+  fetchRequests()
+  fetchSuggestions()
 })
 
-// B) Pobieranie propozycji znajomych
-const { onResult: onSuggestionsResult, loading: suggestionsLoading } = useQuery(
-  GET_FRIEND_SUGGESTIONS,
-  queryVariables,
-  queryOptions
-)
-
-onSuggestionsResult((res) => {
-  const sugList = res.data?.getFriendSuggestions || []
-  friendSuggestions.value = sugList.map((item: any) => {
-    const u = item.user
-    const avatarUrl = u?.avatar
-      || `https://ui-avatars.com/api/?name=${encodeURIComponent(
-          (u?.firstName || '') + ' ' + (u?.lastName || '')
-        )}&background=EBF4FF&color=1877F2&bold=true`
-
-    return {
-      id: item.userId,
-      name: u ? `${u.firstName} ${u.lastName}` : `User ${item.userId}`,
-      commonFriends: item.mutualFriendsCount || 0,
-      imageUrl: avatarUrl,
-      isFriend: false,
-    }
-  })
+watch(() => authStore.currentUserId, () => {
+  fetchRequests()
+  fetchSuggestions()
 })
-
-// ==========================================
-// 3. Obsługa akcji (Mutations)
-// ==========================================
-const { mutate: acceptFriendRequest } = useMutation(ACCEPT_FRIEND_REQUEST)
-const { mutate: sendFriendRequest } = useMutation(SEND_FRIEND_REQUEST)
 
 const handleConfirmRequest = async (senderId: string | number) => {
   try {
-    const res = await acceptFriendRequest({
-      senderId: String(senderId),
-      receiverId: String(authStore.currentUserId),
-    })
+    const res = await usersApi.acceptFriendRequest(senderId, authStore.currentUserId)
 
-    if (res?.data?.acceptFriendRequest?.success) {
+    if (res?.success) {
       // Usuwamy załadowany element lokalnie, żeby nie było mrugnięć i odświeżeń całej listy
       friendRequests.value = friendRequests.value.filter((r) => r.id !== senderId)
     }
@@ -220,12 +156,9 @@ const handleConfirmRequest = async (senderId: string | number) => {
 
 const handleAddFriend = async (receiverId: string | number) => {
   try {
-    const res = await sendFriendRequest({
-      senderId: String(authStore.currentUserId),
-      receiverId: String(receiverId),
-    })
+    const res = await usersApi.sendFriendRequest(authStore.currentUserId, receiverId)
 
-    if (res?.data?.sendFriendRequest?.success) {
+    if (res?.success) {
       // Usuwamy załadowany element lokalnie z rekomendacji po pomyślnym wysłaniu zaproszenia
       friendSuggestions.value = friendSuggestions.value.filter((s) => s.id !== receiverId)
     }

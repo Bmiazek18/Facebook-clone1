@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { getApolloClient } from '@/utils/apollo'
-import { gql } from 'graphql-tag'
+import { feedApi } from '@/api/feed'
 import type { Message } from '@/types/Message'
 
 const props = defineProps<{
@@ -12,28 +11,6 @@ const router = useRouter()
 
 const postData = ref<any>(null)
 const loading = ref(false)
-
-const GET_POST_BY_ID = gql`
-  query GetPostById($postId: ID!) {
-    getPostById(postId: $postId) {
-      id
-      authorId
-      author {
-        id
-        firstName
-        lastName
-        avatar
-      }
-      content
-      date
-      timestamp
-      media {
-        src
-        altText
-      }
-    }
-  }
-`
 
 const extractedPostId = computed<string | null>(() => {
   const msg = props.message as any
@@ -52,14 +29,9 @@ const extractedPostId = computed<string | null>(() => {
 async function fetchPost(postId: string) {
   loading.value = true
   try {
-    const client = getApolloClient()
-    const { data } = await client.query({
-      query: GET_POST_BY_ID,
-      variables: { postId },
-      fetchPolicy: 'cache-first',
-    })
-    if (data?.getPostById) {
-      postData.value = data.getPostById
+    const post = await feedApi.getPostById(postId)
+    if (post) {
+      postData.value = post
     }
   } catch (e) {
     console.error('Failed to load shared post in chat:', e)

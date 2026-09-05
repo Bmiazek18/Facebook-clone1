@@ -4,8 +4,7 @@ import { useRoute } from 'vue-router'
 import { useGroupsStore } from '@/stores/groups'
 import { useUserCache } from '@/composables/shared/useUserCache'
 import { useAuthStore } from '@/stores/auth'
-import { getApolloClient } from '@/utils/apollo'
-import { gql } from 'graphql-tag'
+import { usersApi } from '@/api/users'
 import { GroupRole } from '@/types/Group'
 
 const route = useRoute()
@@ -31,15 +30,6 @@ const searchQuery = ref('')
 
 const sentRequests = ref<Set<string>>(new Set())
 
-const SEND_FRIEND_REQUEST = gql`
-  mutation SendFriendRequest($senderId: ID!, $receiverId: ID!) {
-    sendFriendRequest(senderId: $senderId, receiverId: $receiverId) {
-      success
-      message
-    }
-  }
-`
-
 const formatTimeAgo = (isoString: string) => {
   if (!isoString) return 'niedawno'
   try {
@@ -61,15 +51,8 @@ const formatTimeAgo = (isoString: string) => {
 
 const handleSendFriendRequest = async (targetUserId: string) => {
   try {
-    const apolloClient = getApolloClient()
-    const result = await apolloClient.mutate({
-      mutation: SEND_FRIEND_REQUEST,
-      variables: {
-        senderId: authStore.currentUserId,
-        receiverId: targetUserId
-      }
-    })
-    if (result.data?.sendFriendRequest?.success) {
+    const result = await usersApi.sendFriendRequest(authStore.currentUserId || '1', targetUserId)
+    if (result?.success) {
       sentRequests.value.add(targetUserId)
     }
   } catch (e) {

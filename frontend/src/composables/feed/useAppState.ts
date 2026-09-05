@@ -2,29 +2,12 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { processPostsIntoReels } from '@/utils/reels'
 import { useAuthStore } from '@/stores/auth'
-import { gql } from 'graphql-tag'
-import { VOTE_ON_POLL_MUTATION } from '@/graphql/groups'
+import { feedApi } from '@/api/feed'
 import {
   encodeStoryMetadata,
   parseStoryMetadata,
   type StoryMetadata,
 } from '@/utils/storyMetadata'
-import { getApolloClient } from '@/utils/apollo'
-
-const CREATE_STORY_MUTATION = gql`
-  mutation CreateStory($input: CreateStoryInput!) {
-    createStory(input: $input) {
-      id
-      authorId
-      mediaUrl
-      thumbMediaUrl
-      mediaType
-      text
-      createdAt
-      expiresAt
-    }
-  }
-`
 
 /**
  * Konwersja Data URL (Base64) na plik Blob przy użyciu natywnego fetch API
@@ -61,17 +44,8 @@ export const usePostsStore = defineStore('posts', () => {
 
   const voteOnPoll = async (postId: string, optionId: string, userId: string) => {
     try {
-      const client = getApolloClient()
-      const result = await client.mutate({
-        mutation: VOTE_ON_POLL_MUTATION,
-        variables: {
-          postId,
-          optionId,
-          userId,
-        },
-      })
-      if (result?.data?.voteOnPoll) {
-        const updatedPost = result.data.voteOnPoll
+      const updatedPost = await feedApi.voteOnPoll(postId, optionId, userId)
+      if (updatedPost) {
         const postIndex = posts.value.findIndex((p) => String(p.id) === String(postId))
         if (postIndex !== -1) {
           posts.value[postIndex] = {
@@ -228,20 +202,13 @@ export const useStoriesStore = defineStore('stories', () => {
           })
         : storyData.text || ''
 
-      const client = getApolloClient()
-      const result = await client.mutate({
-        mutation: CREATE_STORY_MUTATION,
-        variables: {
-          input: {
-            authorId,
-            mediaUrl,
-            mediaType,
-            text: textPayload,
-          },
-        },
+      const createdStory = await feedApi.createStory({
+        authorId,
+        mediaUrl,
+        mediaType,
+        text: textPayload,
       })
 
-      const createdStory = result?.data?.createStory
       if (createdStory) {
         upsertStoryInStore(authorId, {
           ...createdStory,

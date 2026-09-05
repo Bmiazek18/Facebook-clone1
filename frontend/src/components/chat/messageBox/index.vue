@@ -2,8 +2,7 @@
 import { ref, computed, nextTick, onMounted, watch, provide } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useVirtualizer } from '@tanstack/vue-virtual'
-import { useQuery } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
+import { usersApi } from '@/api/users'
 
 import MultiMediaLightbox from './MediaLightbox.vue'
 import MessageBoxHeader from '@/components/chat/messageBox/MessageBoxHeader.vue'
@@ -294,36 +293,32 @@ provide('chatActions', {
   pin: handlePin,
 })
 
-// ==========================================
-// APOLLO GRAPHQL CACHE
-// ==========================================
-const GET_USER_HEADER_INFO = gql`
-  query GetUserById($userId: ID!) {
-    getUserById(userId: $userId) {
-      id
-      firstName
-      lastName
-      avatarId
-    }
-  }
-`
-
 const isGroupChat = computed(() => {
   if (!props.boxId) return false
   const chat = convStore.chats.find((c: any) => String(c.id) === String(props.boxId))
   return chat ? chat.type === 'group' : false
 })
 
-const { result: apolloUserResult } = useQuery(
-  GET_USER_HEADER_INFO,
-  () => ({ userId: String(props.boxId) }),
-  () => ({
-    enabled: !!props.boxId && !isGroupChat.value,
-    fetchPolicy: 'cache-first'
-  })
-)
+const fetchedUser = ref<any>(null)
 
-const fetchedUser = computed(() => apolloUserResult.value?.getUserById)
+const loadUserInfo = async () => {
+  if (!props.boxId || isGroupChat.value) {
+    fetchedUser.value = null
+    return
+  }
+  try {
+    const user = await usersApi.getUserById(props.boxId)
+    if (user) {
+      fetchedUser.value = user
+    }
+  } catch (err) {
+    console.error('Failed to load user header info:', err)
+  }
+}
+
+watch(() => props.boxId, () => {
+  loadUserInfo()
+}, { immediate: true })
 
 const headerTitle = computed(() => {
   if (!props.boxId) return 'Czat'
