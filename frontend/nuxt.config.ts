@@ -57,10 +57,6 @@ export default defineNuxtConfig({
   },
 
   alias: {
-    '@/stores/posts': fileURLToPath(new URL('./src/composables/useAppState.ts', import.meta.url)),
-    '@/stores/reels': fileURLToPath(new URL('./src/composables/useAppState.ts', import.meta.url)),
-    '@/stores/stories': fileURLToPath(new URL('./src/composables/useAppState.ts', import.meta.url)),
-    '@/data/users': fileURLToPath(new URL('./src/utils/users.ts', import.meta.url)),
     '@': fileURLToPath(new URL('./src', import.meta.url)),
   },
 
