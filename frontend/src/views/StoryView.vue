@@ -2,14 +2,13 @@
 import { ref, computed, watch, reactive, onMounted } from 'vue'
 import { useRouter } from '#imports'
 import { useAuthStore } from '@/stores/auth'
-import { useQuery } from '@vue/apollo-composable'
-import { gql } from 'graphql-tag'
+import { feedApi } from '@/api/feed'
 import { processActiveStories } from '@/utils/stories'
 import { useStoryPlayback } from '@/composables/media/useStoryPlayback'
 import { formatTimeAgo } from '@/utils/timeFormatter'
 
 // Importy komponentów UI
-import NavbarRight from '~/layouts/navbar/NavbarRight.vue'
+import NavbarRight from '@/components/navbar/NavbarRight.vue'
 import StorySidebar from '@/components/feed/stories/StorySidebar.vue'
 import StoryMediaRenderer from '@/components/feed/stories/StoryMediaRenderer.vue'
 import StoryOverlays from '@/components/feed/stories/StoryOverlays.vue'
@@ -24,29 +23,23 @@ import ChevronRight from 'vue-material-design-icons/ChevronRight.vue'
 const router = useRouter()
 const authStore = useAuthStore()
 
-const GET_ACTIVE_STORIES = gql`
-  query GetActiveStories($currentUserId: ID!) {
-    getActiveStories(currentUserId: $currentUserId) {
-      id
-      authorId
-      author {
-        id
-        firstName
-        lastName
-        avatarId
-        avatar
-      }
-      mediaUrl
-      thumbMediaUrl
-      mediaType
-      text
-      createdAt
-      expiresAt
-    }
+const rawStories = ref<any[]>([])
+
+const fetchStories = async () => {
+  try {
+    const stories = await feedApi.getActiveStories(authStore.currentUserId)
+    rawStories.value = stories || []
+  } catch (err) {
+    console.error('Failed to fetch active stories:', err)
   }
-`
-const { result } = useQuery(GET_ACTIVE_STORIES, {
-  currentUserId: String(authStore.currentUserId)
+}
+
+onMounted(() => {
+  fetchStories()
+})
+
+watch(() => authStore.currentUserId, () => {
+  fetchStories()
 })
 
 const props = defineProps<{
@@ -60,8 +53,7 @@ const showViewers = ref(false)
 
 // --- COMPUTED: Podstawowe dane ---
 const allUserStories = computed(() => {
-  const rawStories = result.value?.getActiveStories ?? []
-  return processActiveStories(rawStories, String(authStore.currentUserId))
+  return processActiveStories(rawStories.value, String(authStore.currentUserId))
 })
 const currentUserStories = computed(() => allUserStories.value[currentUserIndex.value] ?? null)
 const currentStoryItem = computed(

@@ -26,11 +26,11 @@ import { computed, type Component } from 'vue'
 import { useSlideTransition } from '@/composables/ui/useSlideTransition'
 import { useAuthStore } from '@/stores/auth'
 
-import MainMenu from '@/layouts/navbar/menu/MainMenu.vue'
-import SubMenuDisplay from '@/layouts/navbar/menu/SubMenu.vue'
-import LanguageSelector from '@/layouts/navbar/menu/LanguageSelector.vue'
-import SettingsMenu from '@/layouts/navbar/menu/SettingsMenu.vue'
-import ProfilesSelector from '@/layouts/navbar/menu/ProfilesSelector.vue'
+import MainMenu from '@/components/navbar/menu/MainMenu.vue'
+import SubMenuDisplay from '@/components/navbar/menu/SubMenu.vue'
+import LanguageSelector from '@/components/navbar/menu/LanguageSelector.vue'
+import SettingsMenu from '@/components/navbar/menu/SettingsMenu.vue'
+import ProfilesSelector from '@/components/navbar/menu/ProfilesSelector.vue'
 
 const authStore = useAuthStore()
 

@@ -6,7 +6,7 @@
       <template #default>
         <div>
 
-          <MainNavLayout v-if="showMainLayout && !isPopupRoute" />
+          <MainNavHeader v-if="showMainLayout && !isPopupRoute" />
 
 
           <NuxtLayout>
@@ -68,7 +68,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useOnline, useEventListener } from '@vueuse/core'
 
-import MainNavLayout from './layouts/MainNavLayouts.vue'
+import MainNavHeader from '@/components/navbar/MainNavHeader.vue'
 import ProfileIcon from './components/profile/ProfileIcon.vue'
 import FingerprintLoader from './components/common/FingerprintLoader.vue'
 import MessageBox from '@/components/chat/messageBox/index.vue'

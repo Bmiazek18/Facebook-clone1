@@ -20,13 +20,12 @@ import MultiMediaLightbox from '@/components/chat/messageBox/MediaLightbox.vue'
 import StoryShareModal from '@/components/feed/stories/StoryShareModal.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import SellerModal from '@/components/marketplace/SellerModal.vue'
-import NavbarRight from '~/layouts/navbar/NavbarRight.vue'
+import NavbarRight from '@/components/navbar/NavbarRight.vue'
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue'
 import CustomTextarea from '~/components/common/CustomTextarea.vue'
 
-// Importy Apollo GraphQL
-import { useQuery } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
+// Importy API
+import { marketplaceApi } from '@/api/marketplace'
 
 const route = useRoute()
 const router = useRouter()
@@ -39,6 +38,7 @@ const isSellerModalOpen = ref(false)
 let mapInstance: L.Map | null = null
 
 const loadedItem = ref<any>(null)
+const loading = ref(false)
 
 // Zmienna do obsługi rozwijania opisu
 const isDescriptionExpanded = ref(false)
@@ -55,32 +55,57 @@ const quickReplies = [
 
 const currentItem = computed(() => loadedItem.value)
 
-// --- ZAPYTANIE APOLLO GRAPHQL ---
-const GET_LISTING = gql`
-  query GetListing($id: ID!) {
-    getListing(id: $id) {
-      id
-      title
-      price
-      category
-      condition
-      description
-      latitude
-      longitude
-      createdAt
-    }
-  }
-`
-
 const itemId = computed(() => route.params.id as string)
 
-const { onResult, onError, loading } = useQuery(
-  GET_LISTING,
-  () => ({ id: itemId.value }),
-  () => ({
-    enabled: !!itemId.value,
-  })
-)
+const fetchListing = async () => {
+  if (!itemId.value) return
+  loading.value = true
+  try {
+    const item = await marketplaceApi.getListing(itemId.value)
+    if (item) {
+      loadedItem.value = {
+        id: item.id,
+        title: item.title,
+        price: Number(item.price) === 0 ? 'BEZPŁATNE' : `PLN ${Number(item.price).toLocaleString()}`,
+        location: 'Radom, Polska',
+        coordinates: { lat: item.latitude || 51.4027, lng: item.longitude || 21.1471 },
+        description: item.description || 'Brak opisu.',
+        images: [
+          `https://picsum.photos/seed/${item.id}/800/600`,
+          `https://picsum.photos/seed/${item.id}_2/800/600`,
+        ],
+        category: item.category === 'VEHICLES' ? 'Pojazdy' : item.category,
+        condition: item.condition === 'NEW' ? 'Nowe' : 'Używane',
+        details: {
+          mileage: '380 km',
+          transmission: 'Ręczna skrzynia biegów',
+          color: 'Black · Kolor wnętrza: Black',
+          fuel: 'Diesel',
+        },
+        seller: {
+          name: 'Igor Kucharski',
+          avatar: 'https://placehold.co/150',
+          memberSince: '2017',
+        },
+        postedDate: '3 dni temu',
+      }
+
+      updateMapWithItem(loadedItem.value)
+    }
+  } catch (err) {
+    console.error('Failed to fetch listing details via GraphQL:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchListing()
+})
+
+watch(itemId, () => {
+  fetchListing()
+})
 
 // Inicjalizacja i aktualizacja mapy
 const updateMapWithItem = async (itemData: any) => {
@@ -126,44 +151,6 @@ const updateMapWithItem = async (itemData: any) => {
     }).addTo(mapInstance)
   }
 }
-
-onResult((res) => {
-  const item = res.data?.getListing
-  if (item) {
-    loadedItem.value = {
-      id: item.id,
-      title: item.title,
-      price: Number(item.price) === 0 ? 'BEZPŁATNE' : `PLN ${Number(item.price).toLocaleString()}`,
-      location: 'Radom, Polska',
-      coordinates: { lat: item.latitude || 51.4027, lng: item.longitude || 21.1471 },
-      description: item.description || 'Brak opisu.',
-      images: [
-        `https://picsum.photos/seed/${item.id}/800/600`,
-        `https://picsum.photos/seed/${item.id}_2/800/600`,
-      ],
-      category: item.category === 'VEHICLES' ? 'Pojazdy' : item.category,
-      condition: item.condition === 'NEW' ? 'Nowe' : 'Używane',
-      details: {
-        mileage: '380 km',
-        transmission: 'Ręczna skrzynia biegów',
-        color: 'Black · Kolor wnętrza: Black',
-        fuel: 'Diesel',
-      },
-      seller: {
-        name: 'Igor Kucharski',
-        avatar: 'https://placehold.co/150',
-        memberSince: '2017',
-      },
-      postedDate: '3 dni temu',
-    }
-
-    updateMapWithItem(loadedItem.value)
-  }
-})
-
-onError((err) => {
-  console.error('Failed to fetch listing details via GraphQL:', err)
-})
 
 const mediaForGallery = computed(() => {
   return (

@@ -3,13 +3,7 @@ import { ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'nuxt/app'
 import { onClickOutside } from '@vueuse/core'
 import { useAuthStore } from '@/stores/auth'
-import { getApolloClient } from '@/utils/apollo'
-import {
-  GET_SEARCH_HISTORY,
-  SEARCH_USERS,
-  RECORD_SEARCH,
-  DELETE_SEARCH_HISTORY_ITEM
-} from '@/graphql/search'
+import { usersApi } from '@/api/users'
 
 // Ikony
 import SearchInput from '@/components/common/SearchInput.vue'
@@ -19,7 +13,7 @@ import StorefrontOutline from 'vue-material-design-icons/StorefrontOutline.vue'
 import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue'
 import StarBoxOutlineIcon from 'vue-material-design-icons/StarBoxOutline.vue'
-import NavbarRight from '~/layouts/navbar/NavbarRight.vue'
+import NavbarRight from '@/components/navbar/NavbarRight.vue'
 
 type ActiveMenuType = 'profile' | 'notifications' | 'message' | null
 
@@ -42,18 +36,11 @@ const recentSearches = ref<any[]>([])
 
 const fetchSearchHistory = async () => {
   try {
-    const apolloClient = getApolloClient()
     const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
-    const { data } = await apolloClient.query({
-      query: GET_SEARCH_HISTORY,
-      variables: {
-        userId: currentUserId
-      },
-      fetchPolicy: 'network-only'
-    })
+    const history = await usersApi.getSearchHistory(currentUserId)
 
-    if (data?.getSearchHistory) {
-      recentSearches.value = data.getSearchHistory.map((user: any) => ({
+    if (history) {
+      recentSearches.value = history.map((user: any) => ({
         id: user.id,
         name: `${user.firstName} ${user.lastName}`.trim(),
         avatar: user.avatar || '/default-avatar.png',
@@ -67,19 +54,12 @@ const fetchSearchHistory = async () => {
 
 const removeFromRecent = async (userId: string) => {
   try {
-    const apolloClient = getApolloClient()
     const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
     
     // Update local state immediately for instant feedback
     recentSearches.value = recentSearches.value.filter(item => item.id !== userId)
 
-    await apolloClient.mutate({
-      mutation: DELETE_SEARCH_HISTORY_ITEM,
-      variables: {
-        searchedUserId: userId,
-        searchingUserId: currentUserId
-      }
-    })
+    await usersApi.deleteSearchHistoryItem(userId, currentUserId)
   } catch (error) {
     console.error('Failed to delete search history item:', error)
   }
@@ -87,20 +67,13 @@ const removeFromRecent = async (userId: string) => {
 
 const clearAllRecent = async () => {
   try {
-    const apolloClient = getApolloClient()
     // Delete each locally stored item one by one on backend
     const itemsToDelete = [...recentSearches.value]
     recentSearches.value = []
+    const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
     
     for (const item of itemsToDelete) {
-      const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
-      await apolloClient.mutate({
-        mutation: DELETE_SEARCH_HISTORY_ITEM,
-        variables: {
-          searchedUserId: item.id,
-          searchingUserId: currentUserId
-        }
-      })
+      await usersApi.deleteSearchHistoryItem(item.id, currentUserId)
     }
   } catch (error) {
     console.error('Failed to clear search history:', error)
@@ -135,17 +108,10 @@ const performLiveSearch = async () => {
   isSearching.value = true
   try {
     const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
-    const { data } = await apolloClient.query({
-      query: SEARCH_USERS,
-      variables: {
-        query,
-        currentUserId,
-      },
-      fetchPolicy: 'cache-first'
-    })
+    const users = await usersApi.searchUsers(query, currentUserId)
 
-    if (data?.searchUsers) {
-      searchResults.value = data.searchUsers.map((user: any) => ({
+    if (users) {
+      searchResults.value = users.map((user: any) => ({
         id: user.id,
         name: `${user.firstName} ${user.lastName}`.trim(),
         avatar: user.avatar || '/default-avatar.png',
@@ -193,15 +159,11 @@ const handleSearchSubmit = () => {
 const goToProfile = (user: { id: string, name: string, avatar: string }) => {
   try {
     const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
-    apolloClient.mutate({
-      mutation: RECORD_SEARCH,
-      variables: {
-        searchedUserId: user.id,
-        searchingUserId: currentUserId
-      }
-    }).then(() => {
-      fetchSearchHistory()
-    }).catch(err => console.error('Failed to record search:', err))
+    usersApi.recordSearch(user.id, currentUserId)
+      .then(() => {
+        fetchSearchHistory()
+      })
+      .catch(err => console.error('Failed to record search:', err))
   } catch (error) {
     console.error('Failed to record search:', error)
   }
@@ -301,7 +263,7 @@ const goToProfile = (user: { id: string, name: string, avatar: string }) => {
       <div class="z-20 flex items-center w-full">
         <Transition name="slide-fade" mode="out-in">
           <NuxtLink v-if="!isSearchFocused" to="/" class="mr-2 min-w-10 bg-white rounded-full">
-            <img class="w-10" src="../assets/images/FacebookLogoCircle.png" />
+            <img class="w-10" src="@/assets/images/FacebookLogoCircle.png" />
           </NuxtLink>
 
           <div

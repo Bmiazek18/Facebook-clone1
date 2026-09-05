@@ -8,7 +8,7 @@ definePageMeta({
   key: 'chat-page'
 })
 
-import MessageMenu from '~/layouts/navbar/MessageMenu.vue'
+import MessageMenu from '@/components/navbar/MessageMenu.vue'
 import MessageBox from '@/components/chat/messageBox/index.vue'
 import ChatInfoPanel from '@/components/chat/info/ChatInfoPanel.vue'
 import E2eeBackupModal from '@/components/chat/E2eeBackupModal.vue'

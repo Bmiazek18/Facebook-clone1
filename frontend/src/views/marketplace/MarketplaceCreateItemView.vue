@@ -15,9 +15,8 @@ import CustomInput from '@/components/common/CustomInput.vue'
 import CustomTextarea from '@/components/common/CustomTextarea.vue'
 import CustomDropdown from '@/components/common/CustomDropdown.vue'
 import { useAuthStore } from '@/stores/auth'
-import AppCloseHeader from '@/layouts/AppCloseHeader.vue'
-import { getApolloClient } from '@/utils/apollo'
-import { gql } from 'graphql-tag'
+import AppCloseHeader from '@/components/common/AppCloseHeader.vue'
+import { marketplaceApi } from '@/api/marketplace'
 import { useRouter } from 'nuxt/app'
 
 // --- TYPY ---
@@ -155,26 +154,14 @@ const publishListing = async () => {
 
     let mappedCategory = form.category || 'tools'
 
-    const apolloClient = getApolloClient()
-    await apolloClient.mutate({
-      mutation: gql`
-        mutation CreateListing($input: CreateListingInput!) {
-          createListing(input: $input) {
-            id
-          }
-        }
-      `,
-      variables: {
-        input: {
-          title: form.title,
-          price: parseFloat(form.price) || 0.0,
-          category: mappedCategory.toUpperCase(),
-          condition: mappedCondition,
-          description: form.description || '',
-          latitude: 52.0689,
-          longitude: 19.3824,
-        },
-      },
+    await marketplaceApi.createListing({
+      title: form.title,
+      price: parseFloat(form.price) || 0.0,
+      category: mappedCategory.toUpperCase(),
+      condition: mappedCondition,
+      description: form.description || '',
+      latitude: 52.0689,
+      longitude: 19.3824,
     })
 
     router.push('/marketplace')

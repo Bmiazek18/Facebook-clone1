@@ -7,7 +7,7 @@ import { useAuthStore } from '@/stores/auth'
 import Close from 'vue-material-design-icons/Close.vue'
 // Dodajemy import ikony Facebooka
 import Facebook from 'vue-material-design-icons/Facebook.vue'
-import AppCloseHeader from '@/layouts/AppCloseHeader.vue'
+import AppCloseHeader from '@/components/common/AppCloseHeader.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PrivacyModal from './PrivacyModal.vue'
 

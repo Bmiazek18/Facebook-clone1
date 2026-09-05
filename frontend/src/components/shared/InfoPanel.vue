@@ -188,7 +188,7 @@ import CommentTextMultiple from 'vue-material-design-icons/CommentTextMultiple.v
 import ShareVariant from 'vue-material-design-icons/ShareVariant.vue'
 import MusicNote from 'vue-material-design-icons/MusicNote.vue'
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue'
-import NavbarRight from '~/layouts/navbar/NavbarRight.vue'
+import NavbarRight from '@/components/navbar/NavbarRight.vue'
 import CommentFilter from '@/components/profile/CommentFilter.vue'
 import CommentItem from '@/components/feed/comment/CommentItem.vue'
 import CommentReplyInput from '@/components/feed/comment/CommentReplyInput.vue'

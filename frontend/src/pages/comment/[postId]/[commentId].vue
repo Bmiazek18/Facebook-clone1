@@ -118,10 +118,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useQuery } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
+import { feedApi } from '@/api/feed'
 
 import Close from 'vue-material-design-icons/Close.vue'
 import ThumbUp from 'vue-material-design-icons/ThumbUp.vue'
@@ -133,66 +132,41 @@ import HoverScrollbar from '@/components/common/HoverScrollbar.vue'
 import CommentItem from '@/components/feed/comment/CommentItem.vue'
 import GalleryMediaViewer from '@/components/common/GalleryMediaViewer.vue'
 import CommentReplyInput from '@/components/feed/comment/CommentReplyInput.vue'
-import NavbarRight from '~/layouts/navbar/NavbarRight.vue'
+import NavbarRight from '@/components/navbar/NavbarRight.vue'
 import CommentFilter from '@/components/profile/CommentFilter.vue'
 import FormattedDate from '@/components/common/FormattedDate.vue'
 import PostActions from '~/components/feed/post/PostActions.vue'
 import EmptyState from '~/components/feed/comment/EmptyState.vue'
 definePageMeta({ showMainLayout: false, isPopup: true })
 
-const GET_POST_QUERY = gql`
-  query GetPost($id: ID!) {
-    getPost(id: $id) {
-      id
-      authorId
-      author {
-        id
-        firstName
-        lastName
-        avatarId
-      }
-      content
-      date
-      commentCount
-      shareCount
-      media {
-        src
-        altText
-        backgroundColor
-      }
-      reactions {
-        userIds
-      }
-      comments {
-        id
-        authorId
-        author {
-          id
-          firstName
-          lastName
-          avatarId
-        }
-        content
-        date
-        likesCount
-      }
-    }
-  }
-`
-
 const route = useRoute()
 const router = useRouter()
 const isFullScreen = ref(false)
+const loading = ref(false)
+const currentPost = ref<any>(null)
 
 const postId = computed(() => String(route.params.postId || ''))
 
-const { result, loading } = useQuery(GET_POST_QUERY, () => ({
-  id: postId.value
-}), () => ({
-  enabled: !!postId.value
-}))
+const fetchPost = async () => {
+  if (!postId.value) return
+  loading.value = true
+  try {
+    const post = await feedApi.getPost(postId.value)
+    currentPost.value = post || null
+  } catch (err) {
+    console.error('Failed to fetch post:', err)
+  } finally {
+    loading.value = false
+  }
+}
 
-const currentPost = computed(() => result.value?.getPost || null)
+onMounted(() => {
+  fetchPost()
+})
+
+watch(postId, () => {
+  fetchPost()
+})
 
 // Prosty indeks zdjęcia bezpośrednio z parametrów URL (np. /posts/123/photos/2)
 const currentImageIndex = computed({

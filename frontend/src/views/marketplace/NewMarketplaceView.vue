@@ -12,8 +12,8 @@ import HomeIcon from 'vue-material-design-icons/Home.vue'
 import PencilIcon from 'vue-material-design-icons/Pencil.vue'
 
 // Komponenty
-import NavbarRight from '~/layouts/navbar/NavbarRight.vue'
-import AppCloseHeader from '@/layouts/AppCloseHeader.vue'
+import NavbarRight from '@/components/navbar/NavbarRight.vue'
+import AppCloseHeader from '@/components/common/AppCloseHeader.vue'
 
 const router = useRouter()
 
