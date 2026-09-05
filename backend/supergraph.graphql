@@ -528,13 +528,77 @@ type FriendSuggestion
 type Group
   @join__type(graph: FEED, key: "id", resolvable: true)
 {
+  createdAge: String
   description: String
   id: ID!
   image: String
   lastActive: String
   membersCount: Int
   name: String!
+  newMembersWeek: String
+  newPostsMonth: Int
+  newPostsToday: Int
   privacy: String!
+  rules: [GroupRule!]
+}
+
+enum GroupRole
+  @join__type(graph: FEED)
+{
+  ADMIN @join__enumValue(graph: FEED)
+  MEMBER @join__enumValue(graph: FEED)
+  MODERATOR @join__enumValue(graph: FEED)
+  PENDING @join__enumValue(graph: FEED)
+}
+
+type GroupMember
+  @join__type(graph: FEED)
+{
+  isFriend: Boolean
+  joinedAt: String!
+  role: GroupRole!
+  userId: ID!
+}
+
+type GroupOverview
+  @join__type(graph: FEED)
+{
+  activeMembersChart: [Int!]!
+  chartCategories: [String!]!
+  commentsCount7Days: Int!
+  commentsTrend: String!
+  groupId: ID!
+  groupStatusViolationCount: Int!
+  moderationAlertsCount: Int!
+  pendingPostsCount: Int!
+  pendingRequestsCount: Int!
+  postsCount7Days: Int!
+  postsTrend: String!
+  reactionsCount7Days: Int!
+  reactionsTrend: String!
+  reportedItemsCount: Int!
+}
+
+type GroupRule
+  @join__type(graph: FEED)
+{
+  description: String!
+  id: ID!
+  orderIndex: Int!
+  title: String!
+}
+
+type GroupActivityLog
+  @join__type(graph: FEED)
+{
+  actorId: ID!
+  actorName: String!
+  date: String!
+  groupId: ID!
+  id: ID!
+  note: String
+  text: String!
+  time: String!
 }
 
 input ImageTagInput
@@ -663,15 +727,23 @@ type Mutation
   updateChatCustomization(conversationId: ID!, emoji: String, participantIds: [ID!]!, senderId: ID!, themeId: Int): Boolean! @join__field(graph: CHAT)
   updateChatNickname(conversationId: ID!, nickname: String, participantIds: [ID!]!, senderId: ID!, userId: ID!): Boolean! @join__field(graph: CHAT)
   addComment(input: AddCommentInput!): Comment! @join__field(graph: FEED)
+  approveGroupRequest(adminId: ID!, groupId: ID!, userId: ID!): Boolean! @join__field(graph: FEED)
   createEvent(input: CreateEventInput!): Event! @join__field(graph: FEED)
   createGroup(input: CreateGroupInput!): Group! @join__field(graph: FEED)
+  createGroupRule(description: String!, groupId: ID!, title: String!): GroupRule! @join__field(graph: FEED)
   createPost(input: CreatePostInput!): Post! @join__field(graph: FEED)
   createStory(input: CreateStoryInput!): Story! @join__field(graph: FEED)
+  deleteGroupRule(ruleId: ID!): Boolean! @join__field(graph: FEED)
   joinGroup(groupId: ID!, userId: ID!): Boolean! @join__field(graph: FEED)
   leaveGroup(groupId: ID!, userId: ID!): Boolean! @join__field(graph: FEED)
+  logGroupActivity(actorId: ID!, actorName: String!, groupId: ID!, note: String, text: String!): GroupActivityLog! @join__field(graph: FEED)
   markStoryAsViewed(storyId: ID!, viewerId: ID!): Boolean! @join__field(graph: FEED)
   reactToComment(input: CommentReactionInput!): Boolean! @join__field(graph: FEED)
   reactToPost(input: PostReactionInput!): Boolean! @join__field(graph: FEED)
+  rejectGroupRequest(adminId: ID!, groupId: ID!, userId: ID!): Boolean! @join__field(graph: FEED)
+  removeGroupMember(adminId: ID!, groupId: ID!, userId: ID!): Boolean! @join__field(graph: FEED)
+  updateGroupMemberRole(adminId: ID!, groupId: ID!, role: GroupRole!, userId: ID!): Boolean! @join__field(graph: FEED)
+  updateGroupRulesOrder(groupId: ID!, ruleIds: [ID!]!): Boolean! @join__field(graph: FEED)
   voteOnPoll(optionId: ID!, postId: ID!, userId: ID!): Post! @join__field(graph: FEED)
   acceptFriendRequest(receiverId: ID!, senderId: ID!): FriendRequestResponse! @join__field(graph: SOCIALGRAPH)
   sendFriendRequest(receiverId: ID!, senderId: ID!): FriendRequestResponse! @join__field(graph: SOCIALGRAPH)
@@ -830,12 +902,22 @@ type Query
   getActiveStories(currentUserId: ID!): [Story!]! @join__field(graph: FEED)
   getEventById(id: ID!): Event @join__field(graph: FEED)
   getEvents(limit: Int, offset: Int): [Event!]! @join__field(graph: FEED)
-  getFeed(currentUserId: ID!, limit: Int, offset: Int): [Post!]! @join__field(graph: FEED)
+  getFeed(currentUserId: ID!, hashtag: String, limit: Int, offset: Int): [Post!]! @join__field(graph: FEED)
+  getGroupActivityLogs(groupId: ID!): [GroupActivityLog!]! @join__field(graph: FEED)
   getGroupById(id: ID!): Group @join__field(graph: FEED)
   getGroupFeed(groupId: ID!, limit: Int, offset: Int): [Post!]! @join__field(graph: FEED)
+  getGroupMembers(currentUserId: ID, groupId: ID!): [GroupMember!]! @join__field(graph: FEED)
+  getGroupMembership(groupId: ID!, userId: ID!): String! @join__field(graph: FEED)
+  getGroupOverview(groupId: ID!): GroupOverview! @join__field(graph: FEED)
+  getGroupRules(groupId: ID!): [GroupRule!]! @join__field(graph: FEED)
   getGroups(limit: Int, offset: Int): [Group!]! @join__field(graph: FEED)
+  getPageScheduledPosts(pageId: ID!): [Post!]! @join__field(graph: FEED)
+  getPendingRequests(groupId: ID!): [ID!]! @join__field(graph: FEED)
   getPostById(postId: ID!): Post @join__field(graph: FEED)
+  getScheduledPosts(authorId: ID, targetId: String, targetType: String): [Post!]! @join__field(graph: FEED)
+  getUserAlbums(userId: ID!): [UserAlbum!]! @join__field(graph: FEED)
   getUserGroups(userId: ID!): [Group!]! @join__field(graph: FEED)
+  getUserMedia(albumName: String, filter: String, limit: Int, offset: Int, userId: ID!): UserMediaResponse! @join__field(graph: FEED)
   postReactions(postId: ID!): [ReactionDetail!]! @join__field(graph: FEED)
   searchEvents(query: String!): [Event!]! @join__field(graph: FEED)
   getBirthdayUsers(currentUserId: ID!): [BirthdayUser!]! @join__field(graph: SOCIALGRAPH)
@@ -849,8 +931,6 @@ type Query
   getNotifications(userId: ID!): [Notification!]! @join__field(graph: USERS)
   getSearchHistory(userId: ID): [UserSearchResponse!]! @join__field(graph: USERS)
   getUserById(userId: ID!): UserSearchResponse @join__field(graph: USERS)
-  getUserMedia(albumName: String, filter: String, limit: Int, offset: Int, userId: ID!): UserMediaResponse! @join__field(graph: FEED)
-  getUserAlbums(userId: ID!): [UserAlbum!]! @join__field(graph: FEED)
   searchUsers(currentUserId: ID, query: String!): [UserSearchResponse!]! @join__field(graph: USERS)
 }
 

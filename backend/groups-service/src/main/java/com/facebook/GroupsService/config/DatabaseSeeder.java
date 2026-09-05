@@ -138,20 +138,37 @@ public class DatabaseSeeder implements CommandLineRunner {
         groupMemberRepository.saveAll(members);
         }
 
-        // Ensure Kolegium Sędziów BOZPN (ID "4") has the seeded users
-        String dsdUserId = "7f23f5b8-87fb-4250-9ba9-6b5ed04afff0";
-        if (!groupMemberRepository.existsByGroupIdAndUserId("4", dsdUserId)) {
-            groupMemberRepository.save(GroupMemberEntity.builder()
-                .groupId("4")
-                .userId(dsdUserId)
-                .role(com.facebook.GroupsService.entity.GroupRole.ADMIN)
-                .joinedAt(java.time.Instant.now().minus(12, java.time.temporal.ChronoUnit.HOURS))
-                .build());
+        // Seed memberships for common user IDs
+        List<String> adminUserIds = List.of(
+            "e1088d18-971c-4bbf-a6ea-b7692fc3f412", // testuser
+            "7f23f5b8-87fb-4250-9ba9-6b5ed04afff0", // dsd
+            "0d4b14bc-1337-490f-ba79-27b62f4fdaf6", // bmiazek
+            "1e4332f6-5a7a-3210-b5fb-fb92c7c60cce", // Jan Wiśniewski
+            java.util.UUID.nameUUIDFromBytes("testuser".getBytes()).toString(),
+            java.util.UUID.nameUUIDFromBytes("testuser1".getBytes()).toString()
+        );
+
+        for (String adminId : adminUserIds) {
+            for (String gId : List.of("1", "2", "4", "5")) {
+                java.util.Optional<GroupMemberEntity> existingMembership = groupMemberRepository.findByGroupIdAndUserId(gId, adminId);
+                if (existingMembership.isPresent()) {
+                    GroupMemberEntity m = existingMembership.get();
+                    m.setRole(com.facebook.GroupsService.entity.GroupRole.ADMIN);
+                    groupMemberRepository.save(m);
+                } else {
+                    groupMemberRepository.save(GroupMemberEntity.builder()
+                        .groupId(gId)
+                        .userId(adminId)
+                        .role(com.facebook.GroupsService.entity.GroupRole.ADMIN)
+                        .joinedAt(java.time.Instant.now().minus(24, java.time.temporal.ChronoUnit.HOURS))
+                        .build());
+                }
+            }
         }
 
         // Add testuser1 to testuser6 to group 4 if they are not there
         String[] testUsers = {"testuser1", "testuser2", "testuser3", "testuser4", "testuser5", "testuser6"};
-        int[] hoursBack = {8, 6, 4, 2, 1, 10}; // 10 minutes for the last one
+        int[] hoursBack = {8, 6, 4, 2, 1, 10};
         for (int i = 0; i < testUsers.length; i++) {
             String uId = java.util.UUID.nameUUIDFromBytes(testUsers[i].getBytes()).toString();
             if (!groupMemberRepository.existsByGroupIdAndUserId("4", uId)) {
