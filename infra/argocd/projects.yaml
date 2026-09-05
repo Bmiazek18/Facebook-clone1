@@ -1,0 +1,130 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform
+  namespace: argocd
+spec:
+  description: "Platform operators, system controllers, storage, and cluster-level services"
+  sourceRepos:
+    - "https://charts.jetstack.io"
+    - "https://cloudnative-pg.github.io/charts"
+    - "https://strimzi.io/charts/"
+    - "https://docs.altinity.com/clickhouse-operator/"
+    - "https://scylla-operator-charts.storage.googleapis.com/stable"
+    - "https://operator.min.io/"
+    - "https://charts.bitnami.com/bitnami"
+    - "https://ot-container-kit.github.io/helm-charts"
+    - "https://nvidia.github.io/k8s-device-plugin"
+    - "https://github.com/Bmiazek18/facebook-clone-gitops.git"
+  destinations:
+    - server: "https://kubernetes.default.svc"
+      namespace: "cert-manager"
+    - server: "https://kubernetes.default.svc"
+      namespace: "cnpg-system"
+    - server: "https://kubernetes.default.svc"
+      namespace: "kafka"
+    - server: "https://kubernetes.default.svc"
+      namespace: "clickhouse-operator"
+    - server: "https://kubernetes.default.svc"
+      namespace: "scylla-operator"
+    - server: "https://kubernetes.default.svc"
+      namespace: "minio-operator"
+    - server: "https://kubernetes.default.svc"
+      namespace: "rabbitmq-system"
+    - server: "https://kubernetes.default.svc"
+      namespace: "redis-operator"
+    - server: "https://kubernetes.default.svc"
+      namespace: "kube-system"
+    - server: "https://kubernetes.default.svc"
+      namespace: "argocd"
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: observability
+  namespace: argocd
+spec:
+  description: "Monitoring, tracing, logging, and metrics aggregation stack"
+  sourceRepos:
+    - "https://github.com/Bmiazek18/facebook-clone-gitops.git"
+  destinations:
+    - server: "https://kubernetes.default.svc"
+      namespace: "apps"
+    - server: "https://kubernetes.default.svc"
+      namespace: "monitoring"
+  clusterResourceWhitelist:
+    - group: "rbac.authorization.k8s.io"
+      kind: "ClusterRole"
+    - group: "rbac.authorization.k8s.io"
+      kind: "ClusterRoleBinding"
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: apps
+  namespace: argocd
+spec:
+  description: "Microservices and application workloads (Restricted to 'apps' namespace, Zero-Trust)"
+  sourceRepos:
+    - "https://github.com/Bmiazek18/facebook-clone-gitops.git"
+  destinations:
+    - server: "https://kubernetes.default.svc"
+      namespace: "apps"
+  # Hard lockdown: App developers cannot create cluster-scoped roles/storage
+  clusterResourceWhitelist: []
+  namespaceResourceWhitelist:
+    - group: "apps"
+      kind: "Deployment"
+    - group: "apps"
+      kind: "StatefulSet"
+    - group: "apps"
+      kind: "DaemonSet"
+    - group: "batch"
+      kind: "Job"
+    - group: "batch"
+      kind: "CronJob"
+    - group: ""
+      kind: "Service"
+    - group: ""
+      kind: "ConfigMap"
+    - group: ""
+      kind: "Secret"
+    - group: ""
+      kind: "ServiceAccount"
+    - group: ""
+      kind: "PersistentVolumeClaim"
+    - group: "networking.k8s.io"
+      kind: "Ingress"
+    - group: "networking.k8s.io"
+      kind: "NetworkPolicy"
+    - group: "autoscaling"
+      kind: "HorizontalPodAutoscaler"
+    - group: "postgresql.cnpg.io"
+      kind: "Cluster"
+    - group: "scylla.scylladb.com"
+      kind: "ScyllaCluster"
+    - group: "kafka.strimzi.io"
+      kind: "Kafka"
+    - group: "kafka.strimzi.io"
+      kind: "KafkaTopic"
+    - group: "rabbitmq.com"
+      kind: "RabbitmqCluster"
+    - group: "redis.redis.opstreelabs.in"
+      kind: "Redis"
+    - group: "redis.redis.opstreelabs.in"
+      kind: "RedisCluster"
+    - group: "minio.min.io"
+      kind: "Tenant"
+    - group: "cert-manager.io"
+      kind: "Certificate"
+    - group: "cert-manager.io"
+      kind: "Issuer"

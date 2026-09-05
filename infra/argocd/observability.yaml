@@ -8,7 +8,7 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  project: default
+  project: observability
   source:
     repoURL: https://github.com/Bmiazek18/facebook-clone-gitops.git
     targetRevision: main
