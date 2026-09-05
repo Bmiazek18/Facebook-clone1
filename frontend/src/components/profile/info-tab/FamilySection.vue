@@ -60,7 +60,7 @@ const openRel = () => (activeSection.value = 'rel')
       <h3 class="font-bold text-xl text-black mb-4">{{ $t('profile.info.relationship') }}</h3>
 
       <div v-if="activeSection === 'rel'" class="bg-gray-50 p-4 rounded-lg mb-4">
-        <div class="relative bg-white border border-gray-300 rounded-lg px-3 py-2 mb-4">
+        <div class="relative bg-white border border-theme-border rounded-lg px-3 py-2 mb-4">
           <select v-model="form.status" class="w-full bg-transparent outline-none">
             <option>{{ $t('profile.info.status.single') }}</option>
             <option>{{ $t('profile.info.status.inRelationship') }}</option>
@@ -173,7 +173,7 @@ const openRel = () => (activeSection.value = 'rel')
               v-for="u in filteredUsers"
               :key="u.id"
               @click="selectUser(u.name)"
-              class="p-2 hover:bg-gray-100 cursor-pointer"
+              class="p-2 hover:bg-theme-hover cursor-pointer"
             >
               {{ u.name }}
             </li>

@@ -1,6 +1,6 @@
 <template>
-  <div class="bg-white dark:bg-[#242526] rounded-xl p-4 shadow-sm border border-gray-200 dark:border-[#3e4042]">
-    <h2 class="text-[20px] font-semibold text-[#050505] dark:text-[#e4e6eb] mb-2">Zarządzaj dyskusją</h2>
+  <div class="bg-theme-bg-secondary rounded-xl p-4 shadow-sm border border-theme-border">
+    <h2 class="text-[20px] font-semibold text-theme-text mb-2">Zarządzaj dyskusją</h2>
 
     <div class="flex flex-col">
       <template v-for="item in items" :key="item.id">
@@ -10,20 +10,20 @@
           v-if="activeEditId !== item.id"
           @click="toggleEdit(item.id)"
           :class="[
-            'flex items-center justify-between py-3 border-b border-gray-200 dark:border-[#3e4042] last:border-0 hover:bg-gray-100 dark:hover:bg-[#3a3b3c]/50 transition-colors -mx-4 px-4 group text-left cursor-pointer',
+            'flex items-center justify-between py-3 border-b border-theme-border last:border-0 hover:bg-theme-hover transition-colors -mx-4 px-4 group text-left cursor-pointer',
             activeEditId && activeEditId !== item.id ? 'opacity-40 pointer-events-none' : ''
           ]"
         >
           <div class="flex flex-col pr-4">
-            <span class="text-[15px] font-medium text-[#050505] dark:text-[#e4e6eb] leading-snug">
+            <span class="text-[15px] font-medium text-theme-text leading-snug">
               {{ item.label }}
             </span>
-            <span v-if="item.subLabel" class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] mt-0.5 leading-tight">
+            <span v-if="item.subLabel" class="text-[13px] text-theme-text-secondary mt-0.5 leading-tight">
               {{ item.subLabel }}
             </span>
           </div>
 
-          <div class="shrink-0 flex items-center justify-center text-[#65676b] dark:text-[#b0b3b8] group-hover:text-[#050505] dark:group-hover:text-[#e4e6eb] leading-snug">
+          <div class="shrink-0 flex items-center justify-center text-theme-text-secondary group-hover:text-theme-text dark:group-hover:text-[#e4e6eb] leading-snug">
             <PencilIcon v-if="item.action === 'edit'" :size="20" />
             <ChevronDownIcon v-else-if="item.action === 'dropdown'" :size="24" />
           </div>
@@ -32,15 +32,15 @@
         <!-- 1. KTO MOŻE PUBLIKOWAĆ -->
         <div
           v-else-if="item.id === 'who_post' && activeEditId === 'who_post'"
-          class="py-2 border-b border-gray-200 dark:border-[#3e4042] last:border-0"
+          class="py-2 border-b border-theme-border last:border-0"
         >
-          <h3 class="text-[17px] font-bold text-[#050505] dark:text-[#e4e6eb] mb-3">
+          <h3 class="text-[17px] font-bold text-theme-text mb-3">
             {{ item.label }}
           </h3>
 
           <div class="space-y-4">
             <label class="flex items-center justify-between cursor-pointer group">
-              <span class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">Każdy członek grupy</span>
+              <span class="text-[15px] font-bold text-theme-text">Każdy członek grupy</span>
               <input
                 type="radio"
                 name="who_post_radio"
@@ -51,7 +51,7 @@
             </label>
 
             <label class="flex items-center justify-between cursor-pointer group">
-              <span class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">Tylko administratorzy</span>
+              <span class="text-[15px] font-bold text-theme-text">Tylko administratorzy</span>
               <input
                 type="radio"
                 name="who_post_radio"
@@ -67,7 +67,7 @@
             <button
               type="button"
               @click="cancelEdit"
-              class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-gray-100 dark:hover:bg-[#3a3b3c] transition-colors"
+              class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-theme-hover transition-colors"
             >
               Anuluj
             </button>
@@ -80,7 +80,7 @@
                 'px-6 py-2 rounded-lg text-[15px] font-semibold transition-colors',
                 whoPostValue !== initialWhoPostValue
                   ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
-                  : 'bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
+                  : 'bg-theme-bg-tertiary text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
               ]"
             >
               Zapisz
@@ -91,18 +91,18 @@
         <!-- 2. ZATWIERDZANIE POSTÓW -->
         <div
           v-else-if="item.id === 'post_approval' && activeEditId === 'post_approval'"
-          class="py-2 border-b border-gray-200 dark:border-[#3e4042] last:border-0"
+          class="py-2 border-b border-theme-border last:border-0"
         >
-          <h3 class="text-[17px] font-bold text-[#050505] dark:text-[#e4e6eb] mb-1">
+          <h3 class="text-[17px] font-bold text-theme-text mb-1">
             {{ item.label }}
           </h3>
-          <p class="text-[14px] text-[#65676b] dark:text-[#b0b3b8] mb-4 leading-snug">
+          <p class="text-[14px] text-theme-text-secondary mb-4 leading-snug">
             Włącz tę funkcję, jeśli chcesz, aby administratorzy i moderatorzy zatwierdzali każdy post
           </p>
 
           <div class="space-y-4">
             <label class="flex items-center justify-between cursor-pointer group">
-              <span class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">Wszystkie posty</span>
+              <span class="text-[15px] font-bold text-theme-text">Wszystkie posty</span>
               <input
                 type="radio"
                 name="post_approval_radio"
@@ -113,7 +113,7 @@
             </label>
 
             <label class="flex items-center justify-between cursor-pointer group">
-              <span class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">Tylko posty anonimowe</span>
+              <span class="text-[15px] font-bold text-theme-text">Tylko posty anonimowe</span>
               <input
                 type="radio"
                 name="post_approval_radio"
@@ -124,7 +124,7 @@
             </label>
 
             <label class="flex items-center justify-between cursor-pointer group">
-              <span class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">Wył.</span>
+              <span class="text-[15px] font-bold text-theme-text">Wył.</span>
               <input
                 type="radio"
                 name="post_approval_radio"
@@ -139,7 +139,7 @@
             <button
               type="button"
               @click="cancelEdit"
-              class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-gray-100 dark:hover:bg-[#3a3b3c] transition-colors"
+              class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-theme-hover transition-colors"
             >
               Anuluj
             </button>
@@ -152,7 +152,7 @@
                 'px-6 py-2 rounded-lg text-[15px] font-semibold transition-colors',
                 postApprovalValue !== initialPostApprovalValue
                   ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
-                  : 'bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
+                  : 'bg-theme-bg-tertiary text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
               ]"
             >
               Zapisz
@@ -163,17 +163,17 @@
         <!-- 3. ZATWIERDŹ ZMIANY -->
         <div
           v-else-if="item.id === 'approve_edits' && activeEditId === 'approve_edits'"
-          class="py-2 border-b border-gray-200 dark:border-[#3e4042] last:border-0"
+          class="py-2 border-b border-theme-border last:border-0"
         >
-          <h3 class="text-[17px] font-bold text-[#050505] dark:text-[#e4e6eb] mb-3">
+          <h3 class="text-[17px] font-bold text-theme-text mb-3">
             {{ item.label }}
           </h3>
 
           <div class="space-y-4">
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">Włączone</div>
-                <div class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] leading-tight mt-0.5">
+                <div class="text-[15px] font-bold text-theme-text">Włączone</div>
+                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">
                   Edytowane posty muszą być zatwierdzone przez administratora lub moderatora
                 </div>
               </div>
@@ -188,8 +188,8 @@
 
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">Wyłączone</div>
-                <div class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] leading-tight mt-0.5">
+                <div class="text-[15px] font-bold text-theme-text">Wyłączone</div>
+                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">
                   Członkowie mogą edytować swoje posty bezpośrednio
                 </div>
               </div>
@@ -207,7 +207,7 @@
             <button
               type="button"
               @click="cancelEdit"
-              class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-gray-100 dark:hover:bg-[#3a3b3c] transition-colors"
+              class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-theme-hover transition-colors"
             >
               Anuluj
             </button>
@@ -220,7 +220,7 @@
                 'px-6 py-2 rounded-lg text-[15px] font-semibold transition-colors',
                 approveEditsValue !== initialApproveEditsValue
                   ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
-                  : 'bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
+                  : 'bg-theme-bg-tertiary text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
               ]"
             >
               Zapisz
@@ -231,20 +231,20 @@
         <!-- 4. SORTUJ KOMENTARZE -->
         <div
           v-else-if="item.id === 'sort_comments' && activeEditId === 'sort_comments'"
-          class="py-2 border-b border-gray-200 dark:border-[#3e4042] last:border-0"
+          class="py-2 border-b border-theme-border last:border-0"
         >
-          <h3 class="text-[17px] font-bold text-[#050505] dark:text-[#e4e6eb] mb-1">
+          <h3 class="text-[17px] font-bold text-theme-text mb-1">
             {{ item.label }}
           </h3>
-          <p class="text-[14px] text-[#65676b] dark:text-[#b0b3b8] mb-4 leading-snug">
+          <p class="text-[14px] text-theme-text-secondary mb-4 leading-snug">
             Będzie to ustawienie domyślne. Członkowie nadal będą mogli zmieniać kolejność wyświetlania komentarzy do poszczególnych postów.
           </p>
 
           <div class="space-y-4">
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">Proponowane ustawienie domyślne</div>
-                <div class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] leading-tight mt-0.5">
+                <div class="text-[15px] font-bold text-theme-text">Proponowane ustawienie domyślne</div>
+                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">
                   Automatyczne wyświetlanie komentarzy w dowolnej kolejności, która zachęca do uczestnictwa w grupie.
                 </div>
               </div>
@@ -259,8 +259,8 @@
 
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">Najpopularniejsze komentarze</div>
-                <div class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] leading-tight mt-0.5">
+                <div class="text-[15px] font-bold text-theme-text">Najpopularniejsze komentarze</div>
+                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">
                   Wyświetl najpierw komentarze o największej aktywności.
                 </div>
               </div>
@@ -275,8 +275,8 @@
 
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">Od najnowszych</div>
-                <div class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] leading-tight mt-0.5">
+                <div class="text-[15px] font-bold text-theme-text">Od najnowszych</div>
+                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">
                   Wyświetlanie najnowszych komentarzy jako pierwszych.
                 </div>
               </div>
@@ -291,8 +291,8 @@
 
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">Wszystkie komentarze</div>
-                <div class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] leading-tight mt-0.5">
+                <div class="text-[15px] font-bold text-theme-text">Wszystkie komentarze</div>
+                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">
                   Wyświetlanie wszystkich komentarzy w kolejności chronologicznej, w tym potencjalny spam.
                 </div>
               </div>
@@ -310,7 +310,7 @@
             <button
               type="button"
               @click="cancelEdit"
-              class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-gray-100 dark:hover:bg-[#3a3b3c] transition-colors"
+              class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-theme-hover transition-colors"
             >
               Anuluj
             </button>
@@ -323,7 +323,7 @@
                 'px-6 py-2 rounded-lg text-[15px] font-semibold transition-colors',
                 sortCommentsValue !== initialSortCommentsValue
                   ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
-                  : 'bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
+                  : 'bg-theme-bg-tertiary text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
               ]"
             >
               Zapisz

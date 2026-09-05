@@ -1,9 +1,9 @@
 <template>
   <div
-    class="w-[900px] max-w-full bg-white rounded-lg shadow-lg flex flex-col h-[85vh] overflow-hidden border border-gray-200  "
+    class="w-[900px] max-w-full bg-white rounded-lg shadow-lg flex flex-col h-[85vh] overflow-hidden border border-theme-border  "
   >
-    <div class="p-3 px-4 border-b border-gray-200 bg-white">
-      <div class="flex items-center bg-[#f0f2f5] rounded-full px-3 py-2">
+    <div class="p-3 px-4 border-b border-theme-border bg-white">
+      <div class="flex items-center bg-theme-bg rounded-full px-3 py-2">
         <MagnifyIcon class="text-gray-500 mr-2" :size="20" />
         <input
           type="text"
@@ -15,8 +15,8 @@
     </div>
 
     <div class="flex flex-1 overflow-hidden">
-      <div class="w-1/3 border-r border-gray-200 overflow-y-auto pb-5 custom-scrollbar">
-        <div class="border-b border-gray-200">
+      <div class="w-1/3 border-r border-theme-border overflow-y-auto pb-5 custom-scrollbar">
+        <div class="border-b border-theme-border">
           <div
             @click="isFriendsOpen = !isFriendsOpen"
             class="flex items-center p-3 px-4 font-semibold text-sm text-black cursor-pointer select-none hover:bg-gray-50 transition-colors"
@@ -36,14 +36,14 @@
               Proponowani
             </div>
             <div
-              class="px-9 py-2 rounded-md text-sm text-gray-600 cursor-pointer mb-0.5 hover:bg-gray-100"
+              class="px-9 py-2 rounded-md text-sm text-gray-600 cursor-pointer mb-0.5 hover:bg-theme-hover"
             >
               Wszyscy znajomi
             </div>
           </div>
         </div>
 
-        <div class="border-b border-gray-200">
+        <div class="border-b border-theme-border">
           <div
             @click="isEventsOpen = !isEventsOpen"
             class="flex items-center p-3 px-4 font-semibold text-sm text-black cursor-pointer select-none hover:bg-gray-50 transition-colors"
@@ -58,14 +58,14 @@
           </div>
           <div v-show="isEventsOpen" class="px-2 pb-2">
             <div
-              class="px-9 py-2 rounded-md text-sm text-gray-600 cursor-pointer mb-0.5 hover:bg-gray-100 leading-snug"
+              class="px-9 py-2 rounded-md text-sm text-gray-600 cursor-pointer mb-0.5 hover:bg-theme-hover leading-snug"
             >
               Wielkie Otrzęsiny Studenckie
             </div>
           </div>
         </div>
 
-        <div class="border-b border-gray-200">
+        <div class="border-b border-theme-border">
           <div
             @click="isMyEventsOpen = !isMyEventsOpen"
             class="flex items-center p-3 px-4 font-semibold text-sm text-black cursor-pointer select-none hover:bg-gray-50 transition-colors"
@@ -100,7 +100,7 @@
           </div>
           <div v-show="isGroupsOpen" class="px-2 pb-2">
             <div
-              class="px-9 py-2 rounded-md text-sm text-gray-600 cursor-pointer mb-0.5 hover:bg-gray-100"
+              class="px-9 py-2 rounded-md text-sm text-gray-600 cursor-pointer mb-0.5 hover:bg-theme-hover"
             >
               Kolegium Sędziów BOZPN
             </div>
@@ -108,11 +108,11 @@
         </div>
       </div>
 
-      <div class="w-1/3 flex flex-col border-r border-gray-200">
+      <div class="w-1/3 flex flex-col border-r border-theme-border">
         <div class="flex justify-between items-center p-4">
           <h3 class="m-0 text-base font-semibold text-black">Proponowani</h3>
           <button
-            class="bg-transparent border-none text-[#1877f2] font-semibold text-sm cursor-pointer px-2 py-1 rounded hover:bg-gray-100 transition-colors"
+            class="bg-transparent border-none text-[#1877f2] font-semibold text-sm cursor-pointer px-2 py-1 rounded hover:bg-theme-hover transition-colors"
             @click="toggleSelectAll"
           >
             {{ isAllSelected ? 'Odznacz wszystkich' : 'Wybierz wszystkich' }}
@@ -123,11 +123,11 @@
           <div
             v-for="user in filteredUsers"
             :key="user.id"
-            class="flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors"
+            class="flex items-center p-2 rounded-md cursor-pointer hover:bg-theme-hover transition-colors"
             @click="toggleUser(user.id)"
           >
             <div
-              class="w-10 h-10 rounded-full overflow-hidden mr-3 shrink-0 bg-[#e4e6eb] flex items-center justify-center"
+              class="w-10 h-10 rounded-full overflow-hidden mr-3 shrink-0 bg-theme-bg-tertiary flex items-center justify-center"
             >
               <img
                 v-if="user.avatar"
@@ -156,7 +156,7 @@
         </div>
       </div>
 
-      <div class="w-1/3 bg-[#f0f2f5] flex flex-col">
+      <div class="w-1/3 bg-theme-bg flex flex-col">
         <div class="p-4 pb-2">
           <p class="text-xs font-semibold text-gray-500 m-0 tracking-wide uppercase">
             POZOSTAŁO {{ 500 - selectedIds.length }} ZAPROSZEŃ
@@ -170,7 +170,7 @@
             class="flex items-center p-2 rounded-md hover:bg-gray-200 transition-colors group"
           >
             <div
-              class="w-8 h-8 rounded-full overflow-hidden mr-3 shrink-0 bg-[#e4e6eb] flex items-center justify-center"
+              class="w-8 h-8 rounded-full overflow-hidden mr-3 shrink-0 bg-theme-bg-tertiary flex items-center justify-center"
             >
               <img
                 v-if="user.avatar"
@@ -196,14 +196,14 @@
       </div>
     </div>
 
-    <div class="p-4 border-t border-gray-200 flex justify-end gap-3 bg-white">
+    <div class="p-4 border-t border-theme-border flex justify-end gap-3 bg-white">
       <button
-        class="bg-transparent border-none text-[#1877f2] font-semibold text-[15px] cursor-pointer px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+        class="bg-transparent border-none text-[#1877f2] font-semibold text-[15px] cursor-pointer px-3 py-2 rounded-md hover:bg-theme-hover transition-colors"
       >
         Anuluj
       </button>
       <button
-        class="bg-[#1877f2] text-white border-none font-semibold text-[15px] px-6 py-2 rounded-md cursor-pointer disabled:bg-[#e4e6eb] disabled:text-[#bcc0c4] disabled:cursor-not-allowed transition-colors"
+        class="bg-[#1877f2] text-white border-none font-semibold text-[15px] px-6 py-2 rounded-md cursor-pointer disabled:bg-theme-bg-tertiary disabled:text-[#bcc0c4] disabled:cursor-not-allowed transition-colors"
         :disabled="selectedIds.length === 0"
       >
         Wyślij zaproszenia

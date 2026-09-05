@@ -64,21 +64,21 @@ const previewTitle = computed(() =>
 const auth = useAuthStore()
 const containerClass = computed(() =>
   viewMode.value === 'mobile'
-    ? 'max-w-[375px] min-h-[600px] border-x border-gray-200 shadow-sm'
+    ? 'max-w-[375px] min-h-[600px] border-x border-theme-border shadow-sm'
     : 'max-w-[850px] shadow-[0_1px_2px_rgba(0,0,0,0.1)] border border-[#dbdbdb]',
 )
 </script>
 
 <template>
   <div
-    class="flex h-screen w-full bg-[#F0F2F5]   text-[#050505] overflow-hidden antialiased"
+    class="flex h-screen w-full bg-theme-bg   text-theme-text overflow-hidden antialiased"
   >
     <aside
-      class="w-[360px] shrink-0 flex flex-col bg-white shadow-[2px_0_5px_rgba(0,0,0,0.05)] h-full z-20 relative border-r border-[#E5E5E5]"
+      class="w-[360px] shrink-0 flex flex-col bg-white shadow-[2px_0_5px_rgba(0,0,0,0.05)] h-full z-20 relative border-r border-theme-border"
     >
-      <div class="h-[52px] flex items-center px-4 border-b border-[#E5E5E5] shrink-0">
+      <div class="h-[52px] flex items-center px-4 border-b border-theme-border shrink-0">
         <div
-          class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 cursor-pointer text-[#65676B]"
+          class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-theme-hover cursor-pointer text-theme-text-secondary"
         >
           <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
             <path
@@ -89,7 +89,7 @@ const containerClass = computed(() =>
       </div>
 
       <div class="flex-1 overflow-y-auto px-4 py-5 custom-scrollbar">
-        <div class="text-[13px] text-[#65676B] mb-1">
+        <div class="text-[13px] text-theme-text-secondary mb-1">
           <NuxtLink to="/" class="font-semibold">{{ t('common.homePage') }}</NuxtLink>
           <span class="mx-0.5">›</span> {{ t('createEvent.liveVideoEvent') }}
         </div>
@@ -98,18 +98,18 @@ const containerClass = computed(() =>
           {{ t('createEvent.createEvent') }}
         </h1>
 
-        <p class="text-[15px] text-[#65676B] leading-normal mb-6">
+        <p class="text-[15px] text-theme-text-secondary leading-normal mb-6">
           {{ t('createEvent.description') }}
         </p>
 
         <div class="flex items-center mb-6">
           <img
             :src="auth.currentUser?.avatar || 'https://i.pravatar.cc/150?u=bartosz'"
-            class="w-10 h-10 rounded-full mr-3 border border-[#E5E5E5]"
+            class="w-10 h-10 rounded-full mr-3 border border-theme-border"
           />
           <div class="leading-tight">
             <div class="font-semibold text-[15px]">{{ auth.currentUser?.name }}</div>
-            <div class="text-[13px] text-[#65676B]">{{ t('createEvent.organizerProfile') }}</div>
+            <div class="text-[13px] text-theme-text-secondary">{{ t('createEvent.organizerProfile') }}</div>
           </div>
         </div>
 
@@ -118,17 +118,17 @@ const containerClass = computed(() =>
             <label class="font-semibold text-[17px]">{{ t('createEvent.coverPhoto') }}</label>
             <div
               v-tooltip.top="t('createEvent.coverPhotoTooltip')"
-              class="text-[#65676B] cursor-pointer hover:bg-gray-100 p-1 rounded-full"
+              class="text-theme-text-secondary cursor-pointer hover:bg-theme-hover p-1 rounded-full"
             >
               <Information :size="20" />
             </div>
           </div>
 
           <div
-            class="w-full aspect-[1.9/1] bg-white border border-[#CED0D4] rounded-lg flex flex-col items-center justify-center gap-2 mb-4"
+            class="w-full aspect-[1.9/1] bg-white border border-theme-border rounded-lg flex flex-col items-center justify-center gap-2 mb-4"
           >
             <button
-              class="bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition-colors text-[15px]"
+              class="bg-theme-bg-tertiary hover:bg-theme-hover-strong text-theme-text font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition-colors text-[15px]"
             >
               <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
                 <path
@@ -141,7 +141,7 @@ const containerClass = computed(() =>
               {{ t('createEvent.uploadCoverPhoto') }}
             </button>
             <button
-              class="bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition-colors text-[15px]"
+              class="bg-theme-bg-tertiary hover:bg-theme-hover-strong text-theme-text font-semibold px-4 py-2 rounded-md flex items-center gap-2 transition-colors text-[15px]"
             >
               <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
                 <path
@@ -167,7 +167,7 @@ const containerClass = computed(() =>
               />
             </div>
             <div
-              class="w-[44px] h-[44px] rounded-lg bg-[#E4E6EB] shrink-0 flex items-center justify-center cursor-pointer hover:bg-[#D8DADF]"
+              class="w-[44px] h-[44px] rounded-lg bg-theme-bg-tertiary shrink-0 flex items-center justify-center cursor-pointer hover:bg-theme-hover-strong"
             >
               <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
                 <path d="M5 10a2 2 0 114 0 2 2 0 01-4 0zm7 0a2 2 0 114 0 2 2 0 01-4 0z"></path>
@@ -178,17 +178,17 @@ const containerClass = computed(() =>
 
         <div class="flex items-start justify-between gap-4 pt-4">
           <div class="flex-1">
-            <h3 class="font-bold text-[17px] text-[#050505] leading-snug">
+            <h3 class="font-bold text-[17px] text-theme-text leading-snug">
               {{ t('createEvent.fillWithPastEventData') }}
             </h3>
-            <p class="text-[15px] text-[#65676B] mt-1 leading-normal">
+            <p class="text-[15px] text-theme-text-secondary mt-1 leading-normal">
               {{ t('createEvent.fillWithPastEventDataDescription') }}
             </p>
           </div>
           <label class="relative inline-flex items-center cursor-pointer mt-1 shrink-0">
             <input type="checkbox" v-model="usePastEvent" class="sr-only peer" />
             <div
-              class="w-[44px] h-[24px] bg-[#BCC0C4] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1877F2]"
+              class="w-[44px] h-[24px] bg-[#BCC0C4] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-theme-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1877F2]"
             ></div>
           </label>
         </div>
@@ -200,21 +200,21 @@ const containerClass = computed(() =>
         />
       </div>
 
-      <div class="p-4 border-t border-[#E5E5E5] bg-white flex flex-col gap-3 shrink-0">
+      <div class="p-4 border-t border-theme-border bg-white flex flex-col gap-3 shrink-0">
         <div class="w-full flex gap-1 h-1.5 rounded-full overflow-hidden">
           <div class="w-1/2 bg-[#1877F2] rounded-full"></div>
-          <div class="w-1/2 bg-[#F0F2F5] rounded-full"></div>
+          <div class="w-1/2 bg-theme-bg rounded-full"></div>
         </div>
 
         <div class="flex items-center gap-2 mt-1">
           <button
-            class="px-5 h-9 rounded-md font-semibold text-[15px] bg-[#E4E6EB] text-[#050505] hover:bg-[#D8DADF] transition-colors"
+            class="px-5 h-9 rounded-md font-semibold text-[15px] bg-theme-bg-tertiary text-theme-text hover:bg-theme-hover-strong transition-colors"
           >
             {{ t('common.back') }}
           </button>
 
           <button
-            class="flex-1 h-9 rounded-md font-semibold text-[15px] bg-[#E4E6EB] text-[#BCC0C4] cursor-not-allowed"
+            class="flex-1 h-9 rounded-md font-semibold text-[15px] bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed"
           >
             {{ t('common.next') }}
           </button>
@@ -223,7 +223,7 @@ const containerClass = computed(() =>
     </aside>
 
     <main
-      class="flex-1 flex flex-col bg-[#F0F2F5] mt-[56px] items-center overflow-hidden p-6 md:p-8"
+      class="flex-1 flex flex-col bg-theme-bg mt-[56px] items-center overflow-hidden p-6 md:p-8"
     >
       <div
         :class="[
@@ -232,14 +232,14 @@ const containerClass = computed(() =>
         ]"
       >
         <div class="flex items-center justify-between py-4 bg-white shrink-0">
-          <span class="font-semibold text-[#050505] text-[15px]">{{ previewTitle }}</span>
+          <span class="font-semibold text-theme-text text-[15px]">{{ previewTitle }}</span>
 
-          <div class="flex gap-2 text-[#65676B]">
+          <div class="flex gap-2 text-theme-text-secondary">
             <button
               @click="viewMode = 'desktop'"
               :class="[
                 'w-9 h-9 rounded-full flex items-center justify-center transition',
-                viewMode === 'desktop' ? 'text-[#1877F2] bg-[#E7F3FF]' : 'hover:bg-gray-100',
+                viewMode === 'desktop' ? 'text-[#1877F2] bg-[#E7F3FF]' : 'hover:bg-theme-hover',
               ]"
             >
               <svg
@@ -261,7 +261,7 @@ const containerClass = computed(() =>
               @click="viewMode = 'mobile'"
               :class="[
                 'w-9 h-9 rounded-full flex items-center justify-center transition',
-                viewMode === 'mobile' ? 'text-[#1877F2] bg-[#E7F3FF]' : 'hover:bg-gray-100',
+                viewMode === 'mobile' ? 'text-[#1877F2] bg-[#E7F3FF]' : 'hover:bg-theme-hover',
               ]"
             >
               <svg
@@ -281,7 +281,7 @@ const containerClass = computed(() =>
         </div>
 
         <div
-          class="flex-1 border border-[#E5E5E5] rounded-lg overflow-y-auto custom-scrollbar bg-[#F0F2F5]"
+          class="flex-1 border border-theme-border rounded-lg overflow-y-auto custom-scrollbar bg-theme-bg"
         >
           <template v-if="viewMode === 'desktop'">
             <div class="bg-white">
@@ -298,11 +298,11 @@ const containerClass = computed(() =>
 
               <div class="px-5 pt-6 pb-4">
                 <div
-                  class="w-[72px] h-[76px] rounded-xl border border-[#CED0D4] overflow-hidden flex flex-col mb-4 bg-white shadow-sm"
+                  class="w-[72px] h-[76px] rounded-xl border border-theme-border overflow-hidden flex flex-col mb-4 bg-white shadow-sm"
                 >
                   <div class="h-[14px] bg-[#D93025] w-full"></div>
                   <div
-                    class="flex-1 flex items-center justify-center font-bold text-[32px] text-[#050505] leading-none mt-1"
+                    class="flex-1 flex items-center justify-center font-bold text-[32px] text-theme-text leading-none mt-1"
                   >
                     {{ dayNumber }}
                   </div>
@@ -316,12 +316,12 @@ const containerClass = computed(() =>
                     <h2
                       :class="[
                         'font-bold text-[36px] leading-tight mb-1',
-                        form.eventName ? 'text-[#050505]' : 'text-[#BCC0C4]',
+                        form.eventName ? 'text-theme-text' : 'text-[#BCC0C4]',
                       ]"
                     >
                       {{ form.eventName || t('createEvent.eventName') }}
                     </h2>
-                    <div class="text-[#65676B] font-semibold text-[15px]">
+                    <div class="text-theme-text-secondary font-semibold text-[15px]">
                       {{ t('createEvent.facebookLive') }}
                     </div>
                   </div>
@@ -332,32 +332,32 @@ const containerClass = computed(() =>
                   </button>
                 </div>
 
-                <div class="bg-[#F0F2F5] rounded-xl p-3 flex items-center justify-between mb-4">
+                <div class="bg-theme-bg rounded-xl p-3 flex items-center justify-between mb-4">
                   <div class="flex items-center gap-2">
                     <img
                       :src="auth.currentUser?.avatar || 'https://i.pravatar.cc/150?u=bartosz'"
-                      class="w-[35px] h-[35px] rounded-full border border-[#CED0D4]"
+                      class="w-[35px] h-[35px] rounded-full border border-theme-border"
                     />
                     <span class="text-[15px] font-bold"
                       >{{ auth.currentUser?.name }}
-                      <span class="font-normal text-[#050505]">{{
+                      <span class="font-normal text-theme-text">{{
                         t('createEvent.invitesYou')
                       }}</span></span
                     >
                   </div>
                   <div class="flex gap-2">
                     <button
-                      class="px-3 h-9 bg-[#E4E6EB] hover:bg-[#D8DADF] rounded-md font-semibold text-[14px]"
+                      class="px-3 h-9 bg-theme-bg-tertiary hover:bg-theme-hover-strong rounded-md font-semibold text-[14px]"
                     >
                       {{ t('createEvent.willAttend') }}
                     </button>
                     <button
-                      class="px-3 h-9 bg-[#E4E6EB] hover:bg-[#D8DADF] rounded-md font-semibold text-[14px]"
+                      class="px-3 h-9 bg-theme-bg-tertiary hover:bg-theme-hover-strong rounded-md font-semibold text-[14px]"
                     >
                       {{ t('createEvent.maybe') }}
                     </button>
                     <button
-                      class="px-3 h-9 bg-[#E4E6EB] hover:bg-[#D8DADF] rounded-md font-semibold text-[14px]"
+                      class="px-3 h-9 bg-theme-bg-tertiary hover:bg-theme-hover-strong rounded-md font-semibold text-[14px]"
                     >
                       {{ t('createEvent.invite') }}
                     </button>
@@ -368,19 +368,19 @@ const containerClass = computed(() =>
 
             <div class="p-6">
               <div
-                class="bg-white rounded-[12px] border border-[#CED0D4] p-5 max-w-[680px] shadow-sm"
+                class="bg-white rounded-[12px] border border-theme-border p-5 max-w-[680px] shadow-sm"
               >
-                <h3 class="text-[20px] font-bold text-[#050505] mb-3">
+                <h3 class="text-[20px] font-bold text-theme-text mb-3">
                   {{ t('createEvent.details') }}
                 </h3>
-                <p class="text-[#65676B] text-[15px] whitespace-pre-line mb-4">
+                <p class="text-theme-text-secondary text-[15px] whitespace-pre-line mb-4">
                   {{ form.description || t('createEvent.noDescription') }}
                 </p>
                 <div class="flex gap-2">
-                  <span class="px-3 py-1 bg-[#E4E6EB] rounded-md text-[14px] font-semibold">{{
+                  <span class="px-3 py-1 bg-theme-bg-tertiary rounded-md text-[14px] font-semibold">{{
                     t('createEvent.online')
                   }}</span>
-                  <span class="px-3 py-1 bg-[#E4E6EB] rounded-md text-[14px] font-semibold">{{
+                  <span class="px-3 py-1 bg-theme-bg-tertiary rounded-md text-[14px] font-semibold">{{
                     t('createEvent.liveVideo')
                   }}</span>
                 </div>

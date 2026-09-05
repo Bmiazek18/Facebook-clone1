@@ -52,9 +52,9 @@ const marketStats = [
 <template>
   <div class="max-w-5xl mx-auto mt-10 space-y-4">
     <!-- SEKCJA: Podsumowanie -->
-    <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+    <section class="bg-white rounded-xl shadow-sm border border-theme-border p-5">
       <h2 class="text-[20px] font-bold text-gray-900 mb-4">Podsumowanie</h2>
-      <div class="border border-gray-200 rounded-xl p-4 w-full md:w-[48%] flex flex-col justify-between">
+      <div class="border border-theme-border rounded-xl p-4 w-full md:w-[48%] flex flex-col justify-between">
         <div class="mb-2 text-gray-800">
           <StarOutline :size="28" />
         </div>
@@ -64,7 +64,7 @@ const marketStats = [
     </section>
 
     <!-- SEKCJA: Twoje ogłoszenia -->
-    <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+    <section class="bg-white rounded-xl shadow-sm border border-theme-border p-5">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-3">
         <h2 class="text-[20px] font-bold text-gray-900">Twoje ogłoszenia</h2>
         <div class="flex flex-wrap gap-2">
@@ -86,7 +86,7 @@ const marketStats = [
         <div
           v-for="(stat, index) in listingStats"
           :key="index"
-          class="border border-gray-200 rounded-xl p-3.5 flex flex-col justify-between min-h-[110px]"
+          class="border border-theme-border rounded-xl p-3.5 flex flex-col justify-between min-h-[110px]"
         >
           <div class="mb-2 text-gray-800">
             <component :is="stat.icon" :size="24" />
@@ -103,9 +103,9 @@ const marketStats = [
       </div>
 
       <!-- Pojedyncze ogłoszenie (Wersja robocza) -->
-      <div class="border border-gray-200 rounded-xl p-4 mb-4">
+      <div class="border border-theme-border rounded-xl p-4 mb-4">
         <div class="flex items-center gap-4 mb-4">
-          <div class="w-[100px] h-[100px] bg-[#E4E6EB] rounded-lg flex items-center justify-center text-gray-600">
+          <div class="w-[100px] h-[100px] bg-theme-bg-tertiary rounded-lg flex items-center justify-center text-gray-600">
             <ImageOutline :size="32" />
           </div>
           <div class="flex flex-col justify-center">
@@ -118,16 +118,16 @@ const marketStats = [
           <button class="flex-1 flex items-center justify-center gap-2 py-2 bg-[#EBF5FF] text-[#0064D1] font-semibold rounded-lg hover:bg-blue-100 transition-colors text-[15px]">
             <Pencil :size="18" /> Kontynuuj
           </button>
-          <button class="flex-1 flex items-center justify-center gap-2 py-2 bg-[#E4E6EB] text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors text-[15px]">
+          <button class="flex-1 flex items-center justify-center gap-2 py-2 bg-theme-bg-tertiary text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors text-[15px]">
             <Delete :size="18" /> Usuń wersję roboczą
           </button>
-          <button class="px-4 py-2 bg-[#E4E6EB] text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors">
+          <button class="px-4 py-2 bg-theme-bg-tertiary text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors">
             <DotsHorizontal :size="18" />
           </button>
         </div>
       </div>
 
-      <div class="mt-2 text-center border-t border-gray-200 pt-4">
+      <div class="mt-2 text-center border-t border-theme-border pt-4">
         <a href="#" class="text-[#0064D1] font-semibold text-[15px] hover:underline">
           Zobacz wszystkie ogłoszenia
         </a>
@@ -135,7 +135,7 @@ const marketStats = [
     </section>
 
     <!-- SEKCJA: Statystyki dotyczące Marketplace -->
-    <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+    <section class="bg-white rounded-xl shadow-sm border border-theme-border p-5">
       <div class="flex justify-between items-center mb-5">
         <h2 class="text-[20px] font-bold text-gray-900">Statystyki dotyczące Marketplace</h2>
         <div class="bg-gray-100 rounded-lg">
@@ -148,7 +148,7 @@ const marketStats = [
         <div
           v-for="(stat, index) in marketStats"
           :key="index"
-          class="border border-gray-200 rounded-xl p-4 flex flex-col justify-center min-h-[100px]"
+          class="border border-theme-border rounded-xl p-4 flex flex-col justify-center min-h-[100px]"
         >
           <div class="flex items-center gap-2.5 mb-1.5">
             <component :is="stat.icon" :size="24" class="text-gray-800" />

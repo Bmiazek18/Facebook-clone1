@@ -53,7 +53,7 @@ const handleSave = () => {
 
 <template>
   <div
-    class="max-w-[850px] bg-white rounded-xl p-4 text-[#050505] antialiased   transition-all"
+    class="max-w-[850px] bg-white rounded-xl p-4 text-theme-text antialiased   transition-all"
   >
     <!-- ======================================================= -->
     <!-- 1. WIDOK PODGLĄDU (Gdy użytkownik nie chce edytować)    -->
@@ -61,17 +61,17 @@ const handleSave = () => {
     <div v-if="!isEditing" @click="isEditing = true" class="cursor-pointer group select-none">
       <!-- Tytuł Sekcji -->
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-[20px] font-bold text-[#050505]">Hobby</h2>
+        <h2 class="text-[20px] font-bold text-theme-text">Hobby</h2>
         <!-- Opcjonalny przycisk podświetlany jak na FB przy hoverze -->
         <span class="text-[14px] text-[#1877F2] font-medium hidden group-hover:block">Edytuj</span>
       </div>
 
       <!-- Wiersz z ikoną figur i tekstem (Zrzut ekranu 2026-06-25 o 10.37.50.png) -->
       <div class="flex items-center gap-3 py-1">
-        <div class="text-[#050505] flex items-center justify-center">
+        <div class="text-theme-text flex items-center justify-center">
           <Shapes :size="24" class="stroke-[1.5]" />
         </div>
-        <span class="text-[15px] text-[#65676B] font-normal"> Hobby </span>
+        <span class="text-[15px] text-theme-text-secondary font-normal"> Hobby </span>
       </div>
     </div>
 
@@ -81,13 +81,13 @@ const handleSave = () => {
     <div v-else class="space-y-4">
       <!-- Nagłówek sekcji -->
       <div class="space-y-3">
-        <h2 class="text-[20px] font-bold text-[#050505]">Hobby</h2>
+        <h2 class="text-[20px] font-bold text-theme-text">Hobby</h2>
 
         <!-- Badge prywatności -->
         <div
-          class="inline-flex items-center gap-1.5 bg-[#E4E6EB] hover:bg-[#D8DADF] transition-colors px-3 py-1.5 rounded-md font-semibold text-[15px] text-[#050505] cursor-pointer select-none"
+          class="inline-flex items-center gap-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary transition-colors px-3 py-1.5 rounded-md font-semibold text-[15px] text-theme-text cursor-pointer select-none"
         >
-          <AccountMultiple :size="16" class="text-[#050505]" />
+          <AccountMultiple :size="16" class="text-theme-text" />
           Znajomi znajomych
         </div>
       </div>
@@ -100,7 +100,7 @@ const handleSave = () => {
           :class="[
             isFocused
               ? 'border-[#1877F2] ring-2 ring-[#1877F2]/20 rounded-b-none border-b-transparent'
-              : 'border-gray-300 hover:border-gray-400 pb-2',
+              : 'border-theme-border hover:border-gray-400 pb-2',
           ]"
         >
           <!-- Label unoszący się / aktywacyjny -->
@@ -109,7 +109,7 @@ const handleSave = () => {
             :class="[
               isFocused || searchQuery
                 ? 'top-1.5 text-[12px] text-[#1877F2]'
-                : 'top-1/2 -translate-y-1/2 text-[15px] text-[#65676B]',
+                : 'top-1/2 -translate-y-1/2 text-[15px] text-theme-text-secondary',
             ]"
           >
             Szukaj
@@ -119,7 +119,7 @@ const handleSave = () => {
             type="text"
             v-model="searchQuery"
             @focus="isFocused = true"
-            class="w-full bg-transparent px-4 pt-6 pb-1 text-[15px] text-[#050505] outline-none"
+            class="w-full bg-transparent px-4 pt-6 pb-1 text-[15px] text-theme-text outline-none"
           />
         </div>
 
@@ -128,29 +128,29 @@ const handleSave = () => {
           v-if="isFocused"
           class="border border-t-0 border-[#1877F2] rounded-b-xl bg-white shadow-lg overflow-hidden z-50 p-4 pt-2 space-y-3"
         >
-          <h3 class="text-[17px] font-bold text-[#050505] px-1">Popularne</h3>
+          <h3 class="text-[17px] font-bold text-theme-text px-1">Popularne</h3>
 
           <div class="space-y-1">
             <div
               v-for="hobby in filteredHobbies"
               :key="hobby.id"
               @mousedown="selectHobby(hobby.name)"
-              class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer select-none"
+              class="flex items-center gap-3 p-2 rounded-lg hover:bg-theme-hover transition-colors cursor-pointer select-none"
               :class="{ 'bg-blue-50/60': selectedHobbies.includes(hobby.name) }"
             >
               <!-- Ikona Hobby z tłem kołowym -->
               <div
-                class="w-10 h-10 bg-[#E4E6EB] rounded-full flex items-center justify-center text-[#050505] shrink-0"
+                class="w-10 h-10 bg-theme-bg-tertiary rounded-full flex items-center justify-center text-theme-text shrink-0"
               >
                 <Controller :size="20" />
               </div>
 
               <!-- Teksty -->
               <div class="flex flex-col min-w-0">
-                <span class="text-[15px] font-semibold text-[#050505] leading-tight">{{
+                <span class="text-[15px] font-semibold text-theme-text leading-tight">{{
                   hobby.name
                 }}</span>
-                <span class="text-[13px] text-[#65676B] mt-0.5"
+                <span class="text-[13px] text-theme-text-secondary mt-0.5"
                   >Dodane przez {{ hobby.count }}</span
                 >
               </div>
@@ -159,14 +159,14 @@ const handleSave = () => {
         </div>
 
         <!-- Podpis pod polem (widoczny, gdy lista jest zamknięta) -->
-        <p v-if="!isFocused" class="text-[13px] text-[#65676B] px-1 mt-1.5">Dodaj do 10 hobby.</p>
+        <p v-if="!isFocused" class="text-[13px] text-theme-text-secondary px-1 mt-1.5">Dodaj do 10 hobby.</p>
       </div>
 
       <!-- Linia separatora i przyciski akcji (Zrzut ekranu 2026-06-25 o 10.35.46.png) -->
-      <div class="mt-5 pt-4 border-t border-gray-200 flex justify-end gap-2">
+      <div class="mt-5 pt-4 border-t border-theme-border flex justify-end gap-2">
         <button
           @click="handleCancel"
-          class="px-5 py-2 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold text-[15px] rounded-lg transition-colors"
+          class="px-5 py-2 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold text-[15px] rounded-lg transition-colors"
         >
           Anuluj
         </button>
@@ -176,8 +176,8 @@ const handleSave = () => {
           class="px-5 py-2 font-semibold text-[15px] rounded-lg transition-colors"
           :class="[
             selectedHobbies.length > 0
-              ? 'bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505]'
-              : 'bg-[#E4E6EB] text-[#BCC0C4] cursor-not-allowed',
+              ? 'bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text'
+              : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed',
           ]"
         >
           Zapisz

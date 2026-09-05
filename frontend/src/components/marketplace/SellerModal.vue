@@ -105,10 +105,10 @@ const listings = ref([
           </div>
 
           <!-- Nagłówek profilu -->
-          <h1 class="text-[28px] font-bold text-[#050505] leading-tight">{{ userProfile.name }}</h1>
-          <p class="text-[15px] text-[#65676B] mt-1">Na Facebooku od {{ userProfile.joinedYear }}</p>
-          <p class="text-[15px] text-[#65676B] mb-5">
-            <span class="font-bold text-[#050505]">{{ userProfile.activeListingsCount }}</span> aktywne ogłoszenia
+          <h1 class="text-[28px] font-bold text-theme-text leading-tight">{{ userProfile.name }}</h1>
+          <p class="text-[15px] text-theme-text-secondary mt-1">Na Facebooku od {{ userProfile.joinedYear }}</p>
+          <p class="text-[15px] text-theme-text-secondary mb-5">
+            <span class="font-bold text-theme-text">{{ userProfile.activeListingsCount }}</span> aktywne ogłoszenia
           </p>
 
           <!-- Główny panel przycisków akcji -->
@@ -116,16 +116,16 @@ const listings = ref([
             <button class="flex-1 bg-[#0866FF] hover:bg-blue-600 text-white font-semibold py-1.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors h-10 text-[15px]">
               <AccountPlusIcon :size="20" /> Obserwuj
             </button>
-            <button class="flex-1 bg-[#E4E6EB] text-[#BCC0C4] cursor-not-allowed font-semibold py-1.5 px-4 rounded-lg flex items-center justify-center gap-2 h-10 text-[15px]">
+            <button class="flex-1 bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed font-semibold py-1.5 px-4 rounded-lg flex items-center justify-center gap-2 h-10 text-[15px]">
               <FacebookMessengerIcon :size="18" /> Wyślij wiadomość
             </button>
           </div>
 
           <div class="flex gap-2 mb-4">
-            <button class="flex-1 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold py-1.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors h-10 text-[15px]">
+            <button class="flex-1 bg-theme-bg-tertiary hover:bg-theme-hover-strong text-theme-text font-semibold py-1.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors h-10 text-[15px]">
               <AccountOutlineIcon :size="20" /> Wyświetl profil
             </button>
-            <button class="bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold px-4 rounded-lg flex items-center justify-center transition-colors h-10">
+            <button class="bg-theme-bg-tertiary hover:bg-theme-hover-strong text-theme-text font-semibold px-4 rounded-lg flex items-center justify-center transition-colors h-10">
               <DotsHorizontalIcon :size="20" />
             </button>
           </div>
@@ -134,14 +134,14 @@ const listings = ref([
 
           <!-- Sekcja: Informacje -->
           <div class="mb-4">
-            <h2 class="text-[17px] font-bold text-[#050505] mb-3">Informacje</h2>
+            <h2 class="text-[17px] font-bold text-theme-text mb-3">Informacje</h2>
             <div class="space-y-3">
-              <div class="flex items-center text-[#050505]">
-                <HomeIcon class="text-[#8A8D91] mr-3" :size="24" />
+              <div class="flex items-center text-theme-text">
+                <HomeIcon class="text-theme-text-secondary mr-3" :size="24" />
                 <span class="text-[15px]">Mieszka w: <span class="font-bold">{{ userProfile.location }}</span></span>
               </div>
-              <div class="flex items-center text-[#050505]">
-                <FacebookIcon class="text-[#8A8D91] mr-3" :size="24" />
+              <div class="flex items-center text-theme-text">
+                <FacebookIcon class="text-theme-text-secondary mr-3" :size="24" />
                 <span class="text-[15px]">Dołączenie do Facebooka: {{ userProfile.joinedYear }}</span>
               </div>
             </div>
@@ -151,27 +151,27 @@ const listings = ref([
 
           <!-- Sekcja: Ogłoszenia -->
           <div>
-            <h2 class="text-[17px] font-bold text-[#050505] mb-4">Ogłoszenia {{ userProfile.name.split(' ')[0] }}</h2>
+            <h2 class="text-[17px] font-bold text-theme-text mb-4">Ogłoszenia {{ userProfile.name.split(' ')[0] }}</h2>
 
             <!-- Pasek filtrów (Wyszukiwarka + Selecty) -->
             <div class="flex flex-col sm:flex-row gap-2 mb-4">
               <!-- Wyszukiwarka -->
               <div class="relative flex-1">
-                <MagnifyIcon class="absolute left-3 top-1/2 -translate-y-1/2 text-[#65676B]" :size="20" />
+                <MagnifyIcon class="absolute left-3 top-1/2 -translate-y-1/2 text-theme-text-secondary" :size="20" />
                 <input
                   type="text"
                   placeholder="Wyszukaj ogłoszenia"
-                  class="w-full bg-[#F0F2F5] text-[15px] text-[#050505] rounded-full py-2 pl-9 pr-4 focus:outline-none placeholder-[#65676B]"
+                  class="w-full bg-theme-bg text-[15px] text-theme-text rounded-full py-2 pl-9 pr-4 focus:outline-none placeholder-[#65676B]"
                   v-model="searchQuery"
                 />
               </div>
 
               <!-- Filtry -->
-              <button class="bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold py-2 px-3.5 rounded-lg flex items-center justify-between gap-1 text-[15px] transition-colors shrink-0">
-                Dostępne i na stanie <MenuDownIcon class="text-[#65676B]" :size="20" />
+              <button class="bg-theme-bg-tertiary hover:bg-theme-hover-strong text-theme-text font-semibold py-2 px-3.5 rounded-lg flex items-center justify-between gap-1 text-[15px] transition-colors shrink-0">
+                Dostępne i na stanie <MenuDownIcon class="text-theme-text-secondary" :size="20" />
               </button>
-              <button class="bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold py-2 px-3.5 rounded-lg flex items-center justify-between gap-1 text-[15px] transition-colors shrink-0">
-                Sortuj według <MenuDownIcon class="text-[#65676B]" :size="20" />
+              <button class="bg-theme-bg-tertiary hover:bg-theme-hover-strong text-theme-text font-semibold py-2 px-3.5 rounded-lg flex items-center justify-between gap-1 text-[15px] transition-colors shrink-0">
+                Sortuj według <MenuDownIcon class="text-theme-text-secondary" :size="20" />
               </button>
             </div>
 
@@ -183,7 +183,7 @@ const listings = ref([
                 class="flex flex-col cursor-pointer group"
               >
                 <!-- Miniatura -->
-                <div class="w-full aspect-square rounded-xl overflow-hidden bg-gray-100 mb-2 border border-gray-200">
+                <div class="w-full aspect-square rounded-xl overflow-hidden bg-gray-100 mb-2 border border-theme-border">
                   <img
                     :src="item.imageUrl"
                     :alt="item.title"
@@ -191,9 +191,9 @@ const listings = ref([
                   />
                 </div>
                 <!-- Informacje -->
-                <h3 class="font-bold text-[17px] text-[#050505] leading-tight">{{ item.price }}</h3>
-                <p class="text-[15px] text-[#050505] truncate mt-0.5">{{ item.title }}</p>
-                <p class="text-[13px] text-[#65676B] mt-0.5">{{ item.location }}</p>
+                <h3 class="font-bold text-[17px] text-theme-text leading-tight">{{ item.price }}</h3>
+                <p class="text-[15px] text-theme-text truncate mt-0.5">{{ item.title }}</p>
+                <p class="text-[13px] text-theme-text-secondary mt-0.5">{{ item.location }}</p>
               </div>
             </div>
 

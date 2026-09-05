@@ -89,20 +89,20 @@ const chart2Options = ref({
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#f0f2f5] font-sans text-[#050505] selection:bg-blue-600 pb-20">
+  <div class="min-h-screen bg-theme-bg font-sans text-theme-text selection:bg-blue-600 pb-20">
 
     <!-- Pasek nagłówka (Sticky) -->
-    <header class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+    <header class="bg-white border-b border-theme-border px-4 py-3 flex items-center justify-between sticky top-0 z-50">
       <!-- Opcje po lewej (Wybór zakresu) -->
-      <button class="bg-[#e4e6eb] hover:bg-[#d8dadf] transition-colors rounded-lg px-3.5 py-2 flex items-center gap-1.5 cursor-pointer">
-        <span class="text-[15px] font-semibold text-[#050505]">Ostatnie 28 dni</span>
-        <ChevronDownIcon :size="20" class="text-[#050505]" />
+      <button class="bg-theme-bg-tertiary hover:bg-theme-hover-strong transition-colors rounded-lg px-3.5 py-2 flex items-center gap-1.5 cursor-pointer">
+        <span class="text-[15px] font-semibold text-theme-text">Ostatnie 28 dni</span>
+        <ChevronDownIcon :size="20" class="text-theme-text" />
       </button>
 
       <!-- Opcje po prawej (Pobieranie) -->
-      <button class="bg-[#e4e6eb] hover:bg-[#d8dadf] transition-colors rounded-lg px-3.5 py-2 flex items-center gap-2 cursor-pointer">
-        <DownloadIcon :size="18" class="text-[#050505]" />
-        <span class="text-[15px] font-semibold text-[#050505]">Pobierz</span>
+      <button class="bg-theme-bg-tertiary hover:bg-theme-hover-strong transition-colors rounded-lg px-3.5 py-2 flex items-center gap-2 cursor-pointer">
+        <DownloadIcon :size="18" class="text-theme-text" />
+        <span class="text-[15px] font-semibold text-theme-text">Pobierz</span>
       </button>
     </header>
 
@@ -110,13 +110,13 @@ const chart2Options = ref({
     <main class="w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-4">
 
       <!-- Karta 1: Łącznie członków -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+      <div class="bg-white rounded-xl shadow-sm border border-theme-border p-5">
         <div class="mb-4">
           <div class="flex items-center gap-1.5">
             <h2 class="text-[17px] font-bold leading-tight">Łącznie 1 członków</h2>
-            <InformationIcon :size="16" class="text-[#65676b] cursor-pointer hover:text-[#050505] transition-colors" />
+            <InformationIcon :size="16" class="text-theme-text-secondary cursor-pointer hover:text-theme-text transition-colors" />
           </div>
-          <p class="text-[13px] text-[#65676b] mt-0.5">12 sie 2026</p>
+          <p class="text-[13px] text-theme-text-secondary mt-0.5">12 sie 2026</p>
         </div>
 
         <!-- Wykres 1 -->
@@ -131,13 +131,13 @@ const chart2Options = ref({
       </div>
 
       <!-- Karta 2: Prośby o dołączenie -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+      <div class="bg-white rounded-xl shadow-sm border border-theme-border p-5">
         <div class="mb-4">
           <div class="flex items-center gap-1.5">
             <h2 class="text-[17px] font-bold leading-tight">0 próśb o dołączenie</h2>
-            <InformationIcon :size="16" class="text-[#65676b] cursor-pointer hover:text-[#050505] transition-colors" />
+            <InformationIcon :size="16" class="text-theme-text-secondary cursor-pointer hover:text-theme-text transition-colors" />
           </div>
-          <p class="text-[13px] text-[#65676b] mt-0.5">16 lip 2026 - 12 sie 2026</p>
+          <p class="text-[13px] text-theme-text-secondary mt-0.5">16 lip 2026 - 12 sie 2026</p>
         </div>
 
         <!-- Wykres 2 -->
@@ -152,17 +152,17 @@ const chart2Options = ref({
 
         <!-- Stopka karty 2 -->
         <div class="mt-4">
-          <p class="text-[13px] text-[#65676b] text-center mb-3">
+          <p class="text-[13px] text-theme-text-secondary text-center mb-3">
             Liczba nowych próśb o dołączenie dziennie (16 lip - 12 sie)
           </p>
-          <button class="w-full bg-[#e4e6eb] hover:bg-[#d8dadf] transition-colors text-[#050505] text-[15px] font-semibold py-2 rounded-lg cursor-pointer">
+          <button class="w-full bg-theme-bg-tertiary hover:bg-theme-hover-strong transition-colors text-theme-text text-[15px] font-semibold py-2 rounded-lg cursor-pointer">
             Zobacz wszystkie prośby o dołączenie
           </button>
         </div>
       </div>
 
       <!-- Karta 3: Status rozpatrzonych próśb -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+      <div class="bg-white rounded-xl shadow-sm border border-theme-border p-5">
         <div>
           <div class="flex items-center gap-2">
             <h2 class="text-[17px] font-bold leading-tight">Rozpatrzono 0 próśb</h2>
@@ -171,19 +171,19 @@ const chart2Options = ref({
               <MenuUpIcon :size="20" class="-mr-1" />
               <span>0%</span>
             </div>
-            <InformationIcon :size="16" class="text-[#65676b] cursor-pointer hover:text-[#050505] transition-colors ml-1" />
+            <InformationIcon :size="16" class="text-theme-text-secondary cursor-pointer hover:text-theme-text transition-colors ml-1" />
           </div>
-          <p class="text-[13px] text-[#65676b] mt-0.5">16 lip 2026 - 12 sie 2026</p>
+          <p class="text-[13px] text-theme-text-secondary mt-0.5">16 lip 2026 - 12 sie 2026</p>
         </div>
 
         <!-- Siatka z 3 kolumnami -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
           <!-- Zatwierdzone -->
-          <div class="bg-[#f0f2f5] rounded-xl p-4 flex flex-col justify-between h-[120px]">
-            <h3 class="text-[16px] font-semibold text-[#050505]">Zatwierdzone</h3>
+          <div class="bg-theme-bg rounded-xl p-4 flex flex-col justify-between h-[120px]">
+            <h3 class="text-[16px] font-semibold text-theme-text">Zatwierdzone</h3>
             <div>
-              <div class="text-[36px] font-light text-[#050505] leading-none mb-1">0</div>
-              <div class="flex items-center text-[#65676b] text-[13px] font-semibold">
+              <div class="text-[36px] font-light text-theme-text leading-none mb-1">0</div>
+              <div class="flex items-center text-theme-text-secondary text-[13px] font-semibold">
                 <MenuUpIcon :size="18" class="-ml-1" />
                 <span>0%</span>
               </div>
@@ -191,15 +191,15 @@ const chart2Options = ref({
           </div>
 
           <!-- Odrzucone -->
-          <div class="bg-[#f0f2f5] rounded-xl p-4 flex flex-col justify-start h-[120px]">
-            <h3 class="text-[16px] font-semibold text-[#050505]">Odrzucone</h3>
-            <div class="text-[36px] font-light text-[#050505] leading-none mt-auto pb-1">0</div>
+          <div class="bg-theme-bg rounded-xl p-4 flex flex-col justify-start h-[120px]">
+            <h3 class="text-[16px] font-semibold text-theme-text">Odrzucone</h3>
+            <div class="text-[36px] font-light text-theme-text leading-none mt-auto pb-1">0</div>
           </div>
 
           <!-- Zablokowane -->
-          <div class="bg-[#f0f2f5] rounded-xl p-4 flex flex-col justify-start h-[120px]">
-            <h3 class="text-[16px] font-semibold text-[#050505]">Zablokowane</h3>
-            <div class="text-[36px] font-light text-[#050505] leading-none mt-auto pb-1">0</div>
+          <div class="bg-theme-bg rounded-xl p-4 flex flex-col justify-start h-[120px]">
+            <h3 class="text-[16px] font-semibold text-theme-text">Zablokowane</h3>
+            <div class="text-[36px] font-light text-theme-text leading-none mt-auto pb-1">0</div>
           </div>
         </div>
       </div>

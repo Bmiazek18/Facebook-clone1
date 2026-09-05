@@ -340,7 +340,7 @@ const saveHometown = async () => {
 </script>
 
 <template>
-  <div class="max-w-[850px] mx-auto text-[#050505] antialiased">
+  <div class="max-w-[850px] mx-auto text-theme-text antialiased">
     <!-- LOKALIZACJA -->
     <div class="mb-8">
       <h3 class="font-bold text-[17px] mb-4">Lokalizacja</h3>
@@ -349,9 +349,9 @@ const saveHometown = async () => {
         <button
           type="button"
           @click="openPrivacySelector('location')"
-          class="inline-flex items-center gap-1.5 bg-[#E4E6EB] hover:bg-[#D8DADF] px-3 py-1.5 rounded-md font-semibold text-[15px] text-[#050505] mb-4 transition-colors cursor-pointer"
+          class="inline-flex items-center gap-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary px-3 py-1.5 rounded-md font-semibold text-[15px] text-theme-text mb-4 transition-colors cursor-pointer"
         >
-          <component :is="getPrivacyIcon(locationPrivacy)" :size="16" class="text-[#65676B]" />
+          <component :is="getPrivacyIcon(locationPrivacy)" :size="16" class="text-theme-text-secondary" />
           <span>{{ getPrivacyLabel(locationPrivacy) }}</span>
         </button>
 
@@ -361,12 +361,12 @@ const saveHometown = async () => {
             :class="
               isLocationFocused
                 ? 'border-[#1877F2] ring-1 ring-[#1877F2]'
-                : 'border-[#CED0D4] hover:border-[#8A8D91]'
+                : 'border-theme-border hover:border-[#8A8D91]'
             "
           >
             <span
               class="absolute top-2 left-3 text-[13px] font-normal transition-colors cursor-text"
-              :class="isLocationFocused ? 'text-[#1877F2]' : 'text-[#65676B]'"
+              :class="isLocationFocused ? 'text-[#1877F2]' : 'text-theme-text-secondary'"
             >
               Aktualna miejscowość
             </span>
@@ -375,7 +375,7 @@ const saveHometown = async () => {
               @focus="isLocationFocused = true"
               @blur="handleLocationBlur"
               placeholder="Wpisz min. 3 znaki miejscowości..."
-              class="w-full pt-6 pb-2 px-3 bg-transparent outline-none text-[15px] text-[#050505]"
+              class="w-full pt-6 pb-2 px-3 bg-transparent outline-none text-[15px] text-theme-text"
             />
 
             <div v-if="isLoadingLocations" class="absolute right-3 top-1/2 -translate-y-1/2">
@@ -387,29 +387,29 @@ const saveHometown = async () => {
 
           <div
             v-if="isLocationFocused && locationSuggestions.length > 0"
-            class="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-[0_2px_12px_rgba(0,0,0,0.2)] z-50 overflow-hidden border border-gray-100 max-h-[300px] overflow-y-auto"
+            class="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-[0_2px_12px_rgba(0,0,0,0.2)] z-50 overflow-hidden border border-theme-border max-h-[300px] overflow-y-auto"
           >
             <div
               v-for="loc in locationSuggestions"
               :key="loc.id"
               @mousedown.prevent="selectLocation(loc.title)"
-              class="flex items-start gap-3 p-3 hover:bg-[#F2F2F2] cursor-pointer"
+              class="flex items-start gap-3 p-3 hover:bg-theme-hover cursor-pointer"
             >
               <div
-                class="w-10 h-10 rounded-lg bg-[#D8DADF] flex items-center justify-center shrink-0"
+                class="w-10 h-10 rounded-lg bg-theme-bg-tertiary flex items-center justify-center shrink-0"
               >
                 <MapMarker :size="24" class="text-white" />
               </div>
               <div class="flex flex-col justify-center min-h-[40px] w-full overflow-hidden">
-                <span class="text-[15px] font-semibold text-[#050505] leading-tight truncate">{{
+                <span class="text-[15px] font-semibold text-theme-text leading-tight truncate">{{
                   loc.title
                 }}</span>
-                <span class="text-[13px] text-[#65676B] leading-tight mt-0.5">{{
+                <span class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">{{
                   loc.country
                 }}</span>
                 <span
                   v-if="loc.meta"
-                  class="text-[11px] text-[#8A8D91] leading-tight mt-0.5 truncate block w-full"
+                  class="text-[11px] text-theme-text-secondary leading-tight mt-0.5 truncate block w-full"
                   >{{ loc.meta }}</span
                 >
               </div>
@@ -423,17 +423,17 @@ const saveHometown = async () => {
               locationForm.value.trim().length >= 3 &&
               !isLoadingLocations
             "
-            class="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-[0_2px_12px_rgba(0,0,0,0.2)] z-50 p-4 border border-gray-100 text-center text-[#65676B] text-[14px]"
+            class="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-[0_2px_12px_rgba(0,0,0,0.2)] z-50 p-4 border border-theme-border text-center text-theme-text-secondary text-[14px]"
           >
             Nie znaleziono pasujących miejsc dla tej frazy
           </div>
         </div>
 
-        <div class="flex justify-between items-center pt-4 border-t border-gray-200 mt-4">
+        <div class="flex justify-between items-center pt-4 border-t border-theme-border mt-4">
           <button
             @click="deleteLocation"
             type="button"
-            class="flex items-center gap-1.5 bg-[#E4E6EB] hover:bg-[#D8DADF] px-4 py-1.5 rounded-md font-semibold text-[15px] text-[#050505] transition-colors"
+            class="flex items-center gap-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary px-4 py-1.5 rounded-md font-semibold text-[15px] text-theme-text transition-colors"
           >
             <DeleteOutline :size="20" />
             Usuń
@@ -443,7 +443,7 @@ const saveHometown = async () => {
             <button
               @click="cancelEditingLocation"
               type="button"
-              class="px-4 py-1.5 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold rounded-md text-[15px] transition-colors"
+              class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
             >
               Anuluj
             </button>
@@ -453,7 +453,7 @@ const saveHometown = async () => {
               :class="
                 isLocationChanged
                   ? 'bg-[#1877F2] hover:bg-[#166FE5] text-white cursor-pointer'
-                  : 'bg-[#E4E6EB] text-[#BCC0C4] cursor-not-allowed'
+                  : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed'
               "
               class="px-4 py-1.5 font-semibold rounded-md text-[15px] transition-colors"
             >
@@ -466,7 +466,7 @@ const saveHometown = async () => {
       <div v-else class="flex justify-between items-start group">
         <div class="flex gap-4">
           <div
-            class="w-10 h-10 rounded-full bg-[#E4E6EB] flex items-center justify-center shrink-0"
+            class="w-10 h-10 rounded-full bg-theme-bg-tertiary flex items-center justify-center shrink-0"
           >
             <MapMarker :size="24" class="text-[#1877F2]" />
           </div>
@@ -474,22 +474,22 @@ const saveHometown = async () => {
             <span class="text-[15px] font-medium text-[#1877F2] hover:underline cursor-pointer">
               {{ locationForm.value || 'Dodaj aktualne miejsce zamieszkania' }}
             </span>
-            <span class="text-[13px] text-[#65676B]">Aktualne miejsce zamieszkania</span>
+            <span class="text-[13px] text-theme-text-secondary">Aktualne miejsce zamieszkania</span>
           </div>
         </div>
         <div v-if="isOwner" class="flex items-center gap-3">
           <button
             @click="openPrivacySelector('location')"
-            class="p-1.5 hover:bg-[#E4E6EB] rounded-full transition-colors cursor-pointer"
+            class="p-1.5 hover:bg-theme-bg-tertiary rounded-full transition-colors cursor-pointer"
             title="Zmień ustawienia prywatności"
           >
-            <component :is="getPrivacyIcon(locationPrivacy)" :size="16" class="text-[#65676B]" />
+            <component :is="getPrivacyIcon(locationPrivacy)" :size="16" class="text-theme-text-secondary" />
           </button>
           <button
             @click="startEditingLocation"
-            class="p-2 hover:bg-[#F2F2F2] rounded-full transition-colors cursor-pointer"
+            class="p-2 hover:bg-theme-hover rounded-full transition-colors cursor-pointer"
           >
-            <Pencil :size="20" class="text-[#65676B]" />
+            <Pencil :size="20" class="text-theme-text-secondary" />
           </button>
         </div>
       </div>
@@ -502,12 +502,12 @@ const saveHometown = async () => {
         <input
           v-model="hometownForm"
           placeholder="Wpisz miejscowość rodzinną..."
-          class="w-full border border-gray-300 rounded-md p-2 text-[15px] text-[#050505] outline-none focus:border-[#1877F2]"
+          class="w-full border border-theme-border rounded-md p-2 text-[15px] text-theme-text outline-none focus:border-[#1877F2]"
         />
-        <div class="flex justify-end space-x-2 pt-4 border-t border-gray-200 mt-4">
+        <div class="flex justify-end space-x-2 pt-4 border-t border-theme-border mt-4">
           <button
             @click="isEditingHometown = false"
-            class="px-4 py-1.5 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold rounded-md text-[15px] transition-colors"
+            class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
           >
             Anuluj
           </button>
@@ -515,7 +515,7 @@ const saveHometown = async () => {
             @click="saveHometown"
             :disabled="!isHometownChanged"
             class="px-4 py-1.5 font-semibold rounded-md text-[15px] transition-colors"
-            :class="isHometownChanged ? 'bg-[#1877F2] hover:bg-[#166FE5] text-white' : 'bg-[#E4E6EB] text-[#BCC0C4] cursor-not-allowed'"
+            :class="isHometownChanged ? 'bg-[#1877F2] hover:bg-[#166FE5] text-white' : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed'"
           >
             Zapisz
           </button>
@@ -523,20 +523,20 @@ const saveHometown = async () => {
       </div>
       <div v-else class="flex justify-between items-center group">
         <div class="flex gap-4">
-          <HomeOutline :size="28" class="text-[#8A8D91]" />
+          <HomeOutline :size="28" class="text-theme-text-secondary" />
           <div class="flex flex-col mt-0.5">
             <span class="text-[15px] font-medium text-[#1877F2] hover:underline cursor-pointer">
               {{ hometownForm || 'Dodaj miejscowość rodzinną' }}
             </span>
-            <span class="text-[13px] text-[#65676B]">Miejscowość rodzinna</span>
+            <span class="text-[13px] text-theme-text-secondary">Miejscowość rodzinna</span>
           </div>
         </div>
         <div v-if="isOwner" class="flex items-center gap-3">
           <button
             @click="startEditingHometown"
-            class="p-2 hover:bg-[#F2F2F2] rounded-full transition-colors cursor-pointer"
+            class="p-2 hover:bg-theme-hover rounded-full transition-colors cursor-pointer"
           >
-            <Pencil :size="20" class="text-[#65676B]" />
+            <Pencil :size="20" class="text-theme-text-secondary" />
           </button>
         </div>
       </div>
@@ -547,22 +547,22 @@ const saveHometown = async () => {
       <h3 class="font-bold text-[17px] mb-4">Płeć</h3>
       <div v-if="isEditingGender" class="mt-2">
         <div
-          class="relative bg-[#F0F2F5] hover:bg-[#E4E6EB] transition-colors rounded-md px-3 py-2.5 flex justify-between items-center cursor-pointer mb-4"
+          class="relative bg-theme-bg-tertiary hover:bg-theme-bg-tertiary transition-colors rounded-md px-3 py-2.5 flex justify-between items-center cursor-pointer mb-4"
         >
           <select
             v-model="genderForm.value"
-            class="w-full bg-transparent outline-none appearance-none cursor-pointer text-[15px] text-[#050505] pr-8 font-medium"
+            class="w-full bg-transparent outline-none appearance-none cursor-pointer text-[15px] text-theme-text pr-8 font-medium"
           >
             <option value="Mężczyzna">Mężczyzna</option>
             <option value="Kobieta">Kobieta</option>
             <option value="Inna">Inna</option>
           </select>
-          <ChevronDown :size="24" class="text-[#050505] absolute right-3 pointer-events-none" />
+          <ChevronDown :size="24" class="text-theme-text absolute right-3 pointer-events-none" />
         </div>
-        <div class="flex justify-end space-x-2 pt-4 border-t border-gray-200">
+        <div class="flex justify-end space-x-2 pt-4 border-t border-theme-border">
           <button
             @click="isEditingGender = false"
-            class="px-4 py-1.5 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold rounded-md text-[15px] transition-colors"
+            class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
           >
             Anuluj
           </button>
@@ -570,7 +570,7 @@ const saveHometown = async () => {
             @click="saveGender"
             :disabled="!isGenderChanged"
             class="px-4 py-1.5 font-semibold rounded-md text-[15px] transition-colors"
-            :class="isGenderChanged ? 'bg-[#1877F2] hover:bg-[#166FE5] text-white' : 'bg-[#E4E6EB] text-[#BCC0C4] cursor-not-allowed'"
+            :class="isGenderChanged ? 'bg-[#1877F2] hover:bg-[#166FE5] text-white' : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed'"
           >
             Zapisz
           </button>
@@ -578,25 +578,25 @@ const saveHometown = async () => {
       </div>
       <div v-else class="flex justify-between items-center group">
         <div class="flex gap-4">
-          <CircleMultipleOutline :size="28" class="text-[#050505]" />
+          <CircleMultipleOutline :size="28" class="text-theme-text" />
           <div class="flex flex-col mt-0.5">
-            <span class="text-[15px] text-[#050505]">{{ genderForm.value }}</span>
-            <span class="text-[13px] text-[#65676B]">Płeć</span>
+            <span class="text-[15px] text-theme-text">{{ genderForm.value }}</span>
+            <span class="text-[13px] text-theme-text-secondary">Płeć</span>
           </div>
         </div>
         <div v-if="isOwner" class="flex items-center gap-3">
           <button
             @click="openPrivacySelector('gender')"
-            class="p-1.5 hover:bg-[#E4E6EB] rounded-full transition-colors cursor-pointer"
+            class="p-1.5 hover:bg-theme-bg-tertiary rounded-full transition-colors cursor-pointer"
             title="Zmień ustawienia prywatności"
           >
             <component :is="getPrivacyIcon(genderPrivacy)" :size="16" class="text-[#BCC0C4]" />
           </button>
           <button
             @click="startEditingGender"
-            class="p-2 hover:bg-[#F2F2F2] rounded-full transition-colors cursor-pointer"
+            class="p-2 hover:bg-theme-hover rounded-full transition-colors cursor-pointer"
           >
-            <Pencil :size="20" class="text-[#65676B]" />
+            <Pencil :size="20" class="text-theme-text-secondary" />
           </button>
         </div>
       </div>
@@ -609,12 +609,12 @@ const saveHometown = async () => {
         <input
           v-model="pronounsForm"
           placeholder="Zaimki np. on/jego"
-          class="w-full border border-gray-300 rounded-md p-2 text-[15px] text-[#050505] outline-none focus:border-[#1877F2]"
+          class="w-full border border-theme-border rounded-md p-2 text-[15px] text-theme-text outline-none focus:border-[#1877F2]"
         />
-        <div class="flex justify-end space-x-2 pt-4 border-t border-gray-200 mt-4">
+        <div class="flex justify-end space-x-2 pt-4 border-t border-theme-border mt-4">
           <button
             @click="isEditingPronouns = false"
-            class="px-4 py-1.5 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold rounded-md text-[15px] transition-colors"
+            class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
           >
             Anuluj
           </button>
@@ -622,7 +622,7 @@ const saveHometown = async () => {
             @click="savePronouns"
             :disabled="!isPronounsChanged"
             class="px-4 py-1.5 font-semibold rounded-md text-[15px] transition-colors"
-            :class="isPronounsChanged ? 'bg-[#1877F2] hover:bg-[#166FE5] text-white' : 'bg-[#E4E6EB] text-[#BCC0C4] cursor-not-allowed'"
+            :class="isPronounsChanged ? 'bg-[#1877F2] hover:bg-[#166FE5] text-white' : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed'"
           >
             Zapisz
           </button>
@@ -630,25 +630,25 @@ const saveHometown = async () => {
       </div>
       <div v-else class="flex justify-between items-center group">
         <div class="flex gap-4">
-          <MessageOutline :size="28" class="text-[#050505]" />
+          <MessageOutline :size="28" class="text-theme-text" />
           <div class="flex flex-col mt-0.5">
-            <span class="text-[15px] text-[#050505]">{{ pronounsForm || 'on/jego' }}</span>
-            <span class="text-[13px] text-[#65676B]">Zaimki systemowe</span>
+            <span class="text-[15px] text-theme-text">{{ pronounsForm || 'on/jego' }}</span>
+            <span class="text-[13px] text-theme-text-secondary">Zaimki systemowe</span>
           </div>
         </div>
         <div v-if="isOwner" class="flex items-center gap-3">
           <button
             @click="openPrivacySelector('pronouns')"
-            class="p-1.5 hover:bg-[#E4E6EB] rounded-full transition-colors cursor-pointer"
+            class="p-1.5 hover:bg-theme-bg-tertiary rounded-full transition-colors cursor-pointer"
             title="Zmień ustawienia prywatności"
           >
             <component :is="getPrivacyIcon(pronounsPrivacy)" :size="16" class="text-[#BCC0C4]" />
           </button>
           <button
             @click="startEditingPronouns"
-            class="p-2 hover:bg-[#F2F2F2] rounded-full transition-colors cursor-pointer"
+            class="p-2 hover:bg-theme-hover rounded-full transition-colors cursor-pointer"
           >
-            <Pencil :size="20" class="text-[#65676B]" />
+            <Pencil :size="20" class="text-theme-text-secondary" />
           </button>
         </div>
       </div>

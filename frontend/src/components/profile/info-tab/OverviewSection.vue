@@ -48,7 +48,7 @@ const saveBio = async () => {
 </script>
 
 <template>
-  <div class="max-w-[850px] text-[#050505] antialiased">
+  <div class="max-w-[850px] text-theme-text antialiased">
     <!-- ============================================== -->
     <!-- SEKCJA 1: BIOGRAM                              -->
     <!-- ============================================== -->
@@ -57,9 +57,9 @@ const saveBio = async () => {
     <!-- TRYB EDYCJI BIOGRAMU -->
     <div v-if="isEditingBio" class="mb-8">
       <div
-        class="inline-flex items-center gap-1.5 bg-[#E4E6EB] px-3 py-1.5 rounded-md font-semibold text-[15px] text-[#050505] mb-4"
+        class="inline-flex items-center gap-1.5 bg-theme-bg-tertiary px-3 py-1.5 rounded-md font-semibold text-[15px] text-theme-text mb-4"
       >
-        <Earth :size="16" class="text-[#65676B]" />
+        <Earth :size="16" class="text-theme-text-secondary" />
         Publiczne
       </div>
 
@@ -75,19 +75,19 @@ const saveBio = async () => {
           v-model="bioText"
           :maxlength="maxBioLength"
           rows="3"
-          class="w-full resize-none outline-none bg-transparent text-[15px] text-[#050505]"
+          class="w-full resize-none outline-none bg-transparent text-[15px] text-theme-text"
           autofocus
         ></textarea>
       </div>
 
-      <div class="text-[13px] text-[#65676B] text-left mt-1.5">
+      <div class="text-[13px] text-theme-text-secondary text-left mt-1.5">
         {{ bioText.length }}/{{ maxBioLength }}
       </div>
 
-      <div class="flex justify-end space-x-2 pt-4 border-t border-gray-200 mt-4">
+      <div class="flex justify-end space-x-2 pt-4 border-t border-theme-border mt-4">
         <button
           @click="isEditingBio = false"
-          class="px-4 py-1.5 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold rounded-md text-[15px] transition-colors"
+          class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
         >
           Anuluj
         </button>
@@ -97,8 +97,8 @@ const saveBio = async () => {
           class="px-4 py-1.5 font-semibold rounded-md text-[15px] transition-colors"
           :class="
             bioText.length > 0
-              ? 'bg-[#E4E6EB] text-[#050505] hover:bg-[#D8DADF]'
-              : 'bg-[#E4E6EB] text-[#BCC0C4] cursor-not-allowed'
+              ? 'bg-theme-bg-tertiary text-theme-text hover:bg-theme-bg-tertiary'
+              : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed'
           "
         >
           Zapisz
@@ -111,8 +111,8 @@ const saveBio = async () => {
       <!-- Element aktywujący edycję -->
       <div
         @click="isOwner ? (isEditingBio = true) : null"
-        class="inline-flex items-center text-[15px] text-[#65676B] font-medium transition-colors"
-        :class="isOwner ? 'cursor-pointer hover:bg-gray-100 p-2 -ml-2 rounded-md' : ''"
+        class="inline-flex items-center text-[15px] text-theme-text-secondary font-medium transition-colors"
+        :class="isOwner ? 'cursor-pointer hover:bg-theme-hover p-2 -ml-2 rounded-md' : ''"
       >
         <HandWave :size="20" class="mr-3 text-black" />
 
@@ -129,7 +129,7 @@ const saveBio = async () => {
 
     <!-- TRYB EDYCJI PRZYPIĘTYCH -->
     <div v-if="isEditingPinned" class="mt-1 pb-[8px]">
-      <p class="text-[15px] text-[#65676B] mb-5 leading-5">
+      <p class="text-[15px] text-theme-text-secondary mb-5 leading-5">
         Wybierz maksymalnie 5 szczegółów do wyświetlenia u góry Twojego profilu. Informacje
         szczegółowe będą wyświetlane na podstawie ustawień grupy odbiorców.
       </p>
@@ -139,12 +139,12 @@ const saveBio = async () => {
           <input
             type="checkbox"
             v-model="pinnedSettings.location"
-            class="w-5 h-5 mt-0.5 rounded text-[#1877F2] border-gray-300 focus:ring-[#1877F2]"
+            class="w-5 h-5 mt-0.5 rounded text-[#1877F2] border-theme-border focus:ring-[#1877F2]"
           />
-          <MapMarker :size="24" class="text-[#65676B] shrink-0" />
+          <MapMarker :size="24" class="text-theme-text-secondary shrink-0" />
           <div class="flex flex-col">
             <span class="font-medium text-[15px] leading-5">{{ profileUser.location }}</span>
-            <div class="flex items-center text-[13px] text-[#65676B] mt-0.5 gap-1">
+            <div class="flex items-center text-[13px] text-theme-text-secondary mt-0.5 gap-1">
               <Earth :size="12" /> Publiczne
             </div>
           </div>
@@ -154,28 +154,28 @@ const saveBio = async () => {
           <input
             type="checkbox"
             v-model="pinnedSettings.school"
-            class="w-5 h-5 mt-0.5 rounded text-[#1877F2] border-gray-300 focus:ring-[#1877F2]"
+            class="w-5 h-5 mt-0.5 rounded text-[#1877F2] border-theme-border focus:ring-[#1877F2]"
           />
-          <Domain :size="24" class="text-[#65676B] shrink-0" />
+          <Domain :size="24" class="text-theme-text-secondary shrink-0" />
           <div class="flex flex-col">
             <span class="font-medium text-[15px] leading-5">{{ profileUser.school }}</span>
-            <div class="flex items-center text-[13px] text-[#65676B] mt-0.5 gap-1">
+            <div class="flex items-center text-[13px] text-theme-text-secondary mt-0.5 gap-1">
               <Earth :size="12" /> Publiczne
             </div>
           </div>
         </label>
       </div>
 
-      <div class="flex justify-end space-x-2 pt-4 border-t border-gray-200 mt-6">
+      <div class="flex justify-end space-x-2 pt-4 border-t border-theme-border mt-6">
         <button
           @click="isEditingPinned = false"
-          class="px-4 py-1.5 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold rounded-md text-[15px] transition-colors"
+          class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
         >
           Anuluj
         </button>
         <button
           @click="savePinned"
-          class="px-4 py-1.5 bg-[#E4E6EB] hover:bg-[#D8DADF] text-[#050505] font-semibold rounded-md text-[15px] transition-colors"
+          class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
         >
           Zapisz
         </button>
@@ -185,11 +185,11 @@ const saveBio = async () => {
     <!-- TRYB PODGLĄDU PRZYPIĘTYCH -->
     <div
       v-else
-      class="mt-4 flex flex-wrap items-center gap-x-2 gap-y-2 justify-between text-[15px] text-[#050505] font-normal"
+      class="mt-4 flex flex-wrap items-center gap-x-2 gap-y-2 justify-between text-[15px] text-theme-text font-normal"
     >
       <div class="flex flex-row">
         <div v-if="profileUser.location && pinnedSettings.location" class="flex items-center gap-2">
-          <MapMarker :size="20" class="text-[#050505]" />
+          <MapMarker :size="20" class="text-theme-text" />
           <span>{{ profileUser.location }}</span>
         </div>
 
@@ -200,21 +200,21 @@ const saveBio = async () => {
             profileUser.school &&
             pinnedSettings.school
           "
-          class="text-[#65676B] font-bold"
+          class="text-theme-text-secondary font-bold"
           >·</span
         >
 
         <div v-if="profileUser.school && pinnedSettings.school" class="flex items-center gap-2">
-          <Domain :size="20" class="text-[#050505]" />
+          <Domain :size="20" class="text-theme-text" />
           <span>{{ profileUser.school }}</span>
         </div>
       </div>
       <button
         v-if="isOwner && !isEditingPinned"
         @click="isEditingPinned = true"
-        class="p-2 hover:bg-[#F2F2F2] rounded-full transition-colors"
+        class="p-2 hover:bg-theme-hover rounded-full transition-colors"
       >
-        <Pencil :size="20" class="text-[#65676B]" />
+        <Pencil :size="20" class="text-theme-text-secondary" />
       </button>
     </div>
   </div>
