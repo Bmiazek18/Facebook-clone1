@@ -8,7 +8,7 @@ import HoverScrollbar from '@/components/common/HoverScrollbar.vue'
 import { useTheme } from '@/composables/shared/useTheme'
 import { useChatStore } from '@/stores/chat'
 import { useAuthStore } from '@/stores/auth'
-import { useApolloClient } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { gql } from 'graphql-tag'
 import SponsoredAds from './SponsoredAds.vue'
 import FriendRequestsWidget from './FriendRequestsWidget.vue'
@@ -55,7 +55,7 @@ const fetchActiveStatuses = async () => {
   const contactUserIds = list.map((friend: any) => String(friend.id))
 
   try {
-    const apolloClient = useApolloClient().resolveClient()
+    const apolloClient = getApolloClient()
     const { data } = await apolloClient.query({
       query: gql`
         query GetActiveStatuses($userIds: [ID!]!) {

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { useApolloClient } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { gql } from 'graphql-tag'
 import type { Message } from '@/types/Message'
 
@@ -10,7 +9,6 @@ const props = defineProps<{
 }>()
 
 const router = useRouter()
-const { client } = useApolloClient()
 
 const postData = ref<any>(null)
 const loading = ref(false)
@@ -54,6 +52,7 @@ const extractedPostId = computed<string | null>(() => {
 async function fetchPost(postId: string) {
   loading.value = true
   try {
+    const client = getApolloClient()
     const { data } = await client.query({
       query: GET_POST_BY_ID,
       variables: { postId },

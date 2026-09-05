@@ -1,4 +1,5 @@
 import { provideApolloClient, provideApolloClients } from '@vue/apollo-composable'
+import { setGlobalApolloClient } from '@/utils/apollo'
 
 export default defineNuxtPlugin((nuxtApp) => {
   const getClient = () => {
@@ -15,6 +16,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   const initClient = () => {
     const apolloClient = getClient()
     if (apolloClient) {
+      setGlobalApolloClient(apolloClient)
       provideApolloClient(apolloClient)
       provideApolloClients({ default: apolloClient })
     }

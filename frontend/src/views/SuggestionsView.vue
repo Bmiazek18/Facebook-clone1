@@ -85,7 +85,7 @@ import FriendCard from '../components/friends/PeopleYouMayKnowCard.vue'
 import { useNotify } from '@/composables/shared/useNotify'
 import { useAuthStore } from '@/stores/auth'
 import { getAllUsers } from '@/utils/users'
-import { useApolloClient } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { gql } from 'graphql-tag'
 import type { Person } from '@/types/Person'
 
@@ -126,7 +126,7 @@ const loadMockSuggestions = () => {
 const fetchSuggestions = async () => {
   isLoading.value = true
   try {
-    const apolloClient = useApolloClient().resolveClient()
+    const apolloClient = getApolloClient()
     const { data } = await apolloClient.query({
       query: gql`
         query GetFriendSuggestions($currentUserId: ID!) {
@@ -183,7 +183,7 @@ const handleAddFriend = async (id: string | number) => {
   console.log('Adding friend:', id)
   try {
     if (isBackendMode.value) {
-      const apolloClient = useApolloClient().resolveClient()
+      const apolloClient = getApolloClient()
       const { data } = await apolloClient.mutate({
         mutation: gql`
           mutation SendFriendRequest($senderId: ID!, $receiverId: ID!) {

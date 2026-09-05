@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useApolloClient } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { gql } from 'graphql-tag'
 import { useUserCache } from '@/composables/shared/useUserCache'
 import { useChatStore } from '@/stores/chat'
@@ -109,7 +109,7 @@ const fetchFullUserData = async () => {
 
   isLoading.value = true
   try {
-    const { client } = useApolloClient()
+    const client = getApolloClient()
     const { data } = await client.query({
       query: GET_USER_BY_ID_QUERY,
       variables: {

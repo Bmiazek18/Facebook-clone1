@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'nuxt/app'
 import { useAuthStore } from '@/stores/auth'
 import { usePostsStore } from '@/composables/feed/useAppState'
 import { getUserById } from '@/utils/users'
-import { useApolloClient } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { gql } from 'graphql-tag'
 
 // Import components
@@ -46,7 +46,7 @@ const performSearch = async () => {
   isSearching.value = true
   try {
     const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1')
-    const apolloClient = useApolloClient().resolveClient()
+    const apolloClient = getApolloClient()
     const { data } = await apolloClient.query({
       query: gql`
         query SearchUsers($query: String!, $currentUserId: ID!) {

@@ -16,7 +16,7 @@ import CustomTextarea from '@/components/common/CustomTextarea.vue'
 import CustomDropdown from '@/components/common/CustomDropdown.vue'
 import { useAuthStore } from '@/stores/auth'
 import AppCloseHeader from '@/layouts/AppCloseHeader.vue'
-import { useApolloClient } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { gql } from 'graphql-tag'
 import { useRouter } from 'nuxt/app'
 
@@ -155,7 +155,7 @@ const publishListing = async () => {
 
     let mappedCategory = form.category || 'tools'
 
-    const apolloClient = useApolloClient().resolveClient()
+    const apolloClient = getApolloClient()
     await apolloClient.mutate({
       mutation: gql`
         mutation CreateListing($input: CreateListingInput!) {

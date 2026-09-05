@@ -71,7 +71,7 @@ import { useI18n } from 'vue-i18n'
 import Card from '@/components/friends/PeopleYouMayKnowCard.vue'
 import type { Person } from '@/types/Person'
 import { useCarousel } from '@/composables/media/useCarousel'
-import { useApolloClient, useMutation } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { gql } from 'graphql-tag'
 import { useAuthStore } from '@/stores/auth'
 
@@ -86,7 +86,6 @@ import ChevronLeftIcon from 'vue-material-design-icons/ChevronLeft.vue'
 import PlusCircleIcon from 'vue-material-design-icons/PlusCircle.vue'
 
 const authStore = useAuthStore()
-const { client } = useApolloClient()
 
 // --- MUTACJA WYSYŁANIA ZAPROSZENIA ---
 const SEND_FRIEND_REQUEST_MUTATION = gql`
@@ -97,7 +96,6 @@ const SEND_FRIEND_REQUEST_MUTATION = gql`
     }
   }
 `
-const { mutate: sendFriendRequest } = useMutation(SEND_FRIEND_REQUEST_MUTATION)
 
 // --- UŻYCIE COMPOSABLE ---
 const { carouselRef, isStart, isEnd, scrollLeft, scrollRight, checkScrollState } = useCarousel(2)
@@ -106,6 +104,7 @@ const people = ref<Person[]>([])
 
 const fetchSuggestions = async () => {
   try {
+    const client = getApolloClient()
     const { data } = await client.query({
       query: gql`
         query GetFriendSuggestions($currentUserId: ID!) {
@@ -153,9 +152,13 @@ onMounted(() => {
 
 const handleAddFriend = async (id: string | number) => {
   try {
-    await sendFriendRequest({
-      senderId: String(authStore.currentUserId),
-      receiverId: String(id),
+    const client = getApolloClient()
+    await client.mutate({
+      mutation: SEND_FRIEND_REQUEST_MUTATION,
+      variables: {
+        senderId: String(authStore.currentUserId),
+        receiverId: String(id),
+      },
     })
     removeCard(id)
   } catch (err) {

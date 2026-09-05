@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import { useGroupsStore } from '@/stores/groups'
 import { useUserCache } from '@/composables/shared/useUserCache'
 import { useAuthStore } from '@/stores/auth'
-import { useApolloClient } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { gql } from 'graphql-tag'
 import { GroupRole } from '@/types/Group'
 
@@ -61,6 +61,7 @@ const formatTimeAgo = (isoString: string) => {
 
 const handleSendFriendRequest = async (targetUserId: string) => {
   try {
+    const apolloClient = getApolloClient()
     const result = await apolloClient.mutate({
       mutation: SEND_FRIEND_REQUEST,
       variables: {

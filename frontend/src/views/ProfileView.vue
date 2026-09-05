@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, computed, provide, watch } from 'vue'
 import { useRoute, useRouter } from 'nuxt/app'
 import { useI18n } from 'vue-i18n'
-import { useApolloClient } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { gql } from 'graphql-tag'
 
 // --- IMPORTY KOMPONENTÓW ---
@@ -110,7 +110,7 @@ const fetchUserProfile = async () => {
   const fetchId = idVal ? String(idVal) : String(auth.currentUserId)
 
   try {
-    const { client } = useApolloClient()
+    const client = getApolloClient()
     const { data } = await client.query({
       query: gql`
         query GetUserProfile($userId: ID!) {
@@ -294,7 +294,7 @@ const fetchProfileFriends = async () => {
   const userId = String(userIdParam.value || auth.currentUserId)
   const currentUserId = String(auth.currentUser?.id || auth.currentUserId || '1')
   try {
-    const apolloClient = useApolloClient().resolveClient()
+    const apolloClient = getApolloClient()
     const { data } = await apolloClient.query({
       query: gql`
         query ProfileFriends($userId: ID!, $currentUserId: ID!) {
