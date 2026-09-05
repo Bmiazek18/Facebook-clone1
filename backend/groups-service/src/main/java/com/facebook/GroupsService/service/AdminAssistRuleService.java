@@ -3,17 +3,21 @@ package com.facebook.GroupsService.service;
 import com.facebook.GroupsService.entity.AdminAssistRuleEntity;
 import com.facebook.GroupsService.repository.AdminAssistRuleRepository;
 import com.facebook.GroupsService.scheduler.WelcomePostSchedulerService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class AdminAssistRuleService {
 
     private final AdminAssistRuleRepository ruleRepository;
     private final WelcomePostSchedulerService welcomePostSchedulerService;
+
+    public AdminAssistRuleService(AdminAssistRuleRepository ruleRepository,
+                                  WelcomePostSchedulerService welcomePostSchedulerService) {
+        this.ruleRepository = ruleRepository;
+        this.welcomePostSchedulerService = welcomePostSchedulerService;
+    }
 
     /**
      * Saves a rule and dynamically schedules/unschedules the Quartz job if it's a welcome post.

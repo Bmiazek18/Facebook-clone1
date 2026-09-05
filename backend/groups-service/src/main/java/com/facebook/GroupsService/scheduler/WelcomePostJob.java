@@ -2,7 +2,8 @@ package com.facebook.GroupsService.scheduler;
 
 import com.facebook.feed.grpc.CreatePostRequest;
 import com.facebook.feed.grpc.FeedGrpcServiceGrpc;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
@@ -11,8 +12,9 @@ import org.quartz.JobExecutionException;
 import org.springframework.stereotype.Component;
 
 @Component
-@Slf4j
 public class WelcomePostJob implements Job {
+
+    private static final Logger log = LoggerFactory.getLogger(WelcomePostJob.class);
 
     @org.springframework.beans.factory.annotation.Autowired
     private com.facebook.GroupsService.service.WelcomePostPublisherService welcomePostPublisher;

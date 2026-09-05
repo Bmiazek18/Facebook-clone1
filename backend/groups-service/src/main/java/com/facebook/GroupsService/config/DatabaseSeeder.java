@@ -4,22 +4,32 @@ import com.facebook.GroupsService.entity.GroupEntity;
 import com.facebook.GroupsService.entity.GroupMemberEntity;
 import com.facebook.GroupsService.repository.GroupMemberRepository;
 import com.facebook.GroupsService.repository.GroupRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class DatabaseSeeder implements CommandLineRunner {
+
+    private static final Logger log = LoggerFactory.getLogger(DatabaseSeeder.class);
 
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final com.facebook.GroupsService.repository.AdminAssistRuleRepository ruleRepository;
     private final com.facebook.GroupsService.service.AdminAssistRuleService ruleService;
+
+    public DatabaseSeeder(GroupRepository groupRepository,
+                          GroupMemberRepository groupMemberRepository,
+                          com.facebook.GroupsService.repository.AdminAssistRuleRepository ruleRepository,
+                          com.facebook.GroupsService.service.AdminAssistRuleService ruleService) {
+        this.groupRepository = groupRepository;
+        this.groupMemberRepository = groupMemberRepository;
+        this.ruleRepository = ruleRepository;
+        this.ruleService = ruleService;
+    }
 
     public static final String GROUP_FRONTEND_ID = "1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed";
     public static final String GROUP_VUE_ID = "2b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed";

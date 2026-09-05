@@ -9,8 +9,8 @@ import com.facebook.GroupsService.repository.GroupRepository;
 import io.grpc.stub.StreamObserver;
 import com.facebook.GroupsService.event.GroupIndexEvent;
 import com.facebook.GroupsService.config.RabbitConfig;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,9 +20,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @GrpcService
-@RequiredArgsConstructor
-@Slf4j
 public class GroupsGrpcServiceImpl extends GroupsGrpcServiceGrpc.GroupsGrpcServiceImplBase {
+
+    private static final Logger log = LoggerFactory.getLogger(GroupsGrpcServiceImpl.class);
 
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
@@ -30,6 +30,20 @@ public class GroupsGrpcServiceImpl extends GroupsGrpcServiceGrpc.GroupsGrpcServi
     private final com.facebook.GroupsService.repository.GroupRuleRepository groupRuleRepository;
     private final com.facebook.GroupsService.repository.GroupActivityLogRepository groupActivityLogRepository;
     private final RabbitTemplate rabbitTemplate;
+
+    public GroupsGrpcServiceImpl(GroupRepository groupRepository,
+                                  GroupMemberRepository groupMemberRepository,
+                                  org.springframework.context.ApplicationEventPublisher eventPublisher,
+                                  com.facebook.GroupsService.repository.GroupRuleRepository groupRuleRepository,
+                                  com.facebook.GroupsService.repository.GroupActivityLogRepository groupActivityLogRepository,
+                                  RabbitTemplate rabbitTemplate) {
+        this.groupRepository = groupRepository;
+        this.groupMemberRepository = groupMemberRepository;
+        this.eventPublisher = eventPublisher;
+        this.groupRuleRepository = groupRuleRepository;
+        this.groupActivityLogRepository = groupActivityLogRepository;
+        this.rabbitTemplate = rabbitTemplate;
+    }
 
     @net.devh.boot.grpc.client.inject.GrpcClient("feed-service")
     private com.facebook.feed.grpc.FeedGrpcServiceGrpc.FeedGrpcServiceBlockingStub feedGrpcStub;

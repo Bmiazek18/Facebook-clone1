@@ -11,8 +11,8 @@ import com.facebook.user.grpc.GetUserByIdRequest;
 import com.facebook.user.grpc.GetUserByIdResponse;
 import com.facebook.user.grpc.UserDto;
 import com.facebook.user.grpc.UserGrpcServiceGrpc;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -21,14 +21,24 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class AdminAssistantEngine {
+
+    private static final Logger log = LoggerFactory.getLogger(AdminAssistantEngine.class);
 
     private final AdminAssistRuleRepository ruleRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final GroupRepository groupRepository;
     private final List<RuleEvaluator> evaluators;
+
+    public AdminAssistantEngine(AdminAssistRuleRepository ruleRepository,
+                                GroupMemberRepository groupMemberRepository,
+                                GroupRepository groupRepository,
+                                List<RuleEvaluator> evaluators) {
+        this.ruleRepository = ruleRepository;
+        this.groupMemberRepository = groupMemberRepository;
+        this.groupRepository = groupRepository;
+        this.evaluators = evaluators;
+    }
 
     @GrpcClient("user-service")
     private UserGrpcServiceGrpc.UserGrpcServiceBlockingStub userGrpcStub;

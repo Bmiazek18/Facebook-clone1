@@ -2,13 +2,15 @@ package com.facebook.GroupsService.service;
 
 import com.facebook.feed.grpc.CreatePostRequest;
 import com.facebook.feed.grpc.FeedGrpcServiceGrpc;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 
 @Service
-@Slf4j
 public class WelcomePostPublisherService {
+
+    private static final Logger log = LoggerFactory.getLogger(WelcomePostPublisherService.class);
 
     @GrpcClient("feed-service")
     private FeedGrpcServiceGrpc.FeedGrpcServiceBlockingStub feedGrpcStub;

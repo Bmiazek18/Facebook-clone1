@@ -1,16 +1,18 @@
 package com.facebook.GroupsService.service;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@RequiredArgsConstructor
 public class RedisActivityTracker {
 
     private final StringRedisTemplate redisTemplate;
+
+    public RedisActivityTracker(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     /**
      * Records a new activity event (e.g. comment posted) inside the sliding window log.
