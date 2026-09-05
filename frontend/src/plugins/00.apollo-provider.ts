@@ -12,18 +12,17 @@ export default defineNuxtPlugin((nuxtApp) => {
     )
   }
 
-  const apolloClient = getClient()
-  if (apolloClient) {
-    provideApolloClient(apolloClient)
-    provideApolloClients({ default: apolloClient })
+  const initClient = () => {
+    const apolloClient = getClient()
+    if (apolloClient) {
+      provideApolloClient(apolloClient)
+      provideApolloClients({ default: apolloClient })
+    }
   }
 
-  nuxtApp.hook('app:created', () => {
-    const client = getClient()
-    if (client) {
-      provideApolloClient(client)
-      provideApolloClients({ default: client })
-    }
-  })
-})
+  initClient()
 
+  nuxtApp.hook('app:created', initClient)
+  nuxtApp.hook('app:beforeMount', initClient)
+  nuxtApp.hook('app:mounted', initClient)
+})

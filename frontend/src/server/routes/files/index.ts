@@ -2,6 +2,5 @@ import { defineEventHandler } from 'h3'
 import { handleTusProxy } from '../../utils/tusProxy'
 
 export default defineEventHandler(async (event) => {
-  const path = event.context.params?.path || ''
-  return handleTusProxy(event, path)
+  return handleTusProxy(event, '')
 })

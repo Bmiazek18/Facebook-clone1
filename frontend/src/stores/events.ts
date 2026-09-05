@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { useApolloClient } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { usePostsStore } from '@/composables/feed/useAppState'
 import type { Post } from '@/types/Post'
 import type { Event } from '@/types/Event'
@@ -13,13 +13,11 @@ export const useEventsStore = defineStore('events', () => {
   const searchQuery = ref('')
   const searchResults = ref<Event[]>([])
 
-  const apollo = useApolloClient()
-
   // Load all events on initialization or on call
   const fetchEvents = async () => {
     loading.value = true
     try {
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const { data } = await client.query({
         query: GET_EVENTS,
         fetchPolicy: 'network-only'
@@ -35,7 +33,7 @@ export const useEventsStore = defineStore('events', () => {
   const addEvent = async (eventInput: Event) => {
     try {
       const auth = useAuthStore()
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const { data } = await client.mutate({
         mutation: CREATE_EVENT,
         variables: {
@@ -119,7 +117,7 @@ export const useEventsStore = defineStore('events', () => {
 
   const fetchEventById = async (id: string) => {
     try {
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const { data } = await client.query({
         query: GET_EVENT_BY_ID,
         variables: { id }
@@ -144,7 +142,7 @@ export const useEventsStore = defineStore('events', () => {
       return
     }
     try {
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const { data } = await client.query({
         query: SEARCH_EVENTS,
         variables: { query },
@@ -159,9 +157,6 @@ export const useEventsStore = defineStore('events', () => {
   const getEventsByUserId = (userId: string): Event[] => {
     return events.value.filter((event) => event.userId === userId)
   }
-
-  // Load initial events
-  fetchEvents()
 
   return {
     events,

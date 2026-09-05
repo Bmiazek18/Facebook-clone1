@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { useMutation, useApolloClient } from '@vue/apollo-composable'
+import { getApolloClient } from '@/utils/apollo'
 import { useAuthStore } from '@/stores/auth'
 import type { Group, GroupRole } from '@/types/Group'
 import {
@@ -28,7 +28,6 @@ import {
 export const useGroupsStore = defineStore('groups', () => {
   const groups = ref<Group[]>([])
   const authStore = useAuthStore()
-  const apollo = useApolloClient()
 
   const mapGraphQLGroupToGroup = (g: any): Group => ({
     id: g.id,
@@ -47,7 +46,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const fetchGroups = async () => {
     try {
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const result = await client.query({
         query: GET_GROUPS,
         variables: { limit: 100, offset: 0 },
@@ -68,7 +67,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const loadGroupDetails = async (id: string) => {
     try {
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const result = await client.query({
         query: GET_GROUP_BY_ID,
         variables: { id },
@@ -91,16 +90,19 @@ export const useGroupsStore = defineStore('groups', () => {
     return undefined
   }
 
-  const { mutate: createGroupMutate } = useMutation(CREATE_GROUP)
   const addGroup = async (groupInput: Omit<Group, 'id' | 'members'>) => {
     try {
-      const result = await createGroupMutate({
-        input: {
-          name: groupInput.name,
-          description: groupInput.description || '',
-          privacy: groupInput.privacy,
-          image: groupInput.image || '',
-          creatorId: authStore.currentUserId
+      const client = getApolloClient()
+      const result = await client.mutate({
+        mutation: CREATE_GROUP,
+        variables: {
+          input: {
+            name: groupInput.name,
+            description: groupInput.description || '',
+            privacy: groupInput.privacy,
+            image: groupInput.image || '',
+            creatorId: authStore.currentUserId
+          }
         }
       })
       if (result?.data?.createGroup) {
@@ -115,15 +117,17 @@ export const useGroupsStore = defineStore('groups', () => {
     return null
   }
 
-  const { mutate: joinGroupMutate } = useMutation(JOIN_GROUP)
   const joinGroup = async (groupId: string) => {
     try {
-      const result = await joinGroupMutate({
-        groupId,
-        userId: authStore.currentUserId
+      const client = getApolloClient()
+      const result = await client.mutate({
+        mutation: JOIN_GROUP,
+        variables: {
+          groupId,
+          userId: authStore.currentUserId
+        }
       })
       if (result?.data?.joinGroup) {
-        // Only increment local count if not private group (where role would be PENDING)
         const grp = groups.value.find((g) => g.id === groupId)
         if (grp) {
           if (grp.privacy !== 'private') {
@@ -138,12 +142,15 @@ export const useGroupsStore = defineStore('groups', () => {
     return false
   }
 
-  const { mutate: leaveGroupMutate } = useMutation(LEAVE_GROUP)
   const leaveGroup = async (groupId: string) => {
     try {
-      const result = await leaveGroupMutate({
-        groupId,
-        userId: authStore.currentUserId
+      const client = getApolloClient()
+      const result = await client.mutate({
+        mutation: LEAVE_GROUP,
+        variables: {
+          groupId,
+          userId: authStore.currentUserId
+        }
       })
       if (result?.data?.leaveGroup) {
         const grp = groups.value.find((g) => g.id === groupId)
@@ -158,7 +165,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const getGroupMembership = async (groupId: string, userId: string) => {
     try {
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const result = await client.query({
         query: GET_GROUP_MEMBERSHIP,
         variables: { groupId, userId },
@@ -173,7 +180,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const getPendingRequests = async (groupId: string) => {
     try {
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const result = await client.query({
         query: GET_PENDING_REQUESTS,
         variables: { groupId },
@@ -186,13 +193,16 @@ export const useGroupsStore = defineStore('groups', () => {
     }
   }
 
-  const { mutate: approveGroupRequestMutate } = useMutation(APPROVE_GROUP_REQUEST)
   const approveGroupRequest = async (groupId: string, userId: string) => {
     try {
-      const result = await approveGroupRequestMutate({
-        groupId,
-        userId,
-        adminId: authStore.currentUserId
+      const client = getApolloClient()
+      const result = await client.mutate({
+        mutation: APPROVE_GROUP_REQUEST,
+        variables: {
+          groupId,
+          userId,
+          adminId: authStore.currentUserId
+        }
       })
       if (result?.data?.approveGroupRequest) {
         const grp = groups.value.find((g) => g.id === groupId)
@@ -205,13 +215,16 @@ export const useGroupsStore = defineStore('groups', () => {
     return false
   }
 
-  const { mutate: rejectGroupRequestMutate } = useMutation(REJECT_GROUP_REQUEST)
   const rejectGroupRequest = async (groupId: string, userId: string) => {
     try {
-      const result = await rejectGroupRequestMutate({
-        groupId,
-        userId,
-        adminId: authStore.currentUserId
+      const client = getApolloClient()
+      const result = await client.mutate({
+        mutation: REJECT_GROUP_REQUEST,
+        variables: {
+          groupId,
+          userId,
+          adminId: authStore.currentUserId
+        }
       })
       return !!result?.data?.rejectGroupRequest
     } catch (e) {
@@ -222,7 +235,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const fetchGroupMembers = async (groupId: string) => {
     try {
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const result = await client.query({
         query: GET_GROUP_MEMBERS,
         variables: { groupId },
@@ -235,13 +248,16 @@ export const useGroupsStore = defineStore('groups', () => {
     }
   }
 
-  const { mutate: removeGroupMemberMutate } = useMutation(REMOVE_GROUP_MEMBER)
   const removeGroupMember = async (groupId: string, userId: string) => {
     try {
-      const result = await removeGroupMemberMutate({
-        groupId,
-        userId,
-        adminId: authStore.currentUserId
+      const client = getApolloClient()
+      const result = await client.mutate({
+        mutation: REMOVE_GROUP_MEMBER,
+        variables: {
+          groupId,
+          userId,
+          adminId: authStore.currentUserId
+        }
       })
       if (result?.data?.removeGroupMember) {
         const grp = groups.value.find((g) => g.id === groupId)
@@ -254,14 +270,17 @@ export const useGroupsStore = defineStore('groups', () => {
     return false
   }
 
-  const { mutate: updateGroupMemberRoleMutate } = useMutation(UPDATE_GROUP_MEMBER_ROLE)
   const updateGroupMemberRole = async (groupId: string, userId: string, role: GroupRole | string) => {
     try {
-      const result = await updateGroupMemberRoleMutate({
-        groupId,
-        userId,
-        role,
-        adminId: authStore.currentUserId
+      const client = getApolloClient()
+      const result = await client.mutate({
+        mutation: UPDATE_GROUP_MEMBER_ROLE,
+        variables: {
+          groupId,
+          userId,
+          role,
+          adminId: authStore.currentUserId
+        }
       })
       return !!result?.data?.updateGroupMemberRole
     } catch (e) {
@@ -272,7 +291,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const getGroupOverview = async (groupId: string) => {
     try {
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const result = await client.query({
         query: GET_GROUP_OVERVIEW,
         variables: { groupId },
@@ -287,7 +306,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const fetchGroupRules = async (groupId: string) => {
     try {
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const result = await client.query({
         query: GET_GROUP_RULES,
         variables: { groupId },
@@ -302,7 +321,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const createGroupRule = async (groupId: string, title: string, description: string) => {
     try {
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const result = await client.mutate({
         mutation: CREATE_GROUP_RULE,
         variables: { groupId, title, description }
@@ -316,7 +335,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const updateGroupRulesOrder = async (groupId: string, ruleIds: string[]) => {
     try {
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const result = await client.mutate({
         mutation: UPDATE_GROUP_RULES_ORDER,
         variables: { groupId, ruleIds }
@@ -330,7 +349,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const deleteGroupRule = async (ruleId: string) => {
     try {
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const result = await client.mutate({
         mutation: DELETE_GROUP_RULE,
         variables: { ruleId }
@@ -344,7 +363,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const fetchGroupActivityLogs = async (groupId: string) => {
     try {
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const result = await client.query({
         query: GET_GROUP_ACTIVITY_LOGS,
         variables: { groupId },
@@ -359,7 +378,7 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const logGroupActivity = async (groupId: string, text: string, note?: string) => {
     try {
-      const client = apollo.resolveClient()
+      const client = getApolloClient()
       const actorId = authStore.currentUserId || '1'
       const actorName = [authStore.currentUser?.firstName, authStore.currentUser?.lastName]
         .filter(Boolean)
