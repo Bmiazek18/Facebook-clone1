@@ -110,43 +110,64 @@ export const LEAVE_CHAT_MUTATION = gql`
 
 export const chatApi = {
   async getInbox(userId: string | number) {
-    const cleanUserId = String(userId).replace('user_', '')
-    const data = await apiClient.query<{ getInbox: any[] }>(
-      GET_INBOX,
-      { userId: cleanUserId },
-      { fetchPolicy: 'network-only' }
-    )
-    return data?.getInbox || []
+    try {
+      const cleanUserId = String(userId).replace('user_', '')
+      const data = await apiClient.query<{ getInbox: any[] }>(
+        GET_INBOX,
+        { userId: cleanUserId },
+        { fetchPolicy: 'network-only', errorPolicy: 'all' }
+      )
+      return data?.getInbox || []
+    } catch (err: any) {
+      console.warn('[chatApi.getInbox] Chat service unavailable:', err?.message || err)
+      return []
+    }
   },
 
   async markInboxAsRead(userId: string | number, conversationId: string) {
-    const cleanUserId = String(userId).replace('user_', '')
-    const data = await apiClient.mutate<{ markInboxAsRead: boolean }>(
-      MARK_INBOX_AS_READ,
-      {
-        userId: cleanUserId,
-        conversationId: String(conversationId)
-      }
-    )
-    return data?.markInboxAsRead
+    try {
+      const cleanUserId = String(userId).replace('user_', '')
+      const data = await apiClient.mutate<{ markInboxAsRead: boolean }>(
+        MARK_INBOX_AS_READ,
+        {
+          userId: cleanUserId,
+          conversationId: String(conversationId)
+        },
+        { errorPolicy: 'all' }
+      )
+      return data?.markInboxAsRead ?? false
+    } catch (err: any) {
+      console.warn('[chatApi.markInboxAsRead] Chat service unavailable:', err?.message || err)
+      return false
+    }
   },
 
   async getChatWithUser(userId: string, conversationId: string) {
-    const data = await apiClient.query<{ getChatWithUser: any }>(
-      GET_CHAT_WITH_USER_QUERY,
-      { userId, conversationId },
-      { fetchPolicy: 'network-only' }
-    )
-    return data?.getChatWithUser || null
+    try {
+      const data = await apiClient.query<{ getChatWithUser: any }>(
+        GET_CHAT_WITH_USER_QUERY,
+        { userId, conversationId },
+        { fetchPolicy: 'network-only', errorPolicy: 'all' }
+      )
+      return data?.getChatWithUser || null
+    } catch (err: any) {
+      console.warn('[chatApi.getChatWithUser] Chat service unavailable:', err?.message || err)
+      return null
+    }
   },
 
   async getChatSettings(conversationId: string) {
-    const data = await apiClient.query<{ getChatSettings: any }>(
-      GET_CHAT_SETTINGS_QUERY,
-      { conversationId: String(conversationId) },
-      { fetchPolicy: 'network-only' }
-    )
-    return data?.getChatSettings || null
+    try {
+      const data = await apiClient.query<{ getChatSettings: any }>(
+        GET_CHAT_SETTINGS_QUERY,
+        { conversationId: String(conversationId) },
+        { fetchPolicy: 'network-only', errorPolicy: 'all' }
+      )
+      return data?.getChatSettings || null
+    } catch (err: any) {
+      console.warn('[chatApi.getChatSettings] Chat service unavailable:', err?.message || err)
+      return null
+    }
   },
 
   async sendMessage(input: any) {

@@ -47,6 +47,13 @@ watch(
 const friends = computed(() => result.value?.getFriends ?? [])
 const birthdayUsers = computed(() => result.value?.getBirthdayUsers ?? [])
 
+const allPosts = computed(() => postsStore.posts)
+const allStories = computed(() => storiesStore.allUserStories)
+const allReels = computed(() => processPostsIntoReels(postsStore.posts, String(currentUserId.value)))
+
+provide('allPosts', allPosts)
+provide('allStories', allStories)
+
 // Helper to format GraphQL post data into frontend model
 const formatPost = (post: any) => {
   let formattedReactions: Record<string, number[]> = {}
