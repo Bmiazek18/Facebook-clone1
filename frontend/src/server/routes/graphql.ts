@@ -34,6 +34,17 @@ export default defineEventHandler(async (event) => {
     console.warn('BFF: Failed to parse JWT for X-User-Id:', err)
   }
 
+  // Ensure X-Request-ID and OpenTelemetry trace context propagation
+  if (!event.node.req.headers['x-request-id']) {
+    event.node.req.headers['x-request-id'] = crypto.randomUUID()
+  }
+  try {
+    const { propagation, context } = await import('@opentelemetry/api')
+    propagation.inject(context.active(), event.node.req.headers)
+  } catch (e) {
+    // ignore if otel api unavailable in local test
+  }
+
   const routerUrl = process.env.APOLLO_ROUTER_URL || process.env.GRAPHQL_URL || 'http://apollo-router.apps.svc.cluster.local:4000/graphql'
   const requestUrl = event.node.req.url || ''
   const queryIndex = requestUrl.indexOf('?')

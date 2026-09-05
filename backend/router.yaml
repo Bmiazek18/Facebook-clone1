@@ -34,6 +34,16 @@ headers:
           named: "X-Entity-Type"
       - propagate:
           named: "X-Original-User-Id"
+      - propagate:
+          named: "traceparent"
+      - propagate:
+          named: "tracestate"
+      - propagate:
+          named: "baggage"
+      - propagate:
+          named: "x-request-id"
+      - propagate:
+          named: "x-correlation-id"
 
 rhai:
   scripts: "/dist/config"

@@ -72,7 +72,7 @@ export default defineEventHandler(async (event) => {
     return { error: 'Unauthorized', message: 'Session expired or invalid.' }
   }
 
-  // 2. Propagate Identity & Context Headers (BFF Token Mediation)
+  // 2. Propagate Identity, Context Headers & OpenTelemetry Distributed Tracing (BFF Token & Trace Mediation)
   event.node.req.headers['authorization'] = `Bearer ${accessToken}`
   try {
     const payloadPart = accessToken.split('.')[1]
@@ -84,6 +84,17 @@ export default defineEventHandler(async (event) => {
     }
   } catch (err) {
     console.warn('BFF: Failed to parse JWT for X-User-Id:', err)
+  }
+
+  // Ensure X-Request-ID and OpenTelemetry trace context propagation
+  if (!event.node.req.headers['x-request-id']) {
+    event.node.req.headers['x-request-id'] = crypto.randomUUID()
+  }
+  try {
+    const { propagation, context } = await import('@opentelemetry/api')
+    propagation.inject(context.active(), event.node.req.headers)
+  } catch (e) {
+    // ignore if otel api unavailable in local test
   }
 
   const requestUrl = event.node.req.url || ''
