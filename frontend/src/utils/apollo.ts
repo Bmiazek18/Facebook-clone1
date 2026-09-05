@@ -45,22 +45,49 @@ export function getApolloClient(): ApolloClient<NormalizedCacheObject> {
   throw new Error('Apollo Client is not available')
 }
 
+export function isMicroserviceUnavailable(error: any): boolean {
+  if (!error) return false
+  const msg = String(error.message || error).toLowerCase()
+  return (
+    msg.includes('unavailable') ||
+    msg.includes('service unavailable') ||
+    msg.includes('io exception') ||
+    msg.includes('econnrefused') ||
+    msg.includes('503') ||
+    msg.includes('502') ||
+    msg.includes('failed to fetch') ||
+    msg.includes('network error')
+  )
+}
+
 /**
- * Bezpieczne wywołanie zapytania GraphQL (domyślnie network-only, bez błędu cache-and-network)
+ * Bezpieczne wywołanie zapytania GraphQL (domyślnie network-only z graceful degradation dla niedostępnych mikroserwisów)
  */
 export async function gqlQuery<T = any, V extends OperationVariables = OperationVariables>(
   query: DocumentNode,
   variables?: V,
-  options?: { fetchPolicy?: 'network-only' | 'cache-first' | 'no-cache'; errorPolicy?: 'none' | 'ignore' | 'all' }
+  options?: {
+    fetchPolicy?: 'network-only' | 'cache-first' | 'no-cache'
+    errorPolicy?: 'none' | 'ignore' | 'all'
+    graceful?: boolean
+  }
 ): Promise<T | undefined> {
-  const client = getApolloClient()
-  const res = await client.query<T, V>({
-    query,
-    variables: (variables || {}) as V,
-    fetchPolicy: options?.fetchPolicy || 'network-only',
-    errorPolicy: options?.errorPolicy || 'none',
-  })
-  return res.data
+  try {
+    const client = getApolloClient()
+    const res = await client.query<T, V>({
+      query,
+      variables: (variables || {}) as V,
+      fetchPolicy: options?.fetchPolicy || 'network-only',
+      errorPolicy: options?.errorPolicy || 'all',
+    })
+    return res.data
+  } catch (err: any) {
+    if (options?.graceful !== false && isMicroserviceUnavailable(err)) {
+      console.warn('[Microservice Warning] Backend service temporarily unavailable:', err?.message || err)
+      return undefined
+    }
+    throw err
+  }
 }
 
 /**
@@ -69,14 +96,26 @@ export async function gqlQuery<T = any, V extends OperationVariables = Operation
 export async function gqlMutate<T = any, V extends OperationVariables = OperationVariables>(
   mutation: DocumentNode,
   variables?: V,
-  options?: { update?: any; errorPolicy?: 'none' | 'ignore' | 'all' }
+  options?: {
+    update?: any
+    errorPolicy?: 'none' | 'ignore' | 'all'
+    graceful?: boolean
+  }
 ): Promise<T | undefined> {
-  const client = getApolloClient()
-  const res = await client.mutate<T, V>({
-    mutation,
-    variables: (variables || {}) as V,
-    update: options?.update,
-    errorPolicy: options?.errorPolicy || 'none',
-  })
-  return res.data ?? undefined
+  try {
+    const client = getApolloClient()
+    const res = await client.mutate<T, V>({
+      mutation,
+      variables: (variables || {}) as V,
+      update: options?.update,
+      errorPolicy: options?.errorPolicy || 'all',
+    })
+    return res.data ?? undefined
+  } catch (err: any) {
+    if (options?.graceful !== false && isMicroserviceUnavailable(err)) {
+      console.warn('[Microservice Warning] Mutation failed - service unavailable:', err?.message || err)
+      return undefined
+    }
+    throw err
+  }
 }
