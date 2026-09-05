@@ -33,10 +33,6 @@ export function getUserById(id: string | number): User | undefined {
     getOrFetchUser(cleanId)
   }
 
-  // Fallback default mock users
-
-
-
   return undefined
 }
 

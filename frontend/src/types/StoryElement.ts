@@ -1,17 +1,10 @@
 // --- Element Types ---
 export type ElementType = 'text' | 'image' | 'link' | 'post' | 'reel'
 
-import type { ImageTagType } from './ImageTag'
+import type { ImageTagType, PostMedia } from './Post'
+export type { PostMedia }
 
 // --- Shared Data Types ---
-
-export interface PostMedia {
-  src: string
-  altText?: string
-  tags?: ImageTagType[]
-  audioUrl?: string
-  backgroundColor?: string
-}
 export interface PostData {
   id: string
   author: {
