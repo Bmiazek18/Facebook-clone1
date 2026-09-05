@@ -1,6 +1,7 @@
 import type { StoryElement } from './StoryElement'
+import type { ReactionType } from './Post'
 
-export type ReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry'
+export type { ReactionType }
 
 export interface Story {
   id: string | number

@@ -294,7 +294,7 @@ import AddGroupMemberModal from './modals/AddGroupMemberModal.vue'
 import { useConversationsStore } from '@/stores/conversations'
 import { useAuthStore } from '@/stores/auth'
 import { useChatSettings } from '@/composables/chat/useChatSettings'
-import { ChatType, type GroupMember } from '@/types/Chat'
+import { ChatType, type ChatGroupMember as GroupMember } from '@/types/Chat'
 import { getUserById } from '@/utils/users'
 import VerifyEncryptionModal from './modals/VerifyEncryptionModal.vue'
 

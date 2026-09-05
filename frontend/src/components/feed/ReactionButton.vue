@@ -104,6 +104,7 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTimeoutFn } from '@vueuse/core'
+import type { ReactionType } from '@/types/Post'
 
 import ThumbUpOutline from 'vue-material-design-icons/ThumbUpOutline.vue'
 import ThumbUpIcon from 'vue-material-design-icons/ThumbUp.vue'

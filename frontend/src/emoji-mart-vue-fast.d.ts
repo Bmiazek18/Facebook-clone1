@@ -2,6 +2,7 @@ declare module 'emoji-mart-vue-fast/src' {
   import { DefineComponent } from 'vue'
 
   export const Picker: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>
+  export const Emoji: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>
   export class EmojiIndex {
     constructor(data: Record<string, unknown>)
   }

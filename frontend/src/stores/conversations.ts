@@ -35,6 +35,7 @@ export const useConversationsStore = defineStore('conversations', () => {
   const userCache = useUserCache()
   const chatCalls = useChatCalls()
   const chatSettings = useChatSettings()
+  const notify = useNotify()
 
   const isMqttConnected = chatMqtt.isMqttConnected
   const mqttClientId = chatMqtt.mqttClientId

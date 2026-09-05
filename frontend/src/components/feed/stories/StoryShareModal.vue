@@ -177,6 +177,7 @@ import BookOpenVariantIcon from 'vue-material-design-icons/BookOpenVariant.vue'
 import LinkVariantIcon from 'vue-material-design-icons/LinkVariant.vue'
 import AccountCircleOutlineIcon from 'vue-material-design-icons/AccountCircleOutline.vue'
 import PrivacySelector from '@/components/common/PrivacySelector.vue'
+import { usePostsStore } from '@/stores/posts'
 
 const props = defineProps<{
   reel?: Reel | null
@@ -197,6 +198,7 @@ const emit = defineEmits<{
 }>()
 
 const authStore = useAuthStore()
+const postsStore = usePostsStore()
 const router = useRouter()
 
 const { wrapperRef, currentView, previousView, updateHeight, transitionName } = useSlideTransition()

@@ -2,9 +2,10 @@
 import { ref, reactive, computed } from 'vue'
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile, toBlobURL } from '@ffmpeg/util'
-import type { LogEvent } from '@ffmpeg/ffmpeg/types/events'
 import { useCreatePostStore } from '@/stores/createPost'
 import { storeToRefs } from 'pinia'
+
+type LogEvent = { type: string; message: string }
 
 
 

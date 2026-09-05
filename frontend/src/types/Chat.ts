@@ -3,7 +3,7 @@ export enum ChatType {
   Group = 'group',
 }
 
-export interface GroupMember {
+export interface ChatGroupMember {
   id: string | number
   name: string
   nickname?: string
@@ -22,7 +22,7 @@ export interface Chat {
   isPinch?: boolean
   isMeta?: boolean
   type: ChatType
-  groupMembers?: GroupMember[]
+  groupMembers?: ChatGroupMember[]
   extraAvatars?: string[]
   otherUserNickname?: string
 }

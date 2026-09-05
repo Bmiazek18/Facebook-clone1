@@ -38,6 +38,8 @@ export interface ImageMessage extends BaseMessage {
   mediaUrls?: string[]
 }
 
+export type ImageMessageWithGroup = ImageMessage & { isGroup?: boolean }
+
 export interface GifMessage extends BaseMessage {
   type: 'gif'
   content: string

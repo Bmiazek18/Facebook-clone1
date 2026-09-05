@@ -70,7 +70,7 @@ import { ref, computed, nextTick } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PencilIcon from 'vue-material-design-icons/Pencil.vue'
 import CheckIcon from 'vue-material-design-icons/Check.vue'
-import { ChatType, type GroupMember } from '@/types/Chat'
+import { ChatType, type ChatGroupMember as GroupMember } from '@/types/Chat'
 
 interface Participant {
   id: string | number

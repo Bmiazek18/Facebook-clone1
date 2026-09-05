@@ -36,8 +36,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { UserStories } from '../types/Story'
-import { useStoriesStore } from '@/composables/feed/useAppState'
+import type { UserStories } from '@/types/Story'
+import { useStoriesStore } from '@/stores/stories'
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
