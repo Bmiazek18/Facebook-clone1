@@ -138,50 +138,62 @@ export const GET_COMMENTS_QUERY = gql`
   query GetComments($postId: ID!, $limit: Int) {
     comments(postId: $postId, limit: $limit) {
       id
-      content
-      createdAt
-      authorId
-      authorName
-      authorAvatar
+      userId
       postId
       parentId
-      attachmentUrl
-      attachmentType
-      reactions {
-        like
-        love
-        haha
-        wow
-        sad
-        angry
+      content
+      createdAt
+      mediaUrl
+      author {
+        id
+        firstName
+        lastName
+        avatar
+        avatarId
       }
-      userReaction
+      reactions {
+        reactionType
+        userIds
+      }
+      mentionedUsers {
+        id
+        firstName
+        lastName
+        avatar
+        avatarId
+      }
     }
   }
 `
 
 export const ADD_COMMENT_MUTATION = gql`
-  mutation AddComment($input: CommentInput!) {
+  mutation AddComment($input: AddCommentInput!) {
     addComment(input: $input) {
       id
-      content
-      createdAt
-      authorId
-      authorName
-      authorAvatar
+      userId
       postId
       parentId
-      attachmentUrl
-      attachmentType
-      reactions {
-        like
-        love
-        haha
-        wow
-        sad
-        angry
+      content
+      createdAt
+      mediaUrl
+      author {
+        id
+        firstName
+        lastName
+        avatar
+        avatarId
       }
-      userReaction
+      reactions {
+        reactionType
+        userIds
+      }
+      mentionedUsers {
+        id
+        firstName
+        lastName
+        avatar
+        avatarId
+      }
     }
   }
 `
@@ -416,10 +428,10 @@ export const feedApi = {
   },
 
   async getPost(id: string | number) {
-    const data = await apiClient.query<{ getPost: any }>(
+    const data = await apiClient.query<{ getPostById: any }>(
       gql`
-        query GetPost($id: ID!) {
-          getPost(id: $id) {
+        query GetPostByIdSingle($id: ID!) {
+          getPostById(postId: $id) {
             id
             authorId
             author {
@@ -431,6 +443,7 @@ export const feedApi = {
             }
             content
             date
+            timestamp
             commentCount
             shareCount
             media {
@@ -439,21 +452,8 @@ export const feedApi = {
               backgroundColor
             }
             reactions {
+              reactionType
               userIds
-            }
-            comments {
-              id
-              authorId
-              author {
-                id
-                firstName
-                lastName
-                avatarId
-                avatar
-              }
-              content
-              date
-              likesCount
             }
           }
         }
@@ -461,6 +461,6 @@ export const feedApi = {
       { id: String(id) },
       { fetchPolicy: 'network-only' }
     )
-    return data?.getPost || null
+    return data?.getPostById || null
   }
 }

@@ -137,6 +137,7 @@ import CommentFilter from '@/components/profile/CommentFilter.vue'
 import FormattedDate from '@/components/common/FormattedDate.vue'
 import PostActions from '~/components/feed/post/PostActions.vue'
 import EmptyState from '~/components/feed/comment/EmptyState.vue'
+import { useComments } from '@/composables/feed/useComments'
 definePageMeta({ showMainLayout: false, isPopup: true })
 
 const route = useRoute()
@@ -144,6 +145,7 @@ const router = useRouter()
 const isFullScreen = ref(false)
 const loading = ref(false)
 const currentPost = ref<any>(null)
+const { fetchCommentsForPost } = useComments()
 
 const postId = computed(() => String(route.params.postId || ''))
 
@@ -152,7 +154,12 @@ const fetchPost = async () => {
   loading.value = true
   try {
     const post = await feedApi.getPost(postId.value)
-    currentPost.value = post || null
+    if (post) {
+      currentPost.value = post
+      await fetchCommentsForPost(currentPost.value)
+    } else {
+      currentPost.value = null
+    }
   } catch (err) {
     console.error('Failed to fetch post:', err)
   } finally {
