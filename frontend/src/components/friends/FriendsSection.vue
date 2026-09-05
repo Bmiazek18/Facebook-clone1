@@ -3,11 +3,106 @@ import FriendListItem from '@/components/friends/FriendListItem.vue'
 import SearchInput from '@/components/common/SearchInput.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PrivacySelector from '@/components/common/PrivacySelector.vue'
-import { ref, inject } from 'vue'
+import { ref, inject, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from '#app'
+import { usersApi } from '@/api/users'
 
+const route = useRoute()
+const router = useRouter()
 const searchQuery = ref('')
 const showFriendsModal = ref(false)
+const profileUser: any = inject('profileUser', null)
 const isOwner = inject('isOwner', false)
+
+const props = withDefaults(
+  defineProps<{
+    friendsList?: {
+      id?: string | number
+      name: string
+      mutual?: number
+      isFriend?: boolean
+      imageId?: number
+      avatar?: string
+    }[]
+    isFullView?: boolean // false = Info Tab Preview, true = Full Friends Tab
+    pageType?: string
+  }>(),
+  {
+    friendsList: () => [],
+    isFullView: false,
+    pageType: '',
+  }
+)
+
+const internalFriends = ref<any[]>([])
+const isLoading = ref(false)
+
+const targetUserId = computed(() => {
+  return (profileUser?.value?.id || route.params.userId) as string
+})
+
+const effectiveFriendsList = computed(() => {
+  if (props.friendsList && props.friendsList.length > 0) {
+    return props.friendsList
+  }
+  return internalFriends.value
+})
+
+const filteredFriendsList = computed(() => {
+  if (!searchQuery.value.trim()) return effectiveFriendsList.value
+  const q = searchQuery.value.toLowerCase()
+  return effectiveFriendsList.value.filter((f) => f.name.toLowerCase().includes(q))
+})
+
+const fetchFriends = async () => {
+  if (!targetUserId.value) return
+  isLoading.value = true
+  try {
+    const list = await usersApi.getFriends(targetUserId.value)
+    if (list && Array.isArray(list) && list.length > 0) {
+      internalFriends.value = list.map((f: any) => ({
+        id: f.id,
+        name: [f.firstName, f.lastName].filter(Boolean).join(' ') || 'Użytkownik',
+        avatar: f.avatar || '',
+        isFriend: true,
+        mutual: f.mutualCount ?? 0,
+        imageId: 35,
+      }))
+    } else {
+      internalFriends.value = []
+    }
+  } catch (err) {
+    console.error('Failed to fetch friends in FriendsSection:', err)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  if (!props.friendsList || props.friendsList.length === 0) {
+    fetchFriends()
+  }
+})
+
+watch(targetUserId, () => {
+  if (!props.friendsList || props.friendsList.length === 0) {
+    fetchFriends()
+  }
+})
+
+const goToAllFriends = () => {
+  const uid = targetUserId.value
+  if (uid) {
+    router.push(`/profile/${uid}/friends_all`)
+  } else {
+    router.push('/profile/friends_all')
+  }
+}
+
+const getFriendsRoute = (type: string) => {
+  const uid = targetUserId.value
+  return uid ? `/profile/${uid}/${type}` : `/profile/${type}`
+}
 
 const settings = ref([
   {
@@ -50,22 +145,6 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
     selectedSetting.value = null
   }
 }
-
-const privacyOptions = ref([
-  { label: 'Wszyscy', value: 'public' },
-  { label: 'Znajomi', value: 'friends' },
-  { label: 'Tylko ja', value: 'private' },
-])
-
-defineProps<{
-  friendsList: {
-    name: string
-    mutual: number
-    isFriend: boolean
-    imageId: number
-  }[]
-  isFullView: boolean // false = Info Tab Preview, true = Full Friends Tab
-}>()
 </script>
 
 <template>
@@ -100,6 +179,7 @@ defineProps<{
 
       <a
         v-if="!isFullView"
+        @click="goToAllFriends"
         class="text-theme-primary font-semibold text-[15px] hover:underline cursor-pointer"
         >Wszyscy znajomi</a
       >
@@ -108,80 +188,87 @@ defineProps<{
     <div
       class="flex space-x-6 mb-4 text-theme-text-secondary border-b border-theme-border overflow-x-auto whitespace-nowrap"
     >
-      <div
-        class="flex space-x-6 mb-4 text-theme-text-secondary border-b border-theme-border overflow-x-auto whitespace-nowrap"
+      <!-- Wszyscy znajomi -->
+      <NuxtLink
+        :to="getFriendsRoute('friends_all')"
+        class="pb-3 text-[15px] cursor-pointer transition-all"
+        active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
+        inactive-class="hover:border-b-3 hover:border-b-theme-border"
       >
-        <!-- Wszyscy znajomi (np. główny widok znajomych lub podstrona) -->
-        <NuxtLink
-          to="friends_all"
-          class="pb-3 text-[15px] cursor-pointer transition-all"
-          active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
-          inactive-class="hover:border-b-3 hover:border-b-theme-border"
-        >
-          Wszyscy znajomi
-        </NuxtLink>
+        Wszyscy znajomi
+      </NuxtLink>
 
-        <!-- Niedawno dodani -->
-        <NuxtLink
-          v-if="isFullView"
-          to="friends_recent"
-          class="pb-3 text-[15px] cursor-pointer transition-all"
-          active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
-          inactive-class="hover:border-b-3 hover:border-b-theme-border"
-        >
-          Niedawno dodani
-        </NuxtLink>
+      <!-- Niedawno dodani -->
+      <NuxtLink
+        v-if="isFullView"
+        :to="getFriendsRoute('friends_recent')"
+        class="pb-3 text-[15px] cursor-pointer transition-all"
+        active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
+        inactive-class="hover:border-b-3 hover:border-b-theme-border"
+      >
+        Niedawno dodani
+      </NuxtLink>
 
-        <!-- Urodziny -->
-        <NuxtLink
-          to="friends_birthdays"
-          class="pb-3 text-[15px] cursor-pointer transition-all"
-          active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
-          inactive-class="hover:border-b-3 hover:border-b-theme-border"
-        >
-          Urodziny
-        </NuxtLink>
+      <!-- Urodziny -->
+      <NuxtLink
+        :to="getFriendsRoute('friends_birthdays')"
+        class="pb-3 text-[15px] cursor-pointer transition-all"
+        active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
+        inactive-class="hover:border-b-3 hover:border-b-theme-border"
+      >
+        Urodziny
+      </NuxtLink>
 
-        <!-- Szkoła średnia -->
-        <NuxtLink
-          to="friends_high_school"
-          class="pb-3 text-[15px] cursor-pointer transition-all"
-          active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
-          inactive-class="hover:border-b-3 hover:border-b-theme-border"
-        >
-          Szkoła średnia
-        </NuxtLink>
+      <!-- Szkoła średnia -->
+      <NuxtLink
+        :to="getFriendsRoute('friends_high_school')"
+        class="pb-3 text-[15px] cursor-pointer transition-all"
+        active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
+        inactive-class="hover:border-b-3 hover:border-b-theme-border"
+      >
+        Szkoła średnia
+      </NuxtLink>
 
-        <!-- Aktualne miejsce zamieszkania -->
-        <NuxtLink
-          to="friends_current_city"
-          class="pb-3 text-[15px] cursor-pointer transition-all"
-          active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
-          inactive-class="hover:border-b-3 hover:border-b-theme-border"
-        >
-          Aktualne miejsce zamieszkania
-        </NuxtLink>
+      <!-- Aktualne miejsce zamieszkania -->
+      <NuxtLink
+        :to="getFriendsRoute('friends_current_city')"
+        class="pb-3 text-[15px] cursor-pointer transition-all"
+        active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
+        inactive-class="hover:border-b-3 hover:border-b-theme-border"
+      >
+        Aktualne miejsce zamieszkania
+      </NuxtLink>
 
-        <!-- Obserwowani (kieruje do /settings/following) -->
-        <NuxtLink
-          to="following"
-          class="pb-3 text-[15px] cursor-pointer transition-all"
-          active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
-          inactive-class="hover:border-b-3 hover:border-b-theme-border"
-        >
-          Obserwowani
-        </NuxtLink>
-      </div>
+      <!-- Obserwowani -->
+      <NuxtLink
+        :to="getFriendsRoute('following')"
+        class="pb-3 text-[15px] cursor-pointer transition-all"
+        active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
+        inactive-class="hover:border-b-3 hover:border-b-theme-border"
+      >
+        Obserwowani
+      </NuxtLink>
     </div>
 
-    <!-- Nienaruszony, oryginalny kontener listy -->
-    <div class="flex flex-wrap -mx-2 mt-4">
-      <FriendListItem v-for="(friend, index) in friendsList" :key="index" :friend="friend" />
+    <!-- Kontener listy znajomych -->
+    <div v-if="filteredFriendsList.length > 0" class="flex flex-wrap -mx-2 mt-4">
+      <FriendListItem
+        v-for="(friend, index) in filteredFriendsList"
+        :key="friend.id || index"
+        :friend="friend"
+      />
+    </div>
+    <div v-else-if="isLoading" class="p-8 text-center text-theme-text-secondary animate-pulse">
+      Ładowanie listy znajomych...
+    </div>
+    <div v-else class="p-8 text-center text-theme-text-secondary">
+      Brak znajomych do wyświetlenia
     </div>
 
     <button
-      v-if="!isFullView"
-      class="w-full bg-theme-bg-subtle hover:bg-theme-hover-strong rounded-lg p-2 font-bold mt-4 text-theme-text"
+      v-if="!isFullView && filteredFriendsList.length > 0"
+      @click="goToAllFriends"
+      class="w-full bg-theme-bg-subtle hover:bg-theme-hover-strong rounded-lg p-2 font-bold mt-4 text-theme-text cursor-pointer transition-colors"
     >
       Zobacz wszystko
     </button>

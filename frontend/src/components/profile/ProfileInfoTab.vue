@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'nuxt/app'
 import { useI18n } from 'vue-i18n'
 import FriendsSection from '@/components/friends/FriendsSection.vue'
+import { usersApi } from '@/api/users'
 
 const route = useRoute()
 const router = useRouter()
@@ -11,17 +12,17 @@ const profileUser: any = inject('profileUser')
 const isOwner: any = inject('isOwner', ref(false))
 
 const hasWork = computed(() => {
-  if (!profileUser.value) return false
+  if (!profileUser?.value) return false
   return !!(profileUser.value.job || profileUser.value.company)
 })
 
 const hasEducation = computed(() => {
-  if (!profileUser.value) return false
+  if (!profileUser?.value) return false
   return !!(profileUser.value.school || profileUser.value.education || profileUser.value.highSchool)
 })
 
 const hasPersonalDetails = computed(() => {
-  if (!profileUser.value) return false
+  if (!profileUser?.value) return false
   return !!(
     profileUser.value.phone ||
     profileUser.value.email ||
@@ -64,28 +65,42 @@ function setActiveTab(tabKey: string) {
   router.push(`${basePath}/${tabKey}`)
 }
 
-const friendsList = ref([
-  { name: 'Natalia Wójcik', mutual: 71, isFriend: true, imageId: 35 },
-  { name: 'Kacper Szymański', mutual: 10, isFriend: false, imageId: 36 },
-  { name: 'Monika Zawadzka', mutual: 211, isFriend: true, imageId: 37 },
-  { name: 'Michał Kowalczyk', mutual: 15, isFriend: false, imageId: 38 },
-  { name: 'Ewa Lipińska', mutual: 45, isFriend: true, imageId: 39 },
-  { name: 'Marek Pająk', mutual: 8, isFriend: false, imageId: 40 },
-  { name: 'Piotr Zieliński', mutual: 99, isFriend: true, imageId: 20 },
-  { name: 'Katarzyna Nowak', mutual: 56, isFriend: true, imageId: 21 },
-  { name: 'Tomasz Dąbrowski', mutual: 139, isFriend: true, imageId: 22 },
-  { name: 'Anna Kozłowska', mutual: 34, isFriend: false, imageId: 23 },
-  { name: 'Rafał Woźniak', mutual: 157, isFriend: true, imageId: 24 },
-  { name: 'Joanna Błaszczyk', mutual: 142, isFriend: true, imageId: 25 },
-  { name: 'Łukasz Cichy', mutual: 144, isFriend: true, imageId: 26 },
-  { name: 'Zuzanna Górska', mutual: 114, isFriend: true, imageId: 27 },
-  { name: 'Maciej Kamiński', mutual: 52, isFriend: false, imageId: 28 },
-  { name: 'Kinga Bartosiewicz', mutual: 38, isFriend: false, imageId: 29 },
-  { name: 'Adam Wróbel', mutual: 46, isFriend: false, imageId: 30 },
-  { name: 'Justyna Jurek', mutual: 128, isFriend: true, imageId: 31 },
-  { name: 'Robert Kubiak', mutual: 89, isFriend: false, imageId: 32 },
-  { name: 'Karolina Sęk', mutual: 80, isFriend: false, imageId: 33 },
-])
+const friendsList = ref<any[]>([])
+const isLoadingFriends = ref(false)
+
+const loadFriends = async () => {
+  const targetUserId = (profileUser?.value?.id || route.params.userId) as string
+  if (!targetUserId) return
+  isLoadingFriends.value = true
+  try {
+    const list = await usersApi.getFriends(targetUserId)
+    if (list && Array.isArray(list) && list.length > 0) {
+      friendsList.value = list.map((f: any) => ({
+        id: f.id,
+        name: [f.firstName, f.lastName].filter(Boolean).join(' ') || 'Użytkownik',
+        avatar: f.avatar || '',
+        isFriend: true,
+        mutual: f.mutualCount ?? 0,
+        imageId: 35,
+      }))
+    } else {
+      friendsList.value = []
+    }
+  } catch (err) {
+    console.error('Failed to load friends in ProfileInfoTab:', err)
+    friendsList.value = []
+  } finally {
+    isLoadingFriends.value = false
+  }
+}
+
+onMounted(() => {
+  loadFriends()
+})
+
+watch(() => profileUser?.value?.id || route.params.userId, () => {
+  loadFriends()
+})
 </script>
 
 <template>

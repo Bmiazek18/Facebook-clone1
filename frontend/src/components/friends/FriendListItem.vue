@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
-// Importujemy komponent Dropdownu z biblioteki
 import { Dropdown as VDropdown } from 'floating-vue'
-import 'floating-vue/dist/style.css' // bazowe style dla pozycjonowania
+import 'floating-vue/dist/style.css'
+import ProfilePopper from '@/components/profile/ProfilePopper.vue'
 
 defineProps<{
   friend: {
+    id?: string | number
     name: string
-    mutual: number
-    isFriend: boolean
-    imageId: number
+    mutual?: number
+    isFriend?: boolean
+    imageId?: number
+    avatar?: string
   }
 }>()
 </script>
@@ -21,13 +23,14 @@ defineProps<{
     >
       <div class="flex items-center">
         <img
-          :src="`https://picsum.photos/id/${friend.imageId}/100/100`"
+          :src="friend.avatar || `https://picsum.photos/id/${friend.imageId || 35}/100/100`"
           class="w-19 h-19 rounded-lg mr-3 object-cover border border-theme-border"
           :alt="`Zdjęcie ${friend.name}`"
         />
         <div>
-          <ProfilePopper :user-id="1" />
+          <ProfilePopper :user-id="friend.id || 1" :name="friend.name" />
           <div
+            v-if="friend.mutual !== undefined"
             class="text-[13px] font-medium text-theme-text-secondary hover:underline cursor-pointer"
           >
             {{ friend.mutual }} wspólnych znajomych
