@@ -9,8 +9,8 @@ import com.facebook.UserService.service.UserActiveService;
 import com.facebook.UserService.service.UserService;
 import com.facebook.user.grpc.*;
 import io.grpc.stub.StreamObserver;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.devh.boot.grpc.server.service.GrpcService;
 
 import java.util.List;
@@ -18,9 +18,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @GrpcService
-@RequiredArgsConstructor
-@Slf4j
 public class UserGrpcServiceImpl extends UserGrpcServiceGrpc.UserGrpcServiceImplBase {
+
+    private static final Logger log = LoggerFactory.getLogger(UserGrpcServiceImpl.class);
 
     private final UserService userService;
     private final UserActiveService userActiveService;
@@ -29,6 +29,22 @@ public class UserGrpcServiceImpl extends UserGrpcServiceGrpc.UserGrpcServiceImpl
     private final TicketService ticketService;
     private final PageService pageService;
     private final PageTokenService pageTokenService;
+
+    public UserGrpcServiceImpl(UserService userService,
+                               UserActiveService userActiveService,
+                               TranslationService translationService,
+                               DownstreamGrpcService downstreamGrpcService,
+                               TicketService ticketService,
+                               PageService pageService,
+                               PageTokenService pageTokenService) {
+        this.userService = userService;
+        this.userActiveService = userActiveService;
+        this.translationService = translationService;
+        this.downstreamGrpcService = downstreamGrpcService;
+        this.ticketService = ticketService;
+        this.pageService = pageService;
+        this.pageTokenService = pageTokenService;
+    }
 
     @Override
     public void getUserById(GetUserByIdRequest request, StreamObserver<GetUserByIdResponse> responseObserver) {

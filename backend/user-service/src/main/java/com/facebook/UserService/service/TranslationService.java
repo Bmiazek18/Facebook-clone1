@@ -2,7 +2,8 @@ package com.facebook.UserService.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -13,8 +14,9 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 
 @Service
-@Slf4j
 public class TranslationService {
+
+    private static final Logger log = LoggerFactory.getLogger(TranslationService.class);
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();

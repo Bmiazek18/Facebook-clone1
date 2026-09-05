@@ -9,15 +9,17 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryRegistry;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@Slf4j
 public class DownstreamGrpcService {
+
+    private static final Logger log = LoggerFactory.getLogger(DownstreamGrpcService.class);
 
     @GrpcClient("chat-service")
     private ChatGrpcServiceGrpc.ChatGrpcServiceBlockingStub chatGrpcStub;

@@ -3,8 +3,8 @@ package com.facebook.UserService.config;
 import com.facebook.UserService.model.User;
 import com.facebook.UserService.repository.UserRepository;
 import com.facebook.UserService.repository.SearchUserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -15,12 +15,17 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class DatabaseSeeder implements CommandLineRunner {
+
+    private static final Logger log = LoggerFactory.getLogger(DatabaseSeeder.class);
 
     private final UserRepository userRepository;
     private final SearchUserRepository searchUserRepository;
+
+    public DatabaseSeeder(UserRepository userRepository, SearchUserRepository searchUserRepository) {
+        this.userRepository = userRepository;
+        this.searchUserRepository = searchUserRepository;
+    }
 
     @net.devh.boot.grpc.client.inject.GrpcClient("social-graph-service")
     private com.facebook.socialgraph.grpc.SocialGraphGrpcServiceGrpc.SocialGraphGrpcServiceBlockingStub socialGraphGrpcStub;
