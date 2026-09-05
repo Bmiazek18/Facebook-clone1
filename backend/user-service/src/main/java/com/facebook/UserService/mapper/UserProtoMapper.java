@@ -21,17 +21,23 @@ public final class UserProtoMapper {
             return UserDto.getDefaultInstance();
         }
 
-        List<String> lifeEvents = user.getLifeEvents() != null
-                ? user.getLifeEvents().stream()
-                .map(le -> le.getDate() + "," + le.getEvent())
-                .collect(Collectors.toList())
-                : List.of();
+        List<String> lifeEvents = List.of();
+        try {
+            if (user.getLifeEvents() != null) {
+                lifeEvents = user.getLifeEvents().stream()
+                        .map(le -> le.getDate() + "," + le.getEvent())
+                        .collect(Collectors.toList());
+            }
+        } catch (Exception ignored) {}
 
-        List<String> socialLinks = user.getSocialLinks() != null
-                ? user.getSocialLinks().stream()
-                .map(sl -> sl.getName() + "," + sl.getUrl())
-                .collect(Collectors.toList())
-                : List.of();
+        List<String> socialLinks = List.of();
+        try {
+            if (user.getSocialLinks() != null) {
+                socialLinks = user.getSocialLinks().stream()
+                        .map(sl -> sl.getName() + "," + sl.getUrl())
+                        .collect(Collectors.toList());
+            }
+        } catch (Exception ignored) {}
 
         UserDto.Builder builder = UserDto.newBuilder()
                 .setId(String.valueOf(user.getId()))
@@ -65,12 +71,16 @@ public final class UserProtoMapper {
                 .setNewPostsCount(newPostsCount)
                 .setCoverId(nullToEmpty(user.getCoverPhotoId()));
 
-        if (user.getOtherNames() != null) {
-            builder.addAllOtherNames(user.getOtherNames());
-        }
-        if (user.getFavoriteQuotes() != null) {
-            builder.addAllFavoriteQuotes(user.getFavoriteQuotes());
-        }
+        try {
+            if (user.getOtherNames() != null) {
+                builder.addAllOtherNames(user.getOtherNames());
+            }
+        } catch (Exception ignored) {}
+        try {
+            if (user.getFavoriteQuotes() != null) {
+                builder.addAllFavoriteQuotes(user.getFavoriteQuotes());
+            }
+        } catch (Exception ignored) {}
         if (user.getCreatedAt() != null) {
             builder.setCreatedAt(user.getCreatedAt().toString());
         }

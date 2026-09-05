@@ -413,6 +413,7 @@ public class UserService {
         });
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public java.util.List<User> getAllUsers(int page, int size) {
         return userRepository.findAll(org.springframework.data.domain.PageRequest.of(page, size)).getContent();
     }
