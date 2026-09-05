@@ -1,5 +1,5 @@
-import { useMutation, useApolloClient } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
+import { getApolloClient } from '@/utils/apollo'
 import type { Comment } from '@/types/Post'
 import { useAuthStore } from '@/stores/auth'
 import { usersCache } from '@/composables/shared/useUserCache'
@@ -131,12 +131,11 @@ function buildCommentTree(flatComments: any[], currentUserId: string): Comment[]
 
 export function useComments() {
   const authStore = useAuthStore()
-  const { client } = useApolloClient()
-  const { mutate: addCommentMutation } = useMutation(ADD_COMMENT_MUTATION)
 
   async function fetchCommentsForPost(post: any, limit?: number) {
     if (!post) return
     try {
+      const client = getApolloClient()
       const { data } = await client.query({
         query: GET_COMMENTS_QUERY,
         variables: {
@@ -202,13 +201,17 @@ export function useComments() {
     }
 
     try {
-      const { data } = await addCommentMutation({
-        input: {
-          postId: String(post.id),
-          userId: String(userId),
-          parentId: parentId == null ? null : String(parentId),
-          content: commentInput.content,
-          mediaUrl: commentInput.image || commentInput.gif || null,
+      const client = getApolloClient()
+      const { data } = await client.mutate({
+        mutation: ADD_COMMENT_MUTATION,
+        variables: {
+          input: {
+            postId: String(post.id),
+            userId: String(userId),
+            parentId: parentId == null ? null : String(parentId),
+            content: commentInput.content,
+            mediaUrl: commentInput.image || commentInput.gif || null,
+          },
         },
       })
       const savedComment = data?.addComment

@@ -1,6 +1,6 @@
 import { computed, isRef } from 'vue'
-import { useMutation, useApolloClient } from '@vue/apollo-composable'
 import { gql } from 'graphql-tag'
+import { getApolloClient } from '@/utils/apollo'
 import { useAuthStore } from '@/stores/auth'
 import type { ReactionType } from '@/types/Post'
 
@@ -62,8 +62,6 @@ const POST_REACTIONS_FRAGMENT = gql`
 
 export function usePostReactions(postInput: any) {
   const authStore = useAuthStore()
-  const { mutate: reactToPost } = useMutation(REACT_TO_POST_MUTATION)
-  const { client } = useApolloClient()
 
   const currentUserId = computed(() => String(authStore.currentUserId))
 
@@ -253,28 +251,41 @@ export function usePostReactions(postInput: any) {
     }
     post.rawReactions = nextRawReactions
 
-    // Optimistically update Apollo Cache
+    let client: any = null
     try {
-      client.cache.writeFragment({
-        id: `Post:${post.id}`,
-        fragment: POST_REACTIONS_FRAGMENT,
-        data: {
-          __typename: 'Post',
-          id: post.id,
-          reactions: nextRawReactions,
-        },
-      })
-    } catch (cacheErr) {
-      console.warn('Failed to write optimistic update to Apollo Cache:', cacheErr)
+      client = getApolloClient()
+    } catch (e) {
+      console.warn('Apollo client not yet available:', e)
+    }
+
+    // Optimistically update Apollo Cache
+    if (client?.cache) {
+      try {
+        client.cache.writeFragment({
+          id: `Post:${post.id}`,
+          fragment: POST_REACTIONS_FRAGMENT,
+          data: {
+            __typename: 'Post',
+            id: post.id,
+            reactions: nextRawReactions,
+          },
+        })
+      } catch (cacheErr) {
+        console.warn('Failed to write optimistic update to Apollo Cache:', cacheErr)
+      }
     }
 
     try {
-      await reactToPost({
-        input: {
-          postId: String(post.id),
-          userId: String(userId),
-          reactionType: type,
-          previousReactionType,
+      const apolloClient = client || getApolloClient()
+      await apolloClient.mutate({
+        mutation: REACT_TO_POST_MUTATION,
+        variables: {
+          input: {
+            postId: String(post.id),
+            userId: String(userId),
+            reactionType: type ? type.toUpperCase() : null,
+            previousReactionType: previousReactionType ? previousReactionType.toUpperCase() : null,
+          },
         },
       })
     } catch (e) {
@@ -283,18 +294,20 @@ export function usePostReactions(postInput: any) {
       post.reactionUserNames = currentReactionUserNames
       post.rawReactions = currentRawReactions
       
-      try {
-        client.cache.writeFragment({
-          id: `Post:${post.id}`,
-          fragment: POST_REACTIONS_FRAGMENT,
-          data: {
-            __typename: 'Post',
-            id: post.id,
-            reactions: currentRawReactions,
-          },
-        })
-      } catch (cacheErr) {
-        console.warn('Failed to write rollback to Apollo Cache:', cacheErr)
+      if (client?.cache) {
+        try {
+          client.cache.writeFragment({
+            id: `Post:${post.id}`,
+            fragment: POST_REACTIONS_FRAGMENT,
+            data: {
+              __typename: 'Post',
+              id: post.id,
+              reactions: currentRawReactions,
+            },
+          })
+        } catch (cacheErr) {
+          console.warn('Failed to write rollback to Apollo Cache:', cacheErr)
+        }
       }
     }
   }
