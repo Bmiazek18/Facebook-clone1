@@ -1,0 +1,438 @@
+---
+# ==============================================================================
+# PLAY 1: PROXMOX HOST - GPU PASSTHROUGH & LXC CGROUP CONFIGURATION
+# ==============================================================================
+- name: "Proxmox Host: Configure NVIDIA GPU Passthrough for LXC"
+  hosts: proxmox_host
+  gather_facts: false
+  tags: [proxmox, gpu_host]
+  tasks:
+    - name: Verify NVIDIA GPU is detected on Proxmox host
+      ansible.builtin.command: nvidia-smi
+      register: host_nvidia_smi
+      changed_when: false
+      when: enable_gpu_passthrough | bool
+
+    - name: Extract host NVIDIA driver version
+      ansible.builtin.shell:
+        cmd: "nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -n1 | tr -d '[:space:]'"
+      register: host_driver_version
+      changed_when: false
+      when: enable_gpu_passthrough | bool
+
+    - name: Ensure udev rules directory exists on Proxmox host
+      ansible.builtin.file:
+        path: /etc/udev/rules.d
+        state: directory
+        mode: '0755'
+      when: enable_gpu_passthrough | bool
+
+    - name: Create NVIDIA udev rules on Proxmox host
+      ansible.builtin.copy:
+        dest: /etc/udev/rules.d/70-nvidia.rules
+        mode: '0644'
+        content: |
+          KERNEL=="nvidia*", MODE="0666"
+          KERNEL=="nvidia-uvm*", MODE="0666"
+      register: udev_rules
+      when: enable_gpu_passthrough | bool
+
+    - name: Reload udev rules on Proxmox host
+      ansible.builtin.command: "{{ item }}"
+      loop:
+        - udevadm control --reload-rules
+        - udevadm trigger
+      when: enable_gpu_passthrough | bool and udev_rules.changed
+
+    - name: Configure LXC container GPU cgroups and bind mounts
+      ansible.builtin.blockinfile:
+        path: "/etc/pve/lxc/{{ container_vm_id }}.conf"
+        marker: "# {mark} ANSIBLE MANAGED NVIDIA GPU PASSTHROUGH"
+        block: |
+          lxc.cgroup2.devices.allow: c 195:* rwm
+          lxc.cgroup2.devices.allow: c 234:* rwm
+          lxc.cgroup2.devices.allow: c 238:* rwm
+          lxc.cgroup2.devices.allow: c 239:* rwm
+          lxc.cgroup2.devices.allow: c 240:* rwm
+          lxc.cgroup2.devices.allow: c 241:* rwm
+          lxc.cgroup2.devices.allow: c 242:* rwm
+          lxc.cgroup2.devices.allow: c 508:* rwm
+          lxc.cgroup2.devices.allow: c 510:* rwm
+          lxc.cgroup2.devices.allow: c 511:* rwm
+          lxc.cgroup2.devices.allow: c 10:200 rwm
+          lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file
+          lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file
+          lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file
+          lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,optional,create=file
+          lxc.mount.entry: /dev/nvidia-modeset dev/nvidia-modeset none bind,optional,create=file
+      register: lxc_conf
+      when: enable_gpu_passthrough | bool
+
+    - name: Restart LXC container to apply GPU devices
+      ansible.builtin.shell:
+        cmd: "pct stop {{ container_vm_id }} || true; sleep 3; pct start {{ container_vm_id }}"
+      when: enable_gpu_passthrough | bool and lxc_conf.changed
+
+    - name: Wait for LXC container SSH to become reachable
+      ansible.builtin.wait_for:
+        host: "{{ hostvars['k8s_node']['ansible_host'] | default(container_ip) }}"
+        port: 22
+        timeout: 90
+        delay: 5
+
+
+# ==============================================================================
+# PLAY 2: K3S CONTAINER - SYSTEM SETUP, K3S CLUSTER, GPU & GITOPS
+# ==============================================================================
+- name: "K3s Node: Bootstrap System, K3s, GPU Toolkit, and GitOps"
+  hosts: k3s_node
+  gather_facts: true
+  tags: [k3s, node_setup]
+  tasks:
+    # --------------------------------------------------------------------------
+    # 1. System Prerequisites & LXC tweaks
+    # --------------------------------------------------------------------------
+    - name: Install essential OS packages
+      ansible.builtin.apt:
+        name:
+          - curl
+          - git
+          - iptables
+          - ethtool
+          - wget
+          - gpg
+          - gnupg
+        state: present
+        update_cache: yes
+
+    - name: Enable IPv4 forwarding sysctl
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        state: present
+        reload: yes
+      ignore_errors: yes
+
+    - name: Set iptables default FORWARD policy to ACCEPT
+      ansible.builtin.iptables:
+        chain: FORWARD
+        policy: ACCEPT
+
+    - name: Setup LXC compatibility symlinks (/dev/kmsg & /sbin/modprobe)
+      ansible.builtin.file:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        state: link
+        force: yes
+      loop:
+        - { src: '/dev/null', dest: '/dev/kmsg' }
+        - { src: '/bin/true', dest: '/sbin/modprobe' }
+
+    - name: Ensure K3s config directory exists
+      ansible.builtin.file:
+        path: /etc/rancher/k3s
+        state: directory
+        mode: '0755'
+
+    - name: Create K3s server configuration (/etc/rancher/k3s/config.yaml)
+      ansible.builtin.copy:
+        dest: /etc/rancher/k3s/config.yaml
+        mode: '0644'
+        content: |
+          disable:
+            - traefik
+          write-kubeconfig-mode: "0644"
+          flannel-backend: "host-gw"
+          kubelet-arg:
+            - "protect-kernel-defaults=false"
+
+    - name: Create systemd override directory for K3s LXC compatibility
+      ansible.builtin.file:
+        path: /etc/systemd/system/k3s.service.d
+        state: directory
+        mode: '0755'
+
+    - name: Create K3s systemd drop-in (/etc/systemd/system/k3s.service.d/lxc-fix.conf)
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/k3s.service.d/lxc-fix.conf
+        mode: '0644'
+        content: |
+          [Service]
+          ExecStartPre=+/bin/mount -o remount,rw /proc/sys
+          ExecStartPre=+/bin/sh -c 'ln -sf /dev/null /dev/kmsg'
+      register: k3s_dropin
+
+    - name: Reload systemd daemon
+      ansible.builtin.systemd:
+        daemon_reload: yes
+      when: k3s_dropin.changed
+
+    # --------------------------------------------------------------------------
+    # 2. K3s Installation & Verification
+    # --------------------------------------------------------------------------
+    - name: Install K3s server
+      ansible.builtin.shell:
+        cmd: "curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION={{ k3s_version }} sh -"
+        creates: /usr/local/bin/k3s
+
+    - name: Create /usr/bin symlinks for k3s and kubectl
+      ansible.builtin.file:
+        src: /usr/local/bin/k3s
+        dest: "{{ item }}"
+        state: link
+        force: yes
+      loop:
+        - /usr/bin/k3s
+        - /usr/bin/kubectl
+
+    - name: Disable eth0 checksum offload for flannel host-gw
+      ansible.builtin.command: ethtool -K eth0 tx off rx off
+      ignore_errors: yes
+
+    - name: Configure KUBECONFIG environment variable in /root/.bashrc
+      ansible.builtin.lineinfile:
+        path: /root/.bashrc
+        line: "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
+        state: present
+
+    - name: Wait for K3s node to become Ready
+      ansible.builtin.shell:
+        cmd: "/usr/local/bin/k3s kubectl get nodes --no-headers"
+      register: k3s_nodes
+      until: "'Ready' in k3s_nodes.stdout"
+      retries: 30
+      delay: 5
+      changed_when: false
+
+    # --------------------------------------------------------------------------
+    # 3. NVIDIA Container Toolkit & GPU CDI configuration
+    # --------------------------------------------------------------------------
+    - name: Setup NVIDIA user-space libraries and Container Toolkit
+      when: enable_gpu_passthrough | bool
+      tags: [gpu_container]
+      block:
+        - name: Check if nvidia-smi is already functional inside container
+          ansible.builtin.command: nvidia-smi
+          register: container_nvidia_smi
+          failed_when: false
+          changed_when: false
+
+        - name: Download matching NVIDIA installer if needed
+          when: container_nvidia_smi.rc != 0
+          block:
+            - name: Get host driver version
+              ansible.builtin.set_fact:
+                target_driver_ver: "{{ hostvars['pve_node']['host_driver_version']['stdout'] | default('550.120') }}"
+
+            - name: Download NVIDIA .run installer
+              ansible.builtin.get_url:
+                url: "https://us.download.nvidia.com/XFree86/Linux-x86_64/{{ target_driver_ver }}/NVIDIA-Linux-x86_64-{{ target_driver_ver }}.run"
+                dest: /tmp/nvidia-installer.run
+                mode: '0755'
+
+            - name: Install user-space NVIDIA libraries (--no-kernel-module)
+              ansible.builtin.shell:
+                cmd: "/tmp/nvidia-installer.run --no-kernel-module -s --no-questions && ldconfig"
+              register: nvidia_install
+              changed_when: true
+
+            - name: Cleanup installer
+              ansible.builtin.file:
+                path: /tmp/nvidia-installer.run
+                state: absent
+
+        - name: Add NVIDIA Container Toolkit repository keyring
+          ansible.builtin.shell:
+            cmd: |
+              mkdir -p /usr/share/keyrings
+              curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+            creates: /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+
+        - name: Add NVIDIA Container Toolkit apt repository
+          ansible.builtin.copy:
+            dest: /etc/apt/sources.list.d/nvidia-container-toolkit.list
+            mode: '0644'
+            content: "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/stable/deb/amd64 /\n"
+
+        - name: Install nvidia-container-toolkit package
+          ansible.builtin.apt:
+            name: nvidia-container-toolkit
+            state: present
+            update_cache: yes
+
+        - name: Create CDI directories
+          ansible.builtin.file:
+            path: "{{ item }}"
+            state: directory
+            mode: '0755'
+          loop:
+            - /etc/cdi
+            - /var/run/cdi
+            - /var/lib/rancher/k3s/agent/etc/containerd
+
+        - name: Generate NVIDIA CDI specifications
+          ansible.builtin.command: "{{ item }}"
+          loop:
+            - nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
+            - nvidia-ctk cdi generate --output=/var/run/cdi/nvidia.yaml
+          changed_when: true
+
+        - name: Configure containerd template for K3s with NVIDIA runtime
+          ansible.builtin.shell:
+            cmd: |
+              cp -f /var/lib/rancher/k3s/agent/etc/containerd/config.toml /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl 2>/dev/null || true
+              nvidia-ctk runtime configure --runtime=containerd --config=/var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
+          changed_when: true
+
+        - name: Restart K3s to apply containerd NVIDIA runtime
+          ansible.builtin.systemd:
+            name: k3s
+            state: restarted
+
+        - name: Wait for K3s node after restart
+          ansible.builtin.shell:
+            cmd: "/usr/local/bin/k3s kubectl get nodes --no-headers"
+          register: k3s_nodes_post_gpu
+          until: "'Ready' in k3s_nodes_post_gpu.stdout"
+          retries: 20
+          delay: 5
+          changed_when: false
+
+        - name: Label K3s node with nvidia.com/gpu.present=true
+          ansible.builtin.command: "/usr/local/bin/k3s kubectl label nodes --all nvidia.com/gpu.present=true --overwrite"
+          changed_when: false
+
+        - name: Verify nvidia-smi inside container
+          ansible.builtin.command: nvidia-smi
+          register: final_nvidia_smi
+          changed_when: false
+
+    # --------------------------------------------------------------------------
+    # 4. Kubernetes Namespaces & Argo CD Setup
+    # --------------------------------------------------------------------------
+    - name: Create Kubernetes namespaces (apps, infra, argocd)
+      ansible.builtin.shell:
+        cmd: "/usr/local/bin/k3s kubectl create namespace {{ item }} --dry-run=client -o yaml | /usr/local/bin/k3s kubectl apply -f -"
+      loop:
+        - apps
+        - infra
+        - argocd
+      changed_when: false
+
+    - name: Install Argo CD via official manifests
+      ansible.builtin.command: "/usr/local/bin/k3s kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml"
+      changed_when: false
+
+    - name: Wait for Argo CD service to exist
+      ansible.builtin.command: "/usr/local/bin/k3s kubectl get svc argocd-server -n argocd"
+      register: argocd_svc
+      until: argocd_svc.rc == 0
+      retries: 30
+      delay: 3
+      changed_when: false
+
+    - name: Patch Argo CD server service to NodePort (30080 / 30443)
+      ansible.builtin.command: >
+        /usr/local/bin/k3s kubectl patch svc argocd-server -n argocd -p
+        '{"spec": {"type": "NodePort", "ports": [{"name": "http", "port": 80, "targetPort": 8080, "nodePort": 30080}, {"name": "https", "port": 443, "targetPort": 8083, "nodePort": 30443}]}}'
+      changed_when: false
+
+    # --------------------------------------------------------------------------
+    # 5. Cloudflare Tunnel Deployment (if token provided)
+    # --------------------------------------------------------------------------
+    - name: Deploy Cloudflare Tunnel (cloudflared)
+      when: cloudflare_tunnel_token != ""
+      ansible.builtin.shell:
+        cmd: |
+          cat <<EOF | /usr/local/bin/k3s kubectl apply -f -
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: cloudflared
+            namespace: infra
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: cloudflared
+            template:
+              metadata:
+                labels:
+                  app: cloudflared
+              spec:
+                containers:
+                - name: cloudflared
+                  image: cloudflare/cloudflared:latest
+                  args:
+                  - tunnel
+                  - --no-autoupdate
+                  - run
+                  - --token
+                  - {{ cloudflare_tunnel_token }}
+                  resources:
+                    requests:
+                      cpu: 50m
+                      memory: 64Mi
+                    limits:
+                      cpu: 100m
+                      memory: 128Mi
+          EOF
+      changed_when: true
+
+    # --------------------------------------------------------------------------
+    # 6. GitHub Private Repo Secret & GitOps Root Application
+    # --------------------------------------------------------------------------
+    - name: Configure GitHub private repository secret in Argo CD
+      when: github_repo_password != ""
+      ansible.builtin.shell:
+        cmd: |
+          cat <<EOF | /usr/local/bin/k3s kubectl apply -f -
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: repo-github-private
+            namespace: argocd
+            labels:
+              argocd.argoproj.io/secret-type: repository
+          stringData:
+            type: git
+            url: {{ github_repo_url }}
+            username: {{ github_repo_username }}
+            password: {{ github_repo_password }}
+          EOF
+      changed_when: true
+
+    - name: Wait for Argo CD Application CRD
+      ansible.builtin.command: "/usr/local/bin/k3s kubectl get crd applications.argoproj.io"
+      register: app_crd
+      until: app_crd.rc == 0
+      retries: 30
+      delay: 3
+      changed_when: false
+
+    - name: Register Root GitOps Application (platform-apps)
+      ansible.builtin.shell:
+        cmd: |
+          cat <<EOF | /usr/local/bin/k3s kubectl apply -f -
+          apiVersion: argoproj.io/v1alpha1
+          kind: Application
+          metadata:
+            name: platform-apps
+            namespace: argocd
+            finalizers:
+              - resources-finalizer.argocd.argoproj.io
+          spec:
+            project: default
+            source:
+              repoURL: '{{ github_repo_url }}'
+              targetRevision: HEAD
+              path: 'infra/argocd'
+            destination:
+              server: 'https://kubernetes.default.svc'
+              namespace: 'argocd'
+            syncPolicy:
+              automated:
+                prune: true
+                selfHeal: true
+          EOF
+      changed_when: true

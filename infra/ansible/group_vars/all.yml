@@ -1,0 +1,21 @@
+---
+# ==========================================
+# Proxmox & LXC Configuration
+# ==========================================
+container_vm_id: 400
+container_hostname: "k8s-platform-01"
+container_ip: "192.168.0.200"
+enable_gpu_passthrough: true
+
+# ==========================================
+# K3s & Containerd
+# ==========================================
+k3s_version: "v1.28.9+k3s1"
+
+# ==========================================
+# GitOps & Application Tokens (override in vault or vars)
+# ==========================================
+cloudflare_tunnel_token: ""
+github_repo_url: "https://github.com/Bmiazek18/Facebook-clone1.git"
+github_repo_username: ""
+github_repo_password: ""
