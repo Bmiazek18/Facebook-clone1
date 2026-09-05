@@ -16,7 +16,7 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": 1,
   "links": [],
   "liveNow": false,
@@ -29,8 +29,131 @@
         "x": 0,
         "y": 0
       },
-      "id": 1,
-      "title": "System Metrics (Prometheus)",
+      "id": 100,
+      "title": "⚡ Microservices Overview & Traffic",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth"
+          },
+          "unit": "reqps"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 1
+      },
+      "id": 101,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(http_server_requests_seconds_count[5m])) by (job)",
+          "legendFormat": "{{job}}",
+          "range": true
+        }
+      ],
+      "title": "HTTP Throughput (req/s)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth"
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 1
+      },
+      "id": 102,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, job))",
+          "legendFormat": "{{job}} (p95)",
+          "range": true
+        }
+      ],
+      "title": "HTTP P95 Latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "lineInterpolation": "smooth"
+          },
+          "unit": "ops"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 1
+      },
+      "id": 103,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])) by (job, status)",
+          "legendFormat": "{{job}} - {{status}}",
+          "range": true
+        }
+      ],
+      "title": "HTTP 5xx Server Errors (rate)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 200,
+      "title": "☕ JVM Runtime & Resource Utilization",
       "type": "row"
     },
     {
@@ -48,12 +171,12 @@
         }
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 7,
+        "w": 8,
         "x": 0,
-        "y": 1
+        "y": 9
       },
-      "id": 2,
+      "id": 201,
       "targets": [
         {
           "datasource": {
@@ -80,16 +203,16 @@
             "drawStyle": "line",
             "lineInterpolation": "smooth"
           },
-          "unit": "ops"
+          "unit": "percentunit"
         }
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 1
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 9
       },
-      "id": 3,
+      "id": 202,
       "targets": [
         {
           "datasource": {
@@ -97,12 +220,48 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(rate(http_server_requests_seconds_count[5m])) by (job)",
-          "legendFormat": "{{job}}",
+          "expr": "process_cpu_usage{job=~\".*\"}",
+          "legendFormat": "{{job}} CPU",
           "range": true
         }
       ],
-      "title": "HTTP Request Rate (5m)",
+      "title": "Process CPU Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth"
+          },
+          "unit": "locale"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 9
+      },
+      "id": 203,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(jvm_threads_live_threads) by (job)",
+          "legendFormat": "{{job}} live threads",
+          "range": true
+        }
+      ],
+      "title": "JVM Active Live Threads",
       "type": "timeseries"
     },
     {
@@ -111,10 +270,104 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 16
       },
-      "id": 4,
-      "title": "Application Logs & Tracing Links",
+      "id": 300,
+      "title": "🗄️ Database & Connection Pool (HikariCP / Cache)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth"
+          },
+          "unit": "locale"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 17
+      },
+      "id": 301,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "editorMode": "code",
+          "expr": "hikaricp_connections_active",
+          "legendFormat": "{{pool}} - {{job}} (Active)",
+          "range": true
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "editorMode": "code",
+          "expr": "hikaricp_connections_max",
+          "legendFormat": "{{pool}} - {{job}} (Max)",
+          "range": true
+        }
+      ],
+      "title": "HikariCP Active vs Max Connections",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth"
+          },
+          "unit": "locale"
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 17
+      },
+      "id": 302,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "editorMode": "code",
+          "expr": "hikaricp_connections_pending",
+          "legendFormat": "{{pool}} - {{job}} (Pending)",
+          "range": true
+        }
+      ],
+      "title": "HikariCP Pending Connection Requests (Bottleneck detector)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 400,
+      "title": "📋 Application Logs & Tracing Links",
       "type": "row"
     },
     {
@@ -126,9 +379,9 @@
         "h": 10,
         "w": 16,
         "x": 0,
-        "y": 10
+        "y": 25
       },
-      "id": 5,
+      "id": 401,
       "targets": [
         {
           "datasource": {
@@ -147,11 +400,11 @@
         "h": 10,
         "w": 8,
         "x": 16,
-        "y": 10
+        "y": 25
       },
-      "id": 6,
+      "id": 402,
       "options": {
-        "content": "### 🛠️ Observability Control Panel\n\nThis dashboard consolidates system observability:\n\n*   **Logs:** The Loki panel on the left shows real-time logs. Clicking on any log containing a `trace_id` will display a link to jump directly into **Jaeger** to inspect the trace!\n*   **Traces:** Open [Jaeger UI](http://localhost:16686) to search and visualize gRPC and HTTP distributed traces.\n*   **Errors (Sentry/GlitchTip):** Open [GlitchTip Console](http://localhost:8075) to view tracked exceptions, errors, stack traces, and release health metrics for the backend and frontend services.\n"
+        "content": "### 🛠️ Observability Control Panel\n\nThis dashboard consolidates system observability:\n\n*   **Logs:** The Loki panel on the left shows real-time logs with automatic `trace_id` correlation links.\n*   **Traces (OpenTelemetry):** Click any trace link or open [Jaeger UI](http://localhost:16686) to inspect end-to-end distributed spans.\n*   **Errors (Sentry/GlitchTip):** Open [GlitchTip Console](http://localhost:8075) for exception stack traces and release tracking.\n*   **Prometheus Alerting:** High 5xx rate and connection pool saturation trigger instant alerts.\n"
       },
       "title": "Diagnostics & Quick Links",
       "type": "markdown"
@@ -159,7 +412,7 @@
   ],
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["system", "observability"],
+  "tags": ["system", "observability", "jvm", "postgres", "opentelemetry"],
   "time": {
     "from": "now-1h",
     "to": "now"
@@ -167,5 +420,6 @@
   "timepicker": {},
   "timezone": "",
   "title": "System Observability Dashboard",
-  "version": 1
+  "version": 2
 }
+
