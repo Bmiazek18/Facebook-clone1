@@ -178,9 +178,9 @@ const inviteUserToCall = async (user: ContactItem) => {
         name: groupMembers.filter(m => m.id !== currentUserId).map(m => m.name).join(', ') || 'Grupa wideo',
         avatarUrl: '/default-avatar.png',
         groupMembers: groupMembers as any,
-        lastMessage: 'Trwa rozmowa grupowa',
-        unreadCount: 0,
-        createdAt: new Date().toISOString()
+        unread: false,
+        isActive: true,
+        timeAgo: 'Teraz',
       }
       conversationsStore.chats.unshift(existingChat)
     } else {
