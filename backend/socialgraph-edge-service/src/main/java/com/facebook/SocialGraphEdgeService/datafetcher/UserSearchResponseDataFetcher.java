@@ -10,6 +10,12 @@ import com.netflix.graphql.dgs.DgsData;
 import com.netflix.graphql.dgs.DgsEntityFetcher;
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
 import com.netflix.graphql.dgs.InputArgument;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryRegistry;
+import io.github.resilience4j.bulkhead.Bulkhead;
+import io.github.resilience4j.bulkhead.BulkheadRegistry;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +29,19 @@ public class UserSearchResponseDataFetcher {
 
     @GrpcClient("social-graph-service")
     private SocialGraphGrpcServiceGrpc.SocialGraphGrpcServiceBlockingStub socialGraphGrpcStub;
+
+    private final CircuitBreakerRegistry circuitBreakerRegistry;
+    private final RetryRegistry retryRegistry;
+    private final BulkheadRegistry bulkheadRegistry;
+
+    public UserSearchResponseDataFetcher(
+            CircuitBreakerRegistry circuitBreakerRegistry,
+            RetryRegistry retryRegistry,
+            BulkheadRegistry bulkheadRegistry) {
+        this.circuitBreakerRegistry = circuitBreakerRegistry;
+        this.retryRegistry = retryRegistry;
+        this.bulkheadRegistry = bulkheadRegistry;
+    }
 
     // 1. Zamiast "UserSearchResponse" używamy bezpiecznej stałej
     @DgsEntityFetcher(name = DgsConstants.USERSEARCHRESPONSE.TYPE_NAME)
@@ -55,18 +74,27 @@ public class UserSearchResponseDataFetcher {
         }
 
         try {
-            var response = socialGraphGrpcStub.getRelations(GetRelationsRequest.newBuilder()
-                    .setUserId(currentUserId)
-                    .addTargetUserIds(idStr)
-                    .build());
+            return executeWithResilience(() -> {
+                var response = socialGraphGrpcStub.getRelations(GetRelationsRequest.newBuilder()
+                        .setUserId(currentUserId)
+                        .addTargetUserIds(idStr)
+                        .build());
 
-            if (response.getRelationsCount() > 0) {
-                return response.getRelations(0).getMutualFriendsCount();
-            }
+                if (response.getRelationsCount() > 0) {
+                    return response.getRelations(0).getMutualFriendsCount();
+                }
+                return 0;
+            });
         } catch (Exception e) {
             log.error("Failed to fetch relations for mutualFriendsCount, target: {}, current: {}", idStr, currentUserId, e);
+            return 0;
         }
+    }
 
-        return 0;
+    private <T> T executeWithResilience(java.util.function.Supplier<T> action) {
+        CircuitBreaker cb = circuitBreakerRegistry.circuitBreaker("socialGraphService");
+        Retry retry = retryRegistry.retry("socialGraphService");
+        Bulkhead bulkhead = bulkheadRegistry.bulkhead("socialGraphService");
+        return CircuitBreaker.decorateSupplier(cb, Retry.decorateSupplier(retry, Bulkhead.decorateSupplier(bulkhead, action))).get();
     }
 }
