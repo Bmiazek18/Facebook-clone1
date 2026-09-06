@@ -158,7 +158,7 @@ body {
 .border-theme-secondary {
   border-color: var(--color-border-primary);
 }
-.hover\\:bg-theme-primary-subtle-hover:hover {
+.hover\:bg-theme-primary-subtle-hover:hover {
   background-color: var(--color-primary-subtle-hover);
 }
 .border-theme-primary {
