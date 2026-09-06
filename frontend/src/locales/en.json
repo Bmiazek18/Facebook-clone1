@@ -141,7 +141,24 @@
     "selectGif": "Select GIF",
     "editImage": "Edit image",
     "editVideo": "Edit video",
-    "feelingActivity": "Feeling/Activity"
+    "feelingActivity": "Feeling/Activity",
+    "photoVideo": "Photo/video",
+    "tagFriends": "Tag friends",
+    "location": "Location",
+    "cannotAddContentBgGif": "Cannot add this item to a post with a background or GIF",
+    "cannotAddContentBgImage": "Cannot add a GIF to a post with an image or background",
+    "publishing": "Publishing...",
+    "anonymousPost": "Anonymous post",
+    "anonymousUser": "Anonymous participant",
+    "createPoll": "Create a poll",
+    "pollOption": "Option",
+    "addOption": "Add option",
+    "eventDateFallback": "Event",
+    "interesujeSie": "Interested",
+    "likedByYouAndOneOther": "You and 1 other",
+    "writeComment": "Write a comment...",
+    "writeSomethingTo": "Write something to {name}...",
+    "writeText": "Enter text"
   },
   "poll": {
     "totalVotes": "1 vote | {count} votes"
@@ -172,12 +189,12 @@
     "editProfileImage": "Edit profile image",
     "info": {
       "overview": "Overview",
-      "work_edu": "Work and Education",
+      "work_edu": "Work and education",
       "places": "Places Lived",
       "contact_basic": "Contact and Basic Info",
-      "family": "Family and Relationships",
-      "details": "Details About You",
-      "events": "Life Events",
+      "family": "Family and relationships",
+      "details": "Details about you",
+      "events": "Life events",
       "details_about": "Details About {name}",
       "relationship": "Relationship",
       "status": {
@@ -254,7 +271,10 @@
       "editHighSchool": "Edit high school",
       "removeHighSchool": "Remove high school",
       "school": "School",
-      "addHighSchool": "Add high school"
+      "addHighSchool": "Add high school",
+      "directory_personal_details": "Details about you",
+      "education": "Education",
+      "hobby": "Hobbies and interests"
     },
     "tabs": {
       "posts": "Posts",
@@ -626,7 +646,14 @@
     "searchingCameras": "Searching for cameras...",
     "searchingMicrophones": "Searching for microphones...",
     "refreshList": "Refresh list",
-    "stopScreenSharing": "Stop screen sharing"
+    "stopScreenSharing": "Stop screen sharing",
+    "noCameraSelected": "No camera selected",
+    "schedule": {
+      "now": "Go live now",
+      "nowDescription": "Start a live broadcast immediately",
+      "later": "Schedule live video event",
+      "laterDescription": "Create an event to let people know when you will be live"
+    }
   },
   "friends": {
     "friends": "Friends",
@@ -637,7 +664,10 @@
     "suggestions": "Suggestions",
     "allFriends": "All friends",
     "birthdays": "Birthdays",
-    "customLists": "Custom lists"
+    "customLists": "Custom lists",
+    "notificationSettings": "Notification settings",
+    "notificationSettingsDesc": "You can decide which friend notifications you want to receive.",
+    "showNotificationDots": "Show notification dots"
   },
   "story": {
     "endOfStory": "End of story",
@@ -648,7 +678,9 @@
     "createStory": "Create story",
     "sharePhotoOrWriteSomething": "Share a photo or write something.",
     "allStories": "All stories",
-    "sendMessage": "Send message..."
+    "sendMessage": "Send message...",
+    "hasBirthday": "has a birthday today",
+    "myStory": "Your story"
   },
   "search": {
     "title": "Search",
@@ -697,6 +729,26 @@
     "groupName": "Group Name",
     "public": "Public group",
     "private": "Private group",
-    "noPosts": "No posts in this group yet."
+    "noPosts": "No posts in this group yet.",
+    "information": "About",
+    "hide": "See less",
+    "seeMore": "See more",
+    "visibility": "Visibility",
+    "visibleDescription": "Anyone can find this group.",
+    "publicDescription": "Anyone can see who's in the group and what they post.",
+    "privateDescription": "Only members can see who's in the group and what they post."
+  },
+  "birthday": {
+    "today": "Today's birthdays",
+    "years": "years old",
+    "happyBirthday": "Happy birthday",
+    "and": "and",
+    "users": "other people"
+  },
+  "events": {
+    "suggestedEvents": {
+      "title": "Suggested events",
+      "interestedButton": "Interested"
+    }
   }
 }

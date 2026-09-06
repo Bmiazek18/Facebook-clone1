@@ -141,7 +141,24 @@
     "selectGif": "Wybierz GIF",
     "editImage": "Edytuj obraz",
     "editVideo": "Edytuj wideo",
-    "feelingActivity": "Nastrój/aktywność"
+    "feelingActivity": "Nastrój/aktywność",
+    "photoVideo": "Zdjęcie/film",
+    "tagFriends": "Oznacz znajomych",
+    "location": "Lokalizacja",
+    "cannotAddContentBgGif": "Nie można dodać tego elementu do posta z tłem lub GIF-em",
+    "cannotAddContentBgImage": "Nie można dodać GIF-a do posta ze zdjęciem lub tłem",
+    "publishing": "Publikowanie...",
+    "anonymousPost": "Post anonimowy",
+    "anonymousUser": "Uczestnik anonimowy",
+    "createPoll": "Dodaj ankietę",
+    "pollOption": "Opcja",
+    "addOption": "Dodaj opcję",
+    "eventDateFallback": "Wydarzenie",
+    "interesujeSie": "Interesuje mnie",
+    "likedByYouAndOneOther": "Ty i 1 inna osoba",
+    "writeComment": "Napisz komentarz...",
+    "writeSomethingTo": "Napisz coś do użytkownika {name}...",
+    "writeText": "Wpisz tekst"
   },
   "poll": {
     "totalVotes": "{count} głosów"
@@ -172,11 +189,11 @@
     "editProfileImage": "Edytuj zdjęcie profilowe",
     "info": {
       "overview": "Prezentacja",
-      "directory_personal_details": "Dane osobiste",
-      "education": "Wyksztalcenie",
+      "directory_personal_details": "Szczegółowe informacje o Tobie",
+      "education": "Wykształcenie",
       "places": "Miejsca zamieszkania",
       "contact_basic": "Dane kontaktowe i podstawowe informacje",
-      "hobby": "Hobby",
+      "hobby": "Hobby i zainteresowania",
       "details_about": "Szczegóły o {name}",
       "relationship": "Związek",
       "status": {
@@ -253,7 +270,11 @@
       "editHighSchool": "Edytuj szkołę średnią",
       "removeHighSchool": "Usuń szkołę średnią",
       "school": "Szkoła",
-      "addHighSchool": "Dodaj szkołę średnią"
+      "addHighSchool": "Dodaj szkołę średnią",
+      "details": "Szczegółowe informacje o Tobie",
+      "events": "Wydarzenia z życia",
+      "family": "Rodzina i związki",
+      "work_edu": "Praca i wykształcenie"
     },
     "tabs": {
       "posts": "Posty",
@@ -625,7 +646,14 @@
     "searchingCameras": "Szukanie kamer...",
     "searchingMicrophones": "Szukanie mikrofonów...",
     "refreshList": "Odśwież listę",
-    "stopScreenSharing": "Zatrzymaj udostępnianie ekranu"
+    "stopScreenSharing": "Zatrzymaj udostępnianie ekranu",
+    "noCameraSelected": "Nie wybrano kamery",
+    "schedule": {
+      "now": "Rozpocznij transmisję teraz",
+      "nowDescription": "Rozpocznij transmisję na żywo natychmiast",
+      "later": "Zaplanuj wydarzenie wideo na żywo",
+      "laterDescription": "Utwórz wydarzenie, aby poinformować odbiorców o nadchodzącej transmisji"
+    }
   },
   "friends": {
     "friends": "Znajomi",
@@ -636,7 +664,10 @@
     "suggestions": "Propozycje",
     "allFriends": "Wszyscy znajomi",
     "birthdays": "Urodziny",
-    "customLists": "Listy niestandardowe"
+    "customLists": "Listy niestandardowe",
+    "notificationSettings": "Ustawienia powiadomień",
+    "notificationSettingsDesc": "Możesz zdecydować, które powiadomienia o znajomych chcesz otrzymywać.",
+    "showNotificationDots": "Pokaż kropki powiadomień"
   },
   "story": {
     "endOfStory": "Koniec relacji",
@@ -644,11 +675,12 @@
     "archive": "Archiwum",
     "settings": "Ustawienia",
     "yourStory": "Twoja relacja",
-    "myStory": "Moja relacja",
+    "myStory": "Twoja relacja",
     "createStory": "Utwórz relację",
     "sharePhotoOrWriteSomething": "Udostępnij zdjęcie lub coś napisz.",
     "allStories": "Wszystkie relacje",
-    "sendMessage": "Wyślij wiadomość..."
+    "sendMessage": "Wyślij wiadomość...",
+    "hasBirthday": "ma dziś urodziny"
   },
   "search": {
     "title": "Wyszukiwanie",
@@ -697,6 +729,26 @@
     "groupName": "Nazwa grupy",
     "public": "Grupa publiczna",
     "private": "Grupa prywatna",
-    "noPosts": "Brak postów w tej grupie."
+    "noPosts": "Brak postów w tej grupie.",
+    "information": "Informacje",
+    "hide": "Ukryj",
+    "seeMore": "Zobacz więcej",
+    "visibility": "Widoczność",
+    "visibleDescription": "Każdy może znaleźć tę grupę.",
+    "publicDescription": "Każdy może zobaczyć, kto należy do grupy i co publikuje.",
+    "privateDescription": "Tylko członkowie mogą zobaczyć, kto należy do grupy i co publikuje."
+  },
+  "birthday": {
+    "today": "Dzisiejsze urodziny",
+    "years": "lat",
+    "happyBirthday": "Wszystkiego najlepszego",
+    "and": "i",
+    "users": "innych osób"
+  },
+  "events": {
+    "suggestedEvents": {
+      "title": "Sugerowane wydarzenia",
+      "interestedButton": "Wezmę udział"
+    }
   }
 }
