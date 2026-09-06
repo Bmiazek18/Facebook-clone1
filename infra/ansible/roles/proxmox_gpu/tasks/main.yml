@@ -23,14 +23,7 @@
     content: |
       KERNEL=="nvidia*", MODE="0666"
       KERNEL=="nvidia-uvm*", MODE="0666"
-  register: udev_rules
-
-- name: Reload udev rules on Proxmox host
-  ansible.builtin.command: "{{ item }}"
-  loop:
-    - udevadm control --reload-rules
-    - udevadm trigger
-  when: udev_rules.changed
+  notify: Reload udev rules
 
 - name: Configure LXC container GPU cgroups and bind mounts
   ansible.builtin.blockinfile:
@@ -53,12 +46,10 @@
       lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file
       lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,optional,create=file
       lxc.mount.entry: /dev/nvidia-modeset dev/nvidia-modeset none bind,optional,create=file
-  register: lxc_conf
+  notify: Restart LXC container
 
-- name: Restart LXC container to apply GPU devices
-  ansible.builtin.shell:
-    cmd: "pct stop {{ container_vm_id }} || true; sleep 3; pct start {{ container_vm_id }}"
-  when: lxc_conf.changed
+- name: Flush handlers to apply GPU configuration immediately if needed
+  ansible.builtin.meta: flush_handlers
 
 - name: Wait for LXC container SSH to become reachable
   ansible.builtin.wait_for:

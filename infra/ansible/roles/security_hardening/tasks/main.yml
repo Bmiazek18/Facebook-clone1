@@ -1,0 +1,53 @@
+---
+- name: Ensure journald override directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/journald.conf.d
+    state: directory
+    mode: '0755'
+
+- name: Configure systemd-journald log size limits (500M cap)
+  ansible.builtin.copy:
+    dest: /etc/systemd/journald.conf.d/00-journal-size.conf
+    mode: '0644'
+    content: |
+      [Journal]
+      SystemMaxUse={{ journald_max_use }}
+      SystemMaxFileSize={{ journald_max_file_size }}
+      RuntimeMaxUse=100M
+  notify: Restart journald
+
+- name: Apply high-performance database & kernel sysctl settings
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: yes
+  loop: "{{ sysctl_hardening_settings }}"
+  ignore_errors: yes
+
+- name: Setup Fail2ban SSH brute-force defense
+  when: enable_fail2ban | bool
+  block:
+    - name: Install fail2ban
+      ansible.builtin.apt:
+        name: fail2ban
+        state: present
+        update_cache: yes
+
+    - name: Configure fail2ban jail.local for SSH
+      ansible.builtin.copy:
+        dest: /etc/fail2ban/jail.local
+        mode: '0644'
+        content: |
+          [DEFAULT]
+          bantime = {{ fail2ban_bantime }}
+          findtime = {{ fail2ban_findtime }}
+          maxretry = {{ fail2ban_maxretry }}
+          backend = systemd
+
+          [sshd]
+          enabled = true
+          port = ssh
+          filter = sshd
+          logpath = %(sshd_log)s
+      notify: Restart fail2ban

@@ -23,6 +23,14 @@
     '{"spec": {"type": "NodePort", "ports": [{"name": "http", "port": 80, "targetPort": 8080, "nodePort": {{ argocd_http_nodeport }}}, {"name": "https", "port": 443, "targetPort": 8083, "nodePort": {{ argocd_https_nodeport }}}]}}'
   changed_when: false
 
+- name: Configure GitHub Webhook Secret in Argo CD for instant sync (<0.5s)
+  when: github_webhook_secret != ""
+  ansible.builtin.shell:
+    cmd: >
+      /usr/local/bin/k3s kubectl patch secret argocd-secret -n argocd -p
+      '{"stringData": {"webhook.github.secret": "{{ github_webhook_secret }}"}}'
+  changed_when: false
+
 - name: Deploy Cloudflare Tunnel (cloudflared)
   when: cloudflare_tunnel_token != ""
   ansible.builtin.shell:

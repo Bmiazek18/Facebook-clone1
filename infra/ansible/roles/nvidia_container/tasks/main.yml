@@ -70,21 +70,10 @@
     cmd: |
       cp -f /var/lib/rancher/k3s/agent/etc/containerd/config.toml /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl 2>/dev/null || true
       nvidia-ctk runtime configure --runtime=containerd --config=/var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
-  changed_when: true
+  notify: Restart k3s
 
-- name: Restart K3s to apply containerd NVIDIA runtime
-  ansible.builtin.systemd:
-    name: k3s
-    state: restarted
-
-- name: Wait for K3s node after restart
-  ansible.builtin.shell:
-    cmd: "/usr/local/bin/k3s kubectl get nodes --no-headers"
-  register: k3s_nodes_post_gpu
-  until: "'Ready' in k3s_nodes_post_gpu.stdout"
-  retries: 20
-  delay: 5
-  changed_when: false
+- name: Flush handlers before labeling node
+  ansible.builtin.meta: flush_handlers
 
 - name: Label K3s node with nvidia.com/gpu.present=true
   ansible.builtin.command: "/usr/local/bin/k3s kubectl label nodes --all nvidia.com/gpu.present=true --overwrite"

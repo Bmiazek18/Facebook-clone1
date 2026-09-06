@@ -16,6 +16,7 @@
       flannel-backend: "{{ k3s_flannel_backend }}"
       kubelet-arg:
         - "protect-kernel-defaults=false"
+  notify: Restart k3s
 
 - name: Create systemd override directory for K3s LXC compatibility
   ansible.builtin.file:
@@ -31,12 +32,9 @@
       [Service]
       ExecStartPre=+/bin/mount -o remount,rw /proc/sys
       ExecStartPre=+/bin/sh -c 'ln -sf /dev/null /dev/kmsg'
-  register: k3s_dropin
-
-- name: Reload systemd daemon
-  ansible.builtin.systemd:
-    daemon_reload: yes
-  when: k3s_dropin.changed
+  notify:
+    - Reload systemd
+    - Restart k3s
 
 - name: Install K3s server
   ansible.builtin.shell:

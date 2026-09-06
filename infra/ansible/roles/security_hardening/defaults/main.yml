@@ -1,0 +1,18 @@
+---
+# Journald configuration (Limits system logs from eating all container disk space)
+journald_max_use: "500M"
+journald_max_file_size: "50M"
+
+# Fail2ban SSH brute-force protection
+enable_fail2ban: true
+fail2ban_bantime: "1h"
+fail2ban_findtime: "10m"
+fail2ban_maxretry: 3
+
+# High performance sysctl limits for databases (Postgres, ClickHouse, Scylla, Qdrant)
+sysctl_hardening_settings:
+  - { name: "vm.max_map_count", value: "262144" }
+  - { name: "fs.inotify.max_user_watches", value: "524288" }
+  - { name: "fs.inotify.max_user_instances", value: "8192" }
+  - { name: "fs.file-max", value: "2097152" }
+  - { name: "net.core.somaxconn", value: "32768" }

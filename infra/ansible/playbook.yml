@@ -11,14 +11,17 @@
       tags: [proxmox, gpu_host]
 
 # ==============================================================================
-# PLAY 2: K3S CONTAINER - SYSTEM SETUP, K3S CLUSTER, GPU & GITOPS
+# PLAY 2: K3S CONTAINER - SYSTEM SETUP, HARDENING, K3S, GPU & GITOPS
 # ==============================================================================
-- name: "K3s Node: Bootstrap System, K3s, GPU Toolkit, and GitOps"
+- name: "K3s Node: Bootstrap System, Hardening, K3s, GPU Toolkit, and GitOps"
   hosts: k3s_node
   gather_facts: true
   roles:
     - role: system_common
       tags: [system, node_setup]
+
+    - role: security_hardening
+      tags: [security, hardening, node_setup]
 
     - role: k3s_server
       tags: [k3s, node_setup]
