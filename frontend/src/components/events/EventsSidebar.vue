@@ -83,7 +83,7 @@ import HomeOutlineIcon from 'vue-material-design-icons/HomeOutline.vue'
 import DumbbellIcon from 'vue-material-design-icons/Dumbbell.vue'
 import GamepadVariantIcon from 'vue-material-design-icons/GamepadVariant.vue'
 import TheaterIcon from 'vue-material-design-icons/Theater.vue'
-import CreateEventModal from '@/components/events/CreateEventModal.vue'
+import CreateEventModal from '@/components/events/modals/CreateEventModal.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 const props = defineProps({
   not: {

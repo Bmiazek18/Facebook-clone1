@@ -33,7 +33,7 @@ import PagesLiked from '~/components/pages/Liked.vue'
 import PagesInvites from '~/components/pages/Invites.vue'
 import Sidebar from '~/components/common/Sidebar.vue'
 import BaseModal from '~/components/common/BaseModal.vue'
-import SelectOption from '~/components/pages/modal/SelectOption.vue'
+import SelectOption from '@/components/pages/modals/SelectOption.vue'
 
 const route = useRoute()
 const currentView = computed(() => route.query.category || route.query.tab || 'top')

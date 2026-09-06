@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useStoriesStore } from '@/composables/feed/useAppState'
 import ProfilePopper from '@/components/profile/ProfilePopper.vue'
 import BaseModal from './BaseModal.vue';
-import NotesModal from '../profile/NotesModal.vue';
+import NotesModal from '@/components/profile/modals/NotesModal.vue';
 
 const props = defineProps<{
   user: {

@@ -2,7 +2,7 @@ import * as fabric from 'fabric'
 import type { Ref } from 'vue'
 import { getMediaUrl } from '@/utils/stories'
 import type { PostData, ReelData, BackgroundSettings } from '@/types/StoryElement'
-import type { MusicTrack } from '@/components/create/createStory/MusicModal.vue'
+import type { MusicTrack } from '@/components/create/createStory/modals/MusicModal.vue'
 import type { CustomFabricObject } from './useStoryFabricControls'
 
 interface StoryDimensions {

@@ -11,7 +11,7 @@ import CommentFilter from '@/components/profile/CommentFilter.vue'
 import { getUserById } from '@/utils/users'
 import { useLinkModal } from '@/composables/ui/useLinkModal'
 import BaseModal from '../../common/BaseModal.vue'
-import LinkModal from '../LinkModal.vue'
+import LinkModal from '../modals/LinkModal.vue'
 import { useComments } from '@/composables/feed/useComments'
 
 // Import szkieletu komentarzy

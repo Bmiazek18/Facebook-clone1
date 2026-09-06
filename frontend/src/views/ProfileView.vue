@@ -7,9 +7,9 @@ import { usersApi } from '@/api/users'
 // --- IMPORTY KOMPONENTÓW ---
 import ImageWithGradient from '@/components/media/ImageWithGradient.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
-import EditProfileImgModal from '@/components/profile/EditProfileImgModal.vue'
+import EditProfileImgModal from '@/components/profile/modals/EditProfileImgModal.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
-import SelectProfileImgModal from '~/components/profile/SelectProfileImgModal.vue'
+import SelectProfileImgModal from '@/components/profile/modals/SelectProfileImgModal.vue'
 // --- IMPORTY IKON (Vue Material Design Icons) ---
 import MapMarker from 'vue-material-design-icons/MapMarker.vue'
 import Domain from 'vue-material-design-icons/Domain.vue'

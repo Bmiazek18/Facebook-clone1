@@ -13,7 +13,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useStoriesStore } from '@/composables/feed/useAppState'
 import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue'
 import StoryMusicElement from './StoryElements/StoryMusicElement.vue'
-import MusicModal, { type MusicTrack } from './MusicModal.vue'
+import MusicModal, { type MusicTrack } from './modals/MusicModal.vue'
 
 // --- EMIT ---
 const emit = defineEmits<{

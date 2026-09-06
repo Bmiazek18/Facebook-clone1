@@ -106,7 +106,7 @@ import PencilOutline from 'vue-material-design-icons/PencilOutline.vue'
 
 // Import Twoich komponentów modali
 import BaseModal from '@/components/common/BaseModal.vue'
-import BirthdayModal from './BirthdayModal.vue' // <-- Komponent z poprzedniego kroku
+import BirthdayModal from './modals/BirthdayModal.vue' // <-- Komponent z poprzedniego kroku
 
 const props = defineProps<{
   profileUser: any

@@ -150,7 +150,7 @@ import { DatePicker as VDatePicker } from 'v-calendar'
 import 'v-calendar/dist/style.css'
 import { useEventsStore } from '@/stores/events'
 import EventsSidebar from '@/components/events/EventsSidebar.vue'
-import CreateEventModal from '@/components/events/CreateEventModal.vue'
+import CreateEventModal from '@/components/events/modals/CreateEventModal.vue'
 
 /* Ikony */
 import MapMarkerIcon from 'vue-material-design-icons/MapMarker.vue'

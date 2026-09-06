@@ -255,7 +255,7 @@ import ChatMuteModal from '@/components/chat/info/modals/ChatMuteModal.vue'
 import SettingsMenu from './SettingsMenu.vue'
 import E2eeBackup from '~/components/chat/E2eeBackup.vue'
 import BaseModal from '~/components/common/BaseModal.vue'
-import AlertLoginModal from './AlertLoginModal.vue'
+import AlertLoginModal from './modals/AlertLoginModal.vue'
 
 // STORE & TYPES
 import { useConversationsStore } from '@/stores/conversations'

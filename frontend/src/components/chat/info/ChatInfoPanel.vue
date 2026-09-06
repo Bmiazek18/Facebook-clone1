@@ -283,7 +283,7 @@ import MessageSearch from '@/components/chat/info/MessageSearch.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import MessangerTheme from '@/components/chat/shared/MessangerTheme.vue'
 import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue'
-import EditNicknamesModal from '@/components/profile/EditNicknamesModal.vue'
+import EditNicknamesModal from '@/components/profile/modals/EditNicknamesModal.vue'
 import AddGroupMemberModal from './modals/AddGroupMemberModal.vue'
 
 // Store & Data

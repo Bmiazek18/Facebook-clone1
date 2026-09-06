@@ -73,7 +73,7 @@ import ProfileIcon from './components/profile/ProfileIcon.vue'
 import FingerprintLoader from './components/common/FingerprintLoader.vue'
 import MessageBox from '@/components/chat/messageBox/index.vue'
 import NewChatBox from '@/components/chat/NewChatBox.vue'
-import IncomingCallModal from '@/components/chat/IncomingCallModal.vue'
+import IncomingCallModal from '@/components/chat/modals/IncomingCallModal.vue'
 import FacebookSplash from '@/components/FacebookSplash.vue'
 
 import 'floating-vue/dist/style.css'

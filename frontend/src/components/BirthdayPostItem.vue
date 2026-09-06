@@ -40,7 +40,7 @@ import { useCommentsStore } from '@/stores/comments'
 import { getUserById } from '@/utils/users'
 import { useLinkModal } from '@/composables/ui/useLinkModal'
 import BaseModal from '@/components/common/BaseModal.vue'
-import LinkModal from '@/components/feed/LinkModal.vue'
+import LinkModal from '@/components/feed/modals/LinkModal.vue'
 import PostItem from './feed/post/PostItem.vue'
 
 const props = withDefaults(

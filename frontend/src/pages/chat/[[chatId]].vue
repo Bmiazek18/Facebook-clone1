@@ -11,7 +11,7 @@ definePageMeta({
 import MessageMenu from '@/components/navbar/MessageMenu.vue'
 import MessageBox from '@/components/chat/messageBox/index.vue'
 import ChatInfoPanel from '@/components/chat/info/ChatInfoPanel.vue'
-import E2eeBackupModal from '@/components/chat/E2eeBackupModal.vue'
+import E2eeBackupModal from '@/components/chat/modals/E2eeBackupModal.vue'
 import { useConversationsStore } from '@/stores/conversations'
 
 const routeProps = withDefaults(defineProps<{ chatId?: string }>(), { chatId: undefined })

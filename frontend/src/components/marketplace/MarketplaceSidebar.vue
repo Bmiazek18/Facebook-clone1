@@ -8,8 +8,8 @@ import Bell from 'vue-material-design-icons/Bell.vue'
 import ChartBar from 'vue-material-design-icons/ChartBar.vue'
 import { useAuthStore } from '~/stores/auth'
 import BaseModal from '../common/BaseModal.vue'
-import SellerModal from './SellerModal.vue'
-import ProfileModal from './ProfileModal.vue'
+import SellerModal from './modals/SellerModal.vue'
+import ProfileModal from './modals/ProfileModal.vue'
 const authStore = useAuthStore()
 const isProfileModalOpen = ref(false)
 

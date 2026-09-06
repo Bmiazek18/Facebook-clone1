@@ -208,7 +208,7 @@ import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue'
 import ChevronUpIcon from 'vue-material-design-icons/ChevronUp.vue'
 import ClockOutlineIcon from 'vue-material-design-icons/ClockOutline.vue'
 
-import CreateAlertDialog from '~/components/marketplace/CreateAlertDialog.vue'
+import CreateAlertDialog from '@/components/marketplace/modals/CreateAlertDialog.vue'
 import BaseModal from '~/components/common/BaseModal.vue'
 
 const isAlertOpen = ref(false)

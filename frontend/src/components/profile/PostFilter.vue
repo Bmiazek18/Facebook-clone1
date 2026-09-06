@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
-import PostFilterModal from './PostFilterModal.vue'
-import ManagePostsModal from './ManagePostsModal.vue' // Dodajemy nowy komponent
+import PostFilterModal from './modals/PostFilterModal.vue'
+import ManagePostsModal from './modals/ManagePostsModal.vue' // Dodajemy nowy komponent
 
 // Define emits
 const emits = defineEmits(['view-changed'])

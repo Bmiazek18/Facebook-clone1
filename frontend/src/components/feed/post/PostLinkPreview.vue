@@ -4,7 +4,7 @@ import type { LinkPreviewData } from '@/types/Post'
 import WebIcon from 'vue-material-design-icons/Web.vue'
 import InformationIcon from 'vue-material-design-icons/Information.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
-import LinkModal from '@/components/feed/LinkModal.vue'
+import LinkModal from '@/components/feed/modals/LinkModal.vue'
 import { useLinkGuard } from '@/composables/shared/useLinkGuard'
 
 const props = defineProps<{

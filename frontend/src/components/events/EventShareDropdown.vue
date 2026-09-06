@@ -68,7 +68,7 @@ import AccountMultipleOutlineIcon from 'vue-material-design-icons/AccountMultipl
 
 import BaseModal from '@/components/common/BaseModal.vue'
 import CreatePost from '@/components/create/createPost/CreateModal.vue'
-import ShareAsMessageModal from '@/components/feed/ShareAsMessageModal.vue'
+import ShareAsMessageModal from '@/components/feed/modals/ShareAsMessageModal.vue'
 import { useNotify } from '@/composables/shared/useNotify'
 import { useGroupsStore } from '@/stores/groups'
 

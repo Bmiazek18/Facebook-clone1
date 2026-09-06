@@ -8,7 +8,7 @@ import MagnifyIcon from 'vue-material-design-icons/Magnify.vue'
 
 // Komponenty zewnętrzne
 import BaseModal from '@/components/common/BaseModal.vue'
-import ShareModal from './ShareModal.vue'
+import ShareModal from './modals/ShareModal.vue'
 import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue'
 import { useConversationsStore } from '@/stores/conversations'
 

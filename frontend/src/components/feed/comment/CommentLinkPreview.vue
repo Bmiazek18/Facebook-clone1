@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import InformationOutline from 'vue-material-design-icons/InformationOutline.vue'
 import type { LinkPreview } from '@/types/Post'
 import BaseModal from '../../common/BaseModal.vue'
-import LinkModal from '../LinkModal.vue'
+import LinkModal from '../modals/LinkModal.vue'
 import { useLinkGuard } from '@/composables/shared/useLinkGuard'
 
 const props = defineProps<{

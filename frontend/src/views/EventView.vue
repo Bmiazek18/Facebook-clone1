@@ -15,7 +15,7 @@ import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue'
 import { useEventsStore } from '@/stores/events'
 import type { Event as EventType } from '@/types/Event'
 import BaseModal from '@/components/common/BaseModal.vue'
-import InviteModal from '@/components/events/InviteModal.vue'
+import InviteModal from '@/components/events/modals/InviteModal.vue'
 import EventShareDropdown from '@/components/events/EventShareDropdown.vue'
 
 const route = useRoute()

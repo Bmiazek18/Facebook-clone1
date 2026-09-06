@@ -7,7 +7,7 @@ import 'floating-vue/dist/style.css'
 
 import BaseModal from '@/components/common/BaseModal.vue'
 import PostModal from './PostModal.vue'
-import ShareAsPostModal from '@/components/feed/ShareAsPostModal.vue'
+import ShareAsPostModal from '@/components/feed/modals/ShareAsPostModal.vue'
 import PostHeader from './PostHeader.vue'
 import PostActions from './PostActions.vue'
 import PostContent from './PostContent.vue'
@@ -49,7 +49,7 @@ const getLifeEventCategory = (category?: string) => {
 }
 
 import type { Post } from '@/types/Post'
-import ShareAsMessageModal from '@/components/feed/ShareAsMessageModal.vue'
+import ShareAsMessageModal from '@/components/feed/modals/ShareAsMessageModal.vue'
 import ReactionPanel from '../ReactionPanel.vue'
 import CommentItem from '../comment/CommentItem.vue'
 import CommentReplyInput from '../comment/CommentReplyInput.vue'

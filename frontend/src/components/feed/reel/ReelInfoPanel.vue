@@ -133,7 +133,7 @@ import CommentItem from '@/components/feed/comment/CommentItem.vue'
 import CommentReplyInput from '../comment/CommentReplyInput.vue'
 import { useLinkModal } from '@/composables/ui/useLinkModal'
 import BaseModal from '@/components/common/BaseModal.vue'
-import LinkModal from '@/components/feed/LinkModal.vue'
+import LinkModal from '@/components/feed/modals/LinkModal.vue'
 import EmptyState from '../comment/EmptyState.vue'
 import { useComments } from '@/composables/feed/useComments'
 

@@ -132,7 +132,7 @@ import CloseBoxOutlineIcon from 'vue-material-design-icons/CloseBoxOutline.vue'
 import TrayArrowDownIcon from 'vue-material-design-icons/TrayArrowDown.vue'
 import AlertBoxOutlineIcon from 'vue-material-design-icons/AlertBoxOutline.vue'
 import BaseModal from '../common/BaseModal.vue'
-import InviteModal from './InviteModal.vue'
+import InviteModal from './modals/InviteModal.vue'
 
 // ==========================================
 // DEDYKOWANE FUNKCJE DLA AKCJI W DROPDOWNACH

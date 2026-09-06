@@ -8,8 +8,8 @@ import type { StoryItem } from '@/types/Story'
 import type { BackgroundSettings, PostData, ReelData } from '@/types/StoryElement'
 
 // --- IMPORT KOMPONENTÓW UI ---
-import MusicModal, { type MusicTrack } from './MusicModal.vue'
-import LinkStickerModal from '@/components/LinkStickerModal.vue'
+import MusicModal, { type MusicTrack } from './modals/MusicModal.vue'
+import LinkStickerModal from '@/components/create/createStory/modals/LinkStickerModal.vue'
 import StorySidebar from './StorySidebar/StorySidebar.vue'
 import ImageToolbar from './ImageToolbar.vue'
 import MusicToolbar from './MusicToolbar.vue'

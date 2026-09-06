@@ -11,7 +11,7 @@ import type {
 import CallSummary from '../components/CallSummary.vue'
 import CallRingingScreen from '@/components/call/CallRingingScreen.vue'
 import CallControlBar from '@/components/call/CallControlBar.vue'
-import AddCallParticipantModal, { type ContactItem } from '@/components/call/AddCallParticipantModal.vue'
+import AddCallParticipantModal, { type ContactItem } from '@/components/call/modals/AddCallParticipantModal.vue'
 import { useVirtualBackground } from '@/composables/call/useVirtualBackground'
 import { useAuthStore } from '@/stores/auth'
 import { useConversationsStore } from '@/stores/conversations'

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue'
-import CustomHoursModal from '@/components/pages/modal/CustomHoursModal.vue'
+import CustomHoursModal from '@/components/pages/modals/CustomHoursModal.vue'
 import BaseModal from '~/components/common/BaseModal.vue'
 import PageCreationStep0 from '@/components/pages/creation/PageCreationStep0.vue'
 import PageCreationStep1 from '@/components/pages/creation/PageCreationStep1.vue'
