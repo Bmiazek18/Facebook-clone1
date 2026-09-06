@@ -29,35 +29,27 @@ const handleCreate = () => {
 <template>
   <div class="flex-1 overflow-y-auto px-4 py-2 custom-scrollbar">
     <div class="text-[13px] text-[#65676B] mb-2 font-medium">
-      <span class="hover:underline cursor-pointer">Strony</span>
+      <span class="hover:underline cursor-pointer">{{ $t('home.pages') }}</span>
       <span class="mx-1.5">›</span>
-      <span class="text-[#65676B]">Utwórz stronę</span>
+      <span class="text-[#65676B]">{{ $t('login.createPage') }}</span>
     </div>
 
-    <h1 class="text-[24px] font-bold leading-tight mb-3 text-[#050505]">
-      Utwórz stronę
-    </h1>
+    <h1 class="text-[24px] font-bold leading-tight mb-3 text-[#050505]">{{ $t('login.createPage') }}</h1>
 
-    <p class="text-[15px] text-[#65676B] leading-snug mb-6">
-      Twoja strona to miejsce, w którym inne osoby chcą dowiedzieć się więcej na Twój temat. Upewnij się, że zawiera ona wszystkie informacje, których mogą potrzebować.
-    </p>
+    <p class="text-[15px] text-[#65676B] leading-snug mb-6">{{ $t('pages.twojaStronaToMiejsce') }}</p>
 
     <div class="mb-4">
       <CustomInput
         v-model="form.pageName"
-        label="Nazwa strony (wymagana)"
+        :label="$t('pages.nazwaStronyWymagana')"
       />
-      <p class="text-[12px] text-[#65676B] mt-1.5 leading-snug">
-        Użyj nazwy swojej firmy, marki lub organizacji albo nazwy objaśniającej tematykę Twojej strony.
-        <a href="#" class="text-[#1877F2] hover:underline">Dowiedz się więcej o nadawaniu nazwy stronie</a>
+      <p class="text-[12px] text-[#65676B] mt-1.5 leading-snug">{{ $t('pages.uzyjNazwySwojejFirmy') }}<a href="#" class="text-[#1877F2] hover:underline">{{ $t('pages.dowiedzSieWiecejO') }}</a>
       </p>
     </div>
 
     <div class="mb-4">
       <div class="relative border border-[#CED0D4] focus-within:border-[#1877F2] focus-within:shadow-[0_0_0_1px_#1877F2] rounded-md px-3 pt-5 pb-1.5 bg-white transition-shadow">
-        <label class="absolute left-3 top-2 text-[12px] text-[#65676B] focus-within:text-[#1877F2]">
-          Kategoria (wymagana)
-        </label>
+        <label class="absolute left-3 top-2 text-[12px] text-[#65676B] focus-within:text-[#1877F2]">{{ $t('pages.kategoriaWymagana') }}</label>
         <div class="flex items-center">
           <div class="flex-1 flex flex-wrap gap-1 items-center min-h-[24px]">
             <div v-if="form.category" class="bg-[#E7F3FF] text-[#1877F2] flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[15px] font-medium mr-1">
@@ -72,7 +64,7 @@ const handleCreate = () => {
               v-if="!form.category"
               v-model="form.category"
               type="text"
-              placeholder="Wprowadź kategorię"
+              :placeholder="$t('pages.wprowadzKategorie')"
               class="w-full focus:outline-none text-[15px] text-[#050505] bg-transparent"
             />
           </div>
@@ -83,20 +75,16 @@ const handleCreate = () => {
           </div>
         </div>
       </div>
-      <p class="text-[12px] text-[#65676B] mt-1.5">
-        Wprowadź kategorię, która opisuje Cię najlepiej.
-      </p>
+      <p class="text-[12px] text-[#65676B] mt-1.5">{{ $t('pages.wprowadzKategorieKtoraOpisuje') }}</p>
     </div>
 
     <div class="mb-5">
       <CustomTextarea
         v-model="form.bio"
-        label="Opis (opcjonalny)"
-        placeholder="Opowiedz użytkownikom, czym się zajmujesz."
+        :label="$t('pages.opisOpcjonalny')"
+        :placeholder="$t('pages.opowiedzUzytkownikomCzymSie')"
       />
-      <p class="text-[12px] text-[#65676B] mt-1.5">
-        Opowiedz użytkownikom, czym się zajmujesz.
-      </p>
+      <p class="text-[12px] text-[#65676B] mt-1.5">{{ $t('pages.opowiedzUzytkownikomCzymSie') }}</p>
     </div>
   </div>
 
@@ -106,12 +94,8 @@ const handleCreate = () => {
       class="w-full py-[9px] rounded-md font-semibold text-[15px] transition-colors"
       :class="isNameValid && isCategoryValid ? 'bg-[#1877F2] text-white hover:bg-[#166FE5]' : 'bg-[#E4E6EB] text-[#8A8D91] cursor-not-allowed'"
       :disabled="!isNameValid || !isCategoryValid"
-    >
-      Utwórz stronę
-    </button>
-    <p class="text-[12px] text-[#65676B] text-center mt-3 leading-snug">
-      Tworząc stronę, akceptujesz
-      <a href="#" class="text-[#1877F2] hover:underline font-semibold">Zasady dotyczące stron,<br>grup i wydarzeń</a>
+    >{{ $t('login.createPage') }}</button>
+    <p class="text-[12px] text-[#65676B] text-center mt-3 leading-snug">{{ $t('pages.tworzacStroneAkceptujesz') }}<a href="#" class="text-[#1877F2] hover:underline font-semibold">{{ $t('pages.zasadyDotyczaceStron') }}<br>{{ $t('pages.grupIWydarzen') }}</a>
     </p>
   </div>
 </template>

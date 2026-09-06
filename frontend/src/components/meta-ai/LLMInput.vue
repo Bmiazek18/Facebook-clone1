@@ -222,9 +222,7 @@ const handleSubmit = () => {
           >
             <Tooltip placement="bottom-start" :distance="6" :triggers="['hover']" theme="custom-tooltip">
               <div class="w-[112px] h-[112px] rounded-[18px] border border-white/[0.08] bg-[#141414]/60 flex flex-col justify-between p-3 cursor-default transition shadow-inner relative select-none">
-                <div class="bg-[#ea4335] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded w-fit tracking-wider">
-                  PDF
-                </div>
+                <div class="bg-[#ea4335] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded w-fit tracking-wider">{{ $t('metaAi.pdf') }}</div>
                 <div class="text-[12px] text-[#e3e3e3] truncate w-full font-medium">
                   {{ file.name }}
                 </div>
@@ -248,7 +246,7 @@ const handleSubmit = () => {
             @input="handleInput"
             class="w-full bg-transparent outline-none text-[16px] text-[#e3e3e3] placeholder-[#8e918f] resize-none max-h-[160px] leading-relaxed custom-scroll block" 
             rows="1"
-            placeholder="Ask Gemini" 
+            :placeholder="$t('metaAi.askGemini')" 
             @keydown.enter.exact.prevent="handleSubmit"
           ></textarea>
         </div>
@@ -288,7 +286,7 @@ const handleSubmit = () => {
                         <Icon :name="c.icon" size="17" class="text-[#c4c7c5]" />
                         <span>{{ c.label }}</span>
                       </div>
-                      <span v-if="c.isNew" class="bg-[#37393b] text-[#e3e3e3] text-[11px] font-normal px-2 py-0.5 rounded-full mr-0.5">New</span>
+                      <span v-if="c.isNew" class="bg-[#37393b] text-[#e3e3e3] text-[11px] font-normal px-2 py-0.5 rounded-full mr-0.5">{{ $t('metaAi.new') }}</span>
                     </button>
                   </div>
                 </div>
@@ -306,10 +304,10 @@ const handleSubmit = () => {
               <template #popper="{ hide }">
                 <div class="bg-[#1e1e1f] py-1.5 px-1 flex flex-col w-40 rounded-xl shadow-lg border border-white/[0.03]">
                   <button @click="currentModel = 'Flash'; hide()" class="flex items-center gap-2 px-3 h-9 hover:bg-white/[0.05] rounded-lg text-[14px] text-[#e3e3e3] transition text-left" :class="{ 'bg-white/[0.03] font-medium text-blue-400': currentModel === 'Flash' }">
-                    <Icon name="lucide:zap" size="15" /><span>Flash</span>
+                    <Icon name="lucide:zap" size="15" /><span>{{ $t('metaAi.flash') }}</span>
                   </button>
                   <button @click="currentModel = 'Thinking'; hide()" class="flex items-center gap-2 px-3 h-9 hover:bg-white/[0.05] rounded-lg text-[14px] text-[#e3e3e3] transition text-left" :class="{ 'bg-white/[0.03] font-medium text-purple-400': currentModel === 'Thinking' }">
-                    <Icon name="lucide:brain" size="15" /><span>Thinking</span>
+                    <Icon name="lucide:brain" size="15" /><span>{{ $t('metaAi.thinking') }}</span>
                   </button>
                 </div>
               </template>
@@ -351,7 +349,7 @@ const handleSubmit = () => {
                 <div class="flex flex-col gap-0.5">
                   <button v-for="c in creativeActions" :key="c.label" @click="hide()" class="flex items-center justify-between px-2.5 h-10 hover:bg-white/[0.05] rounded-xl text-[14px] font-normal text-[#e3e3e3] transition text-left">
                     <div class="flex items-center gap-3"><Icon :name="c.icon" size="17" class="text-[#c4c7c5]" /><span>{{ c.label }}</span></div>
-                    <span v-if="c.isNew" class="bg-[#37393b] text-[#e3e3e3] text-[11px] font-normal px-2 py-0.5 rounded-full mr-0.5">New</span>
+                    <span v-if="c.isNew" class="bg-[#37393b] text-[#e3e3e3] text-[11px] font-normal px-2 py-0.5 rounded-full mr-0.5">{{ $t('metaAi.new') }}</span>
                   </button>
                 </div>
               </div>
@@ -366,7 +364,7 @@ const handleSubmit = () => {
             @input="handleInput"
             class="w-full bg-transparent outline-none text-[17px] text-[#e3e3e3] placeholder-[#b5b9bf] resize-none h-[24px] max-h-[160px] font-400 leading-relaxed custom-scroll block py-0.5" 
             rows="1"
-            placeholder="Ask Gemini" 
+            :placeholder="$t('metaAi.askGemini')" 
             @keydown.enter.exact.prevent="handleSubmit"
           ></textarea>
         </div>
@@ -400,10 +398,10 @@ const handleSubmit = () => {
               <template #popper="{ hide }">
                 <div class="bg-[#1e1e1f] py-1.5 px-1 flex flex-col w-40 rounded-xl shadow-lg border border-white/[0.03]">
                   <button @click="currentModel = 'Flash'; hide()" class="flex items-center gap-2 px-3 h-9 hover:bg-white/[0.05] rounded-lg text-[14px] text-[#e3e3e3] transition text-left" :class="{ 'bg-white/[0.03] font-medium text-blue-400': currentModel === 'Flash' }">
-                    <Icon name="lucide:zap" size="15" /><span>Flash</span>
+                    <Icon name="lucide:zap" size="15" /><span>{{ $t('metaAi.flash') }}</span>
                   </button>
                   <button @click="currentModel = 'Thinking'; hide()" class="flex items-center gap-2 px-3 h-9 hover:bg-white/[0.05] rounded-lg text-[14px] text-[#e3e3e3] transition text-left" :class="{ 'bg-white/[0.03] font-medium text-purple-400': currentModel === 'Thinking' }">
-                    <Icon name="lucide:brain" size="15" /><span>Thinking</span>
+                    <Icon name="lucide:brain" size="15" /><span>{{ $t('metaAi.thinking') }}</span>
                   </button>
                 </div>
               </template>
@@ -446,8 +444,8 @@ const handleSubmit = () => {
       <div class="bg-[#1e1f20] w-full max-w-5xl rounded-[32px] overflow-hidden border border-white/10 shadow-2xl flex flex-col max-h-[90vh]">
         <div class="flex justify-between items-center p-6 border-b border-white/5">
           <div>
-            <h3 class="text-xl font-medium">Edytuj obszar obrazu</h3>
-            <p class="text-xs text-gray-500 mt-1">Zaznacz fragment, który chcesz zmienić</p>
+            <h3 class="text-xl font-medium">{{ $t('metaAi.edytujObszarObrazu') }}</h3>
+            <p class="text-xs text-gray-500 mt-1">{{ $t('metaAi.zaznaczFragmentKtoryChcesz') }}</p>
           </div>
           <button @click="isEditorOpen = false" class="hover:bg-white/10 p-2 rounded-full"><Icon name="lucide:x" size="24" /></button>
         </div>
@@ -456,11 +454,11 @@ const handleSubmit = () => {
             <canvas ref="canvasRef" @mousedown="handleMouseDown" @mousemove="handleMouseMove" @mouseup="isDrawing = false" @mouseleave="isDrawing = false" class="max-w-full max-h-full cursor-crosshair shadow-2xl"></canvas>
           </div>
           <div class="w-full md:w-80 p-6 flex flex-col border-l border-white/5 bg-[#141414]">
-            <label class="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">Twoje instrukcje:</label>
-            <textarea v-model="currentDescription" class="flex-1 bg-[#1e1f20] border border-white/10 rounded-2xl p-4 outline-none focus:border-blue-500 transition resize-none text-sm leading-relaxed" placeholder="Np. 'Dodaj okulary...'"></textarea>
+            <label class="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">{{ $t('metaAi.twojeInstrukcje') }}</label>
+            <textarea v-model="currentDescription" class="flex-1 bg-[#1e1f20] border border-white/10 rounded-2xl p-4 outline-none focus:border-blue-500 transition resize-none text-sm leading-relaxed" :placeholder="$t('metaAi.npDodajOkulary')"></textarea>
             <div class="mt-6 flex flex-col gap-3">
-              <button @click="saveEdit" class="bg-white text-black font-bold py-4 rounded-2xl hover:bg-gray-200 transition shadow-lg">Zatwierdź zmiany</button>
-              <button @click="isEditorOpen = false" class="text-gray-500 py-2 hover:text-white transition text-sm">Anuluj</button>
+              <button @click="saveEdit" class="bg-white text-black font-bold py-4 rounded-2xl hover:bg-gray-200 transition shadow-lg">{{ $t('metaAi.zatwierdzZmiany') }}</button>
+              <button @click="isEditorOpen = false" class="text-gray-500 py-2 hover:text-white transition text-sm">{{ $t('common.cancel') }}</button>
             </div>
           </div>
         </div>

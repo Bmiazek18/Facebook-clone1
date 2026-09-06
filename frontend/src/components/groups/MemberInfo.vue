@@ -3,8 +3,7 @@
     <!-- Karta główna widżetu -->
     <div class="w-full bg-white dark:bg-[#242526] rounded-lg border border-gray-200 dark:border-zinc-700 shadow-sm p-4">
       <!-- Nagłówek -->
-      <div class="text-[20px] font-bold text-[#050505] dark:text-[#E4E6EB] mb-3 flex items-center">
-        Członkowie <span class="text-[#65676B] dark:text-[#B0B3B8] font-normal ml-1">· {{ groupDetails?.members || membersList.length }}</span>
+      <div class="text-[20px] font-bold text-[#050505] dark:text-[#E4E6EB] mb-3 flex items-center">{{ $t('groups.members') }}<span class="text-[#65676B] dark:text-[#B0B3B8] font-normal ml-1">· {{ groupDetails?.members || membersList.length }}</span>
       </div>
 
       <!-- Delikatna linia oddzielająca -->
@@ -22,9 +21,7 @@
             :title="member.name"
           />
         </div>
-        <p class="text-[15px] text-[#050505] dark:text-[#E4E6EB]">
-          W grupie jest <span class="font-semibold">{{ membersList.length }} członków</span> społeczności.
-        </p>
+        <p class="text-[15px] text-[#050505] dark:text-[#E4E6EB]">{{ $t('groups.wGrupieJest') }}<span class="font-semibold">{{ $t('groups.memberslistLengthCzlonkow') }}</span>{{ $t('groups.spolecznosci') }}</p>
       </div>
 
       <!-- Sekcja 2: Administracja i moderatorzy -->
@@ -39,20 +36,15 @@
             :title="admin.name"
           />
         </div>
-        <p class="text-[15px] text-[#050505] dark:text-[#E4E6EB]">
-          Administratorem grupy jest <span class="font-semibold">{{ admins.map(a => a.name).join(', ') }}</span>.
+        <p class="text-[15px] text-[#050505] dark:text-[#E4E6EB]">{{ $t('groups.administratoremGrupyJest') }}<span class="font-semibold">{{ admins.map(a => a.name).join(', ') }}</span>.
         </p>
       </div>
       <div class="mb-4" v-else>
-        <p class="text-[15px] text-[#050505] dark:text-[#E4E6EB]">
-          Brak przypisanych administratorów. Administracja i moderatorzy dbają o bezpieczeństwo w tej grupie.
-        </p>
+        <p class="text-[15px] text-[#050505] dark:text-[#E4E6EB]">{{ $t('groups.brakPrzypisanychAdministratorowAdministracja') }}</p>
       </div>
 
       <!-- Przycisk "Wyświetl wszystkich" -->
-      <button class="w-full mt-2 bg-[#E4E6EB] dark:bg-[#3A3B3C] hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50] text-[#050505] dark:text-[#E4E6EB] font-semibold text-[15px] py-2 rounded-md transition-colors">
-        Wyświetl wszystkich
-      </button>
+      <button class="w-full mt-2 bg-[#E4E6EB] dark:bg-[#3A3B3C] hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50] text-[#050505] dark:text-[#E4E6EB] font-semibold text-[15px] py-2 rounded-md transition-colors">{{ $t('groups.wyswietlWszystkich') }}</button>
     </div>
   </div>
 </template>

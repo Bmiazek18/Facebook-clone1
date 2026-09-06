@@ -47,9 +47,7 @@ const emit = defineEmits<{
       @click="emit('rotate')"
       class="flex items-center gap-2 text-white bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition font-medium text-sm"
     >
-      <RotateRight :size="18" />
-      Obróć
-    </button>
+      <RotateRight :size="18" />{{ $t('create.obroc') }}</button>
   </div>
 </template>
 

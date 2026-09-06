@@ -41,9 +41,7 @@ const rules = ref([
     <div class="w-full  bg-white dark:bg-[#242526] rounded-lg border border-gray-200 dark:border-zinc-700 shadow-sm p-4">
 
       <!-- Nagłówek -->
-      <h2 class="text-[20px] font-bold text-[#050505] dark:text-[#E4E6EB] mb-4">
-        Zasady grupy ustalone przez administratorów
-      </h2>
+      <h2 class="text-[20px] font-bold text-[#050505] dark:text-[#E4E6EB] mb-4">{{ $t('groups.zasadyGrupyUstalonePrzez') }}</h2>
 
       <!-- Linia oddzielająca -->
       <hr class="border-[#CED0D4] dark:border-[#3E4042] mb-5" />

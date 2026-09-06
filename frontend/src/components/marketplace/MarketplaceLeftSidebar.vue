@@ -67,7 +67,7 @@ const sidebarItems = computed(() => [
 
 <template>
   <Sidebar
-    title="Marketplace"
+    :title="$t('login.marketplace')"
     searchPlaceholder="Wyszukaj w Marketplace"
     :showSettings="true"
     :showSearch="true"
@@ -85,11 +85,9 @@ const sidebarItems = computed(() => [
     <!-- Sekcja: Ustawienia powiadomień -->
     <div class="mb-3">
       <!-- Zmniejszono nagłówek z 19px na 16px -->
-      <h2 class="text-[16px] font-bold mb-1">Ustawienia powiadomień</h2>
+      <h2 class="text-[16px] font-bold mb-1">{{ $t('friends.notificationSettings') }}</h2>
       <!-- Zmniejszono opis z 14px na 12px -->
-      <p class="text-[12px] text-theme-text-secondary leading-tight mb-3">
-        Możesz zarządzać sposobem powiadamiania o aktualizacjach w Marketplace.
-      </p>
+      <p class="text-[12px] text-theme-text-secondary leading-tight mb-3">{{ $t('marketplace.mozeszZarzadzacSposobemPowiadamiania') }}</p>
 
       <!-- Wyświetl kropki powiadomień -->
       <!-- Zmniejszono padding pionowy (py-1.5 zamiast py-2) -->
@@ -106,7 +104,7 @@ const sidebarItems = computed(() => [
             </svg>
           </div>
           <!-- Zmniejszono nazwę z 16px na 14px -->
-          <span class="text-[14px] font-medium">Wyświetl kropki powiadomień</span>
+          <span class="text-[14px] font-medium">{{ $t('marketplace.wyswietlKropkiPowiadomien') }}</span>
         </div>
         <!-- Zmniejszono toggle: szerokość w-10 (było 12), wysokość h-6 (było 7) -->
         <div
@@ -129,7 +127,7 @@ const sidebarItems = computed(() => [
               <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"></path>
             </svg>
           </div>
-          <span class="text-[14px] font-medium">Dostosuj powiadomienia</span>
+          <span class="text-[14px] font-medium">{{ $t('marketplace.dostosujPowiadomienia') }}</span>
         </div>
       </div>
     </div>
@@ -138,7 +136,7 @@ const sidebarItems = computed(() => [
 
     <!-- Sekcja: Ustawienia Marketplace -->
     <div class="mt-3">
-      <h2 class="text-[16px] font-bold mb-3">Ustawienia Marketplace</h2>
+      <h2 class="text-[16px] font-bold mb-3">{{ $t('marketplace.ustawieniaMarketplace') }}</h2>
 
       <!-- Zarządzaj trybem wakacyjnym -->
       <div class="flex items-start gap-2.5 py-1.5 cursor-pointer select-none hover:opacity-80 transition-opacity">
@@ -148,7 +146,7 @@ const sidebarItems = computed(() => [
           </svg>
         </div>
         <div class="flex flex-col justify-center min-h-[32px]">
-          <span class="text-[14px] font-medium">Zarządzaj trybem wakacyjnym</span>
+          <span class="text-[14px] font-medium">{{ $t('marketplace.zarzadzajTrybemWakacyjnym') }}</span>
         </div>
       </div>
 
@@ -164,8 +162,8 @@ const sidebarItems = computed(() => [
             </svg>
           </div>
           <div>
-            <span class="text-[14px] font-medium block mb-0.5">Udostępnij opcję obserwowania Cię</span>
-            <span class="text-[12px] text-theme-text-secondary leading-tight block">Obserwujący w Marketplace oraz Twoich grupach kupna i sprzedaży będą widzieć, kiedy wystawisz ogłoszenie.</span>
+            <span class="text-[14px] font-medium block mb-0.5">{{ $t('marketplace.udostepnijOpcjeObserwowaniaCie') }}</span>
+            <span class="text-[12px] text-theme-text-secondary leading-tight block">{{ $t('marketplace.obserwujacyWMarketplaceOraz') }}</span>
           </div>
         </div>
         <div
@@ -187,8 +185,8 @@ const sidebarItems = computed(() => [
           </svg>
         </div>
         <div>
-          <span class="text-[14px] font-medium block mb-0.5">Ustaw wiadomość niestandardową do nabywcy</span>
-          <span class="text-[12px] text-theme-text-secondary leading-tight block">Wiadomość, którą obecnie wysyłasz do sprzedawców: „Czy jest nadal dostępny?”</span>
+          <span class="text-[14px] font-medium block mb-0.5">{{ $t('marketplace.ustawWiadomoscNiestandardowaDo') }}</span>
+          <span class="text-[12px] text-theme-text-secondary leading-tight block">{{ $t('marketplace.wiadomoscKtoraObecnieWysylasz') }}</span>
         </div>
       </div>
 
@@ -205,10 +203,8 @@ const sidebarItems = computed(() => [
             </svg>
           </div>
           <div>
-            <span class="text-[14px] font-medium block mb-0.5">Tryb sprzedawcy</span>
-            <span class="text-[12px] text-theme-text-secondary leading-tight block">
-              Włącz tryb sprzedawcy, aby domyślnie był wyświetlany pulpit sprzedawcy podczas odwiedzania Marketplace.
-              <a href="#" class="text-blue-600 hover:underline" @click.stop>Dowiedz się więcej</a>
+            <span class="text-[14px] font-medium block mb-0.5">{{ $t('marketplace.trybSprzedawcy') }}</span>
+            <span class="text-[12px] text-theme-text-secondary leading-tight block">{{ $t('marketplace.wlaczTrybSprzedawcyAby') }}<a href="#" class="text-blue-600 hover:underline" @click.stop>{{ $t('auth.register.learnMore') }}</a>
             </span>
           </div>
         </div>
@@ -232,8 +228,8 @@ const sidebarItems = computed(() => [
           </svg>
         </div>
         <div>
-          <span class="text-[14px] font-medium block mb-0.5">Ogłoszenia partnerów</span>
-          <span class="text-[12px] text-theme-text-secondary leading-tight block">Wybierz partnerów, od których chcesz kupować</span>
+          <span class="text-[14px] font-medium block mb-0.5">{{ $t('marketplace.ogloszeniaPartnerow') }}</span>
+          <span class="text-[12px] text-theme-text-secondary leading-tight block">{{ $t('marketplace.wybierzPartnerowOdKtorych') }}</span>
         </div>
       </div>
 
@@ -247,8 +243,8 @@ const sidebarItems = computed(() => [
           </svg>
         </div>
         <div>
-          <span class="text-[14px] font-medium block mb-0.5">Ustawienia konta reklamowego</span>
-          <span class="text-[12px] text-theme-text-secondary leading-tight block">Dane kontaktowe konta reklamowego, role na koncie reklamowym i płatności firmowe.</span>
+          <span class="text-[14px] font-medium block mb-0.5">{{ $t('marketplace.ustawieniaKontaReklamowego') }}</span>
+          <span class="text-[12px] text-theme-text-secondary leading-tight block">{{ $t('marketplace.daneKontaktoweKontaReklamowego') }}</span>
         </div>
       </div>
 
@@ -257,20 +253,18 @@ const sidebarItems = computed(() => [
 </template>
     <template #pre-list>
       <div class="px-2 pt-3 border-t border-theme-border">
-        <h3 class="font-semibold text-[17px] mb-2 text-theme-text">Lokalizacja</h3>
+        <h3 class="font-semibold text-[17px] mb-2 text-theme-text">{{ $t('post.location') }}</h3>
         <button
           @click="openLocation"
           class="text-blue-600 text-sm hover:underline flex items-center"
         >
-          <MapMarker :size="16" class="mr-1" />
-          {{ props.selectedCityName }} - W promieniu {{ props.selectedRadius }} km
-        </button>
+          <MapMarker :size="16" class="mr-1" />{{ $t('marketplace.propsSelectedcitynameWPromieniu') }}</button>
       </div>
     </template>
 
     <template #list-items>
  <div>
-     <h3 class="font-semibold text-[17px] px-2 mb-2 text-theme-text">Kategorie</h3>
+     <h3 class="font-semibold text-[17px] px-2 mb-2 text-theme-text">{{ $t('events.kategorie') }}</h3>
 
   <ul class="space-y-1">
     <li v-for="(cat, index) in categories" :key="index">

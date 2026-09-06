@@ -1,6 +1,6 @@
 <template>
   <Sidebar
-    title="Grupy"
+    :title="$t('login.groups')"
     search-placeholder="Szukaj grup"
     :show-settings="true"
     :show-search="true"
@@ -8,10 +8,8 @@
     :create-button="createGroupButton"
   >
     <template #list-header>
-      <h2 class="text-[17px] font-semibold text-theme-text leading-snug">
-        Grupy, do których należysz
-      </h2>
-      <a href="#" class="text-[13px] text-blue-600 hover:underline shrink-0">Wyświetl wszystkie</a>
+      <h2 class="text-[17px] font-semibold text-theme-text leading-snug">{{ $t('groups.grupyDoKtorychNalezysz') }}</h2>
+      <a href="#" class="text-[13px] text-blue-600 hover:underline shrink-0">{{ $t('groups.wyswietlWszystkie') }}</a>
     </template>
 
     <template #list-items>
@@ -23,7 +21,7 @@
       >
         <img
           :src="group.image"
-          alt="Group Icon"
+          :alt="$t('groups.groupIcon')"
           class="w-12 h-12 rounded-xl object-cover border border-theme-border shrink-0"
         />
         <div class="flex-1 min-w-0">
@@ -32,9 +30,7 @@
           >
             {{ group.name }}
           </h3>
-          <p class="text-[13px] text-gray-500 truncate">
-            Ostatnia aktywność {{ group.lastActive || 'Niedawno' }}
-          </p>
+          <p class="text-[13px] text-gray-500 truncate">{{ $t('groups.ostatniaAktywnoscGroupLastactive') }}</p>
         </div>
       </NuxtLink>
     </template>

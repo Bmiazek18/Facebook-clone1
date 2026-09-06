@@ -5,7 +5,7 @@
 
       <!-- Nagłówek (Tytuł, Wyszukiwarka, Przycisk) -->
       <div class="flex justify-between items-center mb-4">
-        <h1 class="text-[20px] font-bold text-[#050505] dark:text-[#E4E6EB]">Pliki</h1>
+        <h1 class="text-[20px] font-bold text-[#050505] dark:text-[#E4E6EB]">{{ $t('groups.files') }}</h1>
 
         <div class="flex items-center gap-4">
           <!-- Wyszukiwarka -->
@@ -15,15 +15,13 @@
             </svg>
             <input
               type="text"
-              placeholder="Szukaj plików"
+              :placeholder="$t('groups.szukajPlikow')"
               class="bg-transparent border-none outline-none w-full ml-2 text-[15px] text-[#050505] dark:text-[#E4E6EB] placeholder-[#65676B] dark:placeholder-[#B0B3B8]"
             />
           </div>
 
           <!-- Przycisk przesyłania -->
-          <button class="text-[#0866FF] dark:text-[#2D88FF] font-semibold text-[15px] hover:underline px-2 py-1 rounded-md transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20">
-            Prześlij plik
-          </button>
+          <button class="text-[#0866FF] dark:text-[#2D88FF] font-semibold text-[15px] hover:underline px-2 py-1 rounded-md transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20">{{ $t('groups.przeslijPlik') }}</button>
         </div>
       </div>
 
@@ -33,15 +31,9 @@
       <!-- Nagłówki tabeli (z szarymi tłami) -->
       <!-- Używamy Grid, by zachować idealne proporcje z wierszami -->
       <div class="grid grid-cols-[minmax(0,1fr)_150px_200px_40px] gap-3 mb-2 px-2">
-        <div class="bg-[#F0F2F5] dark:bg-[#3A3B3C] rounded-md py-2 flex items-center justify-center text-[13px] font-bold text-black dark:text-[#B0B3B8] tracking-wide">
-          NAZWA PLIKU
-        </div>
-        <div class="bg-[#F0F2F5] dark:bg-[#3A3B3C] rounded-md py-2 flex items-center justify-center text-[13px] font-bold text-black dark:text-[#B0B3B8] tracking-wide">
-          TYP
-        </div>
-        <div class="bg-[#F0F2F5] dark:bg-[#3A3B3C] rounded-md py-2 flex items-center justify-center gap-1 text-[13px] font-bold text-[#050505] dark:text-[#E4E6EB] tracking-wide cursor-pointer">
-          OSTATNIA MODYFIKAC...
-          <svg class="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
+        <div class="bg-[#F0F2F5] dark:bg-[#3A3B3C] rounded-md py-2 flex items-center justify-center text-[13px] font-bold text-black dark:text-[#B0B3B8] tracking-wide">{{ $t('groups.nazwaPliku') }}</div>
+        <div class="bg-[#F0F2F5] dark:bg-[#3A3B3C] rounded-md py-2 flex items-center justify-center text-[13px] font-bold text-black dark:text-[#B0B3B8] tracking-wide">{{ $t('groups.typ') }}</div>
+        <div class="bg-[#F0F2F5] dark:bg-[#3A3B3C] rounded-md py-2 flex items-center justify-center gap-1 text-[13px] font-bold text-[#050505] dark:text-[#E4E6EB] tracking-wide cursor-pointer">{{ $t('groups.ostatniaModyfikac') }}<svg class="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
             <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" />
           </svg>
         </div>
@@ -62,13 +54,13 @@
                 v-if="file.type === 'PDF'"
                 src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg"
                 class="w-full h-full object-contain"
-                alt="PDF"
+                :alt="$t('metaAi.pdf')"
               />
               <img
                 v-else
                 src="https://upload.wikimedia.org/wikipedia/commons/7/73/Microsoft_Excel_2013-2019_logo.svg"
                 class="w-full h-full object-contain"
-                alt="Excel"
+                :alt="$t('groups.excel')"
               />
             </div>
             <span class="text-[15px] font-bold text-[#050505] dark:text-[#E4E6EB] truncate hover:underline">
@@ -86,8 +78,7 @@
             <div class="text-[13px] text-[#050505] dark:text-[#E4E6EB] leading-tight">
               {{ file.date }}
             </div>
-            <div class="text-[13px] text-[#65676B] dark:text-[#B0B3B8] leading-tight mt-0.5">
-              przez: <span class="hover:underline">{{ file.author }}</span>
+            <div class="text-[13px] text-[#65676B] dark:text-[#B0B3B8] leading-tight mt-0.5">{{ $t('groups.przez') }}<span class="hover:underline">{{ file.author }}</span>
             </div>
           </div>
 

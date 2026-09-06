@@ -68,7 +68,7 @@ const saveHighSchool = () => {
 <template>
   <div class="max-w-[850px] text-theme-text antialiased space-y-6">
     <div class="space-y-4">
-      <h2 class="font-semibold text-[17px]">Szkoła wyższa</h2>
+      <h2 class="font-semibold text-[17px]">{{ $t('profile.info.university') }}</h2>
 
       <div v-if="activeForm !== 'university'">
         <button
@@ -77,7 +77,7 @@ const saveHighSchool = () => {
           :class="isOwner ? 'cursor-pointer hover:bg-theme-hover p-2 -ml-2 rounded-md' : ''"
         >
           <School :size="20" class="text-theme-text-secondary mr-3" />
-          <span class="text-theme-text-secondary font-normal">Szkoła wyższa</span>
+          <span class="text-theme-text-secondary font-normal">{{ $t('profile.info.university') }}</span>
         </button>
       </div>
 
@@ -85,13 +85,11 @@ const saveHighSchool = () => {
         <div
           class="inline-flex items-center gap-1.5 bg-theme-bg-tertiary px-3 py-1.5 rounded-md font-semibold text-[15px] text-theme-text mb-2"
         >
-          <Earth :size="16" class="text-theme-text-secondary" />
-          Publiczne
-        </div>
+          <Earth :size="16" class="text-theme-text-secondary" />{{ $t('postFilter.privacyPublic') }}</div>
 
         <div>
-          <CustomInput id="uni-name" label="Nazwa uczelni" v-model="uniForm.name" variant="new" />
-          <p class="text-[12px] text-theme-text-secondary px-1 mt-1">Wymagane</p>
+          <CustomInput id="uni-name" :label="$t('profile.nazwaUczelni')" v-model="uniForm.name" variant="new" />
+          <p class="text-[12px] text-theme-text-secondary px-1 mt-1">{{ $t('profile.wymagane') }}</p>
         </div>
 
         <div class="space-y-3">
@@ -101,7 +99,7 @@ const saveHighSchool = () => {
                 v-model="uniForm.startYear"
                 class="appearance-none bg-theme-bg-tertiary hover:bg-theme-bg-tertiary transition-colors pl-3 pr-8 py-1.5 rounded-md font-semibold text-[15px] text-theme-text outline-none cursor-pointer"
               >
-                <option value="" disabled selected>Rok</option>
+                <option value="" disabled selected>{{ $t('postFilter.yearLabel') }}</option>
                 <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
               </select>
               <ChevronDown
@@ -109,13 +107,13 @@ const saveHighSchool = () => {
                 class="absolute right-2 top-2.5 pointer-events-none text-theme-text"
               />
             </div>
-            <span class="text-[15px] text-theme-text-secondary">do</span>
+            <span class="text-[15px] text-theme-text-secondary">{{ $t('marketplace.do') }}</span>
             <div class="relative inline-block">
               <select
                 v-model="uniForm.endYear"
                 class="appearance-none bg-theme-bg-tertiary hover:bg-theme-bg-tertiary transition-colors pl-3 pr-8 py-1.5 rounded-md font-semibold text-[15px] text-theme-text outline-none cursor-pointer"
               >
-                <option value="" disabled selected>Rok</option>
+                <option value="" disabled selected>{{ $t('postFilter.yearLabel') }}</option>
                 <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
               </select>
               <ChevronDown
@@ -131,21 +129,21 @@ const saveHighSchool = () => {
               type="checkbox"
               class="w-5 h-5 rounded text-[#1877F2] border-theme-border focus:ring-[#1877F2]"
             />
-            <span class="font-normal text-[15px]">Ukończenie szkoły</span>
+            <span class="font-normal text-[15px]">{{ $t('profile.ukonczenieSzkoly') }}</span>
           </label>
         </div>
 
         <div>
           <CustomInput
             id="uni-field"
-            label="Kierunek"
+            :label="$t('profile.kierunek')"
             v-model="uniForm.fieldOfStudy"
             variant="new"
           />
-          <p class="text-[12px] text-theme-text-secondary px-1 mt-1">0/3 elementy</p>
+          <p class="text-[12px] text-theme-text-secondary px-1 mt-1">{{ $t('profile.03Elementy') }}</p>
         </div>
 
-        <CustomInput id="uni-dorm" label="Akademik" v-model="uniForm.dorm" variant="new" />
+        <CustomInput id="uni-dorm" :label="$t('profile.akademik')" v-model="uniForm.dorm" variant="new" />
 
         <div
           class="group relative border border-theme-border rounded-xl p-4 pt-6 pb-2.5 bg-transparent focus-within:border-[#1877f2] focus-within:ring-1 focus-within:ring-[#1877f2] transition-all"
@@ -157,7 +155,7 @@ const saveHighSchool = () => {
                 ? 'top-1 scale-75'
                 : 'top-1/2 -translate-y-1/2 scale-100 group-focus-within:top-1 group-focus-within:-translate-y-0 group-focus-within:scale-75'
             "
-            >Opis</label
+            >{{ $t('createLive.description') }}</label
           >
           <textarea
             v-model="uniForm.description"
@@ -169,17 +167,17 @@ const saveHighSchool = () => {
         <div>
           <CustomInput
             id="uni-activities"
-            label="Zajęcia"
+            :label="$t('create.zajecia')"
             v-model="uniForm.activities"
             variant="new"
           />
-          <p class="text-[12px] text-theme-text-secondary px-1 mt-1">Do 10 pozycji</p>
+          <p class="text-[12px] text-theme-text-secondary px-1 mt-1">{{ $t('profile.do10Pozycji') }}</p>
         </div>
 
         <div
           class="group relative border border-theme-border rounded-xl p-4 pt-6 pb-2.5 bg-transparent"
         >
-          <label class="absolute left-4 top-1 scale-75 text-theme-text-secondary">Uczęszczał(a) na:</label>
+          <label class="absolute left-4 top-1 scale-75 text-theme-text-secondary">{{ $t('profile.uczeszczalANa') }}</label>
           <div
             class="w-full text-[15px] text-theme-text pt-1 flex justify-between items-center cursor-pointer"
           >
@@ -190,7 +188,7 @@ const saveHighSchool = () => {
 
         <CustomInput
           id="uni-degree"
-          label="Tytuł/stopień naukowy"
+          :label="$t('profile.tytulStopienNaukowy')"
           v-model="uniForm.degree"
           variant="new"
         />
@@ -199,9 +197,7 @@ const saveHighSchool = () => {
           <button
             @click="resetForms"
             class="px-5 py-2 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
-          >
-            Anuluj
-          </button>
+          >{{ $t('common.cancel') }}</button>
           <button
             @click="saveUniversity"
             :disabled="!isUniValid"
@@ -211,9 +207,7 @@ const saveHighSchool = () => {
                 ? 'bg-theme-bg-tertiary text-theme-text hover:bg-theme-bg-tertiary'
                 : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed'
             "
-          >
-            Zapisz
-          </button>
+          >{{ $t('createLive.save') }}</button>
         </div>
       </div>
     </div>
@@ -221,7 +215,7 @@ const saveHighSchool = () => {
     <hr class="border-theme-border" />
 
     <div class="space-y-4">
-      <h2 class="font-semibold text-[17px]">Szkoła średnia</h2>
+      <h2 class="font-semibold text-[17px]">{{ $t('profile.info.highSchool') }}</h2>
 
       <div v-if="activeForm !== 'highschool'" class="space-y-3">
         <div
@@ -231,7 +225,7 @@ const saveHighSchool = () => {
           <div class="flex items-center gap-3">
             <img
               :src="highSchoolData.logo"
-              alt="School logo"
+              :alt="$t('profile.schoolLogo2')"
               class="w-10 h-10 rounded-full border border-theme-border object-cover"
             />
             <div class="flex flex-col">
@@ -256,7 +250,7 @@ const saveHighSchool = () => {
           class="inline-flex items-center gap-3 px-4 py-2 bg-theme-bg-tertiary/50 hover:bg-theme-bg-tertiary transition-colors rounded-lg text-[15px] font-semibold text-theme-text"
         >
           <Domain :size="20" class="text-theme-text-secondary" />
-          <span class="text-theme-text-secondary font-normal">Szkoła średnia</span>
+          <span class="text-theme-text-secondary font-normal">{{ $t('profile.info.highSchool') }}</span>
         </button>
       </div>
 
@@ -264,25 +258,23 @@ const saveHighSchool = () => {
         <div
           class="inline-flex items-center gap-1.5 bg-theme-bg-tertiary px-3 py-1.5 rounded-md font-semibold text-[15px] text-theme-text mb-2"
         >
-          <Earth :size="16" class="text-theme-text-secondary" />
-          Publiczne
-        </div>
+          <Earth :size="16" class="text-theme-text-secondary" />{{ $t('postFilter.privacyPublic') }}</div>
 
         <div>
-          <CustomInput id="hs-name" label="Szkoła" v-model="hsForm.name" variant="new" />
-          <p class="text-[12px] text-theme-text-secondary px-1 mt-1">Wymagane</p>
+          <CustomInput id="hs-name" :label="$t('profile.info.school')" v-model="hsForm.name" variant="new" />
+          <p class="text-[12px] text-theme-text-secondary px-1 mt-1">{{ $t('profile.wymagane') }}</p>
         </div>
 
         <div class="space-y-4">
           <div class="flex flex-col gap-2">
-            <span class="text-[15px] font-semibold text-theme-text">Okres</span>
+            <span class="text-[15px] font-semibold text-theme-text">{{ $t('profile.okres') }}</span>
             <div class="flex items-center gap-3">
               <div class="relative inline-block">
                 <select
                   v-model="hsForm.startYear"
                   class="appearance-none bg-theme-bg-tertiary hover:bg-theme-bg-tertiary transition-colors pl-3 pr-8 py-1.5 rounded-md font-semibold text-[15px] text-theme-text outline-none cursor-pointer"
                 >
-                  <option value="" disabled selected>Rok</option>
+                  <option value="" disabled selected>{{ $t('postFilter.yearLabel') }}</option>
                   <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
                 </select>
                 <ChevronDown
@@ -290,13 +282,13 @@ const saveHighSchool = () => {
                   class="absolute right-2 top-2.5 pointer-events-none text-theme-text"
                 />
               </div>
-              <span class="text-[15px] text-theme-text-secondary">do</span>
+              <span class="text-[15px] text-theme-text-secondary">{{ $t('marketplace.do') }}</span>
               <div class="relative inline-block">
                 <select
                   v-model="hsForm.endYear"
                   class="appearance-none bg-theme-bg-tertiary hover:bg-theme-bg-tertiary transition-colors pl-3 pr-8 py-1.5 rounded-md font-semibold text-[15px] text-theme-text outline-none cursor-pointer"
                 >
-                  <option value="" disabled selected>Rok</option>
+                  <option value="" disabled selected>{{ $t('postFilter.yearLabel') }}</option>
                   <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
                 </select>
                 <ChevronDown
@@ -313,7 +305,7 @@ const saveHighSchool = () => {
               type="checkbox"
               class="w-5 h-5 rounded text-[#1877F2] border-theme-border focus:ring-[#1877F2]"
             />
-            <span class="font-normal text-[15px]">Ukończenie szkoły</span>
+            <span class="font-normal text-[15px]">{{ $t('profile.ukonczenieSzkoly') }}</span>
           </label>
         </div>
 
@@ -321,9 +313,7 @@ const saveHighSchool = () => {
           <button
             @click="resetForms"
             class="px-5 py-2 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
-          >
-            Anuluj
-          </button>
+          >{{ $t('common.cancel') }}</button>
           <button
             @click="saveHighSchool"
             :disabled="!isHsValid"
@@ -333,9 +323,7 @@ const saveHighSchool = () => {
                 ? 'bg-theme-bg-tertiary text-theme-text hover:bg-theme-bg-tertiary'
                 : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed'
             "
-          >
-            Zapisz
-          </button>
+          >{{ $t('createLive.save') }}</button>
         </div>
       </div>
     </div>

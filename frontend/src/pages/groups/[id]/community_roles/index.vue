@@ -29,21 +29,15 @@ const route = useRoute() // Nuxt 3 auto-importuje useRoute()
     <div class="w-full max-w-3xl">
 
       <!-- Główny nagłówek strony -->
-      <h1 class="text-2xl font-bold mb-6 px-2">
-        Role społecznościowe
-      </h1>
+      <h1 class="text-2xl font-bold mb-6 px-2">{{ $t('groups.roleSpolecznosciowe') }}</h1>
 
       <!-- Karta: Standardowe role -->
       <div class="bg-[#242526] rounded-xl p-4 shadow-sm border border-[#3e4042]">
 
         <!-- Nagłówek i opis wewnątrz karty -->
         <div class="mb-3 px-2">
-          <h2 class="text-[17px] font-bold leading-snug">
-            Standardowe role
-          </h2>
-          <p class="text-[15px] text-[#b0b3b8] mt-0.5">
-            Mają domyślnie ustawione obowiązki, których nie można dostosować.
-          </p>
+          <h2 class="text-[17px] font-bold leading-snug">{{ $t('groups.standardoweRole') }}</h2>
+          <p class="text-[15px] text-[#b0b3b8] mt-0.5">{{ $t('groups.majaDomyslnieUstawioneObowiazki') }}</p>
         </div>
 
         <!-- Lista ról -->

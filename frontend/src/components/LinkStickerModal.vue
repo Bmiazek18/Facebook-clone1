@@ -73,7 +73,7 @@ const close = () => {
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
         <!-- Header -->
         <div class="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 class="text-xl font-bold text-gray-900">Dodaj naklejkę z linkiem</h2>
+          <h2 class="text-xl font-bold text-gray-900">{{ $t('story.dodajNaklejkeZLinkiem') }}</h2>
           <button @click="close" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
             <Close :size="24" class="text-gray-600" />
           </button>
@@ -83,7 +83,7 @@ const close = () => {
         <div class="p-5 space-y-5">
           <!-- URL Input -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Adres URL</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('story.adresUrl') }}</label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Link :size="20" class="text-gray-400" />
@@ -91,7 +91,7 @@ const close = () => {
               <input
                 v-model="url"
                 type="text"
-                placeholder="np. instagram.com/user"
+                :placeholder="$t('story.npInstagramComUser')"
                 class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />
             </div>
@@ -100,19 +100,19 @@ const close = () => {
           <!-- Custom Title -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Własny tytuł (opcjonalnie)</label
+              >{{ $t('story.wlasnyTytulOpcjonalnie') }}</label
             >
             <input
               v-model="customTitle"
               type="text"
-              placeholder="np. Mój Instagram"
+              :placeholder="$t('story.npMojInstagram')"
               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
             />
           </div>
 
           <!-- Style Selection -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-3">Styl naklejki</label>
+            <label class="block text-sm font-medium text-gray-700 mb-3">{{ $t('story.stylNaklejki') }}</label>
             <div class="grid grid-cols-3 gap-3">
               <!-- Default Style -->
               <button
@@ -128,9 +128,9 @@ const close = () => {
                   class="w-full bg-linear-to-r from-blue-500 to-purple-500 rounded-lg p-2 text-white text-xs font-medium flex items-center gap-1 justify-center"
                 >
                   <Link :size="12" />
-                  <span class="truncate">Link</span>
+                  <span class="truncate">{{ $t('story.link') }}</span>
                 </div>
-                <span class="text-xs text-gray-600">Domyślny</span>
+                <span class="text-xs text-gray-600">{{ $t('story.domyslny') }}</span>
               </button>
 
               <!-- Minimal Style -->
@@ -147,9 +147,9 @@ const close = () => {
                   class="w-full bg-white/90 border border-gray-200 rounded-lg p-2 text-gray-800 text-xs font-medium flex items-center gap-1 justify-center"
                 >
                   <OpenInNew :size="12" />
-                  <span class="truncate">Link</span>
+                  <span class="truncate">{{ $t('story.link') }}</span>
                 </div>
-                <span class="text-xs text-gray-600">Minimalna</span>
+                <span class="text-xs text-gray-600">{{ $t('story.minimalna') }}</span>
               </button>
 
               <!-- Button Style -->
@@ -164,17 +164,15 @@ const close = () => {
               >
                 <div
                   class="w-full bg-black rounded-full py-2 px-3 text-white text-xs font-bold text-center"
-                >
-                  Zobacz więcej
-                </div>
-                <span class="text-xs text-gray-600">Przycisk</span>
+                >{{ $t('groups.seeMore') }}</div>
+                <span class="text-xs text-gray-600">{{ $t('story.przycisk') }}</span>
               </button>
             </div>
           </div>
 
           <!-- Preview -->
           <div v-if="url" class="bg-gray-100 rounded-xl p-4">
-            <p class="text-xs text-gray-500 mb-2">Podgląd:</p>
+            <p class="text-xs text-gray-500 mb-2">{{ $t('story.podglad') }}</p>
 
             <!-- Default Preview -->
             <div
@@ -211,16 +209,12 @@ const close = () => {
           <button
             @click="close"
             class="px-5 py-2.5 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            Anuluj
-          </button>
+          >{{ $t('common.cancel') }}</button>
           <button
             @click="handleAddLink"
             :disabled="!isValidUrl"
             class="px-5 py-2.5 bg-blue-500 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600"
-          >
-            Dodaj naklejkę
-          </button>
+          >{{ $t('story.dodajNaklejke') }}</button>
         </div>
       </div>
     </div>

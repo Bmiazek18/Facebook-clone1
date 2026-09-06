@@ -211,7 +211,7 @@ watch(
               :src="currentMedia.imageUrl"
               :class="fullscreen ? 'max-w-[80%] max-h-[85vh]' : 'max-w-full max-h-[70vh]'"
               class="object-contain drop-shadow-2xl"
-              alt="Podgląd"
+              :alt="$t('chat.podglad')"
             />
             <PlayerVideo
               v-else

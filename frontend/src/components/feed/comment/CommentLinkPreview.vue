@@ -37,7 +37,7 @@ const handleLinkClick = async () => {
     >
       <div class="flex items-center space-x-2">
         <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-theme-primary"></div>
-        <span class="text-xs text-theme-text-secondary font-medium">Skanowanie...</span>
+        <span class="text-xs text-theme-text-secondary font-medium">{{ $t('feed.skanowanie') }}</span>
       </div>
     </div>
 
@@ -64,7 +64,7 @@ const handleLinkClick = async () => {
     </div>
   </div>
   <BaseModal
-    title="Informacje o tej zawartości"
+    :title="$t('birthday.informacjeOTejZawartosci')"
     v-if="isModalOpen"
     @close="closeLinkModal"
   >

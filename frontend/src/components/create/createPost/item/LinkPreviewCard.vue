@@ -19,7 +19,7 @@ defineEmits<{
       <div
         class="animate-spin rounded-full h-5 w-5 border-2 border-theme-border border-t-theme-primary"
       ></div>
-      <span class="text-sm text-theme-text-secondary">Pobieranie podglądu...</span>
+      <span class="text-sm text-theme-text-secondary">{{ $t('create.pobieraniePodgladu') }}</span>
     </div>
   </div>
 
@@ -40,7 +40,7 @@ defineEmits<{
         v-if="preview.image"
         class="w-full h-48 overflow-hidden bg-theme-bg-tertiary relative border-b border-theme-border"
       >
-        <img :src="preview.image" class="w-full h-full object-cover" alt="Link preview" />
+        <img :src="preview.image" class="w-full h-full object-cover" :alt="$t('create.linkPreview')" />
       </div>
 
       <div class="p-3">

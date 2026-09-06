@@ -468,9 +468,7 @@ onMounted(() => {
 
       <!-- New block for group comments -->
       <div v-if="isGroup && post.comments && post.comments.length > 0" class="px-4 pb-2">
-        <div @click="toggleModal" class="text-sm text-gray-500 cursor-pointer hover:underline mb-2">
-          Zobacz więcej komentarzy
-        </div>
+        <div @click="toggleModal" class="text-sm text-gray-500 cursor-pointer hover:underline mb-2">{{ $t('feed.zobaczWiecejKomentarzy') }}</div>
         <CommentItem
           v-for="comment in post.comments.slice(0, 2)"
           :key="comment.id"

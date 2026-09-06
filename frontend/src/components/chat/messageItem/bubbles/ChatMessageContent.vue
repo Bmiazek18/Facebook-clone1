@@ -126,7 +126,7 @@ function handleMentionClick(userId?: string) {
             v-if="part.type === 'mention'"
             @click.stop="handleMentionClick(part.userId)"
             class="inline-flex items-center font-semibold bg-black/10 dark:bg-white/20 hover:bg-blue-500/20 active:scale-95 rounded px-1.5 py-0.5 mx-0.5 transition-all cursor-pointer select-none text-inherit"
-            title="Kliknij, aby wybrać akcję"
+            :title="$t('chat.kliknijAbyWybracAkcje')"
           >
             {{ getMentionDisplayName(part.userId || '') }}
           </span>

@@ -193,10 +193,8 @@ const handleDone = () => {
           <div class="grow overflow-y-auto pb-2 fb-custom-scrollbar">
             <!-- Nagłówek (teraz wewnątrz scrolla) -->
             <div class="px-2 pb-4">
-              <h2 class="text-[17px] font-medium leading-tight">Kto może zobaczyć Twój post?</h2>
-              <p class="text-[#65676b] text-[15px] mt-1.5 leading-snug t">
-                Post pojawi się w Aktualnościach, w Twoim profilu oraz w wynikach wyszukiwania.
-              </p>
+              <h2 class="text-[17px] font-medium leading-tight">{{ $t('common.ktoMozeZobaczycTwoj') }}</h2>
+              <p class="text-[#65676b] text-[15px] mt-1.5 leading-snug t">{{ $t('common.postPojawiSieW') }}</p>
             </div>
 
             <!-- Lista opcji -->
@@ -261,7 +259,7 @@ const handleDone = () => {
               :class="{ 'opacity-40 pointer-events-none': tempSelectedOption === defaultPrivacyId }"
               @click="toggleSetDefault"
             >
-              <span class="text-[#050505] text-[14px]">Ustaw jako domyślną grupę odbiorców.</span>
+              <span class="text-[#050505] text-[14px]">{{ $t('common.ustawJakoDomyslnaGrupe') }}</span>
 
               <component
                 :is="
@@ -284,9 +282,7 @@ const handleDone = () => {
                 type="button"
                 class="py-2 bg-[#1a69e0] text-white font-semibold text-[15px] rounded-lg transition-colors shadow-sm w-full"
                 @click="handleDone"
-              >
-                Dalej
-              </button>
+              >{{ $t('common.next') }}</button>
             </div>
           </div>
         </div>

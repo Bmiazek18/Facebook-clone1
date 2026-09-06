@@ -6,19 +6,13 @@
 
       <!-- Nagłówek -->
       <div class="mb-8">
-        <h1 class="text-[22px] font-bold text-gray-900 leading-tight mb-2">
-          Jakiego rodzaju komentarze powinien ukrywać Asystent moderacji?
-        </h1>
-        <p class="text-[16px] text-gray-500">
-          Rozpocznij od jednego kryterium, a potem dodaj ich więcej.
-        </p>
+        <h1 class="text-[22px] font-bold text-gray-900 leading-tight mb-2">{{ $t('dashboard.jakiegoRodzajuKomentarzePowinien') }}</h1>
+        <p class="text-[16px] text-gray-500">{{ $t('groups.rozpocznijOdJednegoKryterium') }}</p>
       </div>
 
       <!-- KRYTERIA DOTYCZĄCE AUTORA -->
       <div class="mb-8">
-        <h2 class="text-[14px] font-semibold text-gray-800 uppercase tracking-wide mb-3 pl-2">
-          Kryteria dotyczące autora
-        </h2>
+        <h2 class="text-[14px] font-semibold text-gray-800 uppercase tracking-wide mb-3 pl-2">{{ $t('dashboard.kryteriaDotyczaceAutora') }}</h2>
         <div class="flex flex-col gap-1">
           <button
             v-for="item in authorCriteria"
@@ -53,9 +47,7 @@
 
       <!-- KRYTERIA DOTYCZĄCE KOMENTARZY -->
       <div>
-        <h2 class="text-[14px] font-semibold text-gray-800 uppercase tracking-wide mb-3 pl-2">
-          Kryteria dotyczące komentarzy
-        </h2>
+        <h2 class="text-[14px] font-semibold text-gray-800 uppercase tracking-wide mb-3 pl-2">{{ $t('dashboard.kryteriaDotyczaceKomentarzy') }}</h2>
         <div class="flex flex-col gap-1">
           <button
             v-for="item in commentCriteria"

@@ -219,9 +219,7 @@ const handleClickOutside = (event: MouseEvent) => {
 
       <!-- Treść Modala -->
       <div class="p-4 space-y-4 bg-white z-0 relative flex-1">
-        <p class="text-[14px] text-gray-600">
-          Wyszukaj na podstawie miejscowości, dzielnicy lub kodu pocztowego.
-        </p>
+        <p class="text-[14px] text-gray-600">{{ $t('marketplace.wyszukajNaPodstawieMiejscowosci') }}</p>
 
         <!-- Sekcja: Wyszukiwarka Lokalizacji -->
         <div class="relative z-50" ref="searchContainerRef">
@@ -237,14 +235,14 @@ const handleClickOutside = (event: MouseEvent) => {
             </div>
 
             <div class="flex flex-col flex-1 pl-1">
-              <span class="text-[12px] font-medium leading-none mb-1" :class="showSuggestions ? 'text-[#0866FF]' : 'text-gray-500'">Lokalizacja</span>
+              <span class="text-[12px] font-medium leading-none mb-1" :class="showSuggestions ? 'text-[#0866FF]' : 'text-gray-500'">{{ $t('post.location') }}</span>
               <input
                 v-model="searchQuery"
                 @input="handleInput"
                 @focus="handleInput"
                 type="text"
                 class="w-full text-gray-900 bg-transparent border-none p-0 focus:ring-0 focus:outline-none text-[16px] leading-tight placeholder-gray-400"
-                placeholder="Wpisz nazwę miejscowości"
+                :placeholder="$t('marketplace.wpiszNazweMiejscowosci')"
               />
             </div>
 
@@ -284,8 +282,8 @@ const handleClickOutside = (event: MouseEvent) => {
             :class="isRadiusDropdownOpen ? 'border-[#0866FF] shadow-[0_0_0_1px_#0866FF]' : 'border-gray-300 hover:border-gray-400'"
           >
             <div class="flex flex-col flex-1">
-              <span class="text-[12px] font-medium leading-none mb-1" :class="isRadiusDropdownOpen ? 'text-[#0866FF]' : 'text-gray-500'">Promień</span>
-              <span class="text-[16px] text-gray-900 leading-tight">{{ radiusKm }} km</span>
+              <span class="text-[12px] font-medium leading-none mb-1" :class="isRadiusDropdownOpen ? 'text-[#0866FF]' : 'text-gray-500'">{{ $t('marketplace.promien') }}</span>
+              <span class="text-[16px] text-gray-900 leading-tight">{{ $t('marketplace.radiuskmKm') }}</span>
             </div>
 
             <div class="text-gray-800 transition-transform duration-200" :class="{ 'rotate-180': isRadiusDropdownOpen }">
@@ -307,7 +305,7 @@ const handleClickOutside = (event: MouseEvent) => {
                 @click="selectRadius(option)"
                 class="px-4 py-2.5 flex justify-between items-center hover:bg-gray-100 cursor-pointer text-gray-900"
               >
-                <span class="text-[16px] font-medium">{{ option }} km</span>
+                <span class="text-[16px] font-medium">{{ $t('marketplace.optionKm') }}</span>
                 <span v-if="radiusKm === option" class="text-[#0866FF]">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -337,9 +335,7 @@ const handleClickOutside = (event: MouseEvent) => {
         <button
           @click="emit('apply', radiusKm, currentCenter[0], currentCenter[1], selectedCityName)"
           class="bg-[#0866FF] hover:bg-[#075ce5] text-white font-semibold py-2 px-8 rounded-lg transition-colors text-[15px]"
-        >
-          Zastosuj
-        </button>
+        >{{ $t('marketplace.zastosuj') }}</button>
       </div>
 
     </div>

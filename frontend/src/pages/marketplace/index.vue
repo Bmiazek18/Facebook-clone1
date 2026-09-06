@@ -95,13 +95,13 @@ const listings = computed(() => {
     <main class="flex-1 h-full mt-[56px] overflow-y-auto relative">
       <div class="max-w-[1900px] flex flex-col mx-auto px-4 py-4">
         <div class="flex justify-between items-center border-b border-gray-100 dark:border-zinc-800 pb-4">
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white">Propozycje na dziś</h2>
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ $t('marketplace.propozycjeNaDzis') }}</h2>
 
           <button
             @click="openLocationModal"
             class="flex items-center text-[#1877F2] hover:bg-gray-100 dark:hover:bg-zinc-800 px-2 py-1 rounded-md transition-colors duration-200 cursor-pointer"
           >
-            <span class="text-[15px] font-medium">{{ currentCityName }} • {{ selectedRadius }} km</span>
+            <span class="text-[15px] font-medium">{{ $t('marketplace.currentcitynameSelectedradiusKm') }}</span>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
             </svg>
@@ -109,14 +109,10 @@ const listings = computed(() => {
         </div>
 
         <!-- Stan ładowania -->
-        <div v-if="loading && listings.length === 0" class="text-center py-10 text-gray-500">
-          Ładowanie ogłoszeń...
-        </div>
+        <div v-if="loading && listings.length === 0" class="text-center py-10 text-gray-500">{{ $t('marketplace.ladowanieOgloszen') }}</div>
 
         <!-- Stan błędu -->
-        <div v-if="error" class="text-center py-10 text-red-500">
-          Nie udało się pobrać ogłoszeń. Spróbuj ponownie później.
-        </div>
+        <div v-if="error" class="text-center py-10 text-red-500">{{ $t('marketplace.nieUdaloSiePobrac') }}</div>
 
         <!-- Siatka ogłoszeń -->
         <div
@@ -134,9 +130,7 @@ const listings = computed(() => {
               <div
                 v-if="item.isFree"
                 class="absolute top-2 left-2 bg-green-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider"
-              >
-                Okazja
-              </div>
+              >{{ $t('marketplace.okazja') }}</div>
             </div>
 
             <div class="px-0.5 overflow-hidden">
@@ -168,7 +162,7 @@ const listings = computed(() => {
   </div>
 
   <!-- Modal Lokalizacji -->
-  <BaseModal v-if="showLocationModal" @close="closeLocationModal" title="Wybierz lokalizację">
+  <BaseModal v-if="showLocationModal" @close="closeLocationModal" :title="$t('common.wybierzLokalizacje')">
     <MapRadius @update:radius="handleRadiusUpdate" @apply="handleApply" />
   </BaseModal>
 </template>

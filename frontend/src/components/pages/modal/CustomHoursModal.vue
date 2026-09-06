@@ -30,7 +30,7 @@ const handleSave = () => {
 
       <!-- Nagłówek -->
       <div class="relative h-[60px] flex items-center justify-center border-b border-[#E5E5E5] shrink-0">
-        <h2 class="text-[20px] font-bold text-[#050505]">Wybrane godziny</h2>
+        <h2 class="text-[20px] font-bold text-[#050505]">{{ $t('pages.wybraneGodziny') }}</h2>
         <button
           @click="handleClose"
           class="absolute right-4 w-9 h-9 bg-[#E4E6EB] hover:bg-[#D8DADF] rounded-full flex items-center justify-center text-[#65676B] transition-colors"
@@ -59,7 +59,7 @@ const handleSave = () => {
               <circle cx="12" cy="12" r="10"></circle>
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"></path>
             </svg>
-            <span class="text-[15px] text-[#65676B]">Otwarcie</span>
+            <span class="text-[15px] text-[#65676B]">{{ $t('pages.otwarcie') }}</span>
           </button>
 
           <!-- Separator -->
@@ -71,7 +71,7 @@ const handleSave = () => {
               <circle cx="12" cy="12" r="10"></circle>
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"></path>
             </svg>
-            <span class="text-[15px] text-[#65676B]">Zamknięcie</span>
+            <span class="text-[15px] text-[#65676B]">{{ $t('pages.zamkniecie') }}</span>
           </button>
 
           <!-- Przycisk Plus -->
@@ -88,15 +88,11 @@ const handleSave = () => {
         <button
           @click="handleClose"
           class="text-[#1877F2] font-semibold text-[15px] hover:underline"
-        >
-          Anuluj
-        </button>
+        >{{ $t('common.cancel') }}</button>
         <button
           @click="handleSave"
           class="bg-[#0866FF] hover:bg-[#0753D8] text-white font-semibold text-[15px] px-8 py-2 rounded-md transition-colors"
-        >
-          Zapisz
-        </button>
+        >{{ $t('createLive.save') }}</button>
       </div>
     </div>
   </div>

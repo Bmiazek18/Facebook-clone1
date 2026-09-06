@@ -120,42 +120,39 @@ const handleCreateGroup = async () => {
     >
       <AppCloseHeader class="shadow-sm pb-2" />
       <div class="flex-1 overflow-y-auto px-4 py-5 custom-scrollbar relative">
-        <div class="text-[13px] text-theme-text-secondary font-medium">Grupy</div>
-        <h1 class="text-[24px] font-bold leading-tight mb-4">Utwórz grupę</h1>
+        <div class="text-[13px] text-theme-text-secondary font-medium">{{ $t('login.groups') }}</div>
+        <h1 class="text-[24px] font-bold leading-tight mb-4">{{ $t('groups.utworzGrupe') }}</h1>
 
         <div class="flex items-center mb-6 p-1">
           <img :src="userAvatar" class="w-9 h-9 rounded-full mr-3 border border-theme-border" />
           <div class="leading-tight">
-            <div class="font-semibold text-[15px]">Bartosz Miazek</div>
-            <div class="text-[13px] text-theme-text-secondary">Administrator</div>
+            <div class="font-semibold text-[15px]">{{ $t('marketplace.bartoszMiazek') }}</div>
+            <div class="text-[13px] text-theme-text-secondary">{{ $t('feed.administrator') }}</div>
           </div>
         </div>
 
         <div class="mb-4">
-          <CustomInput v-model="groupName" label="Nazwa grupy" id="groupNameInput" />
+          <CustomInput v-model="groupName" :label="$t('groups.groupName')" id="groupNameInput" />
         </div>
 
         <div class="mb-4 relative">
           <CustomDropdown
             v-model="privacy"
             :options="privacyOptions"
-            label="Wybierz ustawienie prywatności"
+            :label="$t('groups.wybierzUstawieniePrywatnosci')"
           />
         </div>
 
         <div
           v-if="privacy === 'private'"
           class="mb-4 text-[12px] text-theme-text-secondary px-1 leading-snug"
-        >
-          Tylko członkowie grupy mogą sprawdzić listę członków grupy i zobaczyć ich posty. Status
-          grupy możesz później zmienić na publiczną.
-          <span class="text-theme-primary cursor-pointer hover:underline"
-            >Dowiedz się więcej...</span
+        >{{ $t('groups.tylkoCzlonkowieGrupyMoga2') }}<span class="text-theme-primary cursor-pointer hover:underline"
+            >{{ $t('groups.dowiedzSieWiecej') }}</span
           >
         </div>
 
         <div v-if="privacy === 'private'" class="mb-4 relative">
-          <CustomDropdown v-model="visibility" :options="visibilityOptions" label="Widoczność" />
+          <CustomDropdown v-model="visibility" :options="visibilityOptions" :label="$t('groups.visibility')" />
         </div>
 
         <div class="mb-2">
@@ -178,17 +175,15 @@ const handleCreateGroup = async () => {
             <input
               type="text"
               v-model="inviteInput"
-              placeholder="Zaproś znajomych (opcjonalne)"
+              :placeholder="$t('groups.zaprosZnajomychOpcjonalne')"
               class="flex-1 h-[40px] px-2 outline-none text-[15px] min-w-[120px] bg-transparent"
             />
           </div>
         </div>
-        <p class="text-[12px] text-theme-text-secondary px-1 leading-snug">
-          Propozycje:
-          <span
+        <p class="text-[12px] text-theme-text-secondary px-1 leading-snug">{{ $t('groups.propozycje') }}<span
             @click="addFriend('Mateusz Bieniek')"
             class="text-theme-primary font-semibold cursor-pointer hover:underline"
-            >Mateusz Bieniek</span
+            >{{ $t('groups.mateuszBieniek') }}</span
           >...
         </p>
       </div>
@@ -205,9 +200,7 @@ const handleCreateGroup = async () => {
               : 'bg-theme-bg-tertiary text-theme-text-placeholder cursor-not-allowed'
           "
           :disabled="!isFormValid"
-        >
-          Utwórz
-        </button>
+        >{{ $t('feed.utworz') }}</button>
       </div>
     </aside>
 
@@ -284,7 +277,7 @@ const handleCreateGroup = async () => {
                 <span>{{ subtitleText }}</span>
               </span>
               <span class="mx-1.5">·</span>
-              <span class="font-semibold text-theme-text-secondary">1 członek</span>
+              <span class="font-semibold text-theme-text-secondary">{{ $t('groups.1Czlonek') }}</span>
             </div>
 
             <div
@@ -293,27 +286,19 @@ const handleCreateGroup = async () => {
               <div
                 :class="isPreviewMobile ? 'px-2 py-3 text-[14px]' : 'px-4 py-4 text-[15px]'"
                 class="text-theme-text-secondary mx-1 my-1 font-semibold whitespace-nowrap"
-              >
-                Informacje
-              </div>
+              >{{ $t('groups.information') }}</div>
               <div
                 :class="isPreviewMobile ? 'px-2 py-3 text-[14px]' : 'px-4 py-4 text-[15px]'"
                 class="text-theme-text-secondary font-semibold mx-1 my-1 whitespace-nowrap"
-              >
-                Posty
-              </div>
+              >{{ $t('search.posts') }}</div>
               <div
                 :class="isPreviewMobile ? 'px-2 py-3 text-[14px]' : 'px-4 py-4 text-[15px]'"
                 class="text-theme-text-secondary font-semibold mx-1 my-1 whitespace-nowrap"
-              >
-                Członkowie
-              </div>
+              >{{ $t('groups.members') }}</div>
               <div
                 :class="isPreviewMobile ? 'px-2 py-3 text-[14px]' : 'px-4 py-4 text-[15px]'"
                 class="text-theme-text-secondary font-semibold mx-1 my-1 whitespace-nowrap"
-              >
-                Wydarzenia
-              </div>
+              >{{ $t('groups.events') }}</div>
             </div>
           </div>
 
@@ -331,9 +316,7 @@ const handleCreateGroup = async () => {
                   <AccountCircle :size="40" class="text-theme-bg-tertiary" />
                   <div
                     class="bg-theme-bg-tertiary rounded-full flex-1 px-4 py-2 text-theme-text-placeholder text-[15px] text-left truncate"
-                  >
-                    Co słychać?
-                  </div>
+                  >{{ $t('post.whatsUp') }}</div>
                 </div>
 
                 <div class="border-t border-theme-border pt-2 flex justify-between">
@@ -342,7 +325,7 @@ const handleCreateGroup = async () => {
                   >
                     <ImageMultiple class="text-theme-text-secondary mr-2 shrink-0" :size="24" />
                     <span class="text-theme-text-secondary font-semibold text-[14px] truncate"
-                      >Zdjęcie/film</span
+                      >{{ $t('post.photoVideo') }}</span
                     >
                   </div>
 
@@ -351,7 +334,7 @@ const handleCreateGroup = async () => {
                   >
                     <AccountTag class="text-theme-text-secondary mr-2 shrink-0" :size="24" />
                     <span class="text-theme-text-secondary font-semibold text-[14px] truncate"
-                      >Oznacz osoby</span
+                      >{{ $t('post.tagUsers') }}</span
                     >
                   </div>
 
@@ -360,7 +343,7 @@ const handleCreateGroup = async () => {
                   >
                     <EmoticonOutline class="text-theme-text-secondary mr-2 shrink-0" :size="24" />
                     <span class="text-theme-text-secondary font-semibold text-[14px] truncate"
-                      >Nastrój/akt...</span
+                      >{{ $t('groups.nastrojAkt') }}</span
                     >
                   </div>
                 </div>
@@ -371,7 +354,7 @@ const handleCreateGroup = async () => {
               <div
                 class="bg-theme-bg-secondary rounded-lg shadow-sm border border-theme-border p-4"
               >
-                <h3 class="font-bold text-[17px] text-theme-text mb-3">Informacje</h3>
+                <h3 class="font-bold text-[17px] text-theme-text mb-3">{{ $t('groups.information') }}</h3>
 
                 <div v-if="privacy !== 'choose'" class="space-y-4">
                   <div class="flex items-start">
@@ -415,9 +398,7 @@ const handleCreateGroup = async () => {
                     </div>
                   </div>
                 </div>
-                <div v-else class="text-theme-text-secondary text-[13px]">
-                  Wybierz ustawienia prywatności, aby zobaczyć podgląd informacji.
-                </div>
+                <div v-else class="text-theme-text-secondary text-[13px]">{{ $t('groups.wybierzUstawieniaPrywatnosciAby') }}</div>
               </div>
             </div>
           </div>

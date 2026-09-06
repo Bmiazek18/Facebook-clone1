@@ -11,7 +11,7 @@
       >
         <ArrowLeftIcon class="text-2xl text-theme-text" />
       </button>
-      <span class="text-theme-text font-bold text-xl">Ustawienia i prywatność</span>
+      <span class="text-theme-text font-bold text-xl">{{ $t('profile_menu.settings') }}</span>
     </div>
 
     <!-- Lista opcji -->

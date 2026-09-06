@@ -39,17 +39,11 @@ const pastEvents = ref([
 
       <!-- Nagłówek i przyciski -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-8">
-        <h2 class="text-[20px] font-bold text-[#050505] dark:text-[#E4E6EB]">
-          Nadchodzące wydarzenia
-        </h2>
+        <h2 class="text-[20px] font-bold text-[#050505] dark:text-[#E4E6EB]">{{ $t('groups.nadchodzaceWydarzenia') }}</h2>
 
         <div class="flex items-center gap-2">
-          <button class="bg-[#E4E6EB] dark:bg-[#3A3B3C] hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50] text-[#050505] dark:text-[#E4E6EB] px-3.5 py-1.5 rounded-md font-semibold text-[15px] transition-colors">
-            Znajdź wydarzenia
-          </button>
-          <button class="bg-[#0866FF] hover:bg-[#0052CC] text-white px-3.5 py-1.5 rounded-md font-semibold text-[15px] transition-colors">
-            Utwórz wydarzenie
-          </button>
+          <button class="bg-[#E4E6EB] dark:bg-[#3A3B3C] hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50] text-[#050505] dark:text-[#E4E6EB] px-3.5 py-1.5 rounded-md font-semibold text-[15px] transition-colors">{{ $t('groups.znajdzWydarzenia') }}</button>
+          <button class="bg-[#0866FF] hover:bg-[#0052CC] text-white px-3.5 py-1.5 rounded-md font-semibold text-[15px] transition-colors">{{ $t('createEvent.createEvent') }}</button>
         </div>
       </div>
 
@@ -64,9 +58,7 @@ const pastEvents = ref([
           <line x1="26" y1="28" x2="26" y2="52" />
           <line x1="38" y1="28" x2="38" y2="52" />
         </svg>
-        <span class="text-[17px] text-[#050505] dark:text-[#E4E6EB]">
-          Brak nadchodzących wydarzeń.
-        </span>
+        <span class="text-[17px] text-[#050505] dark:text-[#E4E6EB]">{{ $t('groups.brakNadchodzacychWydarzen') }}</span>
       </div>
 
     </div>
@@ -75,9 +67,7 @@ const pastEvents = ref([
     <div class="w-full max-w-[680px] bg-white dark:bg-[#242526] rounded-lg border border-gray-200 dark:border-zinc-700 shadow-sm pt-4">
 
       <!-- Nagłówek -->
-      <h2 class="text-[20px] font-bold text-[#050505] dark:text-[#E4E6EB] px-4 mb-2">
-        Minione wydarzenia
-      </h2>
+      <h2 class="text-[20px] font-bold text-[#050505] dark:text-[#E4E6EB] px-4 mb-2">{{ $t('groups.minioneWydarzenia') }}</h2>
 
       <!-- Lista Wydarzeń -->
       <div class="flex flex-col">
@@ -88,7 +78,7 @@ const pastEvents = ref([
             <!-- Miniaturka wydarzenia -->
             <img
               :src="event.image"
-              alt="Plakat wydarzenia"
+              :alt="$t('groups.plakatWydarzenia')"
               class="w-[100px] h-[100px] rounded-lg object-cover border border-gray-200 dark:border-zinc-700 flex-shrink-0"
             />
 
@@ -108,8 +98,7 @@ const pastEvents = ref([
               <!-- Autor (Udostępnione przez) -->
               <div class="flex items-center text-[13px] text-[#65676B] dark:text-[#B0B3B8] mb-2.5">
                 <img :src="event.authorAvatar" class="w-[20px] h-[20px] rounded-full object-cover mr-1.5 border border-gray-100 dark:border-zinc-700" />
-                <span>
-                  Udostępnione przez <span class="font-bold text-[#050505] dark:text-[#E4E6EB]">{{ event.author }}</span>
+                <span>{{ $t('groups.udostepnionePrzez') }}<span class="font-bold text-[#050505] dark:text-[#E4E6EB]">{{ event.author }}</span>
                 </span>
               </div>
 
@@ -131,9 +120,7 @@ const pastEvents = ref([
       <!-- Stopka: Zobacz więcej -->
       <hr class="border-[#CED0D4] dark:border-[#3E4042]" />
       <div class="p-2">
-        <button class="w-full py-2 hover:bg-gray-50 dark:hover:bg-[#3A3B3C] rounded-md text-[#0866FF] dark:text-[#2D88FF] font-semibold text-[15px] transition-colors">
-          Zobacz więcej
-        </button>
+        <button class="w-full py-2 hover:bg-gray-50 dark:hover:bg-[#3A3B3C] rounded-md text-[#0866FF] dark:text-[#2D88FF] font-semibold text-[15px] transition-colors">{{ $t('groups.seeMore') }}</button>
       </div>
 
     </div>

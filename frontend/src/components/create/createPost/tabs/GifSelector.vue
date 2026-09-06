@@ -67,7 +67,7 @@ onMounted(() => fetchGifs())
           v-model="searchTerm"
           @input="() => handleGifSearch()"
           class="w-full bg-[#F0F2F5] border-none rounded-full py-2 pl-11 pr-4 text-[16px] focus:ring-0 outline-none placeholder-gray-500"
-          placeholder="Szukaj"
+          :placeholder="$t('common.search')"
         />
       </div>
     </div>
@@ -93,9 +93,7 @@ onMounted(() => fetchGifs())
         </div>
       </div>
 
-      <div v-if="!loading && gifs.length === 0" class="text-center text-gray-400 py-10">
-        Brak wyników
-      </div>
+      <div v-if="!loading && gifs.length === 0" class="text-center text-gray-400 py-10">{{ $t('search.noResults') }}</div>
     </div>
   </div>
 </template>

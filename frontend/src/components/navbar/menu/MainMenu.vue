@@ -49,9 +49,7 @@
             <span class="font-semibold text-theme-text text-[15px] truncate">
               {{ pageAccount.name }}
             </span>
-            <span class="text-[12px] text-theme-text-secondary truncate">
-              Przełącz na {{ pageAccount.isPage ? 'stronę' : 'profil osobisty' }}
-            </span>
+            <span class="text-[12px] text-theme-text-secondary truncate">{{ $t('header.przelaczNaPageaccountIspage') }}</span>
           </div>
         </button>
       </template>

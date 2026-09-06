@@ -9,7 +9,7 @@
           <FormatSize :size="20" />
           <div class="flex flex-col items-start leading-tight">
             <span class="text-xs text-theme-text-secondary font-semibold uppercase"
-              >Styl tekstu</span
+              >{{ $t('create.stylTekstu') }}</span
             >
             <span class="text-sm font-medium text-theme-text">{{ currentFont?.label }}</span>
           </div>
@@ -43,7 +43,7 @@
 
     <div class="border border-theme-border rounded-lg p-4 mb-4 shadow-sm bg-theme-bg-secondary">
       <div class="flex justify-between items-end mb-3">
-        <p class="text-xs text-theme-text-secondary font-bold uppercase tracking-wider">Tła</p>
+        <p class="text-xs text-theme-text-secondary font-bold uppercase tracking-wider">{{ $t('create.tla') }}</p>
         <span class="text-xs font-medium text-blue-600 truncate max-w-[150px] text-right">
           {{ currentBackground?.name }}
         </span>
@@ -87,7 +87,7 @@
       <div class="bg-theme-bg-secondary p-2.5 rounded-full border border-theme-border">
         <MusicNote :size="24" class="text-theme-text-secondary" />
       </div>
-      <span class="font-medium text-theme-text-secondary text-sm">Dodaj muzykę</span>
+      <span class="font-medium text-theme-text-secondary text-sm">{{ $t('create.dodajMuzyke') }}</span>
     </div>
   </div>
 </template>

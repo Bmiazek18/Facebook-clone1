@@ -79,7 +79,7 @@
         <button
           @click.stop="handleRemove(contact.id)"
           class="p-1.5 text-theme-text-secondary hover:bg-theme-bg-tertiary rounded-full transition ml-1 shrink-0"
-          title="Usuń"
+          :title="$t('notifications_page.delete')"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path

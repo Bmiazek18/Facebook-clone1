@@ -17,7 +17,7 @@ withDefaults(defineProps<Props>(), {
       v-if="showAvatar"
       class="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-gray-200 border border-gray-100"
     >
-      <img :src="avatarUrl" alt="Avatar" class="w-full h-full object-cover" />
+      <img :src="avatarUrl" :alt="$t('chat.avatar')" class="w-full h-full object-cover" />
     </div>
 
     <!-- Bąbelek z animacją -->

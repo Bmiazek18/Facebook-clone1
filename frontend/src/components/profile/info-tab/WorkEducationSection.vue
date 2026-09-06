@@ -239,7 +239,7 @@ const handleLocationBlur = () => {
 <template>
   <div class="max-w-[850px] mx-auto text-theme-text antialiased">
     <div class="mb-8">
-      <h3 class="font-bold text-[17px] mb-4">Lokalizacja</h3>
+      <h3 class="font-bold text-[17px] mb-4">{{ $t('post.location') }}</h3>
 
       <div v-if="isEditingLocation" class="mt-2">
         <button
@@ -263,14 +263,12 @@ const handleLocationBlur = () => {
             <span
               class="absolute top-2 left-3 text-[13px] font-normal transition-colors cursor-text"
               :class="isLocationFocused ? 'text-[#1877F2]' : 'text-theme-text-secondary'"
-            >
-              Aktualna miejscowość
-            </span>
+            >{{ $t('profile.aktualnaMiejscowosc') }}</span>
             <input
               v-model="locationForm.value"
               @focus="isLocationFocused = true"
               @blur="handleLocationBlur"
-              placeholder="Wpisz min. 3 znaki miejscowości..."
+              :placeholder="$t('profile.wpiszMin3Znaki')"
               class="w-full pt-6 pb-2 px-3 bg-transparent outline-none text-[15px] text-theme-text"
             />
 
@@ -320,9 +318,7 @@ const handleLocationBlur = () => {
               !isLoadingLocations
             "
             class="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-[0_2px_12px_rgba(0,0,0,0.2)] z-50 p-4 border border-theme-border text-center text-theme-text-secondary text-[14px]"
-          >
-            Nie znaleziono pasujących miejsc dla tej frazy
-          </div>
+          >{{ $t('profile.nieZnalezionoPasujacychMiejsc') }}</div>
         </div>
 
         <div class="flex justify-between items-center pt-4 border-t border-theme-border mt-4">
@@ -331,18 +327,14 @@ const handleLocationBlur = () => {
             type="button"
             class="flex items-center gap-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary px-4 py-1.5 rounded-md font-semibold text-[15px] text-theme-text transition-colors"
           >
-            <DeleteOutline :size="20" />
-            Usuń
-          </button>
+            <DeleteOutline :size="20" />{{ $t('notifications_page.delete') }}</button>
 
           <div class="flex gap-2">
             <button
               @click="cancelEditingLocation"
               type="button"
               class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
-            >
-              Anuluj
-            </button>
+            >{{ $t('common.cancel') }}</button>
             <button
               @click="saveLocation"
               :disabled="!isLocationChanged"
@@ -352,9 +344,7 @@ const handleLocationBlur = () => {
                   : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed'
               "
               class="px-4 py-1.5 font-semibold rounded-md text-[15px] transition-colors"
-            >
-              Zapisz
-            </button>
+            >{{ $t('createLive.save') }}</button>
           </div>
         </div>
       </div>
@@ -370,14 +360,14 @@ const handleLocationBlur = () => {
             <span class="text-[15px] font-medium text-[#1877F2] hover:underline cursor-pointer">
               {{ locationForm.value || 'Dodaj aktualne miejsce zamieszkania' }}
             </span>
-            <span class="text-[13px] text-theme-text-secondary">Aktualne miejsce zamieszkania</span>
+            <span class="text-[13px] text-theme-text-secondary">{{ $t('friends.aktualneMiejsceZamieszkania') }}</span>
           </div>
         </div>
         <div v-if="isOwner" class="flex items-center gap-3">
           <button
             @click="openPrivacySelector('location')"
             class="p-1.5 hover:bg-theme-bg-tertiary rounded-full transition-colors cursor-pointer"
-            title="Zmień ustawienia prywatności"
+            :title="$t('profile.zmienUstawieniaPrywatnosci')"
           >
             <component :is="getPrivacyIcon(locationPrivacy)" :size="16" class="text-theme-text-secondary" />
           </button>
@@ -392,30 +382,30 @@ const handleLocationBlur = () => {
     </div>
 
     <div class="mb-8">
-      <h3 class="font-bold text-[17px] mb-4">Miejscowość rodzinna</h3>
+      <h3 class="font-bold text-[17px] mb-4">{{ $t('profile.miejscowoscRodzinna') }}</h3>
       <div class="flex items-center gap-4 cursor-pointer group">
         <HomeOutline :size="28" class="text-theme-text-secondary" />
         <span class="text-[15px] font-medium text-theme-text-secondary group-hover:underline"
-          >Miejscowość rodzinna</span
+          >{{ $t('profile.miejscowoscRodzinna') }}</span
         >
       </div>
     </div>
 
     <div class="mb-8">
-      <h3 class="font-bold text-[17px] mb-4">Data urodzenia</h3>
+      <h3 class="font-bold text-[17px] mb-4">{{ $t('auth.register.birthdate') }}</h3>
       <div class="flex justify-between items-start group">
         <div class="flex gap-4 w-full max-w-[300px]">
           <CakeVariant :size="28" class="text-theme-text shrink-0" />
           <div class="flex flex-col gap-4 w-full mt-1">
             <div class="flex justify-between items-center w-full">
               <div class="flex flex-col">
-                <span class="text-[15px] text-theme-text">23 lutego</span>
-                <span class="text-[13px] text-theme-text-secondary">Data urodzenia</span>
+                <span class="text-[15px] text-theme-text">{{ $t('profile.23Lutego') }}</span>
+                <span class="text-[13px] text-theme-text-secondary">{{ $t('auth.register.birthdate') }}</span>
               </div>
               <button
                 @click="openPrivacySelector('birthDate')"
                 class="p-1.5 hover:bg-theme-bg-tertiary rounded-full transition-colors cursor-pointer"
-                title="Zmień ustawienia prywatności"
+                :title="$t('profile.zmienUstawieniaPrywatnosci')"
               >
                 <component
                   :is="getPrivacyIcon(birthDatePrivacy)"
@@ -427,12 +417,12 @@ const handleLocationBlur = () => {
             <div class="flex justify-between items-center w-full">
               <div class="flex flex-col">
                 <span class="text-[15px] text-theme-text">2005</span>
-                <span class="text-[13px] text-theme-text-secondary">Rok urodzenia</span>
+                <span class="text-[13px] text-theme-text-secondary">{{ $t('profile.info.birthYear') }}</span>
               </div>
               <button
                 @click="openPrivacySelector('birthYear')"
                 class="p-1.5 hover:bg-theme-bg-tertiary rounded-full transition-colors cursor-pointer"
-                title="Zmień ustawienia prywatności"
+                :title="$t('profile.zmienUstawieniaPrywatnosci')"
               >
                 <component
                   :is="getPrivacyIcon(birthYearPrivacy)"
@@ -452,25 +442,25 @@ const handleLocationBlur = () => {
     </div>
 
     <div class="mb-8">
-      <h3 class="font-bold text-[17px] mb-4">Status</h3>
+      <h3 class="font-bold text-[17px] mb-4">{{ $t('profile.status') }}</h3>
       <div class="flex items-center gap-4 cursor-pointer group">
         <HeartOutline :size="28" class="text-theme-text-secondary" />
         <span class="text-[15px] font-medium text-theme-text-secondary group-hover:underline"
-          >Status związku</span
+          >{{ $t('profile.statusZwiazku') }}</span
         >
       </div>
     </div>
 
     <div class="mb-8">
-      <h3 class="font-bold text-[17px] mb-4">Członkowie rodziny</h3>
+      <h3 class="font-bold text-[17px] mb-4">{{ $t('profile.info.familyMembers') }}</h3>
       <div class="flex items-center gap-4 cursor-pointer group">
         <PineTree :size="28" class="text-theme-text-secondary" />
-        <span class="text-[15px] font-medium text-theme-text-secondary group-hover:underline">Rodzina</span>
+        <span class="text-[15px] font-medium text-theme-text-secondary group-hover:underline">{{ $t('profile.rodzina') }}</span>
       </div>
     </div>
 
     <div class="mb-8">
-      <h3 class="font-bold text-[17px] mb-4">Płeć</h3>
+      <h3 class="font-bold text-[17px] mb-4">{{ $t('auth.register.gender') }}</h3>
       <div v-if="isEditingGender" class="mt-2">
         <div
           class="relative bg-theme-bg-tertiary hover:bg-theme-bg-tertiary transition-colors rounded-md px-3 py-2.5 flex justify-between items-center cursor-pointer mb-4"
@@ -484,20 +474,16 @@ const handleLocationBlur = () => {
             v-model="genderForm.showOnProfile"
             class="w-5 h-5 rounded text-[#1877F2] border-gray-400 focus:ring-[#1877F2]"
           />
-          <span class="text-[15px] text-theme-text font-medium">Wyświetl w moim profilu</span>
+          <span class="text-[15px] text-theme-text font-medium">{{ $t('profile.wyswietlWMoimProfilu') }}</span>
         </label>
         <div class="flex justify-end space-x-2 pt-4 border-t border-theme-border">
           <button
             @click="isEditingGender = false"
             class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
-          >
-            Anuluj
-          </button>
+          >{{ $t('common.cancel') }}</button>
           <button
             class="px-4 py-1.5 bg-theme-bg-tertiary text-[#BCC0C4] font-semibold rounded-md text-[15px] cursor-not-allowed"
-          >
-            Zapisz
-          </button>
+          >{{ $t('createLive.save') }}</button>
         </div>
       </div>
       <div v-else class="flex justify-between items-center group">
@@ -505,14 +491,14 @@ const handleLocationBlur = () => {
           <CircleMultipleOutline :size="28" class="text-theme-text" />
           <div class="flex flex-col mt-0.5">
             <span class="text-[15px] text-theme-text">{{ genderForm.value }}</span>
-            <span class="text-[13px] text-theme-text-secondary">Płeć</span>
+            <span class="text-[13px] text-theme-text-secondary">{{ $t('auth.register.gender') }}</span>
           </div>
         </div>
         <div v-if="isOwner" class="flex items-center gap-3">
           <button
             @click="openPrivacySelector('gender')"
             class="p-1.5 hover:bg-theme-bg-tertiary rounded-full transition-colors cursor-pointer"
-            title="Zmień ustawienia prywatności"
+            :title="$t('profile.zmienUstawieniaPrywatnosci')"
           >
             <component :is="getPrivacyIcon(genderPrivacy)" :size="16" class="text-[#BCC0C4]" />
           </button>
@@ -527,20 +513,20 @@ const handleLocationBlur = () => {
     </div>
 
     <div class="mb-8">
-      <h3 class="font-bold text-[17px] mb-4">Zaimki</h3>
+      <h3 class="font-bold text-[17px] mb-4">{{ $t('profile.info.pronouns') }}</h3>
       <div class="flex justify-between items-center group">
         <div class="flex gap-4">
           <MessageOutline :size="28" class="text-theme-text" />
           <div class="flex flex-col mt-0.5">
-            <span class="text-[15px] text-theme-text">on/jego</span>
-            <span class="text-[13px] text-theme-text-secondary">Zaimki systemowe</span>
+            <span class="text-[15px] text-theme-text">{{ $t('profile.onJego') }}</span>
+            <span class="text-[13px] text-theme-text-secondary">{{ $t('profile.zaimkiSystemowe') }}</span>
           </div>
         </div>
         <div v-if="isOwner" class="flex items-center gap-3">
           <button
             @click="openPrivacySelector('pronouns')"
             class="p-1.5 hover:bg-theme-bg-tertiary rounded-full transition-colors cursor-pointer"
-            title="Zmień ustawienia prywatności"
+            :title="$t('profile.zmienUstawieniaPrywatnosci')"
           >
             <component :is="getPrivacyIcon(pronounsPrivacy)" :size="16" class="text-[#BCC0C4]" />
           </button>
@@ -552,17 +538,17 @@ const handleLocationBlur = () => {
     </div>
 
     <div class="mb-2">
-      <h3 class="font-bold text-[17px] mb-4">Języki</h3>
+      <h3 class="font-bold text-[17px] mb-4">{{ $t('profile.info.languages') }}</h3>
       <div class="flex items-center gap-4 cursor-pointer group">
         <Translate :size="28" class="text-theme-text-secondary" />
-        <span class="text-[15px] font-medium text-theme-text-secondary group-hover:underline">Języki</span>
+        <span class="text-[15px] font-medium text-theme-text-secondary group-hover:underline">{{ $t('profile.info.languages') }}</span>
       </div>
     </div>
 
     <!-- Modal Prywatności -->
     <BaseModal
       v-if="showPrivacyModal"
-      title="Wybierz grupę odbiorców"
+      :title="$t('profile.wybierzGrupeOdbiorcow')"
       @close="showPrivacyModal = false"
     >
       <PrivacySelector

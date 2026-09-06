@@ -28,17 +28,14 @@ const albums = ref([
 <template>
   <div class="bg-theme-bg-secondary text-theme-text p-6 mt-4  ">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-xl font-bold">Multimedia</h1>
+      <h1 class="text-xl font-bold">{{ $t('groups.media') }}</h1>
       <div class="flex space-x-6 text-sm">
         <NuxtLink
           to="/addAlbum"
           class="text-theme-primary hover:text-theme-primary-hover transition flex items-center font-medium"
         >
-          <span class="text-xl mr-1">+</span> Utwórz album
-        </NuxtLink>
-        <button class="text-theme-primary hover:text-theme-primary-hover transition font-medium">
-          Dodaj zdjęcia/film
-        </button>
+          <span class="text-xl mr-1">+</span>{{ $t('profile.utworzAlbum') }}</NuxtLink>
+        <button class="text-theme-primary hover:text-theme-primary-hover transition font-medium">{{ $t('profile.dodajZdjeciaFilm') }}</button>
       </div>
     </div>
 
@@ -90,12 +87,10 @@ const albums = ref([
           />
         </div>
         <h3 class="text-[15px] font-bold text-theme-text leading-snug">{{ album.title }}</h3>
-        <p class="text-[13px] text-theme-text-secondary">{{ album.count }} zdjęcie</p>
+        <p class="text-[13px] text-theme-text-secondary">{{ $t('profile.albumCountZdjecie') }}</p>
       </div>
     </div>
 
-    <div v-if="activeTab === 'Filmy'" class="py-10 text-center text-theme-text-secondary">
-      Brak filmów do wyświetlenia.
-    </div>
+    <div v-if="activeTab === 'Filmy'" class="py-10 text-center text-theme-text-secondary">{{ $t('profile.brakFilmowDoWyswietlenia') }}</div>
   </div>
 </template>

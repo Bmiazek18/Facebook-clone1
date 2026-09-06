@@ -49,9 +49,7 @@
       v-if="showReadMore"
       @click="handleExpandText"
       class="text-theme-text hover:underline font-semibold"
-    >
-      Czytaj więcej
-    </button>
+    >{{ $t('feed.czytajWiecej') }}</button>
   </div>
 
   <!-- Translation section -->
@@ -119,11 +117,9 @@
         <VDropdown :distance="10" placement="bottom-start">
           <button
             class="text-[#1877F2] hover:underline cursor-pointer bg-transparent border-none p-0"
-          >
-            Oceń to tłumaczenie
-          </button>
+          >{{ $t('feed.ocenToTlumaczenie') }}</button>
           <template #popper>
-            <div class="p-4 text-center">Funkcja oceniania...</div>
+            <div class="p-4 text-center">{{ $t('feed.funkcjaOceniania') }}</div>
           </template>
         </VDropdown>
       </div>

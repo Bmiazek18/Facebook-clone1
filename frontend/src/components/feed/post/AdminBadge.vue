@@ -31,9 +31,7 @@ const emit = defineEmits<{
       <button
         type="button"
         class="inline-flex items-center px-2 py-0.5 rounded-md bg-[#e7f3ff] dark:bg-[#252f3d] text-[#1877f2] dark:text-[#4599ff] text-[13px]  dark:hover:bg-[#2d3a4d] transition-colors cursor-pointer"
-      >
-        Administrator
-      </button>
+      >{{ $t('feed.administrator') }}</button>
 
       <!-- Zawartość Popovera (Popper) -->
       <template #popper="{ hide }">
@@ -48,16 +46,12 @@ const emit = defineEmits<{
 
             <!-- Nagłówek i Opis -->
             <div class="flex-1 min-w-0">
-              <h3 class="text-[17px] font-bold text-[#050505] dark:text-[#e4e6eb] leading-tight mb-1">
-                Administrator
-              </h3>
-              <p class="text-[14px] text-[#050505] dark:text-[#e4e6eb] leading-snug">
-                Zarządzasz członkostwem, uprawnieniami moderatora, ustawieniami i postami w grupie {{ props.groupName }}. Tylko członkowie grupy mogą zobaczyć tę odznakę.
-              </p>
+              <h3 class="text-[17px] font-bold text-[#050505] dark:text-[#e4e6eb] leading-tight mb-1">{{ $t('feed.administrator') }}</h3>
+              <p class="text-[14px] text-[#050505] dark:text-[#e4e6eb] leading-snug">{{ $t('feed.zarzadzaszCzlonkostwemUprawnieniamiModeratora') }}</p>
 
              <img
                 src="@/assets/images/default_avatar.png"
-                alt="Informacja o odznace administratora"
+                :alt="$t('feed.informacjaOOdznaceAdministratora')"
                 class="w-9 h-9 mt-3 rounded-full border border-gray-200 dark:border-[#3e4042]"
               />
             </div>
@@ -68,9 +62,7 @@ const emit = defineEmits<{
             type="button"
             @click="() => { emit('view-all'); hide(); }"
             class="w-full bg-[#e4e6eb] hover:bg-[#d8dadf] dark:bg-[#3a3b3c] dark:hover:bg-[#4e4f50] text-[#050505] dark:text-[#e4e6eb] text-[15px] font-semibold py-2.5 rounded-xl transition-colors cursor-pointer"
-          >
-            Wyświetl wszystkich administratorów
-          </button>
+          >{{ $t('feed.wyswietlWszystkichAdministratorow') }}</button>
         </div>
       </template>
     </VDropdown>

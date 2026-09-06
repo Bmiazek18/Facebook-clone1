@@ -79,13 +79,13 @@ const handleSend = (name: string) => {
       <input
         v-model="searchQuery"
         type="text"
-        placeholder="Szukaj osób i grup"
+        :placeholder="$t('chat.szukajOsobIGrup')"
         class="block w-full pl-10 pr-3 py-2 bg-gray-100 border-none rounded-full text-sm focus:ring-2 focus:ring-blue-500 outline-none"
       />
     </div>
 
     <div class="mb-6">
-      <h2 class="text-lg font-bold mb-4 px-1">Ostatnie</h2>
+      <h2 class="text-lg font-bold mb-4 px-1">{{ $t('emojiPicker.recent') }}</h2>
       <div class="space-y-4">
         <div
           v-for="item in filteredRecent"
@@ -96,22 +96,20 @@ const handleSend = (name: string) => {
             <img
               :src="item.avatar"
               class="w-12 h-12 rounded-full object-cover shadow-sm"
-              alt="Avatar"
+              :alt="$t('chat.avatar')"
             />
             <span class="font-semibold text-[15px]">{{ item.name }}</span>
           </div>
           <button
             @click="handleSend(item.name)"
             class="px-4 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold rounded-lg text-sm transition-colors"
-          >
-            Wyślij
-          </button>
+          >{{ $t('actions.send') }}</button>
         </div>
       </div>
     </div>
 
     <div>
-      <h2 class="text-lg font-bold mb-4 px-1">Grupy</h2>
+      <h2 class="text-lg font-bold mb-4 px-1">{{ $t('login.groups') }}</h2>
       <div class="space-y-4">
         <div
           v-for="item in filteredGroups"
@@ -122,16 +120,14 @@ const handleSend = (name: string) => {
             <img
               :src="item.avatar"
               class="w-12 h-12 rounded-full object-cover shadow-sm"
-              alt="Avatar"
+              :alt="$t('chat.avatar')"
             />
             <span class="font-semibold text-[15px]">{{ item.name }}</span>
           </div>
           <button
             @click="handleSend(item.name)"
             class="px-4 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold rounded-lg text-sm transition-colors"
-          >
-            Wyślij
-          </button>
+          >{{ $t('actions.send') }}</button>
         </div>
       </div>
     </div>

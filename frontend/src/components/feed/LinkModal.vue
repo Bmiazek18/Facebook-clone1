@@ -4,7 +4,7 @@
   >
     <div v-if="loading" class="flex flex-col items-center py-10">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-theme-primary"></div>
-      <p class="mt-4 text-theme-text-secondary text-sm">Pobieranie danych...</p>
+      <p class="mt-4 text-theme-text-secondary text-sm">{{ $t('create.pobieranieDanych') }}</p>
     </div>
 
     <template v-else>
@@ -15,7 +15,7 @@
           <img
             v-if="displayData.image_url"
             :src="displayData.image_url"
-            alt="Logo"
+            :alt="$t('feed.logo')"
             class="h-full w-full object-contain p-1"
           />
           <span v-else class="text-[11px] font-bold text-gray-700 uppercase tracking-tighter">{{
@@ -40,9 +40,7 @@
         <p class="text-[14px] leading-relaxed text-theme-text">
           {{ displayData.description }}
         </p>
-        <p class="mt-2 text-[13px] text-theme-text-secondary">
-          Źródło:
-          <a
+        <p class="mt-2 text-[13px] text-theme-text-secondary">{{ $t('feed.zrodlo') }}<a
             :href="displayData.wiki_url"
             target="_blank"
             class="text-theme-primary hover:underline cursor-pointer font-medium"
@@ -59,12 +57,8 @@
           </svg>
         </div>
         <div class="text-[13px] flex-1">
-          <h3 class="font-medium text-[15px] text-theme-text mb-1">
-            Biogram strony:
-          </h3>
-          <p class="text-theme-text-secondary italic leading-relaxed">
-            "{{ displayData.description || 'Ta strona nie posiada jeszcze biogramu.' }}"
-          </p>
+          <h3 class="font-medium text-[15px] text-theme-text mb-1">{{ $t('feed.biogramStrony') }}</h3>
+          <p class="text-theme-text-secondary italic leading-relaxed">{{ $t('feed.displaydataDescriptionTaStrona') }}</p>
         </div>
       </footer>
 
@@ -84,12 +78,8 @@
           </svg>
         </div>
         <div class="text-[13px]">
-          <h3 class="font-medium text-[15px] text-theme-text">
-            Rejestracja domeny {{ displayData.domain }}:
-          </h3>
-          <p class="text-theme-text-secondary">
-            {{ displayData.registration_date }} | Z:
-            <span class="font-medium text-theme-primary uppercase">Whois</span>
+          <h3 class="font-medium text-[15px] text-theme-text">{{ $t('feed.rejestracjaDomenyDisplaydataDomain') }}</h3>
+          <p class="text-theme-text-secondary">{{ $t('feed.displaydataRegistrationDateZ') }}<span class="font-medium text-theme-primary uppercase">{{ $t('feed.whois') }}</span>
           </p>
         </div>
       </footer>

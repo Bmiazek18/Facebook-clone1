@@ -25,27 +25,19 @@ const getThemeTitle = (themeId: string | undefined) => {
   <div class="flex w-full items-center justify-center py-2 text-[12px] text-black">
     <div class="text-center leading-relaxed">
       <!-- Szybka reakcja -->
-      <span v-if="message.subType === 'CHANGE_E'">
-        Ustawiłeś szybką reakcję jako {{ message.payload }}.
-      </span>
+      <span v-if="message.subType === 'CHANGE_E'">{{ $t('chat.ustawilesSzybkaReakcjeJako') }}</span>
 
       <!-- Zmiana pseudonimu -->
-      <span v-else-if="message.subType === 'CHANGE_NICKNAME'">
-        Twój pseudonim został zdefiniowany jako {{ message.payload }}.
-      </span>
+      <span v-else-if="message.subType === 'CHANGE_NICKNAME'">{{ $t('chat.twojPseudonimZostalZdefiniowany') }}</span>
 
       <!-- Zmiana motywu -->
-      <span v-else-if="message.subType === 'CHANGE_THEME'">
-        Zmieniłeś motyw na {{ getThemeTitle(message.payload) }}.
-      </span>
+      <span v-else-if="message.subType === 'CHANGE_THEME'">{{ $t('chat.zmienilesMotywNaGetthemetitle') }}</span>
 
       <!-- Przycisk Zmień (z akcentem kolorystycznym ze zrzutu) -->
       <button
         @click="emit('open-modal', message.subType)"
         class="ml-0.5 font-medium text-[#c22828] hover:underline transition-colors cursor-pointer"
-      >
-        Zmień
-      </button>
+      >{{ $t('chat.zmien') }}</button>
     </div>
   </div>
 </template>

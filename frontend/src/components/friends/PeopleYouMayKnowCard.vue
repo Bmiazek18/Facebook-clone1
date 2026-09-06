@@ -38,9 +38,7 @@
               </div>
             </div>
 
-            <span class="truncate hover:underline">
-              {{ person.commonFriends }} wspólnych znajomych
-            </span>
+            <span class="truncate hover:underline">{{ $t('friends.personCommonfriendsWspolnychZnajomych') }}</span>
           </div>
 
           <!-- Zawartość Tooltipa (Popper) -->
@@ -59,7 +57,7 @@
 
         <!-- Fallback, gdy brak wspólnych znajomych (bez tooltipa) -->
         <div v-else class="flex items-center text-[13px] text-theme-text-secondary">
-          <span>Brak wspólnych znajomych</span>
+          <span>{{ $t('profile.noCommonFriends') }}</span>
         </div>
       </div>
 
@@ -68,26 +66,20 @@
           v-if="variant === 'request'"
           @click="$emit('confirm', person.id)"
           class="w-full bg-theme-primary hover:bg-theme-primary-hover text-white font-bold text-[15px] py-1.5 rounded-lg transition-colors"
-        >
-          Potwierdź
-        </button>
+        >{{ $t('notifications_page.confirm') }}</button>
 
         <button
           v-else
           @click="$emit('add', person.id)"
           class="w-full bg-theme-primary-subtle hover:bg-theme-primary-subtle-hover text-theme-primary font-bold text-[12px] py-1 rounded-lg transition-colors flex items-center justify-center"
         >
-          <AccountPlusIcon :size="16" class="mr-1.5" />
-          Dodaj znajomego
-        </button>
+          <AccountPlusIcon :size="16" class="mr-1.5" />{{ $t('feed.dodajZnajomego') }}</button>
 
         <button
           v-if="!hasXButton"
           @click="$emit('delete', person.id)"
           class="w-full bg-theme-bg-subtle hover:bg-theme-hover-strong text-theme-text font-bold text-[15px] py-1.5 rounded-lg transition-colors"
-        >
-          Usuń
-        </button>
+        >{{ $t('notifications_page.delete') }}</button>
       </div>
     </div>
   </div>

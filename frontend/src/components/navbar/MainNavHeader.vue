@@ -192,12 +192,8 @@ const goToProfile = (user: { id: string, name: string, avatar: string }) => {
         <!-- Stan z wpisaną frazą wyszukiwania -->
         <div v-if="searchInput.trim()">
           <div v-if="isSearching" class="px-4 py-3 text-center text-[15px] text-[#65676B] dark:text-[#B0B3B8] flex items-center justify-center gap-2">
-            <div class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            Wyszukiwanie...
-          </div>
-          <div v-else-if="searchResults.length === 0" class="px-4 py-3 text-center text-[15px] text-[#65676B] dark:text-[#B0B3B8]">
-            Nie znaleziono pasujących osób
-          </div>
+            <div class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>{{ $t('header.wyszukiwanie') }}</div>
+          <div v-else-if="searchResults.length === 0" class="px-4 py-3 text-center text-[15px] text-[#65676B] dark:text-[#B0B3B8]">{{ $t('header.nieZnalezionoPasujacychOsob') }}</div>
           <div v-else class="flex flex-col">
             <div
               v-for="user in searchResults"
@@ -210,7 +206,7 @@ const goToProfile = (user: { id: string, name: string, avatar: string }) => {
               </div>
               <span class="text-[15px] font-semibold text-gray-900 dark:text-gray-200 truncate">{{ user.name }}</span>
               <!-- Blue dot if user posted since last search -->
-              <span v-if="user.newPostsCount > 0" class="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0 ml-auto" title="Nowe posty od ostatniego wyszukiwania"></span>
+              <span v-if="user.newPostsCount > 0" class="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0 ml-auto" :title="$t('header.nowePostyOdOstatniego')"></span>
             </div>
           </div>
         </div>
@@ -219,13 +215,11 @@ const goToProfile = (user: { id: string, name: string, avatar: string }) => {
         <div v-else>
           <div v-if="recentSearches.length > 0">
             <div class="flex justify-between items-center px-4 py-2">
-              <span class="text-[16px] font-bold text-gray-800 dark:text-gray-200">Ostatnie wyszukiwania</span>
+              <span class="text-[16px] font-bold text-gray-800 dark:text-gray-200">{{ $t('search.recent') }}</span>
               <button
                 @click="clearAllRecent"
                 class="text-[13px] font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 px-2 py-1 rounded transition"
-              >
-                Wyczyść wszystko
-              </button>
+              >{{ $t('header.wyczyscWszystko') }}</button>
             </div>
             <div class="flex flex-col mt-1">
               <div
@@ -240,12 +234,12 @@ const goToProfile = (user: { id: string, name: string, avatar: string }) => {
                   </div>
                   <span class="text-[15px] font-medium text-gray-950 dark:text-gray-200 truncate">{{ user.name }}</span>
                   <!-- Blue dot if user posted since last search -->
-                  <span v-if="user.newPostsCount > 0" class="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" title="Nowe posty od ostatniego wyszukiwania"></span>
+                  <span v-if="user.newPostsCount > 0" class="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" :title="$t('header.nowePostyOdOstatniego')"></span>
                 </div>
                 <button
                   @click.stop="removeFromRecent(user.id)"
                   class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-200 transition opacity-0 group-hover:opacity-100"
-                  title="Usuń z historii"
+                  :title="$t('header.usunZHistorii')"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -254,9 +248,7 @@ const goToProfile = (user: { id: string, name: string, avatar: string }) => {
               </div>
             </div>
           </div>
-          <div v-else class="px-4 py-3 text-center text-[15px] text-[#65676B] dark:text-[#B0B3B8]">
-            Wpisz imię lub nazwisko, aby wyszukać
-          </div>
+          <div v-else class="px-4 py-3 text-center text-[15px] text-[#65676B] dark:text-[#B0B3B8]">{{ $t('header.wpiszImieLubNazwisko') }}</div>
         </div>
       </div>
 

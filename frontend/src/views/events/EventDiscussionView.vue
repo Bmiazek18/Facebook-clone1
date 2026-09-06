@@ -30,7 +30,7 @@ const eventPosts = computed(() => {
         <PostItem v-for="post in eventPosts" :key="post.id" :post="post" />
       </div>
       <div v-else class="bg-theme-bg-secondary rounded-lg shadow-sm p-6 text-center">
-        <p class="text-theme-text-secondary">Brak postów w tej dyskusji. Bądź pierwszy!</p>
+        <p class="text-theme-text-secondary">{{ $t('events.brakPostowWTej') }}</p>
       </div>
     </div>
     <div class="lg:col-span-2">

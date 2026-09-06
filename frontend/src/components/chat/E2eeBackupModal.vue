@@ -208,7 +208,7 @@ onMounted(() => {
 
       <!-- Potwierdzenie PIN (tylko dla trybu 'setup') -->
       <div v-if="mode === 'setup'" class="relative w-max mx-auto mb-8">
-        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 text-left">Potwierdź PIN</p>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 text-left">{{ $t('chat.potwierdzPin') }}</p>
         <input
           v-model="pinConfirm"
           type="tel"
@@ -260,9 +260,7 @@ onMounted(() => {
           @click="handleReset"
           class="text-[#1A73E8] dark:text-[#669DF6] font-semibold text-[15px] hover:underline"
           :disabled="loading"
-        >
-          Zamiast tego zresetuj szyfrowanie
-        </button>
+        >{{ $t('chat.zamiastTegoZresetujSzyfrowanie') }}</button>
 
       </div>
     </div>

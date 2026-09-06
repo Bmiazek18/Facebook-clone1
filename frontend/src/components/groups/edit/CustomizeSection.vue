@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white dark:bg-[#242526] rounded-xl p-4 shadow-sm border border-gray-200 dark:border-[#3e4042]">
-    <h2 class="text-[20px] font-semibold text-[#050505] dark:text-[#e4e6eb] mb-2">Dostosuj grupę</h2>
+    <h2 class="text-[20px] font-semibold text-[#050505] dark:text-[#e4e6eb] mb-2">{{ $t('groups.dostosujGrupe') }}</h2>
 
     <div class="flex flex-col">
       <template v-for="item in items" :key="item.id">
@@ -43,9 +43,7 @@
           <div class="space-y-3">
             <!-- Input z prefiksem -->
             <div class="relative border border-gray-300 dark:border-[#525355] rounded-xl px-3 py-3 focus-within:border-[#1877f2] dark:focus-within:border-[#4599ff] focus-within:ring-1 focus-within:ring-[#1877f2] dark:focus-within:ring-[#4599ff] transition-all flex items-center">
-              <span class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] select-none">
-                www.facebook.com/groups/
-              </span>
+              <span class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] select-none">{{ $t('groups.wwwFacebookComGroups') }}</span>
               <input
                 v-model="webAddressSlug"
                 type="text"
@@ -54,9 +52,7 @@
             </div>
 
             <!-- Informacja na szarym tle -->
-            <div class="bg-[#f0f2f5] dark:bg-[#3a3b3c]/60 p-4 rounded-xl text-[14px] text-[#65676b] dark:text-[#b0b3b8] leading-relaxed">
-              Kiedy grupa będzie liczyć ponad 5000 członków, nie będzie można ponownie zmienić adresu.
-            </div>
+            <div class="bg-[#f0f2f5] dark:bg-[#3a3b3c]/60 p-4 rounded-xl text-[14px] text-[#65676b] dark:text-[#b0b3b8] leading-relaxed">{{ $t('groups.kiedyGrupaBedzieLiczyc') }}</div>
           </div>
 
           <!-- Przyciski: Anuluj / Zapisz -->
@@ -65,9 +61,7 @@
               type="button"
               @click="cancelEdit"
               class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-gray-100 dark:hover:bg-[#3a3b3c] transition-colors"
-            >
-              Anuluj
-            </button>
+            >{{ $t('common.cancel') }}</button>
 
             <button
               type="button"
@@ -79,16 +73,14 @@
                   ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
                   : 'bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
               ]"
-            >
-              Zapisz
-            </button>
+            >{{ $t('createLive.save') }}</button>
           </div>
         </div>
       </template>
     </div>
 
     <!-- MODAL WYBORU KOLORU (BaseModal + GroupColorPickerModal) -->
-    <BaseModal v-if="isColorModalOpen" @close="isColorModalOpen = false"  title="Kolor">
+    <BaseModal v-if="isColorModalOpen" @close="isColorModalOpen = false"  :title="$t('create.kolor')">
       <GroupColorPickerModal
         :initial-color="selectedGroupColor"
         @close="isColorModalOpen = false"

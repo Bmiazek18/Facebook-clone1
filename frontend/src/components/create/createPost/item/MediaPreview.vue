@@ -138,7 +138,7 @@ const getVideoPosterUrl = (url: string) => {
               />
             </svg>
             <span class="absolute text-xs font-bold text-white"
-              >{{ Math.round(item.progress) }}%</span
+              >{{ $t('create.mathRoundItemProgress') }}</span
             >
           </div>
         </div>
@@ -181,9 +181,7 @@ const getVideoPosterUrl = (url: string) => {
         <div
           v-if="item.progress !== null && item.progress !== undefined && item.progress < 100"
           class="flex items-center justify-center shrink-0 w-10 h-10 rounded-full bg-theme-bg-subtle text-theme-text text-xs font-bold border border-theme-border"
-        >
-          {{ Math.round(item.progress) }}%
-        </div>
+        >{{ $t('create.mathRoundItemProgress') }}</div>
       </div>
 
       <!-- ================= ZDJĘCIE / GIF ================= -->
@@ -219,7 +217,7 @@ const getVideoPosterUrl = (url: string) => {
               />
             </svg>
             <span class="absolute text-xs font-bold text-white"
-              >{{ Math.round(item.progress) }}%</span
+              >{{ $t('create.mathRoundItemProgress') }}</span
             >
           </div>
         </div>
@@ -232,7 +230,7 @@ const getVideoPosterUrl = (url: string) => {
         class="absolute top-3 left-3 bg-white hover:bg-gray-100 text-gray-900 text-sm font-semibold px-3 py-1.5 rounded-lg shadow-md flex items-center gap-1.5 transition z-10 cursor-pointer"
       >
         <PencilIcon :size="16" />
-        <span>Edytuj</span>
+        <span>{{ $t('common.edit') }}</span>
       </button>
 
       <!-- Przycisk "X" (Zamknij) -->

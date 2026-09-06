@@ -177,24 +177,18 @@ const handleSendForward = (chatId: string | number) => {
               hide()
             "
             class="w-full text-left px-4 py-2.5 text-[15px] font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            Cofnij wysłanie
-          </button>
+          >{{ $t('chat.cofnijWyslanie') }}</button>
           <button
             @click="
               isShareModalOpen = true,
               hide()
             "
             class="w-full text-left px-4 py-2.5 text-[15px] font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            Prześlij
-          </button>
+          >{{ $t('chat.przeslij') }}</button>
           <button
             @click="emit('pin', props.messageId)"
             class="w-full text-left px-4 py-2.5 text-[15px] font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            Przypnij
-          </button>
+          >{{ $t('actions.pin') }}</button>
         </div>
       </template>
     </VDropdown>
@@ -203,20 +197,16 @@ const handleSendForward = (chatId: string | number) => {
     <BaseModal
       v-if="isUnsendModalOpen"
       @close="isUnsendModalOpen = false"
-      title="W przypadku kogo chcesz cofnąć wysłanie tej wiadomości?"
+      :title="$t('chat.wPrzypadkuKogoChcesz')"
       :showCloseButton="false"
     >
       <div class="w-[700px] p-6">
         <div class="flex justify-end gap-2 mt-4">
-          <button @click="isUnsendModalOpen = false" class="px-4 py-2 font-bold text-blue-600">
-            Anuluj
-          </button>
+          <button @click="isUnsendModalOpen = false" class="px-4 py-2 font-bold text-blue-600">{{ $t('common.cancel') }}</button>
           <button
             @click="handleConfirmUnsend"
             class="px-6 py-2 font-bold text-white bg-blue-600 rounded-lg"
-          >
-            Usuń
-          </button>
+          >{{ $t('notifications_page.delete') }}</button>
         </div>
       </div>
     </BaseModal>
@@ -225,7 +215,7 @@ const handleSendForward = (chatId: string | number) => {
     <BaseModal
       v-if="isShareModalOpen"
       @close="isShareModalOpen = false"
-      title="Prześlij dalej"
+      :title="$t('actions.forward')"
     >
       <div class="w-[520px] max-h-[80vh] flex flex-col p-4">
         <!-- Pasek wyszukiwania -->
@@ -236,12 +226,12 @@ const handleSendForward = (chatId: string | number) => {
           <input
             v-model="searchForwardQuery"
             type="text"
-            placeholder="Szukaj osób i grup"
+            :placeholder="$t('chat.szukajOsobIGrup')"
             class="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-full text-sm outline-none border-none focus:ring-2 focus:ring-blue-500 transition"
           />
         </div>
 
-        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Ostatnie</div>
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ $t('emojiPicker.recent') }}</div>
 
         <!-- Lista czatów -->
         <div class="overflow-y-auto max-h-[400px] space-y-1 custom-scrollbar pr-1">
@@ -254,7 +244,7 @@ const handleSendForward = (chatId: string | number) => {
               <img
                 :src="chat.avatarUrl || 'https://i.pravatar.cc/150?img=' + chat.id"
                 class="w-12 h-12 rounded-full object-cover"
-                alt="Avatar"
+                :alt="$t('chat.avatar')"
               />
               <span class="font-semibold text-gray-900 dark:text-gray-100 text-[15px]">{{ chat.name }}</span>
             </div>

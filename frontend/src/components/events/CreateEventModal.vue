@@ -46,7 +46,7 @@
           v-if="previewImages.length > 0"
           @click.stop="removeImage"
           class="absolute top-4 right-4 bg-black/40 hover:bg-black/50 text-white p-2 rounded-full backdrop-blur-sm transition z-10"
-          title="Usuń zdjęcie"
+          :title="$t('events.usunZdjecie')"
         >
           <close-icon :size="16" />
         </button>
@@ -78,7 +78,7 @@
             <span class="font-semibold text-[15px] text-theme-text">{{
               auth.currentUser?.name
             }}</span>
-            <span class="text-[13px] text-theme-text-secondary">Organizator — Twój profil</span>
+            <span class="text-[13px] text-theme-text-secondary">{{ $t('createLive.organizer') }}</span>
           </div>
         </div>
 
@@ -96,12 +96,12 @@
           <label
             for="eventName"
             class="absolute text-[15px] text-theme-text-secondary duration-150 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-theme-primary"
-            >Nazwa wydarzenia</label
+            >{{ $t('createEvent.eventName') }}</label
           >
           <span
             v-if="isNameFocused || form.name.length > 0"
             class="absolute top-3 right-3 text-[12px] text-theme-text-secondary pointer-events-none transition-opacity duration-200"
-            >{{ form.name.length }}/100</span
+            >{{ $t('events.formNameLength100') }}</span
           >
         </div>
 
@@ -118,7 +118,7 @@
                 <calendar-month-icon class="text-theme-text-secondary" />
                 <div class="flex flex-col">
                   <span class="text-[12px] text-theme-text-secondary leading-none mb-0.5"
-                    >Data rozpoczęcia</span
+                    >{{ $t('events.dataRozpoczecia') }}</span
                   ><span class="text-[15px] text-theme-text">{{ formatDate(form.startDate) }}</span>
                 </div>
               </div>
@@ -141,7 +141,7 @@
               <clock-outline-icon class="text-theme-text-secondary" />
               <div class="flex flex-col w-full">
                 <span class="text-[12px] text-theme-text-secondary leading-none mb-0.5"
-                  >Czas rozpoczęcia</span
+                  >{{ $t('events.czasRozpoczecia') }}</span
                 ><input
                   v-model="form.startTime"
                   type="time"
@@ -166,7 +166,7 @@
                 <calendar-month-icon class="text-theme-text-secondary" />
                 <div class="flex flex-col">
                   <span class="text-[12px] text-theme-text-secondary leading-none mb-0.5"
-                    >Data zakończenia</span
+                    >{{ $t('events.dataZakonczenia') }}</span
                   ><span class="text-[15px] text-theme-text">{{ formatDate(form.endDate) }}</span>
                 </div>
               </div>
@@ -190,7 +190,7 @@
               <clock-outline-icon class="text-theme-text-secondary" />
               <div class="flex flex-col w-full">
                 <span class="text-[12px] text-theme-text-secondary leading-none mb-0.5"
-                  >Godzina zakończenia</span
+                  >{{ $t('events.godzinaZakonczenia') }}</span
                 ><input
                   v-model="form.endTime"
                   type="time"
@@ -198,7 +198,7 @@
                 />
               </div>
             </div>
-            <div class="col-span-2 text-[13px] text-theme-text-secondary">Strefa czasowa: CET</div>
+            <div class="col-span-2 text-[13px] text-theme-text-secondary">{{ $t('events.strefaCzasowaCet') }}</div>
           </div>
 
           <div class="flex items-center">
@@ -216,7 +216,7 @@
         <CustomDropdown
           v-model="form.type"
           :options="eventTypeOptions"
-          label="Czy wydarzenie jest offline czy online?"
+          :label="$t('events.czyWydarzenieJestOffline')"
           class="mb-4"
           :icon-class="{ 'transform -rotate-45': form.type === 'online' }"
         />
@@ -240,7 +240,7 @@
         </div>
 
         <div class="mb-6">
-          <label class="text-[15px] font-semibold mb-2 block">Kto może to zobaczyć?</label>
+          <label class="text-[15px] font-semibold mb-2 block">{{ $t('post.whoCanSee') }}</label>
           <Dropdown class="w-full" :distance="6">
             <div
               class="w-full p-3 border border-theme-border rounded-lg flex items-center justify-between bg-theme-bg-secondary text-[15px] cursor-pointer hover:bg-theme-hover transition"
@@ -294,7 +294,7 @@
         <CustomTextarea
           v-model="form.description"
           id="desc"
-          label="Jakie są szczegółowe informacje?"
+          :label="$t('events.jakieSaSzczegoloweInformacje')"
           placeholder=" "
           class="min-h-[120px]"
         />
@@ -308,7 +308,7 @@
               <div class="flex items-center gap-3">
                 <plus-circle-outline-icon :size="24" class="text-theme-text-secondary" />
                 <span class="text-[15px] font-semibold text-theme-text"
-                  >Dodaj współorganizatorów</span
+                  >{{ $t('events.dodajWspolorganizatorow') }}</span
                 >
               </div>
               <chevron-down-icon
@@ -323,13 +323,10 @@
             <div v-if="accordions.cohosts" class="pb-4 bg-theme-bg rounded-lg p-3">
               <input
                 type="text"
-                placeholder="Dodaj współorganizatorów"
+                :placeholder="$t('events.dodajWspolorganizatorow')"
                 class="w-full bg-theme-bg-secondary border border-theme-border rounded-lg px-3 py-2 text-[15px] mb-2 focus:border-theme-primary focus:outline-none"
               />
-              <p class="text-[12px] text-theme-text-secondary leading-tight">
-                Współorganizatorzy mogą zaakceptować lub odrzucić zaproszenie dopiero po
-                opublikowaniu wydarzenia.
-              </p>
+              <p class="text-[12px] text-theme-text-secondary leading-tight">{{ $t('events.wspolorganizatorzyMogaZaakceptowacLub') }}</p>
             </div>
           </div>
 
@@ -340,7 +337,7 @@
             >
               <div class="flex items-center gap-3">
                 <refresh-icon :size="24" class="text-theme-text-secondary" />
-                <span class="text-[15px] font-semibold text-theme-text">Powtarzane wydarzenie</span>
+                <span class="text-[15px] font-semibold text-theme-text">{{ $t('events.powtarzaneWydarzenie') }}</span>
               </div>
               <chevron-down-icon
                 :class="[
@@ -354,34 +351,32 @@
             <div v-if="accordions.recurring" class="pb-4 bg-theme-bg rounded-lg p-3">
               <div class="mb-3">
                 <label class="text-[13px] text-theme-text-secondary mb-1 block"
-                  >Częstotliwość</label
+                  >{{ $t('events.czestotliwosc') }}</label
                 >
                 <select
                   v-model="form.frequency"
                   class="w-full bg-theme-bg-secondary border border-theme-border rounded-lg px-3 py-2 text-[15px] focus:border-theme-primary focus:outline-none"
                 >
-                  <option>Nigdy</option>
-                  <option>Codziennie</option>
-                  <option>Co tydzień</option>
+                  <option>{{ $t('events.nigdy') }}</option>
+                  <option>{{ $t('events.codziennie') }}</option>
+                  <option>{{ $t('events.coTydzien') }}</option>
                 </select>
               </div>
               <div class="flex gap-2">
                 <div
                   class="flex-1 bg-theme-bg-subtle border border-theme-border rounded-lg p-2 flex items-center justify-between text-theme-text-muted"
                 >
-                  <span>Data zakończenia</span>
+                  <span>{{ $t('events.dataZakonczenia') }}</span>
                   <alert-circle-icon :size="18" class="text-[#d22d2d]" />
                 </div>
                 <div
                   class="flex-1 bg-theme-bg-subtle border border-theme-border rounded-lg p-2 flex items-center justify-between text-theme-text-muted"
                 >
-                  <span>Godzina zakończ...</span>
+                  <span>{{ $t('events.godzinaZakoncz') }}</span>
                   <alert-circle-icon :size="18" class="text-[#d22d2d]" />
                 </div>
               </div>
-              <p class="text-[12px] text-theme-text-secondary mt-2">
-                Wskaż datę zakończenia, która przypada po dacie rozpoczęcia.
-              </p>
+              <p class="text-[12px] text-theme-text-secondary mt-2">{{ $t('events.wskazDateZakonczeniaKtora') }}</p>
             </div>
           </div>
 
@@ -392,7 +387,7 @@
             >
               <div class="flex items-center gap-3">
                 <format-list-bulleted-icon :size="24" class="text-theme-text-secondary" />
-                <span class="text-[15px] font-semibold text-theme-text">Dodatkowe ustawienia</span>
+                <span class="text-[15px] font-semibold text-theme-text">{{ $t('events.dodatkoweUstawienia') }}</span>
               </div>
               <chevron-down-icon
                 :class="[
@@ -405,7 +400,7 @@
 
             <div v-if="accordions.settings" class="pb-4 px-1">
               <div class="flex items-center justify-between py-2">
-                <span class="text-[15px] text-theme-text">Pokaż listę gości</span>
+                <span class="text-[15px] text-theme-text">{{ $t('events.pokazListeGosci') }}</span>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" v-model="form.showGuestList" class="sr-only peer" />
                   <div
@@ -431,9 +426,7 @@
             : 'bg-theme-hover text-theme-text-muted cursor-not-allowed',
         ]"
         class="w-full font-bold text-[15px] py-2 rounded-lg transition"
-      >
-        Utwórz wydarzenie
-      </button>
+      >{{ $t('createEvent.createEvent') }}</button>
     </div>
   </div>
 </template>

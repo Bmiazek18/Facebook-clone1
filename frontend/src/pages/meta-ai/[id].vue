@@ -347,7 +347,7 @@ const startChat = async (text: string, model: string = 'Flash', images: string[]
                     @click="openPdfPreview(file.url)"
                     class="w-[112px] h-[112px] rounded-2xl border border-white/10 bg-[#1e1f20] hover:bg-[#252627] transition flex flex-col justify-between p-3 cursor-pointer shadow-md select-none relative"
                   >
-                    <div class="text-[11px] font-extrabold text-white tracking-wider">PDF</div>
+                    <div class="text-[11px] font-extrabold text-white tracking-wider">{{ $t('metaAi.pdf') }}</div>
                     <div class="text-[12px] text-[#e3e3e3]/90 truncate w-full font-medium">{{ file.name }}</div>
                   </div>
                 </div>
@@ -377,7 +377,7 @@ const startChat = async (text: string, model: string = 'Flash', images: string[]
                     <button @click="editMessage(msg)" class="p-2 hover:bg-white/5 rounded-full transition flex items-center justify-center w-8 h-8">
                       <Icon name="lucide:pencil" size="14" />
                     </button>
-                    <template #popper>Edytuj</template>
+                    <template #popper>{{ $t('common.edit') }}</template>
                   </Tooltip>
 
                   <Tooltip placement="bottom" :distance="6" theme="gemini-action-tooltip">
@@ -416,14 +416,14 @@ const startChat = async (text: string, model: string = 'Flash', images: string[]
                       <button class="p-2 hover:bg-white/5 rounded-full transition flex items-center justify-center w-8 h-8">
                         <Icon name="lucide:thumbs-up" size="15" />
                       </button>
-                      <template #popper>Dobre</template>
+                      <template #popper>{{ $t('metaAi.dobre') }}</template>
                     </Tooltip>
 
                     <Tooltip placement="bottom" :distance="6" theme="gemini-action-tooltip">
                       <button class="p-2 hover:bg-white/5 rounded-full transition flex items-center justify-center w-8 h-8">
                         <Icon name="lucide:thumbs-down" size="15" />
                       </button>
-                      <template #popper>Złe</template>
+                      <template #popper>{{ $t('metaAi.zle') }}</template>
                     </Tooltip>
 
                     <Tooltip placement="bottom" :distance="6" theme="gemini-action-tooltip">

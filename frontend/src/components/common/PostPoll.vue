@@ -60,9 +60,7 @@
               :class="{ 'cursor-pointer': hasVoted }"
               @click.stop="showVoters(option)"
             >
-              <span class="text-blue-600 dark:text-blue-400 font-bold text-sm">
-                {{ getPercentage(option) }}%
-              </span>
+              <span class="text-blue-600 dark:text-blue-400 font-bold text-sm">{{ $t('common.getpercentageOption') }}</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="h-4 w-4 text-gray-400 dark:text-gray-500"

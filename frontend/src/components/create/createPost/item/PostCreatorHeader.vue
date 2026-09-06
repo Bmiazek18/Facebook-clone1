@@ -76,9 +76,7 @@ const privacyInfo = computed(() => {
           <button
             @click="emit('openFeelingSelector')"
             class="font-normal text-theme-text-secondary"
-          >
-            - {{ selectedActivity.parent?.slice(0, -3) || '' }}
-            <span class="font-semibold hover:underline">{{ selectedActivity.item.label }}</span>
+          >{{ $t('create.selectedactivityParentSlice0') }}<span class="font-semibold hover:underline">{{ selectedActivity.item.label }}</span>
             {{ selectedActivity.item.emoji }}
           </button>
         </template>

@@ -68,7 +68,7 @@ onUnmounted(() => {
         <img 
           :src="imgs[index]" 
           class="w-full h-full object-cover blur-[80px] brightness-[0.3]" 
-          alt="Tło"
+          :alt="$t('metaAi.tlo')"
         />
       </div>
 
@@ -76,7 +76,7 @@ onUnmounted(() => {
         <button 
           @click="close" 
           class="p-1.5 hover:bg-white/10 rounded-full transition duration-200 cursor-pointer text-white"
-          aria-label="Wróć"
+          :aria-label="$t('ui.back')"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -108,7 +108,7 @@ onUnmounted(() => {
       <div class="relative max-w-[85vw] max-h-[82vh] flex flex-col items-center z-10" @click.stop>
         <img 
           :src="imgs[index]" 
-          alt="Podgląd" 
+          :alt="$t('chat.podglad')" 
           class="max-w-full max-h-[82vh] object-contain rounded border border-white/10 shadow-2xl animate-zoom"
         />
         

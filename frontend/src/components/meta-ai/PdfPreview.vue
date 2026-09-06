@@ -120,16 +120,14 @@ const resetZoom = () => { scale.value = 1.2 }
     >
       <div class="flex items-center justify-between px-3 py-2.5 bg-[#1e1f20] text-[#f1f3f4] z-20 select-none flex-shrink-0">
         <div class="flex items-center gap-3 min-w-0 flex-1">
-          <button @click="emit('close')" class="p-1.5 hover:bg-white/10 text-gray-400 hover:text-white rounded-full transition-colors flex-shrink-0" title="Zamknij">
+          <button @click="emit('close')" class="p-1.5 hover:bg-white/10 text-gray-400 hover:text-white rounded-full transition-colors flex-shrink-0" :title="$t('common.close')">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
           </button>
           
-          <div class="bg-[#d32f2f] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-[3px] flex-shrink-0 tracking-wide">
-            PDF
-          </div>
+          <div class="bg-[#d32f2f] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-[3px] flex-shrink-0 tracking-wide">{{ $t('metaAi.pdf') }}</div>
 
           <span class="text-[13px] sm:text-[14px] text-gray-200 font-medium truncate tracking-tight pr-4">
             PO_Lab1-2.pdf
@@ -178,7 +176,7 @@ const resetZoom = () => { scale.value = 1.2 }
 
         <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center bg-black/75 rounded-full px-5 py-2 shadow-[0_4px_20px_rgba(0,0,0,0.5)] select-none text-[#f1f3f4] font-sans text-[13px] border border-white/5">
           <div class="flex items-center gap-2.5 pr-4">
-            <span class="text-gray-300 font-medium">Page</span>
+            <span class="text-gray-300 font-medium">{{ $t('metaAi.page') }}</span>
             <input
               type="text"
               v-model="pageInput"

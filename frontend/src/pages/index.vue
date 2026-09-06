@@ -278,9 +278,7 @@ const handleCancelLeave = () => {
             <CreateBox />
             <StoriesList :stories="allStories" />
 
-            <div v-if="error || feedError" class="p-4 bg-red-50 text-red-600 rounded-lg text-center my-4">
-              Wystąpił błąd podczas ładowania postów: {{ error?.message || feedError?.message }}
-            </div>
+            <div v-if="error || feedError" class="p-4 bg-red-50 text-red-600 rounded-lg text-center my-4">{{ $t('home.wystapilBladPodczasLadowania') }}</div>
 
             <!-- Feed Skeleton Loading State -->
             <div v-else-if="isFeedLoading && allPosts.length === 0" class="space-y-4 pt-2">
@@ -325,9 +323,7 @@ const handleCancelLeave = () => {
             <div
               v-if="!hasMore && !isFetchingMore"
               class="text-center py-20 text-theme-text-secondary opacity-50 text-sm"
-            >
-              Nie ma więcej postów.
-            </div>
+            >{{ $t('home.nieMaWiecejPostow') }}</div>
           </div>
         </div>
 

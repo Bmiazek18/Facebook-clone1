@@ -2,12 +2,12 @@
   <div class="bg-theme-bg-secondary p-5 rounded-2xl">
     <!-- SEKCJA: Dane osobowe -->
     <div class="flex items-center justify-between">
-      <h2 class="font-bold text-theme-text text-[20px]">Dane osobowe</h2>
+      <h2 class="font-bold text-theme-text text-[20px]">{{ $t('profile.daneOsobowe') }}</h2>
       <button
         v-if="isOwner"
         @click="handleEdit('personal')"
         class="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer text-gray-500"
-        title="Edytuj dane osobowe"
+        :title="$t('profile.edytujDaneOsobowe')"
       >
         <PencilOutline :size="22" />
       </button>
@@ -22,7 +22,7 @@
       >
         <MapMarkerOutline :size="26" class="text-gray-800 shrink-0" />
         <span class="leading-snug"
-          >Mieszka w: {{ profileUser?.location || 'Łuków, Siedlce, Poland' }}</span
+          >{{ $t('profile.mieszkaWProfileuserLocation') }}</span
         >
       </div>
 
@@ -48,12 +48,12 @@
 
     <!-- SEKCJA: Wykształcenie -->
     <div class="flex items-center justify-between pt-2 border-t border-gray-100">
-      <h2 class="font-bold text-theme-text text-[20px]">Wykształcenie</h2>
+      <h2 class="font-bold text-theme-text text-[20px]">{{ $t('profile.info.education') }}</h2>
       <button
         v-if="isOwner"
         @click="handleEdit('education')"
         class="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer text-gray-500"
-        title="Edytuj wykształcenie"
+        :title="$t('profile.edytujWyksztalcenie')"
       >
         <PencilOutline :size="22" />
       </button>
@@ -66,7 +66,7 @@
       <div
         class="w-11 h-11 rounded-full bg-white flex items-center border border-gray-200 overflow-hidden shrink-0"
       >
-        <img :src="schoolLogo" alt="School Logo" class="object-cover w-full h-full" />
+        <img :src="schoolLogo" :alt="$t('profile.schoolLogo')" class="object-cover w-full h-full" />
       </div>
       <span class="font-medium text-[16px] text-theme-text leading-snug">
         {{
@@ -83,17 +83,13 @@
 
     <!-- Miejsce na kolejne komponenty (np. LocationModal), póki co wyświetlamy placeholder -->
     <div v-else-if="modalType === 'location'" class="p-6 bg-white rounded-xl text-center">
-      <h3 class="font-bold text-lg mb-2">Lokalizacja</h3>
-      <p class="text-gray-600">
-        Tutaj pojawi się komponent dla lokalizacji (np. mapa lub znajomi z okolicy).
-      </p>
-      <button @click="closeModal" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg">
-        Zamknij
-      </button>
+      <h3 class="font-bold text-lg mb-2">{{ $t('post.location') }}</h3>
+      <p class="text-gray-600">{{ $t('profile.tutajPojawiSieKomponent') }}</p>
+      <button @click="closeModal" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg">{{ $t('common.close') }}</button>
     </div>
 
     <div v-else class="p-6 bg-white rounded-xl text-center">
-      <p class="text-gray-600">Szczegóły wkrótce...</p>
+      <p class="text-gray-600">{{ $t('profile.szczegolyWkrotce') }}</p>
     </div>
   </BaseModal>
 </template>

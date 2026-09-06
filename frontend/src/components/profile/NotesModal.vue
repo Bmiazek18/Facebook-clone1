@@ -104,7 +104,7 @@ const deleteNote = async () => {
               <input
                 v-model="noteText"
                 :maxlength="maxLength"
-                placeholder="Napisz, co myślisz..."
+                :placeholder="$t('profile.napiszCoMyslisz')"
                 class="text-[#65676B] text-[13px] w-full outline-none bg-transparent placeholder-gray-400"
               />
               <button type="button" class="text-xl flex-shrink-0 select-none hover:scale-110 transition-transform">
@@ -136,7 +136,7 @@ const deleteNote = async () => {
         >
           <img
             :src="authStore.currentUser?.avatar || '/default-avatar.png'"
-            alt="User Avatar"
+            :alt="$t('create.userAvatar')"
             class="w-full h-full object-cover rounded-full"
           />
         </div>
@@ -173,12 +173,7 @@ const deleteNote = async () => {
 
     <!-- Dolna część -->
     <div class="w-full flex flex-col items-center mb-4 mt-6">
-      <p class="text-xs text-center text-gray-800 px-6 mb-6">
-        Wszyscy będą mogli zobaczyć Twoją notatkę
-        w Messengerze i na Facebooku przez 24 godziny.
-        <a href="#" class="text-blue-500 font-medium hover:underline">
-          Zmień
-        </a>
+      <p class="text-xs text-center text-gray-800 px-6 mb-6">{{ $t('profile.wszyscyBedaMogliZobaczyc') }}<a href="#" class="text-blue-500 font-medium hover:underline">{{ $t('chat.zmien') }}</a>
       </p>
 
       <!-- Udostępnij -->
@@ -191,18 +186,14 @@ const deleteNote = async () => {
             ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
         ]"
-      >
-        Udostępnij
-      </button>
+      >{{ $t('sharePost.shareButton') }}</button>
 
       <!-- Usuń notatkę -->
       <button
         v-if="currentNote"
         @click="deleteNote"
         class="w-full mt-2 py-3 rounded-full font-semibold text-base transition-all border border-red-500 text-red-500 hover:bg-red-50 cursor-pointer text-center"
-      >
-        Usuń notatkę
-      </button>
+      >{{ $t('profile.usunNotatke') }}</button>
     </div>
   </div>
 </template>

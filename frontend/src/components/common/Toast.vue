@@ -31,7 +31,7 @@
     <div class="flex items-center gap-3 w-full">
       <!-- Awatar z opcjonalną małą ikoną w rogu (badge) -->
       <div v-if="avatar" class="relative shrink-0 self-center">
-        <img :src="avatar" alt="Avatar" class="w-11 h-11 rounded-full object-cover" />
+        <img :src="avatar" :alt="$t('chat.avatar')" class="w-11 h-11 rounded-full object-cover" />
         <div
           v-if="avatarBadgeIcon"
           :class="[

@@ -195,15 +195,15 @@ const handleItemClick = (item: any, hide: () => void) => {
     </Dropdown>
 
     <!-- Modal: Zmień motyw -->
-    <BaseModal v-if="showThemeModal" title="Zmień motyw" @close="closeThemeModal">
+    <BaseModal v-if="showThemeModal" :title="$t('chat.zmienMotyw')" @close="closeThemeModal">
       <MessangerTheme @apply="closeThemeModalAndSave" />
     </BaseModal>
 
     <!-- Modal: Ikona emoji -->
-    <BaseModal v-if="showEmojiModal" title="Ikona emoji" @close="closeEmojiModal">
+    <BaseModal v-if="showEmojiModal" :title="$t('chat.ikonaEmoji')" @close="closeEmojiModal">
       <div class="bg-white flex items-center justify-between px-4 py-3 border-b border-gray-100">
         <div class="flex flex-col">
-          <span class="text-[15px] font-semibold text-gray-900 leading-tight">Bieżące emoji</span>
+          <span class="text-[15px] font-semibold text-gray-900 leading-tight">{{ $t('chat.biezaceEmoji') }}</span>
           <div class="text-xl mt-1 leading-none">
             {{ convStore.selectedEmoji || '👍' }}
           </div>
@@ -215,9 +215,7 @@ const handleItemClick = (item: any, hide: () => void) => {
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-          Usuń
-        </button>
+          </svg>{{ $t('notifications_page.delete') }}</button>
       </div>
       <LazyEmojiPicker class="w-full shadow-none border-none" @select="onEmojiSelect" />
     </BaseModal>

@@ -185,7 +185,7 @@ onUnmounted(() => {
           <button
             @click="getMediaDevicesList"
             class="p-2 hover:bg-theme-hover rounded-full text-theme-text-secondary"
-            title="Odśwież listę"
+            :title="$t('createLive.refreshList')"
           >
             <RefreshIcon :size="20" />
           </button>
@@ -219,9 +219,7 @@ onUnmounted(() => {
             @click="enableCameraAccess"
             class="w-full flex items-center justify-center gap-2 py-2.5 bg-[#FCE8E8] hover:bg-[#FAD1D1] text-[#D32F2F] rounded-lg font-semibold text-[15px] transition-colors border border-[#D32F2F]"
           >
-            <StopCircleOutlineIcon :size="22" />
-            Zatrzymaj udostępnianie ekranu
-          </button>
+            <StopCircleOutlineIcon :size="22" />{{ $t('createLive.stopScreenSharing') }}</button>
         </div>
       </div>
 

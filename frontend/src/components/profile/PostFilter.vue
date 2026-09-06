@@ -39,24 +39,20 @@ const toggleManageModal = () => {
 <template>
   <div class="bg-theme-bg-secondary rounded-lg shadow-sm mt-4">
     <div class="flex items-center justify-between px-5 py-2">
-      <h2 class="text-[20px] font-bold text-theme-text">Posty</h2>
+      <h2 class="text-[20px] font-bold text-theme-text">{{ $t('search.posts') }}</h2>
 
       <div class="flex items-center space-x-2">
         <button
           class="flex items-center px-3 py-1.5 bg-theme-bg-tertiary hover:bg-theme-hover rounded-md transition-colors text-theme-text font-semibold text-[15px]"
           @click="toggleFilterModal"
         >
-          <Tune :size="20" class="mr-1.5" />
-          Filtry
-        </button>
+          <Tune :size="20" class="mr-1.5" />{{ $t('search.filters') }}</button>
         <!-- Zmieniono v-if na isOwner (zazwyczaj tylko właściciel zarządza) -->
         <button
           class="flex items-center px-3 py-1.5 bg-theme-bg-tertiary hover:bg-theme-hover rounded-md transition-colors text-theme-text font-semibold text-[15px]"
           v-if="isOwner"
           @click="toggleManageModal"
-        >
-          Zarządzaj postami
-        </button>
+        >{{ $t('profile.zarzadzajPostami') }}</button>
       </div>
     </div>
 
@@ -67,9 +63,7 @@ const toggleManageModal = () => {
         class="flex-1 h-[50px] flex items-center justify-center font-semibold text-[15px] relative hover:bg-theme-hover transition-colors rounded-bl-lg"
         :class="activeView === 'list' ? 'text-blue-500' : 'text-theme-text-secondary'"
       >
-        <FormatListBulleted :size="20" class="mr-2" />
-        Widok listy
-        <div
+        <FormatListBulleted :size="20" class="mr-2" />{{ $t('profile.widokListy') }}<div
           v-if="activeView === 'list'"
           class="absolute bottom-[-1px] left-0 w-full h-[3px] bg-blue-500"
         ></div>
@@ -80,9 +74,7 @@ const toggleManageModal = () => {
         class="flex-1 h-[50px] flex items-center justify-center font-semibold text-[15px] relative hover:bg-theme-hover transition-colors rounded-br-lg"
         :class="activeView === 'grid' ? 'text-blue-500' : 'text-theme-text-secondary'"
       >
-        <ViewGrid :size="20" class="mr-2" />
-        Widok siatki
-        <div
+        <ViewGrid :size="20" class="mr-2" />{{ $t('profile.widokSiatki') }}<div
           v-if="activeView === 'grid'"
           class="absolute bottom-[-1px] left-0 w-full h-[3px] bg-blue-500"
         ></div>
@@ -91,7 +83,7 @@ const toggleManageModal = () => {
   </div>
 
   <!-- Istniejący modal filtrów -->
-  <BaseModal v-if="isFilterModalOpen" @close="toggleFilterModal" title="Filtry Postów">
+  <BaseModal v-if="isFilterModalOpen" @close="toggleFilterModal" :title="$t('postFilter.title')">
     <PostFilterModal />
   </BaseModal>
 

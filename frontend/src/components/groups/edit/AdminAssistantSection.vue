@@ -1,10 +1,8 @@
 <template>
   <div class="bg-white dark:bg-[#242526] rounded-xl p-4 shadow-sm border border-gray-200 dark:border-[#3e4042]">
     <div class="mb-4">
-      <h2 class="text-[20px] font-semibold text-[#050505] dark:text-[#e4e6eb] leading-snug">Kryteria Asystenta administratora</h2>
-      <p class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] mt-0.5 leading-snug">
-        Dodaj kryteria automatyzacji działań asystenta w tej grupie.
-      </p>
+      <h2 class="text-[20px] font-semibold text-[#050505] dark:text-[#e4e6eb] leading-snug">{{ $t('groups.kryteriaAsystentaAdministratora') }}</h2>
+      <p class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] mt-0.5 leading-snug">{{ $t('groups.dodajKryteriaAutomatyzacjiDzialan') }}</p>
     </div>
 
     <!-- Akordeony Asystenta -->
@@ -43,9 +41,7 @@
             <button
               @click="handleAddCriteria(item)"
               class="px-3.5 py-1.5 rounded-lg bg-[#e7f3ff] hover:bg-[#d8eaff] dark:bg-[#252f3d] dark:hover:bg-[#2d3a4d] text-[#1877f2] dark:text-[#4599ff] font-semibold text-[13px] transition-colors cursor-pointer shrink-0"
-            >
-              Dodaj
-            </button>
+            >{{ $t('call.dodaj') }}</button>
           </div>
         </div>
       </div>

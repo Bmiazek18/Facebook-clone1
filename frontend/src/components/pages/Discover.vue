@@ -1,7 +1,7 @@
 <template>
   <div>
-    <h1 class="text-[24px] font-bold text-gray-900 mb-1 leading-tight">Odkrywanie stron</h1>
-    <h2 class="text-[20px] font-bold text-gray-900 mb-5 leading-tight">Propozycje dla Ciebie</h2>
+    <h1 class="text-[24px] font-bold text-gray-900 mb-1 leading-tight">{{ $t('pages.odkrywanieStron') }}</h1>
+    <h2 class="text-[20px] font-bold text-gray-900 mb-5 leading-tight">{{ $t('pages.propozycjeDlaCiebie') }}</h2>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div
@@ -37,9 +37,7 @@
             <button class="w-full bg-[#0866FF] hover:bg-blue-700 text-white font-semibold py-1.5 px-4 rounded-md flex items-center justify-center gap-2 transition-colors text-[15px]">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-              </svg>
-              Obserwuj
-            </button>
+              </svg>{{ $t('feed.obserwuj2') }}</button>
           </div>
         </div>
       </div>

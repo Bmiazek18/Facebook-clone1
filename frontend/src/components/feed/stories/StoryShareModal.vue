@@ -15,12 +15,12 @@
             <img
               :src="authStore.currentUser.avatar"
               class="w-10 h-10 rounded-full"
-              alt="Profile"
+              :alt="$t('feed.profile')"
             />
             <div class="flex-1">
               <h3 class="font-bold text-theme-text">{{ authStore.currentUser.name }}</h3>
               <div class="flex gap-2 mt-1 text-[13px] font-semibold text-theme-text-secondary">
-                <button class="bg-theme-bg-tertiary px-3 py-1 rounded-md">Aktualności</button>
+                <button class="bg-theme-bg-tertiary px-3 py-1 rounded-md">{{ $t('feed.aktualnosci') }}</button>
                 <button
                   @click="openPrivacySelector"
                   class="bg-theme-bg-tertiary px-3 py-1 rounded-md flex items-center gap-1 hover:bg-theme-hover transition-colors"
@@ -36,7 +36,7 @@
           <div class="px-4 py-2 relative">
             <textarea
               v-model="textareaContent"
-              placeholder="Napisz coś o tym..."
+              :placeholder="$t('feed.napiszCosOTym')"
               class="w-full h-20 outline-none resize-none text-[17px] pr-10 bg-transparent text-theme-text"
             ></textarea>
 
@@ -63,15 +63,13 @@
             <button
               @click="handleShareNow"
               class="w-full bg-theme-primary text-white font-bold py-2 rounded-lg hover:bg-theme-primary-hover transition-colors"
-            >
-              Udostępnij teraz
-            </button>
+            >{{ $t('feed.udostepnijTeraz') }}</button>
           </div>
 
           <hr class="border-theme-border" />
 
           <div class="p-4">
-            <h4 class="font-bold mb-4 text-theme-text">Wyślij w Messengerze</h4>
+            <h4 class="font-bold mb-4 text-theme-text">{{ $t('feed.wyslijWMessengerze') }}</h4>
             <div class="relative group">
               <!-- Left arrow -->
               <button
@@ -115,7 +113,7 @@
           <hr class="border-theme-border" />
 
           <div class="p-4">
-            <h4 class="font-bold mb-4 text-theme-text">Udostępnij</h4>
+            <h4 class="font-bold mb-4 text-theme-text">{{ $t('sharePost.shareButton') }}</h4>
             <div class="flex gap-3 overflow-x-auto no-scrollbar">
               <button
                 v-for="action in shareActions"

@@ -266,7 +266,7 @@ defineExpose({
       class="absolute inset-0 bg-black/90 flex items-center justify-center z-50"
     >
       <div class="bg-theme-bg-secondary rounded-lg p-8 max-w-md w-full mx-4 text-center">
-        <h3 class="text-theme-text text-xl font-bold mb-4">Renderowanie...</h3>
+        <h3 class="text-theme-text text-xl font-bold mb-4">{{ $t('create.renderowanie') }}</h3>
         <div class="mb-4">
           <div class="bg-gray-700 rounded-full h-4 overflow-hidden">
             <div
@@ -274,9 +274,9 @@ defineExpose({
               :style="{ width: renderProgress + '%' }"
             ></div>
           </div>
-          <div class="text-theme-text text-center mt-2 font-bold">{{ renderProgress }}%</div>
+          <div class="text-theme-text text-center mt-2 font-bold">{{ $t('create.renderprogress') }}</div>
         </div>
-        <p class="text-theme-text-secondary text-sm">Tworzenie obrazu story...</p>
+        <p class="text-theme-text-secondary text-sm">{{ $t('create.tworzenieObrazuStory') }}</p>
       </div>
     </div>
 
@@ -295,7 +295,7 @@ defineExpose({
 
     <main class="flex-1 flex flex-col h-full relative z-0">
       <div class="m-4 bg-theme-bg-secondary rounded-lg shadow-sm p-4 h-full flex flex-col">
-        <h2 class="text-sm font-semibold text-theme-text mb-4">Podgląd</h2>
+        <h2 class="text-sm font-semibold text-theme-text mb-4">{{ $t('chat.podglad') }}</h2>
 
         <div
           class="bg-black rounded-lg flex-1 flex items-center justify-center overflow-hidden relative border border-theme-border"
@@ -310,9 +310,7 @@ defineExpose({
                 v-if="!textContent"
                 class="absolute pointer-events-none text-white/50 text-center text-4xl leading-normal select-none"
                 :class="selectedFont.class"
-              >
-                Zacznij pisać...
-              </div>
+              >{{ $t('create.zacznijPisac2') }}</div>
               <VDropdown
                 :shown="showUserDropdown"
                 placement="bottom-start"

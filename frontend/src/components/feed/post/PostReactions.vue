@@ -41,9 +41,7 @@
                   <span
                     v-if="getReactionTooltipData(reactionType as ReactionType).moreCount > 0"
                     class="mt-1 text-[#E4E6EB] leading-tight"
-                  >
-                    i {{ getReactionTooltipData(reactionType as ReactionType).moreCount }} {{ t('common.more').toLowerCase() }}
-                  </span>
+                  >{{ $t('feed.iGetreactiontooltipdataReactiontypeAs') }}</span>
                 </div>
               </template>
             </VTooltip>

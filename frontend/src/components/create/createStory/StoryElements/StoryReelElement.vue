@@ -46,9 +46,7 @@ const author = computed(() => {
       <!-- Reel Badge -->
       <div
         class="absolute top-2 right-2 bg-black/60 px-2 py-0.5 rounded text-white text-xs font-semibold"
-      >
-        Reel
-      </div>
+      >{{ $t('create.reel') }}</div>
     </div>
 
     <!-- Reel Info -->

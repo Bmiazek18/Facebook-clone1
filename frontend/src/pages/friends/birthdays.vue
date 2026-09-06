@@ -1,5 +1,5 @@
 <template>
-  <FriendsView title="Urodziny" />
+  <FriendsView :title="$t('friends.birthdays')" />
 </template>
 
 <script setup lang="ts">

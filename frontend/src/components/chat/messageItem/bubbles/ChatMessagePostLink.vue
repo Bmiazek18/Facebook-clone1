@@ -101,7 +101,7 @@ function handleClick(e: MouseEvent) {
       <img
         :src="postImage"
         class="w-full h-auto object-cover max-h-[250px]"
-        alt="Post media"
+        :alt="$t('chat.postMedia')"
         loading="lazy"
       />
     </div>
@@ -113,9 +113,7 @@ function handleClick(e: MouseEvent) {
       </h3>
 
       <div class="flex flex-col mt-auto gap-0.5">
-        <span class="text-gray-500 text-[15px]">
-          Facebook
-        </span>
+        <span class="text-gray-500 text-[15px]">{{ $t('chat.facebook') }}</span>
       </div>
     </div>
   </a>

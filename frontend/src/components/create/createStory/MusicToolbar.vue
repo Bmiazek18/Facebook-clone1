@@ -44,9 +44,7 @@ const emit = defineEmits<{
       <button
         @click="emit('remove')"
         class="text-red-500 text-sm font-semibold hover:text-red-600 transition"
-      >
-        Usuń
-      </button>
+      >{{ $t('notifications_page.delete') }}</button>
     </div>
 
     <div class="flex justify-between gap-2">

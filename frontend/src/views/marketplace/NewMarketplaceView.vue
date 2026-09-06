@@ -91,7 +91,7 @@ const closeNewCreating = () => {
       >
         <AppCloseHeader class="shadow-sm pb-2" />
         <div class="px-4 py-2">
-          <h1 class="text-[24px] font-semibold text-theme-text">Utwórz nowe ogłoszenie</h1>
+          <h1 class="text-[24px] font-semibold text-theme-text">{{ $t('marketplace.utworzNoweOgloszenie') }}</h1>
         </div>
 
         <nav class="px-2 space-y-1">
@@ -133,7 +133,7 @@ const closeNewCreating = () => {
 
       <main class="flex-1 flex flex-col relative bg-theme-bg">
         <div class="flex-1 flex flex-col items-center justify-center p-8">
-          <h2 class="text-[20px] font-bold mb-8 text-theme-text">Wybierz typ ogłoszenia</h2>
+          <h2 class="text-[20px] font-bold mb-8 text-theme-text">{{ $t('marketplace.wybierzTypOgloszenia') }}</h2>
 
           <div class="flex flex-wrap justify-center gap-4">
             <div

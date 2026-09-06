@@ -4,15 +4,11 @@
     <!-- Główna zawartość -->
     <div class="p-4 space-y-5">
       <!-- Informacja -->
-      <p class="text-[15px] text-theme-text">
-        Otrzymuj powiadomienia, gdy nowe ogłoszenia pasują do Twoich filtrów i haseł wyszukania.
-      </p>
+      <p class="text-[15px] text-theme-text">{{ $t('marketplace.otrzymujPowiadomieniaGdyNowe') }}</p>
 
       <!-- Wyszukiwana fraza -->
       <div>
-        <h3 class="font-semibold text-[15px] text-theme-text mb-0.5">
-          Wyszukiwana fraza
-        </h3>
+        <h3 class="font-semibold text-[15px] text-theme-text mb-0.5">{{ $t('marketplace.wyszukiwanaFraza') }}</h3>
         <p class="text-[15px] text-theme-text-secondary">
           {{ searchPhrase || 'Brak wpisanej frazy' }}
         </p>
@@ -20,21 +16,19 @@
 
       <!-- Cena -->
       <div>
-        <h3 class="font-semibold text-[15px] text-theme-text mb-2">
-          Cena
-        </h3>
+        <h3 class="font-semibold text-[15px] text-theme-text mb-2">{{ $t('marketplace.cena') }}</h3>
         <div class="flex items-center gap-3">
           <input
             type="number"
             v-model="priceMin"
-            placeholder="Min."
+            :placeholder="$t('marketplace.min')"
             class="w-full bg-[#F1F2F5] dark:bg-[#333334] border border-transparent rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-[#0866FF] text-theme-text text-[15px] placeholder-theme-text-secondary transition-shadow"
           />
-          <span class="text-[15px] text-theme-text">do</span>
+          <span class="text-[15px] text-theme-text">{{ $t('marketplace.do') }}</span>
           <input
             type="number"
             v-model="priceMax"
-            placeholder="Maks."
+            :placeholder="$t('marketplace.maks')"
             class="w-full bg-[#F1F2F5] dark:bg-[#333334] border border-transparent rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-[#0866FF] text-theme-text text-[15px] placeholder-theme-text-secondary transition-shadow"
           />
         </div>
@@ -42,9 +36,7 @@
 
       <!-- Lokalizacja -->
       <div>
-        <h3 class="font-semibold text-[15px] text-theme-text mb-1">
-          Lokalizacja
-        </h3>
+        <h3 class="font-semibold text-[15px] text-theme-text mb-1">{{ $t('post.location') }}</h3>
         <!-- Przycisk z chevronem (udaje select lub otwiera kolejny modal) -->
         <button
           @click="emit('change-location')"
@@ -61,9 +53,7 @@
       <button
         @click="handleCreateAlert"
         class="bg-[#0866FF] hover:bg-[#075ce6] text-white font-semibold py-2 px-5 rounded-lg text-[15px] transition-colors"
-      >
-        Utwórz alert
-      </button>
+      >{{ $t('marketplace.utworzAlert') }}</button>
     </div>
   </div>
 </template>

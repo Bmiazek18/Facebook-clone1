@@ -46,15 +46,11 @@ const handleRemove = (id: string | number) => {
   <div class="w-full">
     <!-- Nagłówek -->
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-[17px] font-semibold text-theme-text-secondary">
-        Zaproszenia do grona znajomych
-      </h3>
+      <h3 class="text-[17px] font-semibold text-theme-text-secondary">{{ $t('friends.friendRequests') }}</h3>
       <button
         @click="emit('see-all')"
         class="text-[#0064d1] text-[15px] hover:bg-theme-hover rounded-md px-2 py-2 cursor-pointer whitespace-nowrap transition-colors"
-      >
-        Zobacz wszystko
-      </button>
+      >{{ $t('friends.zobaczWszystko') }}</button>
     </div>
 
     <!-- Lista zaproszeń -->
@@ -90,15 +86,11 @@ const handleRemove = (id: string | number) => {
             <button
               @click="handleAccept(request.id)"
               class="w-full py-2 px-4 bg-[#0866FF] hover:bg-blue-600 active:bg-blue-700 text-white font-semibold text-sm rounded-lg transition-colors shadow-sm"
-            >
-              Potwierdź
-            </button>
+            >{{ $t('notifications_page.confirm') }}</button>
             <button
               @click="handleRemove(request.id)"
               class="w-full py-2 px-4 bg-[#E4E6EB] hover:bg-gray-300 active:bg-gray-400 text-gray-900 font-semibold text-sm rounded-lg transition-colors"
-            >
-              Usuń
-            </button>
+            >{{ $t('notifications_page.delete') }}</button>
           </div>
         </div>
       </div>

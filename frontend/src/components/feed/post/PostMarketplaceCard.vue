@@ -16,9 +16,7 @@
       <button
         @click.stop="openMessenger"
         class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-md transition-colors whitespace-nowrap"
-      >
-        Napisz do sprzedawcy
-      </button>
+      >{{ $t('feed.napiszDoSprzedawcy') }}</button>
     </div>
   </div>
 </template>

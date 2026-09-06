@@ -16,24 +16,16 @@ const authStore = useAuthStore()
 
 <template>
   <div class="flex-1 overflow-y-auto px-4 py-2 custom-scrollbar flex flex-col">
-    <div class="text-[13px] text-[#65676B] mb-1 font-semibold">
-      Krok 4 z 5
-    </div>
+    <div class="text-[13px] text-[#65676B] mb-1 font-semibold">{{ $t('pages.krok4Z5') }}</div>
 
-    <h1 class="text-[24px] font-bold leading-tight mb-2 text-[#050505]">
-      Poszerz grupę odbiorców strony
-    </h1>
+    <h1 class="text-[24px] font-bold leading-tight mb-2 text-[#050505]">{{ $t('pages.poszerzGrupeOdbiorcowStrony') }}</h1>
 
-    <p class="text-[15px] text-[#65676B] leading-snug mb-4">
-      Rozwijaj stronę <span class="font-bold text-[#050505]">{{ form.pageName || 'Nazwa strony' }}</span>, zapraszając znajomych do nawiązania kontaktu z nią.
-    </p>
+    <p class="text-[15px] text-[#65676B] leading-snug mb-4">{{ $t('pages.rozwijajStrone') }}<span class="font-bold text-[#050505]">{{ form.pageName || 'Nazwa strony' }}</span>{{ $t('pages.zapraszajacZnajomychDoNawiazania') }}</p>
 
     <div class="inline-flex items-center gap-1.5 bg-[#25823B] text-white px-2 py-1 rounded-[4px] text-[13px] font-semibold mb-10 w-fit">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
         <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.5h-2v-6h2zm0-8h-2v-2h2z"></path>
-      </svg>
-      Pomaga polepszyć wyniki reklam
-    </div>
+      </svg>{{ $t('pages.pomagaPolepszycWynikiReklam') }}</div>
 
     <div class="flex flex-col items-center text-center mt-2 px-2">
       <!-- Ikona Grupy Ludzi -->
@@ -46,23 +38,16 @@ const authStore = useAuthStore()
         <circle cx="60" cy="32" r="6" fill="#A4A7AB" />
       </svg>
 
-      <h3 class="text-[19px] font-bold text-[#050505] mb-2 leading-tight">
-        Dodaj znajomych później, aby rozwijać swoją stronę.
-      </h3>
-      <p class="text-[15px] text-[#65676B] leading-snug">
-        Aby zaprosić znajomych do połączenia ze stroną <span class="font-bold">{{ form.pageName || 'Nazwa strony' }}</span>, najpierw dodaj ich do swojego profilu <span class="font-bold">{{ authStore.originalUser?.name || 'Profil osobisty' }}</span>. Wypróbuj tę funkcję po skonfigurowaniu swojej strony.
-        <a href="#" class="text-[#1877F2] font-semibold hover:underline">Dowiedz się więcej</a>
+      <h3 class="text-[19px] font-bold text-[#050505] mb-2 leading-tight">{{ $t('pages.dodajZnajomychPozniejAby') }}</h3>
+      <p class="text-[15px] text-[#65676B] leading-snug">{{ $t('pages.abyZaprosicZnajomychDo') }}<span class="font-bold">{{ form.pageName || 'Nazwa strony' }}</span>{{ $t('pages.najpierwDodajIchDo') }}<span class="font-bold">{{ authStore.originalUser?.name || 'Profil osobisty' }}</span>{{ $t('pages.wyprobujTeFunkcjePo') }}<a href="#" class="text-[#1877F2] font-semibold hover:underline">{{ $t('auth.register.learnMore') }}</a>
       </p>
     </div>
   </div>
 
   <div class="px-4 py-3 bg-white shrink-0 mt-auto border-t border-[#E5E5E5] shadow-[0_-2px_4px_rgba(0,0,0,0.05)]">
-    <div class="text-[15px] text-[#050505] mb-1">
-      Kondycja strony: <span class="font-bold">Przeciętna</span>
+    <div class="text-[15px] text-[#050505] mb-1">{{ $t('pages.kondycjaStrony') }}<span class="font-bold">{{ $t('pages.przecietna') }}</span>
     </div>
-    <div class="text-[15px] text-[#050505] leading-snug mb-3">
-      W porównaniu z podobnymi stronami o dużej aktywności.
-    </div>
+    <div class="text-[15px] text-[#050505] leading-snug mb-3">{{ $t('pages.wPorownaniuZPodobnymi') }}</div>
     <div class="h-1.5 w-full bg-[#E5E5E5] rounded-full mb-4 flex overflow-hidden">
       <div class="bg-[#B58A14] w-[45%] h-full rounded-full"></div>
     </div>
@@ -71,15 +56,11 @@ const authStore = useAuthStore()
       <button
         @click="$emit('prev-step')"
         class="flex-1 py-2 rounded-md font-semibold text-[15px] bg-[#E4E6EB] text-[#050505] hover:bg-[#D8DADF] transition-colors"
-      >
-        Wstecz
-      </button>
+      >{{ $t('createLive.back') }}</button>
       <button
         @click="$emit('next-step')"
         class="flex-1 py-2 rounded-md font-semibold text-[15px] bg-[#E7F3FF] text-[#1877F2] hover:bg-[#DBE7F2] transition-colors"
-      >
-        Dalej
-      </button>
+      >{{ $t('common.next') }}</button>
     </div>
   </div>
 </template>

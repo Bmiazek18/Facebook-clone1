@@ -196,7 +196,7 @@ defineExpose({ focusInput })
       <img
         class="w-8 h-8 rounded-full object-cover"
         :src="authStore.currentUser?.avatar"
-        alt="Avatar"
+        :alt="$t('chat.avatar')"
       />
       <div
         class="absolute -bottom-1 -right-1 bg-[#e4e6eb] rounded-full w-4 h-4 flex items-center justify-center border-[2px] border-white text-black"
@@ -209,7 +209,7 @@ defineExpose({ focusInput })
       <MentionInput
         ref="mentionInputRef"
         v-model="postContent"
-        placeholder="Napisz komentarz..."
+        :placeholder="$t('comments.placeholder')"
         @focus="commentsStore.setReplyInputFocus()"
         @blur="commentsStore.clearReplyInputFocus()"
       />
@@ -219,13 +219,13 @@ defineExpose({ focusInput })
           <img
             :src="selectedImage"
             class="rounded-xl border border-black/5 dark:border-white/10 max-h-[220px] w-[40%] w-auto object-cover shadow-sm bg-white dark:bg-gray-800"
-            alt="Załączony obraz"
+            :alt="$t('feed.zalaczonyObraz')"
           />
 
           <button
             @click="removeImage"
             class="absolute top-2 right-2 w-7 h-7 flex items-center justify-center bg-white text-gray-700 hover:text-gray-900 rounded-full shadow-md border border-gray-100 transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 cursor-pointer z-10"
-            title="Usuń obraz"
+            :title="$t('feed.usunObraz')"
             type="button"
           >
             <CloseIcon :size="16" />
@@ -238,7 +238,7 @@ defineExpose({ focusInput })
           <VDropdown :distance="10">
             <button
               class="hover:bg-[rgba(0,0,0,0.05)] p-1 rounded-full transition-colors"
-              title="Wstaw emoji"
+              :title="$t('feed.wstawEmoji')"
             >
               <EmoticonHappyOutline :size="18" />
             </button>
@@ -257,7 +257,7 @@ defineExpose({ focusInput })
           <button
             @click="fileInput?.click()"
             class="hover:bg-[rgba(0,0,0,0.05)] p-1 rounded-full transition-colors"
-            title="Dołącz zdjęcie"
+            :title="$t('feed.dolaczZdjecie')"
           >
             <CameraOutline :size="18" />
           </button>
@@ -265,7 +265,7 @@ defineExpose({ focusInput })
           <VDropdown :distance="10">
             <button
               class="hover:bg-[rgba(0,0,0,0.05)] p-1 rounded-full transition-colors"
-              title="Wstaw GIF"
+              :title="$t('feed.wstawGif')"
             >
               <FileGifBox :size="18" />
             </button>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="text-2xl font-bold">Videos</h2>
+    <h2 class="text-2xl font-bold">{{ $t('profile.videos2') }}</h2>
     <!-- Video content will go here -->
   </div>
 </template>

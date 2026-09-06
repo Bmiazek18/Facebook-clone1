@@ -8,7 +8,7 @@
       <button @click="emit('back')" class="hover:bg-theme-bg-hover rounded-full p-2 mr-2">
         <ArrowLeftIcon :size="24" class="text-theme-text" />
       </button>
-      <h1 class="text-lg font-semibold text-theme-text">Informacje o czacie</h1>
+      <h1 class="text-lg font-semibold text-theme-text">{{ $t('chat.informacjeOCzacie') }}</h1>
     </div>
 
     <div ref="wrapperRef" class="transition-wrapper bg-theme-bg-secondary h-full overflow-hidden relative">
@@ -27,24 +27,24 @@
             />
 
             <!-- AKORDEONY -->
-            <AccordionSection title="Informacje o czacie" default-open>
+            <AccordionSection :title="$t('chat.informacjeOCzacie')" default-open>
               <div class="px-4 py-2 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2 mb-2">
                 <PinIcon :size="20" class="text-theme-text mr-3" />
-                <span class="text-[14px] font-medium text-theme-text">Wyświetl przypięte wiadomości</span>
+                <span class="text-[14px] font-medium text-theme-text">{{ $t('chat.wyswietlPrzypieteWiadomosci') }}</span>
               </div>
             </AccordionSection>
 
-            <AccordionSection title="Dostosuj czat">
+            <AccordionSection :title="$t('chat.dostosujCzat')">
               <div class="flex flex-col space-y-0.5 pb-2 mb-2">
                 <!-- Widoczne tylko w czatach grupowych -->
                 <template v-if="chatMeta.type === ChatType.Group">
                   <div @click="openRenameModal" class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                     <PencilIcon :size="20" class="text-theme-text mr-3" />
-                    <span class="text-[14px] font-medium text-theme-text">Zmień nazwę czatu</span>
+                    <span class="text-[14px] font-medium text-theme-text">{{ $t('chat.zmienNazweCzatu') }}</span>
                   </div>
                   <div class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                     <ImageIcon :size="20" class="text-theme-text mr-3" />
-                    <span class="text-[14px] font-medium text-theme-text">Zmień zdjęcie</span>
+                    <span class="text-[14px] font-medium text-theme-text">{{ $t('chat.zmienZdjecie') }}</span>
                   </div>
                 </template>
 
@@ -53,74 +53,74 @@
                   <div class="w-5 h-5 mr-3 rounded-full bg-gradient-to-br from-red-400 to-pink-600 relative flex items-center justify-center">
                     <div class="w-2 h-2 bg-black/20 rounded-full"></div>
                   </div>
-                  <span class="text-[14px] font-medium text-theme-text">Zmień motyw</span>
+                  <span class="text-[14px] font-medium text-theme-text">{{ $t('chat.zmienMotyw') }}</span>
                 </div>
                 <div @click="openEmojiModal" class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                   <PawIcon :size="20" class="text-[#5F4B3C] mr-3" />
-                  <span class="text-[14px] font-medium text-theme-text">Zmień ikonę emoji</span>
+                  <span class="text-[14px] font-medium text-theme-text">{{ $t('chat.zmienIkoneEmoji') }}</span>
                 </div>
                 <div @click="openEditNicknamesModal" class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                   <FormatLetterCaseIcon :size="20" class="text-theme-text mr-3" />
-                  <span class="text-[14px] font-medium text-theme-text">Edytuj nicki</span>
+                  <span class="text-[14px] font-medium text-theme-text">{{ $t('chat.edytujNicki') }}</span>
                 </div>
               </div>
             </AccordionSection>
 
-            <AccordionSection title="Multimedia, pliki i linki">
+            <AccordionSection :title="$t('chat.multimediaPlikiILinki')">
               <div class="flex flex-col space-y-0.5 pb-2 mb-2">
                 <div @click="panelView = 'media'" class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                   <ImageMultipleIcon :size="20" class="text-theme-text mr-3" />
-                  <span class="text-[14px] font-medium text-theme-text">Multimedia</span>
+                  <span class="text-[14px] font-medium text-theme-text">{{ $t('groups.media') }}</span>
                 </div>
                 <div class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                   <FileDocumentIcon :size="20" class="text-theme-text mr-3" />
-                  <span class="text-[14px] font-medium text-theme-text">Pliki</span>
+                  <span class="text-[14px] font-medium text-theme-text">{{ $t('groups.files') }}</span>
                 </div>
                 <div class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                   <LinkVariantIcon :size="20" class="text-theme-text mr-3" />
-                  <span class="text-[14px] font-medium text-theme-text">Linki</span>
+                  <span class="text-[14px] font-medium text-theme-text">{{ $t('chat.linki') }}</span>
                 </div>
               </div>
             </AccordionSection>
 
-            <AccordionSection title="Prywatność i pomoc">
+            <AccordionSection :title="$t('chat.prywatnoscIPomoc')">
               <div class="flex flex-col space-y-0.5 pb-2 mb-2">
                 <div @click="openMuteModal" class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                   <BellIcon :size="20" class="text-theme-text mr-3" />
-                  <span class="text-[14px] font-medium text-theme-text">Wstrzymaj powiadomienia</span>
+                  <span class="text-[14px] font-medium text-theme-text">{{ $t('chat.wstrzymajPowiadomienia') }}</span>
                 </div>
                 <div class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                   <ShieldOutlineIcon :size="20" class="text-theme-text mr-3" />
-                  <span class="text-[14px] font-medium text-theme-text">Uprawnienia do obsługi wiadomości</span>
+                  <span class="text-[14px] font-medium text-theme-text">{{ $t('chat.uprawnieniaDoObslugiWiadomosci') }}</span>
                 </div>
                 <div class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                   <HistoryIcon :size="20" class="text-theme-text mr-3" />
-                  <span class="text-[14px] font-medium text-theme-text">Znikające wiadomości</span>
+                  <span class="text-[14px] font-medium text-theme-text">{{ $t('chat.znikajaceWiadomosci') }}</span>
                 </div>
                 <div class="px-4 py-2 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                   <EyeIcon :size="20" class="text-theme-text mr-3" />
                   <div class="flex flex-col">
-                    <span class="text-[14px] font-medium text-theme-text">Potwierdzenia odczytu</span>
-                    <span class="text-[12px] text-theme-text-muted">Wł.</span>
+                    <span class="text-[14px] font-medium text-theme-text">{{ $t('chat.potwierdzeniaOdczytu') }}</span>
+                    <span class="text-[12px] text-theme-text-muted">{{ $t('ui.on') }}</span>
                   </div>
                 </div>
                 <div @click="openVerifyEncryptionModal" class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                   <LockIcon :size="20" class="text-theme-text mr-3" />
-                  <span class="text-[14px] font-medium text-theme-text">Zweryfikuj pełne szyfrowanie</span>
+                  <span class="text-[14px] font-medium text-theme-text">{{ $t('chat.zweryfikujPelneSzyfrowanie') }}</span>
                 </div>
                 <div class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                   <CancelIcon :size="20" class="text-theme-text mr-3" />
-                  <span class="text-[14px] font-medium text-theme-text">Ogranicz</span>
+                  <span class="text-[14px] font-medium text-theme-text">{{ $t('chat.ogranicz') }}</span>
                 </div>
                 <div class="px-4 py-2.5 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                   <MinusCircleIcon :size="20" class="text-theme-text mr-3" />
-                  <span class="text-[14px] font-medium text-theme-text">Zablokuj</span>
+                  <span class="text-[14px] font-medium text-theme-text">{{ $t('actions.block') }}</span>
                 </div>
                 <div class="px-4 py-2 flex items-center hover:bg-theme-bg-hover cursor-pointer transition rounded-md mx-2">
                   <AlertOctagonIcon :size="20" class="text-theme-text mr-3" />
                   <div class="flex flex-col">
-                    <span class="text-[14px] font-medium text-theme-text">Zgłoś</span>
-                    <span class="text-[12px] text-theme-text-muted">Przekaż opinię i zgłoś konwersację</span>
+                    <span class="text-[14px] font-medium text-theme-text">{{ $t('chat.report') }}</span>
+                    <span class="text-[12px] text-theme-text-muted">{{ $t('chat.przekazOpinieIZglos') }}</span>
                   </div>
                 </div>
                 <div
@@ -131,12 +131,12 @@
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
-                  <span class="text-[14px] font-medium">Opuść grupę</span>
+                  <span class="text-[14px] font-medium">{{ $t('chat.opuscGrupe') }}</span>
                 </div>
               </div>
             </AccordionSection>
 
-            <AccordionSection v-if="chatMeta.type === ChatType.Group" title="Uczestniki czatu">
+            <AccordionSection v-if="chatMeta.type === ChatType.Group" :title="$t('chat.uczestnikiCzatu')">
               <div class="flex flex-col space-y-1 mt-1 mb-2">
                 <div
                   v-for="(member, i) in chatMeta.groupMembers"
@@ -149,9 +149,7 @@
                       {{ member.nickname || member.name }}
                       <span v-if="member.nickname" class="text-[12px] text-theme-text-muted truncate">({{ member.name }})</span>
                     </h4>
-                    <p v-if="member.addedByUserId" class="text-[12px] text-theme-text-muted truncate">
-                      Dodany przez: {{ getUserById(member.addedByUserId)?.name || 'Nieznany Użytkownik' }}
-                    </p>
+                    <p v-if="member.addedByUserId" class="text-[12px] text-theme-text-muted truncate">{{ $t('chat.dodanyPrzezGetuserbyidMember') }}</p>
                   </div>
                   <div class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-theme-bg-hover transition">
                     <DotsHorizontalIcon :size="20" class="text-theme-text-muted" />
@@ -166,7 +164,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                   </div>
-                  <span class="text-[14px] font-medium text-theme-text-secondary">Dodaj uczestnika</span>
+                  <span class="text-[14px] font-medium text-theme-text-secondary">{{ $t('chat.dodajUczestnika') }}</span>
                 </div>
               </div>
             </AccordionSection>
@@ -200,18 +198,16 @@
     @close="closeModal"
   />
 
-  <BaseModal v-if="activeModal === 'theme'" title="Wybierz motyw czatu" @close="closeModal">
+  <BaseModal v-if="activeModal === 'theme'" :title="$t('chat.wybierzMotywCzatu')" @close="closeModal">
     <MessangerTheme @apply="closeThemeModalAndSave" />
   </BaseModal>
- <BaseModal v-if="activeModal === 'encryption'" title="Zweryfikuj pełne szyfrowanie" @close="closeModal">
+ <BaseModal v-if="activeModal === 'encryption'" :title="$t('chat.zweryfikujPelneSzyfrowanie')" @close="closeModal">
    <VerifyEncryptionModal :chat-id="props.chatId"/>
   </BaseModal>
-<BaseModal v-if="activeModal === 'emoji'" title="Ikona emoji" @close="closeModal">
+<BaseModal v-if="activeModal === 'emoji'" :title="$t('chat.ikonaEmoji')" @close="closeModal">
   <!-- Górny panel: Bieżące emoji + przycisk Usuń -->
   <div class="px-5 pt-4 pb-3">
-    <span class="block text-sm font-semibold text-gray-900 mb-1">
-      Bieżące emoji
-    </span>
+    <span class="block text-sm font-semibold text-gray-900 mb-1">{{ $t('chat.biezaceEmoji') }}</span>
 
     <div class="flex items-center justify-between">
       <div class="text-3xl">
@@ -223,7 +219,7 @@
         class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium rounded-xl transition-colors"
       >
         <span>✕</span>
-        <span>Usuń</span>
+        <span>{{ $t('notifications_page.delete') }}</span>
       </button>
     </div>
   </div>

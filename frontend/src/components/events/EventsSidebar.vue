@@ -1,6 +1,6 @@
 <template>
   <Sidebar
-    title="Wydarzenia"
+    :title="$t('groups.events')"
     search-p
     laceholder="Wyszukaj wydarzenia"
     :show-search="true"
@@ -9,10 +9,8 @@
   >
     <template v-if="!not" #pre-list>
       <div class="flex justify-between items-center px-2">
-        <h3 class="text-[17px] font-medium">Twoje nadchodzące wydarzenia</h3>
-        <button class="text-[#0866FF] text-[14px] font-medium hover:bg-blue-50 px-2 py-1 rounded">
-          Pokaż wszystkie
-        </button>
+        <h3 class="text-[17px] font-medium">{{ $t('events.twojeNadchodzaceWydarzenia') }}</h3>
+        <button class="text-[#0866FF] text-[14px] font-medium hover:bg-blue-50 px-2 py-1 rounded">{{ $t('friends.showAll') }}</button>
       </div>
 
       <div class="space-y-2">
@@ -33,10 +31,8 @@
         </div>
       </div>
       <div class="flex justify-between items-center px-2">
-        <h3 class="text-[17px] font-medium">Polecane wydarzenia</h3>
-        <button class="text-[#0866FF] text-[14px] font-medium hover:bg-blue-50 px-2 py-1 rounded">
-          Pokaż wszystkie
-        </button>
+        <h3 class="text-[17px] font-medium">{{ $t('events.polecaneWydarzenia') }}</h3>
+        <button class="text-[#0866FF] text-[14px] font-medium hover:bg-blue-50 px-2 py-1 rounded">{{ $t('friends.showAll') }}</button>
       </div>
 
       <div class="space-y-2">
@@ -54,7 +50,7 @@
       </div>
     </template>
     <template #list-header>
-      <h3 class="px-2 text-[17px] font-bold mb-4">Kategorie</h3>
+      <h3 class="px-2 text-[17px] font-bold mb-4">{{ $t('events.kategorie') }}</h3>
     </template>
     <template #list-items>
       <div class="space-y-1">

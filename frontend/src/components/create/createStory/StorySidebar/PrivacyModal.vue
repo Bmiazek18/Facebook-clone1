@@ -1,10 +1,8 @@
 <template>
   <div class="w-[548px] bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
     <div class="p-6 pb-4">
-      <h2 class="text-[17px] font-bold text-theme-text">Kto może zobaczyć Twoją relację?</h2>
-      <p class="text-[15px] text-theme-text-secondary mt-1">
-        Twoja relacja będzie widoczna przez 24 godziny na Facebooku i w Messengerze.
-      </p>
+      <h2 class="text-[17px] font-bold text-theme-text">{{ $t('create.ktoMozeZobaczycTwoja') }}</h2>
+      <p class="text-[15px] text-theme-text-secondary mt-1">{{ $t('create.twojaRelacjaBedzieWidoczna') }}</p>
     </div>
 
     <div class="px-2">
@@ -61,38 +59,27 @@
       <button
         @click="handleCancel"
         class="px-5 py-2.5 rounded-lg text-sm font-semibold text-blue-600 hover:bg-blue-50 transition-colors duration-200"
-      >
-        Anuluj
-      </button>
+      >{{ $t('common.cancel') }}</button>
       <button
         @click="handleSave"
         class="px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg active:scale-95 transition-all duration-200"
-      >
-        Zapisz
-      </button>
+      >{{ $t('createLive.save') }}</button>
     </div>
   </div>
 
   <!-- Confirm Privacy Change Modal -->
-  <BaseModal v-if="showConfirmModal" title="Zmienić prywatność relacji?" @close="cancelChange">
+  <BaseModal v-if="showConfirmModal" :title="$t('create.zmienicPrywatnoscRelacji')" @close="cancelChange">
     <div class="p-3 w-[548px] text-theme-text text-[12px] bg-theme-bg-secondary rounded-xl">
-      <p class="mb-6 text-[15px] text-theme-text">
-        Wprowadzone zmiany będą dotyczyć wszystkich zdjęć i filmów aktualnie zawartych w relacji
-        oraz dodanych do niej w przyszłości
-      </p>
+      <p class="mb-6 text-[15px] text-theme-text">{{ $t('create.wprowadzoneZmianyBedaDotyczyc') }}</p>
       <div class="flex justify-end gap-3">
         <button
           @click="cancelChange"
           class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-black font-semibold rounded-lg transition text-sm cursor-pointer"
-        >
-          Anuluj
-        </button>
+        >{{ $t('common.cancel') }}</button>
         <button
           @click="confirmChange"
           class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition text-sm cursor-pointer shadow-md"
-        >
-          Zapisz
-        </button>
+        >{{ $t('createLive.save') }}</button>
       </div>
     </div>
   </BaseModal>

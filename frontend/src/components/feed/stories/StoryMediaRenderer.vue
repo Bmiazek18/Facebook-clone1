@@ -52,7 +52,7 @@ const props = defineProps({
       :ref="props.setImageRef"
       :src="currentItem.src"
       class="absolute inset-0 w-full h-full object-cover z-0"
-      alt="Story"
+      :alt="$t('feed.story')"
     />
   </div>
 </template>

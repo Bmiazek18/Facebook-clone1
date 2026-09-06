@@ -119,17 +119,15 @@ const resolvedDuration = computed(() => {
       <!-- Tekst -->
       <div class="flex flex-col text-black">
         <span class="font-semibold text-[15px] leading-tight pr-1">
-          <span v-if="isCallActive">Rozmowa grupowa</span>
-          <span v-else-if="isCallRejectedMessage(message)">Nieodebrane połączenie</span>
-          <span v-else-if="isVideoCall(message)">Rozmowa wideo</span>
-          <span v-else>Połączenie głosowe</span>
+          <span v-if="isCallActive">{{ $t('chat.rozmowaGrupowa') }}</span>
+          <span v-else-if="isCallRejectedMessage(message)">{{ $t('chat.nieodebranePolaczenie') }}</span>
+          <span v-else-if="isVideoCall(message)">{{ $t('chat.rozmowaWideo') }}</span>
+          <span v-else>{{ $t('chat.polaczenieGlosowe') }}</span>
         </span>
 
         <span class="text-[13px] text-gray-500 mt-0.5">
           <span v-if="isCallActive" class="text-[#0084FF] font-medium flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#0084FF] animate-ping inline-block"></span>
-            Kliknij, aby dołączyć
-          </span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#0084FF] animate-ping inline-block"></span>{{ $t('chat.kliknijAbyDolaczyc') }}</span>
           <span v-else-if="isCallRejectedMessage(message)">
             {{ message.timestamp ? message.timestamp.slice(0, 5) : '14:22' }}
           </span>

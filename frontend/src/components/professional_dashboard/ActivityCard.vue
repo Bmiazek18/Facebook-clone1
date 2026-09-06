@@ -2,10 +2,10 @@
   <div class="bg-white rounded-[8px] shadow-sm p-4">
     <div class="flex justify-between items-start mb-4">
       <div>
-        <h2 class="text-[20px] font-bold text-[#050505] leading-tight">Aktywność</h2>
-        <p class="text-[14px] text-[#65676B] mt-1 max-w-[90%] leading-snug">Zarządzaj komentarzami, wzmiankami i znacznikami oraz odkrywaj nowe sposoby na kontaktowanie się z fanami.</p>
+        <h2 class="text-[20px] font-bold text-[#050505] leading-tight">{{ $t('emojiPicker.categories.activity') }}</h2>
+        <p class="text-[14px] text-[#65676B] mt-1 max-w-[90%] leading-snug">{{ $t('dashboard.zarzadzajKomentarzamiWzmiankamiI') }}</p>
       </div>
-      <a href="#" class="text-[#1877F2] text-[15px] font-semibold hover:underline shrink-0 mt-1">Wyświetl wszystko</a>
+      <a href="#" class="text-[#1877F2] text-[15px] font-semibold hover:underline shrink-0 mt-1">{{ $t('notifications_page.viewAll') }}</a>
     </div>
 
     <div class="flex gap-4">
@@ -16,9 +16,7 @@
         </svg>
         <div>
           <div class="font-bold text-[17px] text-[#050505]">0</div>
-          <div class="text-[13px] text-[#65676B] flex items-center gap-1 font-medium">
-            Aktywność
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          <div class="text-[13px] text-[#65676B] flex items-center gap-1 font-medium">{{ $t('emojiPicker.categories.activity') }}<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
           </div>
         </div>
       </div>
@@ -29,7 +27,7 @@
         </svg>
         <div>
           <div class="font-bold text-[17px] text-[#050505]">0</div>
-          <div class="text-[13px] text-[#65676B]">Ostatnie komentarze</div>
+          <div class="text-[13px] text-[#65676B]">{{ $t('dashboard.ostatnieKomentarze') }}</div>
         </div>
       </div>
     </div>

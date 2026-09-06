@@ -45,8 +45,8 @@ const handleLinkClick = async () => {
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
             </svg>
           </div>
-          <span class="text-[15px] font-semibold text-theme-text">Weryfikowanie bezpieczeństwa...</span>
-          <span class="text-xs text-theme-text-secondary mt-1">Przekierowywanie przez system LinkGuard</span>
+          <span class="text-[15px] font-semibold text-theme-text">{{ $t('feed.weryfikowanieBezpieczenstwa') }}</span>
+          <span class="text-xs text-theme-text-secondary mt-1">{{ $t('feed.przekierowywaniePrzezSystemLinkguard') }}</span>
         </div>
       </div>
 
@@ -55,12 +55,12 @@ const handleLinkClick = async () => {
         v-if="linkPreview.image"
         class="w-full aspect-[1.91/1] overflow-hidden bg-theme-bg-tertiary relative"
       >
-        <img :src="linkPreview.image" class="w-full h-full object-cover" alt="Link preview" />
+        <img :src="linkPreview.image" class="w-full h-full object-cover" :alt="$t('create.linkPreview')" />
 
         <button
           @click.stop="openLinkModal"
           class="absolute bottom-2 right-2 bg-black/60 hover:bg-black/80 text-white/90 rounded-full w-6 h-6 flex items-center justify-center backdrop-blur-[2px] z-10 transition-colors pointer-events-auto"
-          title="Informacje o tej witrynie"
+          :title="$t('feed.informacjeOTejWitrynie')"
         >
           <InformationIcon :size="14" />
         </button>
@@ -79,7 +79,7 @@ const handleLinkClick = async () => {
             v-if="!linkPreview.image"
             @click.stop="openLinkModal"
             class="p-1 hover:bg-black/10 dark:hover:bg-white/10 rounded-full transition-colors z-10 pointer-events-auto"
-            title="Informacje o tej witrynie"
+            :title="$t('feed.informacjeOTejWitrynie')"
           >
             <InformationIcon :size="16" />
           </button>
@@ -97,7 +97,7 @@ const handleLinkClick = async () => {
   </div>
 
   <BaseModal
-    title="Informacje o tej zawartości"
+    :title="$t('birthday.informacjeOTejZawartosci')"
     v-if="isModalOpen"
     @close="closeLinkModal"
   >

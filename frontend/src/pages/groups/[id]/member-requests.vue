@@ -169,13 +169,8 @@ onMounted(() => {
 
         <!-- Pasek tytułowy -->
         <div class="flex justify-between items-center mb-4">
-          <h1 class="text-[20px] font-bold leading-tight flex items-center">
-            Prośby o dołączenie
-
-            <template v-if="hasActiveFilters && filteredUsers.length === 0">
-              <span class="text-[#65676b] dark:text-[#b0b3b8] font-normal ml-1">
-                · Brak dopasowań
-              </span>
+          <h1 class="text-[20px] font-bold leading-tight flex items-center">{{ $t('groups.prosbyODolaczenie') }}<template v-if="hasActiveFilters && filteredUsers.length === 0">
+              <span class="text-[#65676b] dark:text-[#b0b3b8] font-normal ml-1">{{ $t('groups.brakDopasowan') }}</span>
             </template>
             <template v-else-if="!isLoading && pendingUsers.length > 0">
               <span class="text-[#65676b] dark:text-[#b0b3b8] font-normal ml-1">
@@ -199,13 +194,13 @@ onMounted(() => {
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Szukaj według imienia i nazwiska"
+              :placeholder="$t('groups.szukajWedlugImieniaI')"
               class="w-full bg-[#f0f2f5] dark:bg-[#3a3b3c] text-[#050505] dark:text-[#e4e6eb] placeholder-[#65676b] dark:placeholder-[#b0b3b8] rounded-full pl-10 pr-4 py-2 text-[15px] focus:outline-none focus:ring-1 focus:ring-[#1877f2] transition-shadow"
             />
           </div>
 
           <button class="bg-[#e4e6eb] dark:bg-[#3a3b3c] hover:bg-[#d8dadf] dark:hover:bg-[#4e4f50] transition-colors rounded-lg px-4 py-2 flex items-center justify-between gap-2 min-w-[180px] text-[#050505] dark:text-[#e4e6eb] cursor-pointer">
-            <span class="text-[15px] font-semibold">Od najnowszych</span>
+            <span class="text-[15px] font-semibold">{{ $t('groups.odNajnowszych') }}</span>
             <ChevronDownIcon :size="20" class="-mr-1" />
           </button>
         </div>
@@ -222,30 +217,28 @@ onMounted(() => {
                 ? 'bg-[#1877f2] hover:bg-[#166fe5] text-white shadow-sm cursor-pointer'
                 : 'bg-transparent text-[#bcc0c4] dark:text-[#65676b] cursor-not-allowed'
             ]"
-          >
-            Wyczyść filtry
-          </button>
+          >{{ $t('groups.wyczyscFiltry') }}</button>
 
           <CustomDropdownButton
-            label="Wiek prośby"
+            :label="$t('groups.wiekProsby')"
             :options="ageOptions"
             v-model="activeFilters.age"
           />
 
           <CustomDropdownButton
-            label="Data dołączenia do Facebooka"
+            :label="$t('groups.dataDolaczeniaDoFacebooka')"
             :options="fbJoinDateOptions"
             v-model="activeFilters.fbJoinDate"
           />
 
           <CustomDropdownButton
-            label="Płeć"
+            :label="$t('auth.register.gender')"
             :options="genderOptions"
             v-model="activeFilters.gender"
           />
 
           <CustomDropdownButton
-            label="Więcej filtrów"
+            :label="$t('groups.wiecejFiltrow')"
             dropdown-title="Więcej filtrów"
             :has-chevron="false"
             :badge-mode="true"
@@ -261,7 +254,7 @@ onMounted(() => {
     <!-- Spinner ładowania -->
     <div v-if="isLoading" class="flex-1 flex flex-col items-center justify-center py-12">
       <div class="w-8 h-8 border-4 border-[#1877f2] border-t-transparent rounded-full animate-spin"></div>
-      <p class="mt-4 text-[#65676b] dark:text-[#b0b3b8] text-[15px]">Ładowanie próśb o dołączenie...</p>
+      <p class="mt-4 text-[#65676b] dark:text-[#b0b3b8] text-[15px]">{{ $t('groups.ladowanieProsbODolaczenie') }}</p>
     </div>
 
     <div v-else class="flex-1 overflow-y-auto">
@@ -277,7 +270,7 @@ onMounted(() => {
           <path d="M42 75C42 62 48 55 62 55C76 55 82 62 82 75L82 75L42 75L42 75Z" fill="#75777a" />
         </svg>
 
-        <h2 class="text-[20px] font-bold text-[#65676b]">Brak próśb o dołączenie</h2>
+        <h2 class="text-[20px] font-bold text-[#65676b]">{{ $t('groups.brakProsbODolaczenie') }}</h2>
       </div>
 
       <!-- Lista próśb -->
@@ -293,22 +286,18 @@ onMounted(() => {
               <span class="font-bold text-[16px] text-[#050505] dark:text-theme-text hover:underline cursor-pointer">
                 {{ user.name }}
               </span>
-              <p class="text-[13px] text-[#65676b] dark:text-[#b0b3b8]">Chce dołączyć do grupy</p>
+              <p class="text-[13px] text-[#65676b] dark:text-[#b0b3b8]">{{ $t('groups.chceDolaczycDoGrupy') }}</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
             <button
               @click="handleApprove(user.id)"
               class="bg-[#1877f2] hover:bg-[#166fe5] text-white px-5 py-2 rounded-lg text-[15px] font-semibold transition cursor-pointer"
-            >
-              Zatwierdź
-            </button>
+            >{{ $t('groups.zatwierdz') }}</button>
             <button
               @click="handleReject(user.id)"
               class="bg-[#e4e6eb] dark:bg-[#3a3b3c] hover:bg-[#d8dadf] dark:hover:bg-[#4e4f50] text-[#050505] dark:text-[#e4e6eb] px-5 py-2 rounded-lg text-[15px] font-semibold transition cursor-pointer"
-            >
-              Odrzuć
-            </button>
+            >{{ $t('chat.odrzuc') }}</button>
           </div>
         </div>
       </div>

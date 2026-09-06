@@ -26,7 +26,7 @@ const emit = defineEmits<{
       <div>
         <div class="flex items-center gap-1.5">
           <div class="w-2 h-2 rounded-full bg-green-500"></div>
-          <span class="text-[13px] font-medium text-zinc-200 leading-tight">Podłączony mikrofon i głośnik: Domyślne</span>
+          <span class="text-[13px] font-medium text-zinc-200 leading-tight">{{ $t('call.podlaczonyMikrofonIGlosnik') }}</span>
         </div>
       </div>
     </div>
@@ -38,9 +38,7 @@ const emit = defineEmits<{
       </div>
       <h1 class="text-[28px] font-medium text-white mb-1.5">{{ recipientName }}</h1>
       <p class="text-[15px] text-zinc-400 tracking-wide flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
-        Dzwonienie...
-      </p>
+        <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>{{ $t('call.dzwonienie') }}</p>
     </div>
 
     <!-- Bottom: Controls -->
@@ -48,7 +46,7 @@ const emit = defineEmits<{
       <button
         @click="emit('open-add-user')"
         class="w-[50px] h-[50px] rounded-full bg-[#3C4043] hover:bg-[#4E5256] flex items-center justify-center transition-colors cursor-pointer text-zinc-300"
-        title="Dodaj osobę do rozmowy"
+        :title="$t('call.dodajOsobeDoRozmowy')"
       >
         <svg class="w-5 h-5 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
@@ -80,7 +78,7 @@ const emit = defineEmits<{
       <button
         @click="emit('disconnect')"
         class="w-[60px] h-[40px] rounded-full bg-[#EA4335] hover:bg-[#D33426] flex items-center justify-center transition-colors px-4 cursor-pointer text-white"
-        title="Rozłącz"
+        :title="$t('call.rozlacz')"
       >
         <svg class="w-[22px] h-[22px] rotate-[135deg]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />

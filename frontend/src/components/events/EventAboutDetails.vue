@@ -23,21 +23,18 @@ const truncatedDescription = computed(() => {
 
 <template>
   <div class="bg-theme-bg-secondary rounded-lg shadow-sm p-4">
-    <h2 class="text-xl font-bold mb-4">Szczegółowe informacje</h2>
+    <h2 class="text-xl font-bold mb-4">{{ $t('createEvent.details') }}</h2>
     <ul class="space-y-4 text-theme-text">
       <li class="flex items-start gap-3">
         <AccountGroupIcon class="text-theme-text-secondary mt-1" />
-        <span>{{ eventDetails?.responses || 0 }} użytkowników odpowiedziało</span>
+        <span>{{ $t('events.eventdetailsResponses0Uzytkownikow') }}</span>
       </li>
       <li class="flex items-start gap-3">
         <AccountGroupIcon class="text-theme-text-secondary mt-1" />
-        <div>
-          Wydarzenie
-          <span class="font-semibold">{{ eventDetails?.hosts?.[0] || 'Organizator' }}</span
+        <div>{{ $t('post.eventDateFallback') }}<span class="font-semibold">{{ eventDetails?.hosts?.[0] || 'Organizator' }}</span
           ><span v-if="eventDetails?.hosts?.[1]"
             >, <span class="font-semibold">{{ eventDetails.hosts[1] }}</span></span
-          ><span v-if="eventDetails?.hosts?.[2]">
-            i <span class="font-semibold">{{ eventDetails.hosts[2] }}</span></span
+          ><span v-if="eventDetails?.hosts?.[2]">{{ $t('birthday.and') }}<span class="font-semibold">{{ eventDetails.hosts[2] }}</span></span
           >
         </div>
       </li>
@@ -72,7 +69,7 @@ const truncatedDescription = computed(() => {
     <div class="mt-4">
       <span
         class="inline-block bg-theme-bg-subtle hover:bg-theme-hover rounded-full px-3 py-1 text-sm font-semibold text-theme-text mr-2 mb-2 cursor-pointer"
-        >Gdańsk</span
+        >{{ $t('events.gdansk') }}</span
       >
     </div>
   </div>

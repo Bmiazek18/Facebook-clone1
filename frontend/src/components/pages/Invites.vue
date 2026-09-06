@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-[700px]">
-    <h1 class="text-[24px] font-bold text-gray-900 mb-1 leading-tight">Zaproszenia</h1>
-    <h2 class="text-[17px] font-bold text-gray-900 mb-4 leading-tight">Zaproszenia do stron i profilów</h2>
+    <h1 class="text-[24px] font-bold text-gray-900 mb-1 leading-tight">{{ $t('pages.zaproszenia') }}</h1>
+    <h2 class="text-[17px] font-bold text-gray-900 mb-4 leading-tight">{{ $t('pages.zaproszeniaDoStronI') }}</h2>
 
     <div class="flex flex-col gap-4">
       <div
@@ -24,10 +24,9 @@
 
             <!-- Informacja o osobie zapraszającej -->
             <div class="flex items-center gap-2 mb-3">
-              <img :src="invite.inviterAvatar" alt="Inviter" class="w-6 h-6 rounded-full object-cover shrink-0" />
+              <img :src="invite.inviterAvatar" :alt="$t('pages.inviter')" class="w-6 h-6 rounded-full object-cover shrink-0" />
               <span class="text-[14px] text-gray-800">
-                <b class="font-bold">{{ invite.inviterName }}</b> zaprasza Cię do obserwowania strony.
-              </span>
+                <b class="font-bold">{{ invite.inviterName }}</b>{{ $t('pages.zapraszaCieDoObserwowania') }}</span>
             </div>
 
             <!-- Przyciski -->
@@ -35,9 +34,7 @@
               <button class="flex-1 bg-[#0866FF] hover:bg-blue-700 text-white font-semibold text-[15px] py-1.5 rounded-md transition-colors flex justify-center items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
-                </svg>
-                Akceptuj
-              </button>
+                </svg>{{ $t('pages.akceptuj') }}</button>
               <!-- Przycisk z kropkami -->
               <button class="w-[44px] bg-[#E4E6EB] hover:bg-[#D8DADF] rounded-md flex items-center justify-center transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" viewBox="0 0 20 20" fill="currentColor">

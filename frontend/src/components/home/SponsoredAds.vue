@@ -2,7 +2,7 @@
   <div class="bg-theme-bg w-full max-w-[360px] select-none antialiased">
     <!-- Nagłówek sekcji -->
     <div class="pb-3">
-      <span class="text-[17px] font-semibold text-theme-text-secondary"> Sponsorowane </span>
+      <span class="text-[17px] font-semibold text-theme-text-secondary">{{ $t('home.sponsorowane') }}</span>
     </div>
 
     <!-- Lista reklam -->

@@ -7,17 +7,11 @@
         <div class="bg-theme-bg-secondary border border-theme-border rounded-xl p-5 mb-6 shadow-sm">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 class="text-[18px] font-bold text-theme-text mb-1">
-                Symulacja profilu użytkownika
-              </h2>
-              <p class="text-[13px] text-theme-text-secondary">
-                Zmień ID poniżej, aby załadować propozycje znajomych dla wybranego profilu.
-              </p>
+              <h2 class="text-[18px] font-bold text-theme-text mb-1">{{ $t('friends.symulacjaProfiluUzytkownika') }}</h2>
+              <p class="text-[13px] text-theme-text-secondary">{{ $t('friends.zmienIdPonizejAby') }}</p>
             </div>
             <div class="flex items-center gap-3">
-              <label for="userIdInput" class="text-[14px] font-semibold text-theme-text shrink-0">
-                Twoje ID:
-              </label>
+              <label for="userIdInput" class="text-[14px] font-semibold text-theme-text shrink-0">{{ $t('friends.twojeId') }}</label>
               <input
                 id="userIdInput"
                 type="text"
@@ -41,12 +35,8 @@
           v-else-if="people.length === 0"
           class="bg-theme-bg-secondary border border-theme-border rounded-xl p-12 text-center shadow-sm"
         >
-          <p class="text-theme-text-secondary text-[16px] mb-2">
-            Brak propozycji nowych znajomych.
-          </p>
-          <p class="text-theme-text-secondary text-[14px]">
-            Wszyscy użytkownicy są już Twoimi znajomymi lub mają oczekujące zaproszenia.
-          </p>
+          <p class="text-theme-text-secondary text-[16px] mb-2">{{ $t('friends.brakPropozycjiNowychZnajomych') }}</p>
+          <p class="text-theme-text-secondary text-[14px]">{{ $t('friends.wszyscyUzytkownicySaJuz') }}</p>
         </div>
 
         <div

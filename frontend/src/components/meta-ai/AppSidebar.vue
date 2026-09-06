@@ -139,7 +139,7 @@ defineExpose({ fetchChats })
         <button
           class="rounded-md hover:bg-white/[0.06] p-1.5 flex items-center justify-center transition-colors text-[#a3a3a3] hover:text-[#ececec]"
           @click="toggleSidebar"
-          title="Przełącz pasek boczny"
+          :title="$t('metaAi.przelaczPasekBoczny')"
         >
           <Icon name="lucide:panel-left" size="18" />
         </button>
@@ -158,9 +158,9 @@ defineExpose({ fetchChats })
         >
           <div class="flex items-center gap-3 min-w-0">
             <Icon name="lucide:square-pen" :size="isExpanded ? '18' : '18'" class="shrink-0 text-[#e5e5e5]" />
-            <span v-if="isExpanded" class="text-[14px] font-normal truncate">Nowy czat</span>
+            <span v-if="isExpanded" class="text-[14px] font-normal truncate">{{ $t('metaAi.nowyCzat') }}</span>
           </div>
-          <span v-if="isExpanded" class="text-[12px] text-[#737373] tracking-wider font-light">⇧⌘O</span>
+          <span v-if="isExpanded" class="text-[12px] text-[#737373] tracking-wider font-light">{{ $t('metaAi.o') }}</span>
         </button>
 
         <!-- SZUKAJ -->
@@ -172,9 +172,9 @@ defineExpose({ fetchChats })
         >
           <div class="flex items-center gap-3 min-w-0">
             <Icon name="lucide:search" :size="isExpanded ? '18' : '18'" class="shrink-0 text-[#e5e5e5]" />
-            <span v-if="isExpanded" class="text-[14px] font-normal truncate">Szukaj</span>
+            <span v-if="isExpanded" class="text-[14px] font-normal truncate">{{ $t('common.search') }}</span>
           </div>
-          <span v-if="isExpanded" class="text-[12px] text-[#737373] tracking-wider font-light">⌘K</span>
+          <span v-if="isExpanded" class="text-[12px] text-[#737373] tracking-wider font-light">{{ $t('metaAi.k') }}</span>
         </button>
 
         <!-- MULTIMEDIA -->
@@ -185,7 +185,7 @@ defineExpose({ fetchChats })
           ]"
         >
           <Icon name="lucide:image" :size="isExpanded ? '18' : '18'" class="shrink-0 text-[#e5e5e5]" />
-          <span v-if="isExpanded" class="text-[14px] font-normal truncate">Multimedia</span>
+          <span v-if="isExpanded" class="text-[14px] font-normal truncate">{{ $t('groups.media') }}</span>
         </button>
 
         <!-- ARTEFAKTY -->
@@ -196,7 +196,7 @@ defineExpose({ fetchChats })
           ]"
         >
           <Icon name="lucide:shapes" :size="isExpanded ? '18' : '18'" class="shrink-0 text-[#e5e5e5]" />
-          <span v-if="isExpanded" class="text-[14px] font-normal truncate">Artefakty</span>
+          <span v-if="isExpanded" class="text-[14px] font-normal truncate">{{ $t('metaAi.artefakty') }}</span>
         </button>
 
         <!-- ZAPLANOWANE -->
@@ -207,7 +207,7 @@ defineExpose({ fetchChats })
           ]"
         >
           <Icon name="lucide:calendar-days" :size="isExpanded ? '18' : '18'" class="shrink-0 text-[#e5e5e5]" />
-          <span v-if="isExpanded" class="text-[14px] font-normal truncate">Zaplanowane</span>
+          <span v-if="isExpanded" class="text-[14px] font-normal truncate">{{ $t('metaAi.zaplanowane') }}</span>
         </button>
 
         <!-- VIBES -->
@@ -218,7 +218,7 @@ defineExpose({ fetchChats })
           ]"
         >
           <Icon name="lucide:play-square" :size="isExpanded ? '18' : '18'" class="shrink-0 text-[#e5e5e5]" />
-          <span v-if="isExpanded" class="text-[14px] font-normal truncate">Vibes</span>
+          <span v-if="isExpanded" class="text-[14px] font-normal truncate">{{ $t('metaAi.vibes') }}</span>
         </button>
 
       </div>
@@ -226,9 +226,7 @@ defineExpose({ fetchChats })
 
     <!-- HISTORIA / LISTA CZATÓW -->
     <div v-if="isExpanded" class="custom-scroll mt-5 flex-1 overflow-y-auto px-2">
-      <div class="mb-2 px-2.5 text-[12px] font-medium text-[#737373]">
-        Historia
-      </div>
+      <div class="mb-2 px-2.5 text-[12px] font-medium text-[#737373]">{{ $t('groups.historia') }}</div>
 
       <div class="space-y-[1px]">
         <div
@@ -258,7 +256,7 @@ defineExpose({ fetchChats })
           <span class="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span>
           <span class="text-[#a3a3a3] hover:text-white cursor-pointer underline">{{ userLocation }}</span>
         </div>
-        <span class="text-[#525252] text-[10.5px] mt-0.5">Z Twojego profilu</span>
+        <span class="text-[#525252] text-[10.5px] mt-0.5">{{ $t('metaAi.zTwojegoProfilu') }}</span>
       </div>
 
       <!-- KONTO UŻYTKOWNIKA -->

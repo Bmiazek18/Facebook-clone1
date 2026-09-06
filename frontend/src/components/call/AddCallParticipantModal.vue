@@ -46,7 +46,7 @@ const availableContacts = computed(() => {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
           </div>
-          <h3 class="font-semibold text-lg">Dodaj osoby do rozmowy</h3>
+          <h3 class="font-semibold text-lg">{{ $t('call.dodajOsobyDoRozmowy') }}</h3>
         </div>
         <button
           @click="emit('close')"
@@ -62,13 +62,11 @@ const availableContacts = computed(() => {
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Wyszukaj znajomych..."
+            :placeholder="$t('call.wyszukajZnajomych')"
             class="w-full bg-[#3A3B3C] text-white placeholder-zinc-400 text-sm px-4 py-2.5 rounded-xl border border-transparent focus:border-[#0084FF] focus:outline-none transition-all"
           />
         </div>
-        <p class="text-xs text-zinc-400 mt-2">
-          Dodanie osoby natychmiast utworzy grupę i wyśle wiadomość z przyciskiem dołączenia do rozmowy.
-        </p>
+        <p class="text-xs text-zinc-400 mt-2">{{ $t('call.dodanieOsobyNatychmiastUtworzy') }}</p>
       </div>
 
       <!-- Contacts list -->
@@ -82,7 +80,7 @@ const availableContacts = computed(() => {
             <img :src="user.avatarUrl" class="w-10 h-10 rounded-full object-cover border border-zinc-700" />
             <div>
               <div class="text-sm font-medium text-white">{{ user.name }}</div>
-              <div class="text-xs text-zinc-400">Dostępny do połączenia</div>
+              <div class="text-xs text-zinc-400">{{ $t('call.dostepnyDoPolaczenia') }}</div>
             </div>
           </div>
 
@@ -93,14 +91,10 @@ const availableContacts = computed(() => {
           >
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Dodaj
-          </button>
+            </svg>{{ $t('call.dodaj') }}</button>
         </div>
 
-        <div v-if="availableContacts.length === 0" class="text-center py-8 text-zinc-500 text-sm">
-          Brak dostępnych kontaktów do dodania.
-        </div>
+        <div v-if="availableContacts.length === 0" class="text-center py-8 text-zinc-500 text-sm">{{ $t('call.brakDostepnychKontaktowDo') }}</div>
       </div>
     </div>
   </div>

@@ -53,12 +53,12 @@ const marketStats = [
   <div class="max-w-5xl mx-auto mt-10 space-y-4">
     <!-- SEKCJA: Podsumowanie -->
     <section class="bg-white rounded-xl shadow-sm border border-theme-border p-5">
-      <h2 class="text-[20px] font-bold text-gray-900 mb-4">Podsumowanie</h2>
+      <h2 class="text-[20px] font-bold text-gray-900 mb-4">{{ $t('marketplace.podsumowanie') }}</h2>
       <div class="border border-theme-border rounded-xl p-4 w-full md:w-[48%] flex flex-col justify-between">
         <div class="mb-2 text-gray-800">
           <StarOutline :size="28" />
         </div>
-        <div class="text-[15px] font-medium text-gray-900">Ocena sprzedawcy</div>
+        <div class="text-[15px] font-medium text-gray-900">{{ $t('marketplace.ocenaSprzedawcy') }}</div>
         <div class="text-[13px] text-gray-600 mt-0.5">0</div>
       </div>
     </section>
@@ -66,18 +66,16 @@ const marketStats = [
     <!-- SEKCJA: Twoje ogłoszenia -->
     <section class="bg-white rounded-xl shadow-sm border border-theme-border p-5">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-3">
-        <h2 class="text-[20px] font-bold text-gray-900">Twoje ogłoszenia</h2>
+        <h2 class="text-[20px] font-bold text-gray-900">{{ $t('marketplace.twojeOgloszenia') }}</h2>
         <div class="flex flex-wrap gap-2">
           <button
             class="flex items-center gap-1.5 px-3 py-1.5 text-[#0064D1] font-semibold bg-[#EBF5FF] rounded-lg hover:bg-blue-100 transition-colors text-[14px]"
           >
-            <RocketLaunchOutline :size="18" /> Promuj ogłoszenia
-          </button>
+            <RocketLaunchOutline :size="18" />{{ $t('marketplace.promujOgloszenia') }}</button>
           <button
             class="flex items-center gap-1.5 px-3 py-1.5 text-[#0064D1] font-semibold bg-[#EBF5FF] rounded-lg hover:bg-blue-100 transition-colors text-[14px]"
           >
-            <SquareEditOutline :size="18" /> Utwórz nowe ogłoszenie
-          </button>
+            <SquareEditOutline :size="18" />{{ $t('marketplace.utworzNoweOgloszenie') }}</button>
         </div>
       </div>
 
@@ -109,18 +107,16 @@ const marketStats = [
             <ImageOutline :size="32" />
           </div>
           <div class="flex flex-col justify-center">
-            <div class="font-bold text-gray-900 text-[16px]">ff</div>
-            <div class="text-gray-900 text-[14px]">PLN0</div>
-            <div class="text-gray-500 text-[13px]">Wersja robocza</div>
+            <div class="font-bold text-gray-900 text-[16px]">{{ $t('marketplace.ff') }}</div>
+            <div class="text-gray-900 text-[14px]">{{ $t('marketplace.pln0') }}</div>
+            <div class="text-gray-500 text-[13px]">{{ $t('marketplace.wersjaRobocza') }}</div>
           </div>
         </div>
         <div class="flex gap-2">
           <button class="flex-1 flex items-center justify-center gap-2 py-2 bg-[#EBF5FF] text-[#0064D1] font-semibold rounded-lg hover:bg-blue-100 transition-colors text-[15px]">
-            <Pencil :size="18" /> Kontynuuj
-          </button>
+            <Pencil :size="18" />{{ $t('marketplace.kontynuuj') }}</button>
           <button class="flex-1 flex items-center justify-center gap-2 py-2 bg-theme-bg-tertiary text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors text-[15px]">
-            <Delete :size="18" /> Usuń wersję roboczą
-          </button>
+            <Delete :size="18" />{{ $t('common.usunWersjeRobocza') }}</button>
           <button class="px-4 py-2 bg-theme-bg-tertiary text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors">
             <DotsHorizontal :size="18" />
           </button>
@@ -128,16 +124,14 @@ const marketStats = [
       </div>
 
       <div class="mt-2 text-center border-t border-theme-border pt-4">
-        <a href="#" class="text-[#0064D1] font-semibold text-[15px] hover:underline">
-          Zobacz wszystkie ogłoszenia
-        </a>
+        <a href="#" class="text-[#0064D1] font-semibold text-[15px] hover:underline">{{ $t('marketplace.zobaczWszystkieOgloszenia') }}</a>
       </div>
     </section>
 
     <!-- SEKCJA: Statystyki dotyczące Marketplace -->
     <section class="bg-white rounded-xl shadow-sm border border-theme-border p-5">
       <div class="flex justify-between items-center mb-5">
-        <h2 class="text-[20px] font-bold text-gray-900">Statystyki dotyczące Marketplace</h2>
+        <h2 class="text-[20px] font-bold text-gray-900">{{ $t('marketplace.statystykiDotyczaceMarketplace') }}</h2>
         <div class="bg-gray-100 rounded-lg">
           <!-- Twój komponent dropdown -->
           <CustomDropdown v-model="selectedTimeOption" :options="timeOptions" />
@@ -159,9 +153,7 @@ const marketStats = [
       </div>
 
       <div class="mt-5 text-center">
-        <a href="#" class="text-[#0064D1] font-semibold text-[15px] hover:underline">
-          Zobacz więcej statystyk
-        </a>
+        <a href="#" class="text-[#0064D1] font-semibold text-[15px] hover:underline">{{ $t('marketplace.zobaczWiecejStatystyk') }}</a>
       </div>
     </section>
   </div>

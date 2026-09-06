@@ -8,7 +8,7 @@
         <button 
           @click="downloadCode" 
           class="flex items-center justify-center p-2 hover:bg-white/[0.06] text-[#c4c7c5] hover:text-white rounded-lg transition-all duration-150 cursor-pointer"
-          title="Pobierz plik"
+          :title="$t('metaAi.pobierzPlik')"
         >
           <Icon name="ph:file-arrow-down" class="w-5 h-5" />
         </button>
@@ -17,11 +17,11 @@
           @click="copyCode" 
           class="flex items-center justify-center p-2 hover:bg-white/[0.06] rounded-lg transition-all duration-150 cursor-pointer"
           :class="copied ? 'text-green-400' : 'text-[#c4c7c5] hover:text-white'"
-          title="Kopiuj kod"
+          :title="$t('metaAi.kopiujKod')"
         >
           <Icon :name="copied ? 'lucide:check' : 'lucide:copy'" class="w-4 h-4" />
-          <span v-if="!copied" class="text-xs font-medium font-sans ml-2">Kopiuj kod</span>
-          <span v-else class="text-xs font-medium font-sans ml-2 text-green-400">Skopiowano!</span>
+          <span v-if="!copied" class="text-xs font-medium font-sans ml-2">{{ $t('metaAi.kopiujKod') }}</span>
+          <span v-else class="text-xs font-medium font-sans ml-2 text-green-400">{{ $t('metaAi.skopiowano') }}</span>
         </button>
       </div>
     </div>

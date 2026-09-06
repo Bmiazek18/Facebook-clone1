@@ -38,7 +38,7 @@
         <button
           @click="removeOption(index)"
           class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-gray-200 dark:bg-theme-bg-tertiary rounded-full text-gray-500 hover:bg-gray-300 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors"
-          title="Usuń opcję"
+          :title="$t('chat.usunOpcje')"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -33,7 +33,7 @@ const isSingleImageOrGif = computed(
         :src="(message as ImageMessage).imageUrl"
         class="max-w-full h-auto rounded-xl shadow-sm cursor-pointer hover:opacity-95 transition-opacity"
         @click="emit('open-lightbox', (message as ImageMessage).imageUrl)"
-        alt="Attachment"
+        :alt="$t('chat.attachment')"
         loading="lazy"
       />
     </div>
@@ -51,14 +51,14 @@ const isSingleImageOrGif = computed(
         :src="message.mediaUrls?.[0]"
         @click="emit('open-lightbox', message.mediaUrls?.[0] ?? '')"
         class="absolute top-0 right-0 w-[120px] h-[120px] rounded-2xl object-cover bg-theme-bg shadow-lg z-30"
-        alt="Zdjęcie 1"
+        :alt="$t('chat.zdjecie1')"
       />
 
       <img
         :src="message.mediaUrls?.[1]"
         @click="emit('open-lightbox', message.mediaUrls?.[1] ?? '')"
         class="absolute top-[70px] left-0 w-[120px] h-[120px] rounded-2xl object-cover bg-theme-bg shadow-lg z-20"
-        alt="Zdjęcie 2"
+        :alt="$t('chat.zdjecie2')"
       />
 
       <template v-if="(message.mediaUrls?.length ?? 0) === 3">
@@ -66,7 +66,7 @@ const isSingleImageOrGif = computed(
           @click="emit('open-lightbox', message.mediaUrls?.[2] ?? '')"
           :src="message.mediaUrls?.[2]"
           class="absolute bottom-0 right-0 w-[120px] h-[120px] rounded-2xl object-cover bg-theme-bg shadow-lg z-10"
-          alt="Zdjęcie 3"
+          :alt="$t('chat.zdjecie3')"
         />
       </template>
     </div>
@@ -80,14 +80,14 @@ const isSingleImageOrGif = computed(
         :src="message.mediaUrls?.[0]"
         class="absolute top-0 left-0 w-[100px] h-20 object-cover rounded-lg shadow-md ring-2 z-10"
         :style="{ transform: 'rotate(-6deg)' }"
-        alt="Zdjęcie 1"
+        :alt="$t('chat.zdjecie1')"
       />
       <img
         @click="emit('open-lightbox', message.mediaUrls?.[1] ?? '')"
         :src="message.mediaUrls?.[1]"
         class="absolute top-2 left-8 w-[100px] h-20 object-cover rounded-lg shadow-md ring-2 z-20"
         :style="{ transform: 'rotate(4deg)' }"
-        alt="Zdjęcie 2"
+        :alt="$t('chat.zdjecie2')"
       />
       <img
         @click="emit('open-lightbox', message.mediaUrls?.[2] ?? '')"
@@ -95,7 +95,7 @@ const isSingleImageOrGif = computed(
         :src="message.mediaUrls?.[2]"
         class="absolute -top-2 left-4 w-[100px] h-20 object-cover rounded-lg shadow-md ring-2 z-0"
         :style="{ transform: 'rotate(-2deg)' }"
-        alt="Zdjęcie 3"
+        :alt="$t('chat.zdjecie3')"
       />
       <span
         class="absolute bottom-0 right-0 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full z-30"

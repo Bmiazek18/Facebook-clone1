@@ -68,9 +68,7 @@ onUnmounted(async () => {
     >
       <div class="px-4 pt-5 pb-2">
         <div class="flex justify-between items-start mb-4">
-          <h1 class="text-[24px] font-bold leading-tight tracking-tight text-theme-text">
-            Utwórz transmisję<br />wideo na żywo
-          </h1>
+          <h1 class="text-[24px] font-bold leading-tight tracking-tight text-theme-text">{{ $t('common.utworzTransmisje') }}<br />{{ $t('common.wideoNaZywo') }}</h1>
           <div class="flex items-center gap-2">
             <div
               class="w-9 h-9 hover:bg-theme-hover rounded-full flex items-center justify-center cursor-pointer transition-colors text-theme-text-secondary"
@@ -104,14 +102,14 @@ onUnmounted(async () => {
               class="w-6 h-6 rounded-full border-2 border-theme-border shrink-0 mt-0.5 group-hover:border-theme-text"
             ></div>
             <span class="text-[15px] font-medium text-theme-text leading-snug"
-              >Połącz źródło wideo</span
+              >{{ $t('createLive.connectVideoSource') }}</span
             >
           </div>
 
           <div class="flex items-start gap-3 cursor-pointer">
             <CheckCircleIcon class="text-[#31A24C] shrink-0 mt-0.5" :size="24" />
             <span class="text-[15px] font-medium text-theme-text leading-snug"
-              >Uzupełnij szczegółowe informacje dotyczące posta</span
+              >{{ $t('createLive.completePostDetails') }}</span
             >
           </div>
 
@@ -120,7 +118,7 @@ onUnmounted(async () => {
               class="w-6 h-6 rounded-full border-2 border-theme-border shrink-0 mt-0.5 group-hover:border-theme-text"
             ></div>
             <span class="text-[15px] font-medium text-theme-text leading-snug"
-              >Rozpocznij transmisję na żywo</span
+              >{{ $t('createLive.startLive') }}</span
             >
           </div>
         </div>
@@ -137,7 +135,7 @@ onUnmounted(async () => {
             <div class="font-semibold text-[15px] text-theme-text">
               {{ auth.currentUser?.name }}
             </div>
-            <div class="text-[13px] text-theme-text-secondary">Organizator — Twój profil</div>
+            <div class="text-[13px] text-theme-text-secondary">{{ $t('createLive.organizer') }}</div>
           </div>
         </div>
 
@@ -146,10 +144,8 @@ onUnmounted(async () => {
             class="border border-theme-border rounded-lg px-3 py-2 cursor-pointer hover:bg-theme-hover transition-colors flex justify-between items-center bg-theme-bg-secondary relative"
           >
             <div>
-              <div class="text-[11px] text-theme-text-secondary mb-0.5">
-                Wskaż docelową lokalizację posta
-              </div>
-              <div class="font-medium text-[15px] text-theme-text">Opublikuj w profilu</div>
+              <div class="text-[11px] text-theme-text-secondary mb-0.5">{{ $t('createLive.postDestination') }}</div>
+              <div class="font-medium text-[15px] text-theme-text">{{ $t('createLive.publishToProfile') }}</div>
             </div>
             <ChevronDownIcon :size="20" class="text-theme-text" />
           </div>
@@ -157,16 +153,14 @@ onUnmounted(async () => {
           <CustomDropdown
             v-model="selectedLiveSchedule"
             :options="liveScheduleOptions"
-            label="Kiedy rozpoczniesz transmisję na żywo?"
+            :label="$t('createLive.whenToGoLive')"
           />
         </div>
 
         <div
           class="inline-flex items-center px-3 py-1.5 bg-theme-bg-subtle hover:bg-theme-hover rounded-md text-[15px] font-semibold text-theme-text cursor-pointer transition-colors mb-4 w-max"
         >
-          <LockIcon :size="14" class="mr-2 text-theme-text-secondary" />
-          Tylko ja
-        </div>
+          <LockIcon :size="14" class="mr-2 text-theme-text-secondary" />{{ $t('postFilter.privacyOnlyMe') }}</div>
       </div>
 
       <nav
@@ -195,7 +189,7 @@ onUnmounted(async () => {
             <span
               class="font-semibold text-[15px]"
               :class="isCreateLiveActive ? 'text-theme-primary' : 'text-theme-text'"
-              >Konfiguracja transmisji</span
+              >{{ $t('createLive.broadcastSetup') }}</span
             >
           </li>
 
@@ -220,7 +214,7 @@ onUnmounted(async () => {
             <span
               class="font-semibold text-[15px]"
               :class="isDashboardActive ? 'text-theme-primary' : 'text-theme-text'"
-              >Pulpit</span
+              >{{ $t('createLive.desktop') }}</span
             >
           </li>
 
@@ -232,7 +226,7 @@ onUnmounted(async () => {
             >
               <MessageAlertOutlineIcon :size="20" />
             </div>
-            <span class="font-semibold text-[15px] text-theme-text">Przekaż opinię</span>
+            <span class="font-semibold text-[15px] text-theme-text">{{ $t('profile_menu.feedback') }}</span>
           </li>
         </ul>
       </nav>
@@ -242,9 +236,7 @@ onUnmounted(async () => {
         <button
           @click="router.push('/live/produce')"
           class="px-5 py-2.5 bg-theme-bg-subtle hover:bg-theme-hover text-theme-text rounded-md font-semibold text-[15px] transition-colors"
-        >
-          Wstecz
-        </button>
+        >{{ $t('createLive.back') }}</button>
         <button
           v-if="!liveStore.isLive"
           @click="handleStartLive"
@@ -253,16 +245,12 @@ onUnmounted(async () => {
           :class="liveStore.activeStream 
             ? 'bg-[#1877F2] hover:bg-[#166FE5] text-white cursor-pointer' 
             : 'bg-theme-bg-subtle text-theme-text-secondary cursor-not-allowed'"
-        >
-          Rozpocznij transmisję na żywo
-        </button>
+        >{{ $t('createLive.startLive') }}</button>
         <button
           v-else
           @click="handleStopLive"
           class="flex-1 px-4 py-2.5 bg-[#EA4335] hover:bg-[#D33426] text-white rounded-md font-semibold text-[15px] text-center truncate cursor-pointer transition-colors"
-        >
-          Zakończ transmisję
-        </button>
+        >{{ $t('common.zakonczTransmisje') }}</button>
       </div>
     </aside>
 

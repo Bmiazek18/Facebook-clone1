@@ -76,7 +76,7 @@ const visibleShortcuts = computed(() =>
           <img
             class="rounded-full w-[36px] h-[36px] object-cover border border-theme-border"
             :src="auth.currentUser?.avatar || 'https://placehold.co/40'"
-            alt="Avatar"
+            :alt="$t('chat.avatar')"
           />
           <div class="text-[15px] text-theme-text font-medium pl-3">
             {{ auth.currentUser?.name || 'Bartosz Miazek' }}
@@ -127,14 +127,10 @@ const visibleShortcuts = computed(() =>
           <div class="flex justify-between items-center mb-2 group">
             <h3
               class="text-[17px] font-medium text-theme-text-secondary group-hover:text-theme-text transition-colors"
-            >
-              Twoje skróty
-            </h3>
+            >{{ $t('home.twojeSkroty') }}</h3>
             <button
               class="text-theme-primary text-[15px] opacity-0 group-hover:opacity-100 hover:underline transition-opacity px-2 py-1 rounded"
-            >
-              Edytuj
-            </button>
+            >{{ $t('common.edit') }}</button>
           </div>
 
           <div class="space-y-1">
@@ -144,7 +140,7 @@ const visibleShortcuts = computed(() =>
               :to="'/groups/' + shortcut.id"
               class="flex items-center w-full hover:bg-theme-hover rounded-lg p-2 transition-colors"
             >
-              <img :src="shortcut.img" class="w-9 h-9 rounded-lg object-cover" alt="Shortcut" />
+              <img :src="shortcut.img" class="w-9 h-9 rounded-lg object-cover" :alt="$t('home.shortcut')" />
               <span
                 class="text-[15px] text-theme-text font-medium pl-3 truncate line-clamp-2 leading-tight"
               >
@@ -174,7 +170,7 @@ const visibleShortcuts = computed(() =>
         </div>
       </div>
        <div class="mt-auto py-4 text-[13px] text-theme-text-secondary">
-      <p>Prywatność · Regulamin · Reklama · Wybór reklam · Pliki cookie · Meta © 2026</p>
+      <p>{{ $t('home.prywatnoscRegulaminReklamaWybor') }}</p>
     </div>
     </HoverScrollbar>
 

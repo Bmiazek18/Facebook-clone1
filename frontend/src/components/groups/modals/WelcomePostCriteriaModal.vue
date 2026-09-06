@@ -80,21 +80,17 @@ const handleSave = () => {
     <div class="p-4 sm:p-6 overflow-y-auto max-h-[85vh]">
 
       <!-- Nagłówek -->
-      <h1 class="text-[22px] sm:text-[24px] font-bold leading-tight mb-5">
-        Dostosuj ten post powitalny w grupie
-      </h1>
+      <h1 class="text-[22px] sm:text-[24px] font-bold leading-tight mb-5">{{ $t('groups.dostosujTenPostPowitalny') }}</h1>
 
       <!-- Baner informacyjny -->
       <div class="flex items-start gap-3 bg-[#f0f2f5] dark:bg-[#3a3b3c] p-4 rounded-xl mb-6">
         <LightbulbOutlineIcon :size="24" class="text-[#65676b] dark:text-[#b0b3b8] shrink-0 mt-0.5" />
-        <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] leading-snug">
-          Asystent administratora automatycznie oznaczy nowych członków na końcu posta
-        </p>
+        <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] leading-snug">{{ $t('groups.asystentAdministratoraAutomatycznieOznaczy') }}</p>
       </div>
 
       <!-- Podgląd posta -->
       <div class="mb-8">
-        <p class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] mb-2 ml-1">Podgląd posta:</p>
+        <p class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] mb-2 ml-1">{{ $t('groups.podgladPosta') }}</p>
 
         <div class="border border-gray-300 dark:border-[#3e4042] rounded-xl overflow-hidden bg-white dark:bg-[#242526] shadow-sm">
 
@@ -109,11 +105,9 @@ const handleSave = () => {
             </div>
 
             <div class="flex flex-col">
-              <span class="text-[15px] font-bold leading-tight">Test Testowy</span>
+              <span class="text-[15px] font-bold leading-tight">{{ $t('groups.testTestowy') }}</span>
               <div class="flex items-center gap-1 mt-0.5">
-                <span class="bg-[#e7f3ff] dark:bg-[#252f3d] text-[#1877f2] dark:text-[#4599ff] text-[12px] font-semibold px-1.5 py-0.5 rounded leading-none">
-                  Administrator
-                </span>
+                <span class="bg-[#e7f3ff] dark:bg-[#252f3d] text-[#1877f2] dark:text-[#4599ff] text-[12px] font-semibold px-1.5 py-0.5 rounded leading-none">{{ $t('feed.administrator') }}</span>
                 <span class="text-[#65676b] dark:text-[#b0b3b8] text-[12px]">·</span>
                 <LockIcon :size="12" class="text-[#65676b] dark:text-[#b0b3b8]" />
               </div>
@@ -122,9 +116,7 @@ const handleSave = () => {
 
           <!-- Treść posta -->
           <div class="p-4 pt-1">
-            <p class="text-[15px] leading-snug">
-              Powitajmy nowych członków naszej grupy!
-            </p>
+            <p class="text-[15px] leading-snug">{{ $t('groups.powitajmyNowychCzlonkowNaszej') }}</p>
           </div>
 
           <!-- Ilustracja posta (Zastępczy Gradient) -->
@@ -135,9 +127,7 @@ const handleSave = () => {
           <!-- Przycisk Edycji w podglądzie -->
           <div class="p-4">
             <button class="w-full bg-[#f0f2f5] hover:bg-[#e4e6eb] dark:bg-[#3a3b3c] dark:hover:bg-[#4e4f50] text-[#1877f2] dark:text-[#4599ff] font-semibold text-[15px] py-2 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer">
-              <PencilIcon :size="18" />
-              Edytuj post
-            </button>
+              <PencilIcon :size="18" />{{ $t('post.editPost') }}</button>
           </div>
         </div>
       </div>
@@ -146,7 +136,7 @@ const handleSave = () => {
       <!-- SEKCJA: WYBÓR KRYTERIUM PUBLIKACJI         -->
       <!-- ========================================== -->
       <div class="mb-6 border-t border-gray-200 dark:border-[#3e4042] pt-6">
-        <h3 class="text-[17px] font-bold mb-4">Kryterium publikacji</h3>
+        <h3 class="text-[17px] font-bold mb-4">{{ $t('groups.kryteriumPublikacji') }}</h3>
 
         <div class="space-y-3">
           <label class="flex items-center gap-3 cursor-pointer group">
@@ -156,9 +146,7 @@ const handleSave = () => {
               v-model="triggerType"
               class="w-5 h-5 text-[#1877f2] focus:ring-[#1877f2] cursor-pointer"
             />
-            <span class="text-[15px] font-medium text-[#050505] dark:text-[#e4e6eb] group-hover:opacity-80 transition-opacity">
-              Określona liczba dołączeń
-            </span>
+            <span class="text-[15px] font-medium text-[#050505] dark:text-[#e4e6eb] group-hover:opacity-80 transition-opacity">{{ $t('groups.okreslonaLiczbaDolaczen') }}</span>
           </label>
 
           <label class="flex items-center gap-3 cursor-pointer group">
@@ -168,9 +156,7 @@ const handleSave = () => {
               v-model="triggerType"
               class="w-5 h-5 text-[#1877f2] focus:ring-[#1877f2] cursor-pointer"
             />
-            <span class="text-[15px] font-medium text-[#050505] dark:text-[#e4e6eb] group-hover:opacity-80 transition-opacity">
-              Cykliczny harmonogram
-            </span>
+            <span class="text-[15px] font-medium text-[#050505] dark:text-[#e4e6eb] group-hover:opacity-80 transition-opacity">{{ $t('groups.cyklicznyHarmonogram') }}</span>
           </label>
         </div>
       </div>
@@ -190,10 +176,8 @@ const handleSave = () => {
         >
           <!-- WARIANT 'count' (Liczba dołączeń) -->
           <div v-if="currentView === 'count'" key="count" class="view-container mb-2">
-            <h3 class="text-[17px] font-bold mb-1">Liczba nowych członków</h3>
-            <p class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] leading-snug mb-3">
-              Wprowadź liczbę członków, którzy muszą dołączyć, zanim zostanie opublikowany post powitalny. Będą publikowane maksymalnie dwa posty dziennie.
-            </p>
+            <h3 class="text-[17px] font-bold mb-1">{{ $t('groups.liczbaNowychCzlonkow') }}</h3>
+            <p class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] leading-snug mb-3">{{ $t('groups.wprowadzLiczbeCzlonkowKtorzy') }}</p>
 
             <input
               v-model="memberCount"
@@ -207,14 +191,14 @@ const handleSave = () => {
           <div v-else-if="currentView === 'schedule'" key="schedule" class="view-container mb-2 space-y-6">
             <!-- Powtórz -->
             <div>
-              <h3 class="text-[17px] font-bold mb-3">Powtórz</h3>
+              <h3 class="text-[17px] font-bold mb-3">{{ $t('groups.powtorz') }}</h3>
               <div class="relative border border-gray-300 dark:border-[#525355] rounded-xl px-4 py-2 flex items-center justify-between cursor-pointer focus-within:ring-1 focus-within:ring-[#1877f2] focus-within:border-[#1877f2]">
                 <div class="flex flex-col w-full">
-                  <label class="text-[12px] text-[#65676b] dark:text-[#b0b3b8]">Powtórz</label>
+                  <label class="text-[12px] text-[#65676b] dark:text-[#b0b3b8]">{{ $t('groups.powtorz') }}</label>
                   <select v-model="repeatOption" class="w-full appearance-none bg-transparent text-[17px] focus:outline-none cursor-pointer pb-1 dark:text-[#e4e6eb]">
-                    <option class="dark:bg-[#242526]">Codziennie</option>
-                    <option class="dark:bg-[#242526]">Raz w tygodniu</option>
-                    <option class="dark:bg-[#242526]">Raz w miesiącu</option>
+                    <option class="dark:bg-[#242526]">{{ $t('events.codziennie') }}</option>
+                    <option class="dark:bg-[#242526]">{{ $t('groups.razWTygodniu') }}</option>
+                    <option class="dark:bg-[#242526]">{{ $t('groups.razWMiesiacu') }}</option>
                   </select>
                 </div>
                 <MenuDownIcon :size="24" class="text-[#65676b] dark:text-[#b0b3b8] pointer-events-none" />
@@ -223,14 +207,14 @@ const handleSave = () => {
 
             <!-- Opublikuj pierwszy post -->
             <div>
-              <h3 class="text-[17px] font-bold mb-3">Opublikuj pierwszy post</h3>
+              <h3 class="text-[17px] font-bold mb-3">{{ $t('groups.opublikujPierwszyPost') }}</h3>
 
               <div class="grid grid-cols-2 gap-3">
                 <!-- Data -->
                 <div class="relative border border-gray-300 dark:border-[#525355] rounded-xl px-3 py-2 flex items-center gap-3 cursor-text focus-within:ring-1 focus-within:ring-[#1877f2] focus-within:border-[#1877f2]">
                   <CalendarBlankIcon :size="24" class="text-[#65676b] dark:text-[#b0b3b8] shrink-0" />
                   <div class="flex flex-col w-full">
-                    <label class="text-[12px] text-[#65676b] dark:text-[#b0b3b8]">Data</label>
+                    <label class="text-[12px] text-[#65676b] dark:text-[#b0b3b8]">{{ $t('groups.data') }}</label>
                     <input v-model="startDate" type="text" class="w-full bg-transparent text-[15px] focus:outline-none pb-0.5 dark:text-[#e4e6eb]" />
                   </div>
                 </div>
@@ -239,7 +223,7 @@ const handleSave = () => {
                 <div class="relative border border-gray-300 dark:border-[#525355] rounded-xl px-3 py-2 flex items-center gap-3 cursor-text focus-within:ring-1 focus-within:ring-[#1877f2] focus-within:border-[#1877f2]">
                   <ClockOutlineIcon :size="24" class="text-[#65676b] dark:text-[#b0b3b8] shrink-0" />
                   <div class="flex flex-col w-full">
-                    <label class="text-[12px] text-[#65676b] dark:text-[#b0b3b8]">Godzina</label>
+                    <label class="text-[12px] text-[#65676b] dark:text-[#b0b3b8]">{{ $t('groups.godzina') }}</label>
                     <input v-model="startTime" type="text" class="w-full bg-transparent text-[15px] focus:outline-none pb-0.5 dark:text-[#e4e6eb]" />
                   </div>
                 </div>
@@ -256,9 +240,7 @@ const handleSave = () => {
       <button
         @click="handleSave"
         class="w-full bg-[#1877f2] hover:bg-[#166fe5] text-white font-semibold text-[15px] py-2.5 rounded-lg transition-colors cursor-pointer"
-      >
-        Dodaj do Asystenta administratora
-      </button>
+      >{{ $t('groups.dodajDoAsystentaAdministratora') }}</button>
     </div>
 
   </div>

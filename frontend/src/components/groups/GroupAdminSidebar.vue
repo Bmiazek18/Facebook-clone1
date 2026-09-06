@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="p-4 border-b border-theme-border flex items-center justify-between">
       <div>
-        <h2 class="text-xl font-bold text-theme-text">Panel administratora</h2>
-        <p class="text-xs text-theme-text-secondary mt-0.5">Zarządzaj swoją grupą</p>
+        <h2 class="text-xl font-bold text-theme-text">{{ $t('groups.panelAdministratora') }}</h2>
+        <p class="text-xs text-theme-text-secondary mt-0.5">{{ $t('groups.zarzadzajSwojaGrupa') }}</p>
       </div>
     </div>
 

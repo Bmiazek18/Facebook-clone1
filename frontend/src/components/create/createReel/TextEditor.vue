@@ -1,20 +1,20 @@
 <template>
   <div v-if="text" class="bg-gray-800 rounded-lg p-4 space-y-3">
-    <h4 class="text-white font-semibold">Edycja Tekstu</h4>
+    <h4 class="text-white font-semibold">{{ $t('create.edycjaTekstu') }}</h4>
 
     <div>
-      <label class="text-gray-400 text-sm block mb-1">Treść</label>
+      <label class="text-gray-400 text-sm block mb-1">{{ $t('create.tresc') }}</label>
       <input
         :model-value="text.content"
         @input="emit('update', { ...text, content: ($event.target as HTMLInputElement).value })"
         type="text"
         class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 outline-none"
-        placeholder="Wpisz tekst..."
+        :placeholder="$t('create.wpiszTekst')"
       />
     </div>
 
     <div>
-      <label class="text-gray-400 text-sm block mb-1">Rozmiar: {{ text.fontSize }}px</label>
+      <label class="text-gray-400 text-sm block mb-1">{{ $t('create.rozmiarTextFontsizePx') }}</label>
       <input
         :model-value="text.fontSize"
         @input="
@@ -28,7 +28,7 @@
     </div>
 
     <div>
-      <label class="text-gray-400 text-sm block mb-1">Kolor</label>
+      <label class="text-gray-400 text-sm block mb-1">{{ $t('create.kolor') }}</label>
       <input
         :model-value="text.color"
         @input="emit('update', { ...text, color: ($event.target as HTMLInputElement).value })"
@@ -39,7 +39,7 @@
 
     <div class="grid grid-cols-2 gap-2">
       <div>
-        <label class="text-gray-400 text-sm block mb-1">Start (s)</label>
+        <label class="text-gray-400 text-sm block mb-1">{{ $t('create.startS') }}</label>
         <input
           :model-value="text.startTime"
           @input="
@@ -54,7 +54,7 @@
         />
       </div>
       <div>
-        <label class="text-gray-400 text-sm block mb-1">Koniec (s)</label>
+        <label class="text-gray-400 text-sm block mb-1">{{ $t('create.koniecS') }}</label>
         <input
           :model-value="text.endTime"
           @input="
@@ -68,7 +68,7 @@
     </div>
 
     <div>
-      <label class="text-gray-400 text-sm block mb-1">Animacja Wejścia</label>
+      <label class="text-gray-400 text-sm block mb-1">{{ $t('create.animacjaWejscia') }}</label>
       <select
         :model-value="text.entryAnimation"
         @change="
@@ -76,21 +76,21 @@
         "
         class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 outline-none"
       >
-        <option value="none">Brak</option>
-        <option value="fade-in">Fade In</option>
-        <option value="slide-in-left">Slide In ←</option>
-        <option value="slide-in-right">Slide In →</option>
-        <option value="slide-in-top">Slide In ↑</option>
-        <option value="slide-in-bottom">Slide In ↓</option>
-        <option value="zoom-in">Zoom In</option>
-        <option value="pop-in">Pop In</option>
-        <option value="typewriter">Typewriter</option>
+        <option value="none">{{ $t('create.brak') }}</option>
+        <option value="fade-in">{{ $t('create.fadeIn') }}</option>
+        <option value="slide-in-left">{{ $t('create.slideIn') }}</option>
+        <option value="slide-in-right">{{ $t('create.slideIn2') }}</option>
+        <option value="slide-in-top">{{ $t('create.slideIn3') }}</option>
+        <option value="slide-in-bottom">{{ $t('create.slideIn4') }}</option>
+        <option value="zoom-in">{{ $t('create.zoomIn') }}</option>
+        <option value="pop-in">{{ $t('create.popIn') }}</option>
+        <option value="typewriter">{{ $t('create.typewriter') }}</option>
       </select>
     </div>
 
     <div v-if="text.entryAnimation && text.entryAnimation !== 'none'">
       <label class="text-gray-400 text-sm block mb-1"
-        >Czas wejścia: {{ text.entryDuration }}s</label
+        >{{ $t('create.czasWejsciaTextEntryduration') }}</label
       >
       <input
         :model-value="text.entryDuration"
@@ -109,7 +109,7 @@
     </div>
 
     <div>
-      <label class="text-gray-400 text-sm block mb-1">Animacja Ciągła</label>
+      <label class="text-gray-400 text-sm block mb-1">{{ $t('create.animacjaCiagla') }}</label>
       <select
         :model-value="text.loopAnimation"
         @change="
@@ -117,15 +117,15 @@
         "
         class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 outline-none"
       >
-        <option value="none">Brak</option>
-        <option value="pulse">Pulse (Pulsowanie)</option>
-        <option value="float">Float (Unoszenie)</option>
-        <option value="shake">Shake (Trzęsienie)</option>
+        <option value="none">{{ $t('create.brak') }}</option>
+        <option value="pulse">{{ $t('create.pulsePulsowanie') }}</option>
+        <option value="float">{{ $t('create.floatUnoszenie') }}</option>
+        <option value="shake">{{ $t('create.shakeTrzesienie') }}</option>
       </select>
     </div>
 
     <div>
-      <label class="text-gray-400 text-sm block mb-1">Animacja Wyjścia</label>
+      <label class="text-gray-400 text-sm block mb-1">{{ $t('create.animacjaWyjscia') }}</label>
       <select
         :model-value="text.exitAnimation"
         @change="
@@ -133,19 +133,19 @@
         "
         class="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 outline-none"
       >
-        <option value="none">Brak</option>
-        <option value="fade-out">Fade Out</option>
-        <option value="slide-out-left">Slide Out ←</option>
-        <option value="slide-out-right">Slide Out →</option>
-        <option value="slide-out-top">Slide Out ↑</option>
-        <option value="slide-out-bottom">Slide Out ↓</option>
-        <option value="zoom-out">Zoom Out</option>
-        <option value="pop-out">Pop Out</option>
+        <option value="none">{{ $t('create.brak') }}</option>
+        <option value="fade-out">{{ $t('create.fadeOut') }}</option>
+        <option value="slide-out-left">{{ $t('create.slideOut') }}</option>
+        <option value="slide-out-right">{{ $t('create.slideOut2') }}</option>
+        <option value="slide-out-top">{{ $t('create.slideOut3') }}</option>
+        <option value="slide-out-bottom">{{ $t('create.slideOut4') }}</option>
+        <option value="zoom-out">{{ $t('create.zoomOut') }}</option>
+        <option value="pop-out">{{ $t('create.popOut') }}</option>
       </select>
     </div>
 
     <div v-if="text.exitAnimation && text.exitAnimation !== 'none'">
-      <label class="text-gray-400 text-sm block mb-1">Czas wyjścia: {{ text.exitDuration }}s</label>
+      <label class="text-gray-400 text-sm block mb-1">{{ $t('create.czasWyjsciaTextExitduration') }}</label>
       <input
         :model-value="text.exitDuration"
         @input="
@@ -165,9 +165,7 @@
     <button
       @click="emit('delete')"
       class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition-colors"
-    >
-      Usuń Tekst
-    </button>
+    >{{ $t('create.usunTekst') }}</button>
   </div>
 </template>
 

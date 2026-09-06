@@ -5,17 +5,13 @@
 
       <!-- Nagłówek -->
       <div class="p-6 pb-0">
-        <h1 class="text-2xl font-bold text-gray-900 mb-6">Menedżer komentarzy</h1>
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">{{ $t('dashboard.menedzerKomentarzy') }}</h1>
 
         <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-200 gap-4">
           <!-- Zakładki (lewa strona) -->
           <div class="flex items-center space-x-1">
-            <button class="px-5 py-2 bg-blue-50 text-blue-600 font-semibold rounded-full text-sm transition-colors">
-              Komentarze
-            </button>
-            <button class="px-5 py-2 text-gray-700 font-semibold hover:bg-gray-100 rounded-full text-sm transition-colors">
-              Wzmianki
-            </button>
+            <button class="px-5 py-2 bg-blue-50 text-blue-600 font-semibold rounded-full text-sm transition-colors">{{ $t('createLive.comments') }}</button>
+            <button class="px-5 py-2 text-gray-700 font-semibold hover:bg-gray-100 rounded-full text-sm transition-colors">{{ $t('dashboard.wzmianki') }}</button>
           </div>
 
           <!-- Filtry i opcje (prawa strona) -->
@@ -25,7 +21,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
               </svg>
-              <span>Filtry</span>
+              <span>{{ $t('search.filters') }}</span>
               <!-- Strzałka w dół -->
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -33,7 +29,7 @@
             </button>
 
             <button class="flex items-center space-x-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-sm font-semibold transition-colors">
-              <span>Nie odpowiedziano</span>
+              <span>{{ $t('dashboard.nieOdpowiedziano') }}</span>
               <!-- Strzałka w dół -->
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -60,10 +56,8 @@
         </svg>
 
         <!-- Teksty -->
-        <p class="text-[17px] text-gray-500 mb-1">Jesteś na bieżąco!</p>
-        <p class="text-[17px] text-gray-500">
-          Rozpoczynaj nowe konwersacje poprzez
-          <a href="#" class="text-blue-600 font-medium hover:underline">tworzenie posta</a>.
+        <p class="text-[17px] text-gray-500 mb-1">{{ $t('dashboard.jestesNaBiezaco') }}</p>
+        <p class="text-[17px] text-gray-500">{{ $t('dashboard.rozpoczynajNoweKonwersacjePoprzez') }}<a href="#" class="text-blue-600 font-medium hover:underline">{{ $t('dashboard.tworzeniePosta') }}</a>.
         </p>
       </div>
 

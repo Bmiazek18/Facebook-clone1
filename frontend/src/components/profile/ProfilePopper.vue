@@ -200,7 +200,7 @@ const onShow = async () => {
             >
               <HomeVariantIcon :size="16" class="text-gray-400 shrink-0" />
               <span class="truncate">
-                <span>Mieszka w:</span>
+                <span>{{ $t('marketplace.mieszkaW') }}</span>
                 <span class="font-semibold ml-1 text-gray-900 dark:text-white">{{ user.location }}</span>
               </span>
             </div>
@@ -212,7 +212,7 @@ const onShow = async () => {
             >
               <BriefcaseVariantIcon :size="16" class="text-gray-400 shrink-0" />
               <span class="truncate">
-                <span>Pracuje w:</span>
+                <span>{{ $t('profile.pracujeW') }}</span>
                 <span class="font-semibold ml-1 text-gray-900 dark:text-white">{{ user.work }}</span>
               </span>
             </div>
@@ -224,7 +224,7 @@ const onShow = async () => {
             >
               <SchoolIcon :size="16" class="text-gray-400 shrink-0" />
               <span class="truncate">
-                <span>Szkoła:</span>
+                <span>{{ $t('profile.szkola') }}</span>
                 <span class="font-semibold ml-1 text-gray-900 dark:text-white">{{ user.education }}</span>
               </span>
             </div>
@@ -238,7 +238,7 @@ const onShow = async () => {
             class="flex items-center justify-center gap-1.5 px-3 h-[36px] text-sm font-semibold rounded-xl bg-[#E4E6EB] dark:bg-[#3A3B3C] hover:bg-[#D8DADF] dark:hover:bg-[#4E4F50] text-[#050505] dark:text-white transition active:scale-[0.98]"
           >
             <AccountCheckIcon :size="16" />
-            <span>Profil</span>
+            <span>{{ $t('chat.profil') }}</span>
           </button>
 
           <button
@@ -246,7 +246,7 @@ const onShow = async () => {
             class="flex-1 flex items-center justify-center gap-2 px-4 h-[36px] text-sm font-semibold rounded-xl bg-[#1877F2] hover:bg-[#1771E6] text-white transition shadow-sm active:scale-[0.98]"
           >
             <MessageTextIcon :size="16" />
-            <span>Wyślij wiadomość</span>
+            <span>{{ $t('profile.sendMessage') }}</span>
           </button>
 
           <button

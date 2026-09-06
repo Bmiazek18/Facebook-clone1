@@ -1,14 +1,14 @@
 <template>
   <div class="min-h-screen bg-[#f0f2f5] flex flex-col   items-center">
     <div class="pt-20 pb-6">
-      <h1 class="text-[#1877f2] text-6xl font-bold tracking-tighter cursor-pointer">facebook</h1>
+      <h1 class="text-[#1877f2] text-6xl font-bold tracking-tighter cursor-pointer">{{ $t('auth.facebook') }}</h1>
     </div>
 
     <div class="bg-white rounded-lg shadow-xl w-[396px] p-4 text-center">
       <div class="flex justify-center mb-3 mt-2">
         <img
           src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
-          alt="Profile"
+          :alt="$t('feed.profile')"
           class="w-[100px] h-[100px] rounded-full object-cover border border-gray-200"
         />
       </div>
@@ -89,7 +89,7 @@
           </a>
         </div>
 
-        <div class="text-[#737373] text-center md:text-left">Meta © 2025</div>
+        <div class="text-[#737373] text-center md:text-left">{{ $t('auth.meta2025') }}</div>
       </div>
     </footer>
   </div>

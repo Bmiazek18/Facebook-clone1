@@ -8,14 +8,13 @@
       <img 
         v-show="imageLoaded"
         :src="imageSrc" 
-        alt="Wygenerowany obraz" 
+        :alt="$t('metaAi.wygenerowanyObraz')" 
         class="final-image"
         @load="handleImageLoad"
       />
 
       <div v-if="imageLoaded" class="status-badge">
-        <span class="badge-icon">✓</span> Obrazek wygenerowany pomyślnie
-      </div>
+        <span class="badge-icon">✓</span>{{ $t('metaAi.obrazekWygenerowanyPomyslnie') }}</div>
     </div>
   </div>
 </template>

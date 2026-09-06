@@ -37,11 +37,7 @@ defineProps<{
         class="w-3.5 h-3.5 inline-block align-text-bottom mr-1 text-theme-text opacity-80 -mt-0.5"
       >
         <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clip-rule="evenodd" />
-      </svg>
-      Wiadomości i połączenia są zabezpieczone pełnym szyfrowaniem. Tylko uczestnicy tego czatu mogą je odczytywać, odsłuchiwać i udostępniać.
-      <a href="#" class="text-[#0064e0] font-semibold hover:underline ml-1" @click.prevent>
-        Dowiedz się więcej
-      </a>
+      </svg>{{ $t('chat.wiadomosciIPolaczeniaSa') }}<a href="#" class="text-[#0064e0] font-semibold hover:underline ml-1" @click.prevent>{{ $t('auth.register.learnMore') }}</a>
     </div>
   </div>
 </template>

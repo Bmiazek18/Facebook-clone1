@@ -17,7 +17,7 @@ const handleRemove = (id: string) => {
 
 <template>
   <div class="mt-4 p-2">
-    <h3 class="text-xs font-bold text-gray-500 tracking-wide mb-3 uppercase">Oznaczeni</h3>
+    <h3 class="text-xs font-bold text-gray-500 tracking-wide mb-3 uppercase">{{ $t('common.oznaczeni') }}</h3>
     <div
       class="border border-gray-300 rounded-md p-2 min-h-10 flex flex-nowrap gap-2 overflow-x-auto"
     >

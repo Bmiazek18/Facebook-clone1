@@ -11,7 +11,7 @@
           v-model="searchQuery"
           @keydown.enter="searchLocation"
           type="text"
-          placeholder="Szukaj według miejscowości, dzielnicy..."
+          :placeholder="$t('common.szukajWedlugMiejscowosciDzielnicy')"
           class="bg-transparent border-none focus:ring-0 text-[15px] w-full text-[#050505] placeholder-[#65676b] p-0 leading-5"
         />
       </div>
@@ -23,7 +23,7 @@
       <button
         @click.stop="locateUser"
         class="absolute top-4 right-4 z-400 bg-white w-10 h-10 rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.15)] flex items-center justify-center cursor-pointer hover:bg-gray-50 transition text-gray-700 active:bg-gray-100"
-        title="Pokaż moją lokalizację"
+        :title="$t('common.pokazMojaLokalizacje')"
       >
         <crosshairs-gps-icon :size="22" />
       </button>
@@ -43,18 +43,18 @@
     >
       <div class="flex items-center gap-2 mb-3 text-[13px] text-[#65676b]">
         <map-marker-icon :size="16" />
-        <span>Kliknij mapę, aby wybrać określoną lokalizację.</span>
+        <span>{{ $t('common.kliknijMapeAbyWybrac') }}</span>
       </div>
 
       <div
         class="border border-gray-300 rounded-lg px-3 py-2 mb-4 hover:border-gray-400 focus-within:border-[#1877f2] focus-within:ring-1 focus-within:ring-[#1877f2] transition bg-white"
       >
-        <label class="block text-[12px] text-[#65676b] mb-0.5">Nazwa lokalizacji</label>
+        <label class="block text-[12px] text-[#65676b] mb-0.5">{{ $t('common.nazwaLokalizacji') }}</label>
         <input
           v-model="tempLocation"
           type="text"
           class="w-full text-[15px] border-none p-0 focus:ring-0 text-[#050505] font-semibold leading-tight placeholder-gray-400"
-          placeholder="Wybierz punkt na mapie"
+          :placeholder="$t('common.wybierzPunktNaMapie')"
         />
       </div>
 
@@ -62,15 +62,11 @@
         <button
           @click="close"
           class="px-5 py-2 font-semibold text-[#1877f2] hover:bg-gray-100 rounded-lg transition"
-        >
-          Anuluj
-        </button>
+        >{{ $t('common.cancel') }}</button>
         <button
           @click="confirm"
           class="px-10 py-2 font-semibold text-white bg-[#1877f2] hover:bg-[#166fe5] rounded-lg transition shadow-sm active:transform active:scale-[0.98]"
-        >
-          Zapisz
-        </button>
+        >{{ $t('createLive.save') }}</button>
       </div>
     </div>
   </div>

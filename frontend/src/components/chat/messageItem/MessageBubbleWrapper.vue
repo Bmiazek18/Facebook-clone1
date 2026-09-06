@@ -322,7 +322,7 @@ defineOptions({
         <img
           :src="getUserAvatar(String(message.chatId || ''))"
           v-tooltip="getUserName(String(message.chatId || ''))"
-          alt="Avatar"
+          :alt="$t('chat.avatar')"
           class="w-full h-full object-cover cursor-pointer"
         />
       </div>
@@ -334,7 +334,7 @@ defineOptions({
           class="relative flex flex-col overflow-visible"
           :class="{ 'highlighted-message': props.isHighlighted && isVisible }"
         >
-          <span v-if="message.isPinned" class="text-[10px] absolute -top-5 right-0" :style="{ color: theme.timestampColor }">Przypięta</span>
+          <span v-if="message.isPinned" class="text-[10px] absolute -top-5 right-0" :style="{ color: theme.timestampColor }">{{ $t('chat.przypieta') }}</span>
           <PinIcon v-if="message.isPinned" :size="20" class="absolute z-99 rotate-45 top-0 right-0 text-red-500 transform translate-x-1/4 -translate-y-1/4" />
 
           <ChatMessageCall v-if="isAnyCallType(message)" :message="message" :is-me="isMe" @call-again="handleCallAgain" />
@@ -381,15 +381,15 @@ defineOptions({
         <div v-if="displayReadBy.hiddenCount > 0" key="counter" class="w-3.5 h-3.5 rounded-full ring-2 ring-white bg-gray-200 text-[8px] flex items-center justify-center text-gray-500 font-bold relative z-0">
           +{{ displayReadBy.hiddenCount }}
         </div>
-        <img v-for="(userId, i) in displayReadBy.visible" :key="message.id + '-' + userId" :data-avatar-userid="userId" :src="getUserAvatar(userId)" v-tooltip="'Wyświetlona przez ' + getUserName(userId) + ' o ' + getDisplayTime(message.time)" class="w-3.5 h-3.5 rounded-full ring-2 ring-white relative object-cover shadow-sm select-none border-white bg-gray-200" :style="{ zIndex: i + 1 }" alt="seen" />
+        <img v-for="(userId, i) in displayReadBy.visible" :key="message.id + '-' + userId" :data-avatar-userid="userId" :src="getUserAvatar(userId)" v-tooltip="'Wyświetlona przez ' + getUserName(userId) + ' o ' + getDisplayTime(message.time)" class="w-3.5 h-3.5 rounded-full ring-2 ring-white relative object-cover shadow-sm select-none border-white bg-gray-200" :style="{ zIndex: i + 1 }" :alt="$t('chat.seen')" />
       </TransitionGroup>
     </div>
   </div>
 
   <!-- Reakcje Modal -->
-  <BaseModal v-if="showReactionsPanel" @close="showReactionsPanel = false" title="Reakcje">
+  <BaseModal v-if="showReactionsPanel" @close="showReactionsPanel = false" :title="$t('createLive.reactions')">
     <div class="p-4 max-h-[400px] overflow-y-auto min-w-[280px]">
-      <div v-if="!message.reactions || Object.keys(message.reactions).length === 0" class="text-center text-gray-500 py-4">Brak reakcji</div>
+      <div v-if="!message.reactions || Object.keys(message.reactions).length === 0" class="text-center text-gray-500 py-4">{{ $t('chat.brakReakcji') }}</div>
       <div v-else class="space-y-4">
         <div v-for="(userIds, emoji) in message.reactions" :key="emoji" class="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
           <div class="flex items-center space-x-2 mb-2">
@@ -399,13 +399,13 @@ defineOptions({
           <div class="space-y-2 pl-2">
             <template v-if="Array.isArray(userIds)">
               <div v-for="userId in userIds" :key="userId" class="flex items-center space-x-3">
-                <img :src="getUserAvatar(userId)" class="w-8 h-8 rounded-full object-cover shadow-sm bg-gray-100 border border-gray-200" alt="avatar" />
+                <img :src="getUserAvatar(userId)" class="w-8 h-8 rounded-full object-cover shadow-sm bg-gray-100 border border-gray-200" :alt="$t('chat.avatar2')" />
                 <span class="text-sm font-medium text-gray-700">{{ getUserName(userId) }}</span>
               </div>
             </template>
             <template v-else>
               <div class="flex items-center space-x-3">
-                <img :src="getUserAvatar(String(userIds))" class="w-8 h-8 rounded-full object-cover shadow-sm bg-gray-100 border border-gray-200" alt="avatar" />
+                <img :src="getUserAvatar(String(userIds))" class="w-8 h-8 rounded-full object-cover shadow-sm bg-gray-100 border border-gray-200" :alt="$t('chat.avatar2')" />
                 <span class="text-sm font-medium text-gray-700">{{ getUserName(String(userIds)) }}</span>
               </div>
             </template>

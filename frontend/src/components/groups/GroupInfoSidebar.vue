@@ -102,12 +102,8 @@ const truncatedDescription = computed(() => {
           </svg>
         </div>
         <div class="flex flex-col">
-          <span class="text-[17px] font-bold text-[#050505] dark:text-[#E4E6EB] leading-snug">
-            Historia
-          </span>
-          <span class="text-[15px] text-[#65676B] dark:text-[#B0B3B8] leading-snug mt-1">
-            Data utworzenia grupy: 8 lutego 2015
-            <span class="font-bold text-[#050505] dark:text-[#E4E6EB] cursor-pointer hover:underline ml-0.5">Wyświetl więcej</span>
+          <span class="text-[17px] font-bold text-[#050505] dark:text-[#E4E6EB] leading-snug">{{ $t('groups.historia') }}</span>
+          <span class="text-[15px] text-[#65676B] dark:text-[#B0B3B8] leading-snug mt-1">{{ $t('groups.dataUtworzeniaGrupy8') }}<span class="font-bold text-[#050505] dark:text-[#E4E6EB] cursor-pointer hover:underline ml-0.5">{{ $t('groups.wyswietlWiecej') }}</span>
           </span>
         </div>
       </div>

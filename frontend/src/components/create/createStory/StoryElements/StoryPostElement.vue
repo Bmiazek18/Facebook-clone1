@@ -20,7 +20,7 @@ defineProps<{
         </p>
         <div class="flex items-center gap-1 text-xs text-gray-500">
           <Earth :size="10" />
-          <span>Publiczny</span>
+          <span>{{ $t('post.public') }}</span>
         </div>
       </div>
     </div>
@@ -30,7 +30,7 @@ defineProps<{
     <PostMediaDisplay :post="element.postData" />
 
     <div class="p-2 bg-gray-50 text-center">
-      <span class="text-xs text-blue-600 font-medium">Dotknij, aby wyświetlić post</span>
+      <span class="text-xs text-blue-600 font-medium">{{ $t('create.dotknijAbyWyswietlicPost') }}</span>
     </div>
   </div>
 </template>

@@ -66,7 +66,7 @@ defineProps<{
         <img
           :src="element.content"
           class="w-full h-full object-cover rounded-full animate-spin-record"
-          alt="Album cover"
+          :alt="$t('create.albumCover')"
         />
         <div class="absolute inset-0 bg-black/30 flex items-center justify-center z-10">
           <MusicNote :size="24" class="text-white drop-shadow-md" />

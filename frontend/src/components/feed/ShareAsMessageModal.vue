@@ -70,7 +70,7 @@ const handleSend = () => {
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Szukaj osób i grup"
+          :placeholder="$t('chat.szukajOsobIGrup')"
           class="bg-transparent w-full outline-none text-sm placeholder-gray-500 text-gray-900"
         />
       </div>
@@ -111,7 +111,7 @@ const handleSend = () => {
         <input
           v-model="message"
           type="text"
-          placeholder="Dodaj opcjonalną wiadomość tutaj..."
+          :placeholder="$t('feed.dodajOpcjonalnaWiadomoscTutaj')"
           class="w-full bg-gray-100 text-sm rounded-2xl py-3 pl-4 pr-10 outline-none text-gray-900 placeholder-gray-500"
         />
       </div>

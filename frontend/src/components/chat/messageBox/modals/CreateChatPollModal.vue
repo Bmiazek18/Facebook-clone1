@@ -99,7 +99,7 @@ function handleClose() {
           >
             <Poll :size="20" />
           </div>
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white">Utwórz ankietę</h3>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ $t('createLive.createPoll') }}</h3>
         </div>
         <button
           @click="handleClose"
@@ -113,13 +113,11 @@ function handleClose() {
       <div class="p-5 overflow-y-auto space-y-4 flex-1">
         <!-- Pytanie -->
         <div>
-          <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">
-            Pytanie ankiety
-          </label>
+          <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">{{ $t('chat.pytanieAnkiety') }}</label>
           <input
             v-model="question"
             type="text"
-            placeholder="O co chcesz zapytać grupę?"
+            :placeholder="$t('chat.oCoChceszZapytac')"
             class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
             autofocus
           />
@@ -127,9 +125,7 @@ function handleClose() {
 
         <!-- Opcje -->
         <div>
-          <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">
-            Opcje odpowiedzi (min. 2)
-          </label>
+          <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1.5">{{ $t('chat.opcjeOdpowiedziMin2') }}</label>
           <div class="space-y-2">
             <div
               v-for="(option, idx) in options"
@@ -147,7 +143,7 @@ function handleClose() {
                 v-if="options.length > 2"
                 @click="removeOption(idx)"
                 class="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                title="Usuń opcję"
+                :title="$t('chat.usunOpcje')"
               >
                 <Close :size="18" />
               </button>
@@ -161,16 +157,14 @@ function handleClose() {
             :style="{ color: themeColor }"
           >
             <Plus :size="18" />
-            <span>Dodaj kolejną opcję</span>
+            <span>{{ $t('chat.dodajKolejnaOpcje') }}</span>
           </button>
         </div>
 
         <!-- Ustawienia -->
         <div class="pt-3 border-t border-gray-200 dark:border-gray-700 space-y-3">
           <label class="flex items-center justify-between cursor-pointer select-none">
-            <span class="text-sm font-medium text-gray-800 dark:text-gray-200">
-              Zezwalaj na wybór wielu odpowiedzi
-            </span>
+            <span class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ $t('chat.zezwalajNaWyborWielu') }}</span>
             <input
               v-model="allowMultiple"
               type="checkbox"
@@ -179,9 +173,7 @@ function handleClose() {
           </label>
 
           <label class="flex items-center justify-between cursor-pointer select-none">
-            <span class="text-sm font-medium text-gray-800 dark:text-gray-200">
-              Zezwalaj innym na dodawanie opcji
-            </span>
+            <span class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ $t('chat.zezwalajInnymNaDodawanie') }}</span>
             <input
               v-model="allowAddOption"
               type="checkbox"
@@ -197,18 +189,14 @@ function handleClose() {
           @click="handleClose"
           type="button"
           class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-colors"
-        >
-          Anuluj
-        </button>
+        >{{ $t('common.cancel') }}</button>
         <button
           @click="handleSubmit"
           :disabled="!isValid"
           type="button"
           class="px-5 py-2 text-sm font-semibold text-white rounded-xl transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
           :style="{ backgroundColor: themeColor }"
-        >
-          Utwórz ankietę
-        </button>
+        >{{ $t('createLive.createPoll') }}</button>
       </div>
     </div>
   </div>

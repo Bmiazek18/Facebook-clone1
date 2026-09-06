@@ -61,7 +61,7 @@
             >
               <div class="flex items-center gap-2">
                 <Tune variant="outline" class="text-white" :size="18" />
-                <span>Jakość</span>
+                <span>{{ $t('media.jakosc') }}</span>
               </div>
               <div class="flex items-center gap-1 text-gray-300 text-xs font-medium">
                 <span>{{ currentQuality }}</span>
@@ -75,11 +75,11 @@
             >
               <div class="flex items-center gap-2">
                 <Speedometer class="text-white" :size="18" />
-                <span>Szybkość</span>
+                <span>{{ $t('media.szybkosc') }}</span>
               </div>
               <div class="flex items-center gap-1 text-gray-300 text-xs font-medium">
-                <span v-if="currentSpeed === 1">Normalna</span>
-                <span v-else>{{ currentSpeed }}x</span>
+                <span v-if="currentSpeed === 1">{{ $t('media.normalna') }}</span>
+                <span v-else>{{ $t('media.currentspeedX') }}</span>
                 <ChevronRight :size="16" />
               </div>
             </div>
@@ -93,7 +93,7 @@
               >
                 <ChevronLeft :size="20" />
               </div>
-              <span class="font-medium text-xs uppercase tracking-wider text-gray-400">Szybkość odtwarzania</span>
+              <span class="font-medium text-xs uppercase tracking-wider text-gray-400">{{ $t('media.szybkoscOdtwarzania') }}</span>
             </div>
 
             <div
@@ -119,7 +119,7 @@
               >
                 <ChevronLeft :size="20" />
               </div>
-              <span class="font-medium text-xs uppercase tracking-wider text-gray-400">Jakość wideo</span>
+              <span class="font-medium text-xs uppercase tracking-wider text-gray-400">{{ $t('media.jakoscWideo') }}</span>
             </div>
 
             <div
@@ -139,9 +139,7 @@
               <span
                 v-if="quality.includes('1080') || quality.includes('720')"
                 class="ml-auto text-[10px] text-blue-400 font-bold border border-blue-400/40 bg-blue-500/10 px-1.5 py-0.5 rounded"
-              >
-                HD
-              </span>
+              >{{ $t('media.hd') }}</span>
             </div>
           </div>
         </div>

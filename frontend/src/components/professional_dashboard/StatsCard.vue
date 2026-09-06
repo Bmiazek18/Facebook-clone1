@@ -219,12 +219,12 @@ const chartOptions = computed(() => ({
   <div class="bg-white rounded-[8px] shadow-sm p-4 flex flex-col">
     <div class="flex justify-between items-start mb-4">
       <div>
-        <h2 class="text-[20px] font-bold text-[#050505] leading-tight">Statystyki</h2>
+        <h2 class="text-[20px] font-bold text-[#050505] leading-tight">{{ $t('createLive.stats') }}</h2>
         <p class="text-[13px] text-[#65676B] mt-1">{{ rangeText }}</p>
       </div>
       <div class="flex items-center gap-3">
         <DateInput v-model="selectedRange" />
-        <a href="#" class="text-[#1877F2] text-[15px] font-semibold hover:underline">Wyświetl wszystko</a>
+        <a href="#" class="text-[#1877F2] text-[15px] font-semibold hover:underline">{{ $t('notifications_page.viewAll') }}</a>
       </div>
     </div>
 
@@ -253,9 +253,7 @@ const chartOptions = computed(() => ({
           <span v-if="card.trend === 'up'" class="flex items-center text-[#31A24C] font-semibold text-[15px] leading-none pb-[1px]">
             <span class="mr-0.5 text-[16px]">↑</span> {{ card.change }}
           </span>
-          <span v-else-if="card.trend === 'neutral'" class="text-[#65676B] text-[15px] font-normal leading-none pb-[1px]">
-            – {{ card.change }}
-          </span>
+          <span v-else-if="card.trend === 'neutral'" class="text-[#65676B] text-[15px] font-normal leading-none pb-[1px]">{{ $t('dashboard.cardChange') }}</span>
         </div>
 
         <!-- Tytuł i ikona info -->

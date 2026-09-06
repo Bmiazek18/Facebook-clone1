@@ -23,7 +23,7 @@
 
     <!-- Stopka "from Meta" na dole -->
     <div class="flex flex-col items-center gap-1">
-      <span class="text-xs text-[#65676B] tracking-tight">from</span>
+      <span class="text-xs text-[#65676B] tracking-tight">{{ $t('common.from') }}</span>
       <svg
         class="h-4 text-[#0866FF]"
         viewBox="0 0 100 20"

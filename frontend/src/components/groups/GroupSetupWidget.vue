@@ -47,13 +47,11 @@ const handleStepClick = (step: SetupStep) => {
     <!-- Nagłówek z przyciskiem zamknięcia -->
     <div class="flex items-start p-1 justify-between mb-1">
       <div>
-        <h2 class="text-[20px] font-bold leading-tight">
-          Ukończ konfigurowanie grupy
-        </h2>
+        <h2 class="text-[20px] font-bold leading-tight">{{ $t('groups.ukonczKonfigurowanieGrupy') }}</h2>
         <div class="text-[15px] font-bold mt-1">
-          <span>Ukończono </span>
+          <span>{{ $t('groups.ukonczono') }}</span>
           <span class="text-[#2e7d32] dark:text-[#45a049]">{{ completedCount }} z {{ totalSteps }}</span>
-          <span> kroków</span>
+          <span>{{ $t('groups.krokow') }}</span>
         </div>
       </div>
 
@@ -61,16 +59,14 @@ const handleStepClick = (step: SetupStep) => {
         type="button"
         @click="emit('close')"
         class="text-[#65676b] dark:text-[#b0b3b8] hover:bg-gray-100 dark:hover:bg-[#3a3b3c] p-1.5 rounded-full transition-colors"
-        title="Zamknij"
+        :title="$t('common.close')"
       >
         <CloseIcon :size="20" />
       </button>
     </div>
 
     <!-- Subtitle / Opis -->
-    <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] leading-snug mb-5">
-      Kontynuuj dodawanie kluczowych informacji i zacznij angażować swoją społeczność.
-    </p>
+    <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] leading-snug mb-5">{{ $t('groups.kontynuujDodawanieKluczowychInformacji') }}</p>
 
     <!-- Linia oddzielająca (subtelna) -->
     <hr class="border-gray-200 dark:border-[#3e4042] mb-4" />

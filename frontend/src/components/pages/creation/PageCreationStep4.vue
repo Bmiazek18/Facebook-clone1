@@ -14,17 +14,11 @@ defineEmits<{
 
 <template>
   <div class="flex-1 overflow-y-auto px-4 py-2 custom-scrollbar flex flex-col">
-    <div class="text-[13px] text-[#65676B] mb-1 font-semibold">
-      Krok 5 z 5
-    </div>
+    <div class="text-[13px] text-[#65676B] mb-1 font-semibold">{{ $t('pages.krok5Z5') }}</div>
 
-    <h1 class="text-[24px] font-bold leading-tight mb-2 text-[#050505]">
-      Bądź na bieżąco ze swoją stroną
-    </h1>
+    <h1 class="text-[24px] font-bold leading-tight mb-2 text-[#050505]">{{ $t('pages.badzNaBiezacoZe') }}</h1>
 
-    <p class="text-[15px] text-[#65676B] leading-snug mb-6">
-      Włącz te funkcje, aby ułatwić sobie optymalne wykorzystanie strony <span class="font-bold text-[#050505]">{{ form.pageName || 'Nazwa strony' }}</span>. Możesz je zmienić w dowolnym momencie w Ustawieniach.
-    </p>
+    <p class="text-[15px] text-[#65676B] leading-snug mb-6">{{ $t('pages.wlaczTeFunkcjeAby') }}<span class="font-bold text-[#050505]">{{ form.pageName || 'Nazwa strony' }}</span>{{ $t('pages.mozeszJeZmienicW') }}</p>
 
     <!-- Powiadomienia dotyczące strony -->
     <div class="flex items-start justify-between gap-3 mb-6">
@@ -34,10 +28,8 @@ defineEmits<{
         </svg>
       </div>
       <div class="flex-1 pr-2">
-        <h3 class="text-[15px] font-bold text-[#050505] leading-snug mb-1">Powiadomienia dotyczące strony w Twoim profilu</h3>
-        <p class="text-[13px] text-[#65676B] leading-snug">
-          Bądź na bieżąco ze stroną <span class="font-bold text-[#050505]">{{ form.pageName || 'Nazwa strony' }}</span>, gdy przełączysz się na profil.
-        </p>
+        <h3 class="text-[15px] font-bold text-[#050505] leading-snug mb-1">{{ $t('pages.powiadomieniaDotyczaceStronyW') }}</h3>
+        <p class="text-[13px] text-[#65676B] leading-snug">{{ $t('pages.badzNaBiezacoZe2') }}<span class="font-bold text-[#050505]">{{ form.pageName || 'Nazwa strony' }}</span>{{ $t('pages.gdyPrzelaczyszSieNa') }}</p>
       </div>
       <div class="shrink-0 pt-1">
         <label class="relative inline-flex items-center cursor-pointer">
@@ -55,10 +47,8 @@ defineEmits<{
         </svg>
       </div>
       <div class="flex-1 pr-2">
-        <h3 class="text-[15px] font-bold text-[#050505] leading-snug mb-1">Marketingowe i promocyjne e-maile dotyczące Twojej strony</h3>
-        <p class="text-[13px] text-[#65676B] leading-snug">
-          Dowiedz się więcej o produktach i usługach Meta, dzięki którym strona <span class="font-bold text-[#050505]">{{ form.pageName || 'Nazwa strony' }}</span> może łatwiej odnieść sukces.
-        </p>
+        <h3 class="text-[15px] font-bold text-[#050505] leading-snug mb-1">{{ $t('pages.marketingoweIPromocyjneE') }}</h3>
+        <p class="text-[13px] text-[#65676B] leading-snug">{{ $t('pages.dowiedzSieWiecejO2') }}<span class="font-bold text-[#050505]">{{ form.pageName || 'Nazwa strony' }}</span>{{ $t('pages.mozeLatwiejOdniescSukces') }}</p>
       </div>
       <div class="shrink-0 pt-1">
         <label class="relative inline-flex items-center cursor-pointer">
@@ -70,12 +60,9 @@ defineEmits<{
   </div>
 
   <div class="px-4 py-3 bg-white shrink-0 mt-auto border-t border-[#E5E5E5] shadow-[0_-2px_4px_rgba(0,0,0,0.05)]">
-    <div class="text-[15px] text-[#050505] mb-1">
-      Kondycja strony: <span class="font-bold">Przeciętna</span>
+    <div class="text-[15px] text-[#050505] mb-1">{{ $t('pages.kondycjaStrony') }}<span class="font-bold">{{ $t('pages.przecietna') }}</span>
     </div>
-    <div class="text-[15px] text-[#050505] leading-snug mb-3">
-      W porównaniu z podobnymi stronami o dużej aktywności.
-    </div>
+    <div class="text-[15px] text-[#050505] leading-snug mb-3">{{ $t('pages.wPorownaniuZPodobnymi') }}</div>
     <div class="h-1.5 w-full bg-[#E5E5E5] rounded-full mb-4 flex overflow-hidden">
       <div class="bg-[#B58A14] w-[55%] h-full rounded-full"></div>
     </div>
@@ -84,9 +71,7 @@ defineEmits<{
       <button
         @click="$emit('prev-step')"
         class="flex-1 py-2 rounded-md font-semibold text-[15px] bg-[#E4E6EB] text-[#050505] hover:bg-[#D8DADF] transition-colors"
-      >
-        Wstecz
-      </button>
+      >{{ $t('createLive.back') }}</button>
       <button
         @click="$emit('finish')"
         :disabled="isSubmitting"

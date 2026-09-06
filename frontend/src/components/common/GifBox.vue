@@ -121,7 +121,7 @@ const clearGridAndFetchGifs = (): void => {
           v-model="searchTerm"
           @input="handleGifSearch"
           class="w-full bg-gray-100 border-none py-2 pl-10 pr-4 rounded-full text-[15px] focus:ring-2 focus:ring-gray-200 placeholder-gray-500 transition-all outline-none"
-          placeholder="Szukaj"
+          :placeholder="$t('common.search')"
         />
       </div>
     </div>

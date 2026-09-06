@@ -65,17 +65,15 @@ onMounted(() => {
   <div class="min-h-screen bg-theme-bg-secondary text-theme-text p-4 max-w-[680px] mx-auto border border-theme-border rounded-xl shadow-sm">
     <div class="flex items-center justify-between mb-6 pb-4 border-b border-theme-border">
       <div class="flex items-center">
-        <h2 class="text-[20px] font-bold">Prośby o dołączenie</h2>
+        <h2 class="text-[20px] font-bold">{{ $t('groups.prosbyODolaczenie') }}</h2>
         <span class="text-[20px] font-bold text-theme-text-secondary ml-2">· {{ pendingUsers.length }}</span>
       </div>
-      <button @click="loadRequests" class="text-sm font-semibold text-[#0866FF] hover:underline">
-        Odśwież
-      </button>
+      <button @click="loadRequests" class="text-sm font-semibold text-[#0866FF] hover:underline">{{ $t('groups.odswiez') }}</button>
     </div>
 
     <div v-if="isLoading" class="flex flex-col items-center justify-center py-12">
       <div class="w-8 h-8 border-4 border-[#0866FF] border-t-transparent rounded-full animate-spin"></div>
-      <p class="mt-4 text-theme-text-secondary text-sm">Ładowanie próśb o dołączenie...</p>
+      <p class="mt-4 text-theme-text-secondary text-sm">{{ $t('groups.ladowanieProsbODolaczenie') }}</p>
     </div>
 
     <div v-else>
@@ -85,10 +83,8 @@ onMounted(() => {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h3 class="font-bold text-[17px] text-theme-text mb-1">Brak nowych próśb</h3>
-        <p class="text-theme-text-secondary text-sm">
-          Wszystkie prośby o dołączenie do tej grupy zostały rozpatrzone.
-        </p>
+        <h3 class="font-bold text-[17px] text-theme-text mb-1">{{ $t('groups.brakNowychProsb') }}</h3>
+        <p class="text-theme-text-secondary text-sm">{{ $t('groups.wszystkieProsbyODolaczenie') }}</p>
       </div>
 
       <div v-else class="space-y-4">
@@ -99,22 +95,18 @@ onMounted(() => {
               <span class="font-bold text-[16px] text-theme-text hover:underline cursor-pointer">
                 {{ user.name }}
               </span>
-              <p class="text-xs text-theme-text-secondary">Chce dołączyć do grupy</p>
+              <p class="text-xs text-theme-text-secondary">{{ $t('groups.chceDolaczycDoGrupy') }}</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
             <button
               @click="handleApprove(user.id)"
               class="bg-[#0866FF] hover:bg-[#0052CC] text-white px-4 py-1.5 rounded-lg text-sm font-semibold transition"
-            >
-              Zatwierdź
-            </button>
+            >{{ $t('groups.zatwierdz') }}</button>
             <button
               @click="handleReject(user.id)"
               class="bg-theme-bg-subtle hover:bg-theme-hover-strong text-theme-text px-4 py-1.5 rounded-lg text-sm font-semibold transition"
-            >
-              Odrzuć
-            </button>
+            >{{ $t('chat.odrzuc') }}</button>
           </div>
         </div>
       </div>

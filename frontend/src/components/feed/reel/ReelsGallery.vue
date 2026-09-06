@@ -18,7 +18,7 @@
             />
           </svg>
         </div>
-        <h2 class="text-xl font-bold text-theme-text">Rolki i krótkie filmy</h2>
+        <h2 class="text-xl font-bold text-theme-text">{{ $t('feed.rolkiIKrotkieFilmy') }}</h2>
       </div>
       <button class="text-theme-text-secondary hover:bg-theme-bg-hover p-2 rounded-full transition">
         <DotsVerticalIcon :size="24" :fillColor="dotsFillColor" />
@@ -68,7 +68,7 @@
           <div class="bg-theme-bg-secondary p-3 rounded-full shadow-sm mb-3">
             <ArrowRightIcon :size="24" :fillColor="chevronFillColor" />
           </div>
-          <span class="text-theme-text font-semibold text-sm">Zobacz wszystkie</span>
+          <span class="text-theme-text font-semibold text-sm">{{ $t('feed.zobaczWszystkie') }}</span>
         </div>
 
         <div class="shrink-0 w-4"></div>

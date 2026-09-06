@@ -11,9 +11,7 @@
         :src="item.data.media[0].src"
         class="w-full h-full object-cover"
       />
-      <div v-else class="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-        Brak zdjęcia
-      </div>
+      <div v-else class="w-full h-full flex items-center justify-center text-gray-400 text-sm">{{ $t('profile.brakZdjecia') }}</div>
     </div>
     <div class="p-3 mt-auto flex items-center gap-3">
       <img

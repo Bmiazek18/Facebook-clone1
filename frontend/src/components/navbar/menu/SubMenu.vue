@@ -7,13 +7,11 @@
       <button
         @click="handleBackClick"
         class="rounded-full p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-theme-hover transition duration-150 mr-2"
-        aria-label="Wróć"
+        :aria-label="$t('ui.back')"
       >
         <ArrowLeftIcon class="text-2xl text-theme-text" />
       </button>
-      <span class="text-theme-text font-bold text-xl leading-snug">
-        Wyświetlanie i ułatwienia dostępu
-      </span>
+      <span class="text-theme-text font-bold text-xl leading-snug">{{ $t('ui.displayAndAccessibility') }}</span>
     </div>
 
     <!-- Tryb ciemny -->
@@ -25,10 +23,8 @@
           <MoonWaningCrescentIcon :size="20" />
         </span>
         <div class="text-content">
-          <h3 class="text-base font-bold text-theme-text leading-tight">Tryb ciemny</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">
-            Dostosuj wygląd Facebooka, aby zmniejszyć odblask i dać odpocząć oczom.
-          </p>
+          <h3 class="text-base font-bold text-theme-text leading-tight">{{ $t('ui.darkMode') }}</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">{{ $t('header.dostosujWygladFacebookaAby') }}</p>
         </div>
       </div>
 
@@ -37,7 +33,7 @@
         <label
           class="option-item flex items-center justify-between py-2.5 cursor-pointer hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg px-2 -mx-2 transition-colors"
         >
-          <span class="text-[15px] font-medium text-theme-text">Wył.</span>
+          <span class="text-[15px] font-medium text-theme-text">{{ $t('ui.off') }}</span>
           <input type="radio" v-model="mode" value="light" class="hidden" />
           <div
             :class="[
@@ -58,7 +54,7 @@
         <label
           class="option-item flex items-center justify-between py-2.5 cursor-pointer hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg px-2 -mx-2 transition-colors"
         >
-          <span class="text-[15px] font-medium text-theme-text">Wł.</span>
+          <span class="text-[15px] font-medium text-theme-text">{{ $t('ui.on') }}</span>
           <input type="radio" v-model="mode" value="dark" class="hidden" />
           <div
             :class="[
@@ -80,10 +76,8 @@
           class="option-item flex items-start justify-between py-2.5 cursor-pointer hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg px-2 -mx-2 transition-colors"
         >
           <div class="flex-1 pr-4">
-            <span class="text-[15px] font-medium text-theme-text block">Automatycznie</span>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">
-              Automatycznie dostosujemy wyświetlanie na podstawie ustawień systemowych urządzenia.
-            </p>
+            <span class="text-[15px] font-medium text-theme-text block">{{ $t('ui.automatic') }}</span>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">{{ $t('header.automatycznieDostosujemyWyswietlanieNa') }}</p>
           </div>
           <input type="radio" v-model="mode" value="auto" class="hidden" />
           <div
@@ -112,10 +106,8 @@
           <FormatSizeDecreaseIcon :size="20" />
         </span>
         <div class="text-content">
-          <h3 class="text-base font-bold text-theme-text leading-tight">Tryb kompaktowy</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">
-            Zmniejsz rozmiar czcionki, aby zmieścić więcej treści na ekranie.
-          </p>
+          <h3 class="text-base font-bold text-theme-text leading-tight">{{ $t('ui.compactMode') }}</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">{{ $t('header.zmniejszRozmiarCzcionkiAby') }}</p>
         </div>
       </div>
 
@@ -123,7 +115,7 @@
         <label
           class="option-item flex items-center justify-between py-2.5 cursor-pointer hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg px-2 -mx-2 transition-colors"
         >
-          <span class="text-[15px] font-medium text-theme-text">Wył.</span>
+          <span class="text-[15px] font-medium text-theme-text">{{ $t('ui.off') }}</span>
           <input type="radio" v-model="compactMode" value="off" class="hidden" />
           <div
             :class="[
@@ -143,7 +135,7 @@
         <label
           class="option-item flex items-center justify-between py-2.5 cursor-pointer hover:bg-gray-100 dark:hover:bg-theme-hover rounded-lg px-2 -mx-2 transition-colors"
         >
-          <span class="text-[15px] font-medium text-theme-text">Wł.</span>
+          <span class="text-[15px] font-medium text-theme-text">{{ $t('ui.on') }}</span>
           <input type="radio" v-model="compactMode" value="on" class="hidden" />
           <div
             :class="[
@@ -173,7 +165,7 @@
         >
           <KeyboardIcon :size="20" />
         </span>
-        <span class="grow text-[15px] font-bold text-theme-text">Klawiatura</span>
+        <span class="grow text-[15px] font-bold text-theme-text">{{ $t('ui.keyboard') }}</span>
         <ChevronRightIcon :size="24" class="text-gray-400" />
       </a>
 
@@ -186,7 +178,7 @@
         >
           <HumanMaleHeightIcon :size="20" />
         </span>
-        <span class="grow text-[15px] font-bold text-theme-text">Ustawienia dostępności</span>
+        <span class="grow text-[15px] font-bold text-theme-text">{{ $t('header.ustawieniaDostepnosci') }}</span>
       </a>
     </div>
   </div>

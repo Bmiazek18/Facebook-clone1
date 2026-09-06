@@ -90,7 +90,7 @@ loadAllComments()
 
         <template v-else>
           <EmptyState
-            title="Brak komentarzy"
+            :title="$t('createLive.noComments')"
             description="Bądź pierwszą osobą, która skomentuje ten post."
           />
         </template>
@@ -103,7 +103,7 @@ loadAllComments()
     </div>
 
     <BaseModal
-      title="Informacje o tej zawartości"
+      :title="$t('birthday.informacjeOTejZawartosci')"
       @close="closeLinkModal"
       v-if="isLinkModalVisible"
     >

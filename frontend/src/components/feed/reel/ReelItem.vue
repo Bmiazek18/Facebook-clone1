@@ -88,7 +88,7 @@
             <img :src="reel?.avatar" class="w-8 h-8 rounded-full border border-white/20 cursor-pointer" />
             <span class="font-bold text-[14px] hover:underline cursor-pointer flex items-center gap-1">
               {{ reel?.authorName }}
-              <span class="text-gray-400 text-xs font-normal">· Obserwuj</span>
+              <span class="text-gray-400 text-xs font-normal">{{ $t('feed.obserwuj3') }}</span>
             </span>
           </div>
           <p class="text-[13px] md:text-[14px] leading-snug line-clamp-2 pointer-events-auto text-gray-100 drop-shadow">
@@ -169,8 +169,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8M8 12h8"/>
                   </svg>
                   <div>
-                    <p class="font-medium text-[15px]">Interesuje mnie</p>
-                    <p class="text-[13px] text-gray-400">Będziesz widzieć więcej takich rolek.</p>
+                    <p class="font-medium text-[15px]">{{ $t('post.interesujeSie') }}</p>
+                    <p class="text-[13px] text-gray-400">{{ $t('feed.bedzieszWidziecWiecejTakich') }}</p>
                   </div>
                 </button>
 
@@ -181,8 +181,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h8"/>
                   </svg>
                   <div>
-                    <p class="font-medium text-[15px]">Nie interesuje mnie</p>
-                    <p class="text-[13px] text-gray-400">Będziesz widzieć mniej takich rolek.</p>
+                    <p class="font-medium text-[15px]">{{ $t('feed.nieInteresujeMnie') }}</p>
+                    <p class="text-[13px] text-gray-400">{{ $t('feed.bedzieszWidziecMniejTakich') }}</p>
                   </div>
                 </button>
 
@@ -191,7 +191,7 @@
                   <svg class="w-[22px] h-[22px] shrink-0 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
                   </svg>
-                  <p class="font-medium text-[15px]">Zapisz rolkę</p>
+                  <p class="font-medium text-[15px]">{{ $t('feed.zapiszRolke') }}</p>
                 </button>
 
                 <!-- 4. Skopiuj link -->
@@ -199,7 +199,7 @@
                   <svg class="w-[22px] h-[22px] shrink-0 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/>
                   </svg>
-                  <p class="font-medium text-[15px]">Skopiuj link</p>
+                  <p class="font-medium text-[15px]">{{ $t('feed.skopiujLink') }}</p>
                 </button>
 
                 <!-- 5. Zgłoś rolkę -->
@@ -208,7 +208,7 @@
                     <rect x="3" y="5" width="18" height="14" rx="3" ry="3" stroke-linecap="round" stroke-linejoin="round"/>
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 3h.01"/>
                   </svg>
-                  <p class="font-medium text-[15px]">Zgłoś rolkę</p>
+                  <p class="font-medium text-[15px]">{{ $t('feed.zglosRolke') }}</p>
                 </button>
 
                 <!-- 6. Prędkość odtwarzania -->
@@ -219,7 +219,7 @@
                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 12l2.25-3.75 4.5 1.5M17.25 12l-2.25 6" />
                     </svg>
                     <div>
-                      <p class="font-medium text-[15px]">Prędkość odtwarzania</p>
+                      <p class="font-medium text-[15px]">{{ $t('feed.predkoscOdtwarzania') }}</p>
                       <p class="text-[13px] text-gray-400">{{ playbackSpeed === 1 ? '1 (normalna)' : `${playbackSpeed}x` }}</p>
                     </div>
                   </div>
@@ -234,7 +234,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2m0 16v2m-6-10H4m16 0h-2m-2.5 5.5l1.5 1.5M6 7.5L4.5 6m13.5 1.5L19.5 6M6 16.5L4.5 18M12 6c-3.314 0-6 2.686-6 6 0 3.314 2.686 6 6 6s6-2.686 6-6c0-3.314-2.686-6-6-6z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12M9 9h6m-6 4h6"/>
                   </svg>
-                  <p class="font-medium text-[15px]">Coś nie działa</p>
+                  <p class="font-medium text-[15px]">{{ $t('feed.cosNieDziala') }}</p>
                 </button>
 
                 <!-- 8. Osadź -->
@@ -242,7 +242,7 @@
                   <svg class="w-[22px] h-[22px] shrink-0 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                   </svg>
-                  <p class="font-medium text-[15px]">Osadź</p>
+                  <p class="font-medium text-[15px]">{{ $t('feed.osadz') }}</p>
                 </button>
 
                 <!-- 9. Audio i język -->
@@ -251,7 +251,7 @@
                     <svg class="w-[22px] h-[22px] shrink-0 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.226.05 3.32.148m-3.32-.148V9m0-3.379c.323.01.644.025.965.044m-2.451 1.761a48.4 48.4 0 013.238 12.33M7.5 12.5a48.332 48.332 0 00-3.14-8.8m2.915 9.068a48.16 48.16 0 002.585 2.128M15 15.625l-2.073-4.257" />
                     </svg>
-                    <p class="font-medium text-[15px]">Audio i język</p>
+                    <p class="font-medium text-[15px]">{{ $t('feed.audioIJezyk') }}</p>
                   </div>
                   <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
@@ -264,9 +264,7 @@
                 <button @click.stop="isSpeedSubmenuOpen = false" class="w-full px-4 py-3 flex items-center gap-2 hover:bg-white/10 text-left font-semibold border-b border-white/10 text-gray-300 transition-colors">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
-                  Wróć
-                </button>
+                  </svg>{{ $t('ui.back') }}</button>
                 <div class="py-1">
                   <button
                     v-for="speed in [0.5, 1, 1.25, 1.5, 2]"

@@ -71,9 +71,7 @@ const handleSubmit = () => {
 
     <!-- Sekcja 1: Przykładowe reguły -->
     <div class="mb-6">
-      <h3 class="text-[17px] font-bold mb-3">
-        Przykładowe reguły
-      </h3>
+      <h3 class="text-[17px] font-bold mb-3">{{ $t('groups.przykladoweReguly') }}</h3>
 
       <!-- Pigułki / Chipsy -->
       <div class="flex flex-wrap gap-2">
@@ -96,9 +94,7 @@ const handleSubmit = () => {
 
     <!-- Sekcja 2: Formularz -->
     <div>
-      <h3 class="text-[17px] font-bold mb-3">
-        Utwórz własną regułę
-      </h3>
+      <h3 class="text-[17px] font-bold mb-3">{{ $t('groups.utworzWlasnaRegule') }}</h3>
 
       <div class="space-y-4">
 
@@ -108,7 +104,7 @@ const handleSubmit = () => {
             v-model="title"
             type="text"
             class="w-full bg-transparent text-[15px] text-[#050505] dark:text-[#e4e6eb] font-normal focus:outline-none mt-0.5"
-            label="Tytuł"
+            :label="$t('groups.tytul')"
           />
 
 
@@ -117,7 +113,7 @@ const handleSubmit = () => {
             v-model="description"
             rows="4"
             class="w-full bg-transparent text-[15px] text-[#050505] dark:text-[#e4e6eb] font-normal focus:outline-none resize-none mt-0.5 leading-relaxed"
-            label="Opis"
+            :label="$t('createLive.description')"
           />
         </div>
 
@@ -130,18 +126,14 @@ const handleSubmit = () => {
         type="button"
         @click="emit('close')"
         class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-[#e7f3ff]/50 dark:hover:bg-[#3a3b3c] transition-colors"
-      >
-        Anuluj
-      </button>
+      >{{ $t('common.cancel') }}</button>
 
       <button
         type="button"
         @click="handleSubmit"
         :disabled="!title.trim()"
         class="px-6 py-2 rounded-lg text-[15px] font-semibold text-white bg-[#1877f2] hover:bg-[#166fe5] active:bg-[#1465d2] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
-      >
-        Utwórz
-      </button>
+      >{{ $t('feed.utworz') }}</button>
     </div>
 
   </div>

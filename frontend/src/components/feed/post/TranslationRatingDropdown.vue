@@ -12,7 +12,7 @@
         <div
           class="flex flex-col items-center justify-center p-2 pb-3 border-b border-gray-200 dark:border-gray-700"
         >
-          <span class="mb-2 font-medium">Oceń to tłumaczenie</span>
+          <span class="mb-2 font-medium">{{ $t('feed.ocenToTlumaczenie') }}</span>
 
           <div class="flex gap-1 mb-2" @mouseleave="localHoverRating = 0">
             <button
@@ -43,10 +43,10 @@
             <Close :size="24" class="text-[#050505] dark:text-[#E4E6EB] mt-0.5" />
             <div class="flex flex-col">
               <span class="font-medium leading-tight"
-                >Nigdy nie tłumacz z języka: {{ detectedLanguage }}</span
+                >{{ $t('feed.nigdyNieTlumaczZ') }}</span
               >
               <span class="text-[13px] text-gray-500 mt-0.5"
-                >Tłumaczenie z języka: {{ detectedLanguage }} na polski</span
+                >{{ $t('feed.tlumaczenieZJezykaDetectedlanguage') }}</span
               >
             </div>
           </button>
@@ -57,9 +57,9 @@
             <MinusCircle :size="24" class="text-[#050505] dark:text-[#E4E6EB] mt-0.5" />
             <div class="flex flex-col">
               <span class="font-medium leading-tight"
-                >Post nie był w języku: {{ detectedLanguage }}</span
+                >{{ $t('feed.postNieBylW') }}</span
               >
-              <span class="text-[13px] text-gray-500 mt-0.5">Zgłoś błąd</span>
+              <span class="text-[13px] text-gray-500 mt-0.5">{{ $t('feed.zglosBlad') }}</span>
             </div>
           </button>
 
@@ -68,7 +68,7 @@
           >
             <Cog :size="24" class="text-[#050505] dark:text-[#E4E6EB] mt-0.5" />
             <div class="flex flex-col justify-center h-full">
-              <span class="font-medium mt-1">Ustawienia języka</span>
+              <span class="font-medium mt-1">{{ $t('feed.ustawieniaJezyka') }}</span>
             </div>
           </button>
         </div>

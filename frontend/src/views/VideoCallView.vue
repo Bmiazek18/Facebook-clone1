@@ -217,9 +217,9 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="control-panel">
-      <h3>Filtr: Mega Policzki</h3>
+      <h3>{{ $t('call.filtrMegaPoliczki') }}</h3>
       <div class="slider-group">
-        <label for="cheekSlider">Rozmiar:</label>
+        <label for="cheekSlider">{{ $t('call.rozmiar') }}</label>
         <input
           id="cheekSlider"
           type="range"
@@ -229,7 +229,7 @@ onBeforeUnmount(() => {
           v-model.number="cheekSize"
           @input="updateCheekSize"
         />
-        <span class="value-display">{{ (cheekSize * 100).toFixed(0) }}%</span>
+        <span class="value-display">{{ $t('call.cheeksize100Tofixed0') }}</span>
       </div>
     </div>
   </div>

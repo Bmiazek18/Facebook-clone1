@@ -52,9 +52,7 @@ const onSelectText = () => {
             <div class="bg-white p-3 rounded-full shadow-md">
               <ImageMultiple class="text-theme-text" :size="28" />
             </div>
-            <span class="text-white font-semibold text-center px-4">
-              Utwórz relację ze zdjęciem
-            </span>
+            <span class="text-white font-semibold text-center px-4">{{ $t('create.utworzRelacjeZeZdjeciem') }}</span>
           </div>
           <input
             type="file"
@@ -77,7 +75,7 @@ const onSelectText = () => {
             <div class="bg-white p-3 rounded-full shadow-md">
               <FormatFont class="text-theme-text" :size="28" />
             </div>
-            <span class="text-white font-semibold text-center px-4"> Utwórz relację tekstową </span>
+            <span class="text-white font-semibold text-center px-4">{{ $t('create.utworzRelacjeTekstowa') }}</span>
           </div>
         </div>
       </div>

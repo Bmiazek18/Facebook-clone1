@@ -164,7 +164,7 @@ const nextImage = () => {
                   </h1>
                   <div class="text-theme-text-secondary text-sm mt-1 font-medium">
                     {{ eventDetails?.locationName || eventDetails?.location
-                    }}<span v-if="eventDetails?.address">, {{ eventDetails.address }}</span>
+                    }}<span v-if="eventDetails?.address">{{ $t('events.eventdetailsAddress') }}</span>
                   </div>
                 </div>
               </div>
@@ -176,33 +176,26 @@ const nextImage = () => {
                   <NuxtLink
                     :to="`/event/${eventDetails.id}`"
                     class="pb-4 -mb-4 px-1 hover:bg-theme-hover rounded-t-sm transition-colors"
-                  >
-                    Informacje
-                  </NuxtLink>
+                  >{{ $t('groups.information') }}</NuxtLink>
                   <NuxtLink
                     :to="`/event/${eventDetails.id}/discussion`"
                     class="pb-4 -mb-4 px-1 hover:bg-theme-hover rounded-t-sm transition-colors"
-                  >
-                    Dyskusja
-                  </NuxtLink>
+                  >{{ $t('groups.discussion') }}</NuxtLink>
                 </div>
                 <div class="flex gap-2 w-full md:w-auto">
                   <button
                     class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-theme-bg-subtle hover:bg-theme-hover text-theme-text px-4 py-2 rounded-md font-semibold text-sm transition"
                   >
-                    <StarIcon :size="20" /> Zainteresowany(a)
-                  </button>
+                    <StarIcon :size="20" />{{ $t('events.zainteresowanyA') }}</button>
                   <button
                     class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-theme-bg-subtle hover:bg-theme-hover text-theme-text px-4 py-2 rounded-md font-semibold text-sm transition"
                   >
-                    <CheckCircleIcon :size="20" /> Wezmę udział
-                  </button>
+                    <CheckCircleIcon :size="20" />{{ $t('events.suggestedEvents.interestedButton') }}</button>
                   <button
                     @click="isInviteModalOpen = true"
                     class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-theme-bg-subtle hover:bg-theme-hover text-theme-text px-4 py-2 rounded-md font-semibold text-sm transition"
                   >
-                    <EmailIcon :size="20" /> Zaproś
-                  </button>
+                    <EmailIcon :size="20" />{{ $t('groups.invite') }}</button>
                   <EventShareDropdown :event="eventDetails" not-title />
                   <button
                     class="bg-theme-bg-subtle hover:bg-theme-hover text-theme-text px-3 py-2 rounded-md transition"
@@ -219,7 +212,7 @@ const nextImage = () => {
         </div>
       </div>
       <div v-else class="flex-1 flex items-center justify-center">
-        <p>Nie znaleziono wydarzenia.</p>
+        <p>{{ $t('events.nieZnalezionoWydarzenia') }}</p>
       </div>
       <BaseModal
         v-if="isInviteModalOpen"

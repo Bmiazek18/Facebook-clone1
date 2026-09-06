@@ -57,34 +57,32 @@ const activityLog = ref([
     <!-- Pasek nagłówka z filtrami -->
     <div class="bg-theme-bg-secondary  px-4 py-4 sm:px-8 shadow-sm z-10 sticky top-0">
       <div class="max-w-5xl mx-auto">
-        <h1 class="text-[20px] font-bold leading-tight mb-4">Dziennik aktywności</h1>
+        <h1 class="text-[20px] font-bold leading-tight mb-4">{{ $t('groups.dziennikAktywnosci') }}</h1>
 
         <!-- Rząd przycisków filtrów -->
         <div class="flex flex-wrap items-center gap-2">
           <!-- Wyczyść filtry (wyłączony) -->
-          <button disabled class="bg-theme-bg/50 px-3 py-1.5 rounded-md text-[15px] font-semibold text-theme-text/50 cursor-not-allowed">
-            Wyczyść filtry
-          </button>
+          <button disabled class="bg-theme-bg/50 px-3 py-1.5 rounded-md text-[15px] font-semibold text-theme-text/50 cursor-not-allowed">{{ $t('groups.wyczyscFiltry') }}</button>
 
           <!-- Filtry z dropdownem -->
           <button class="bg-theme-bg hover:bg-theme-bg-hover transition-colors rounded-md px-3 py-1.5 flex items-center gap-1.5">
-            <span class="text-[15px] font-semibold">Wybierz daty</span>
+            <span class="text-[15px] font-semibold">{{ $t('groups.wybierzDaty') }}</span>
             <ChevronDownIcon :size="18" class="text-[#b0b3b8]" />
           </button>
 
           <button class="bg-theme-bg hover:bg-theme-bg-hover transition-colors rounded-md px-3 py-1.5 flex items-center gap-1.5">
-            <span class="text-[15px] font-semibold">Administratorzy i moderatorzy</span>
+            <span class="text-[15px] font-semibold">{{ $t('groups.administratorzyIModeratorzy') }}</span>
             <ChevronDownIcon :size="18" class="text-[#b0b3b8]" />
           </button>
 
           <button class="bg-[#3a3b3c] hover:bg-[#4e4f50] transition-colors rounded-md px-3 py-1.5 flex items-center gap-1.5">
-            <span class="text-[15px] font-semibold">Członkowie</span>
+            <span class="text-[15px] font-semibold">{{ $t('groups.members') }}</span>
             <ChevronDownIcon :size="18" class="text-[#b0b3b8]" />
           </button>
 
           <!-- Więcej filtrów (bez strzałki) -->
           <button class="bg-[#3a3b3c] hover:bg-[#4e4f50] transition-colors rounded-md px-3 py-1.5 flex items-center gap-1.5">
-            <span class="text-[15px] font-semibold">Więcej filtrów</span>
+            <span class="text-[15px] font-semibold">{{ $t('groups.wiecejFiltrow') }}</span>
           </button>
         </div>
       </div>

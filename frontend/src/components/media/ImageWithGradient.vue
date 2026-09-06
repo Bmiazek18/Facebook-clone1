@@ -42,7 +42,7 @@ const emit = defineEmits<{
     <template v-if="hasCoverImage">
       <img
         :src="props.imageUrl!"
-        alt="Rozmyte tło"
+        :alt="$t('media.rozmyteTlo')"
         class="absolute top-0 left-0 w-full h-full object-cover blur-md scale-105 z-10 opacity-60"
         crossOrigin="anonymous"
       />
@@ -62,7 +62,7 @@ const emit = defineEmits<{
         >
           <img
             :src="props.imageUrl!"
-            alt="Źródłowy obraz"
+            :alt="$t('media.zrodlowyObraz')"
             class="object-cover w-full h-full"
             @load="imageLoaded = true"
             crossOrigin="anonymous"
@@ -105,7 +105,7 @@ const emit = defineEmits<{
               class="w-full flex items-center gap-3 px-3 py-2.5 text-[15px] font-medium text-black hover:bg-gray-100 rounded-lg transition-colors text-left cursor-pointer"
             >
               <ImageOutline :size="20" class="text-black" />
-              <span>Wybierz zdjęcie w tle</span>
+              <span>{{ $t('media.wybierzZdjecieWTle') }}</span>
             </button>
 
             <!-- Opcja 2: Prześlij zdjęcie -->
@@ -114,7 +114,7 @@ const emit = defineEmits<{
               class="w-full flex items-center gap-3 px-3 py-2.5 text-[15px] font-medium text-black hover:bg-gray-100 rounded-lg transition-colors text-left cursor-pointer"
             >
               <Upload :size="20" class="text-black" />
-              <span>Prześlij zdjęcie</span>
+              <span>{{ $t('media.przeslijZdjecie') }}</span>
             </button>
           </div>
         </template>

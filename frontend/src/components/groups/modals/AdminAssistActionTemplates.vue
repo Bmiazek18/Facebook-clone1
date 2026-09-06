@@ -152,12 +152,8 @@ const handleSave = () => {
           <div class="p-4 sm:p-6 pb-8">
 
             <div class="mb-8">
-              <h1 class="text-[24px] font-bold leading-tight mb-1">
-                Rozpocznij
-              </h1>
-              <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8]">
-                Utwórz własne kryterium lub wybierz kryterium domyślne w celu dostosowania.
-              </p>
+              <h1 class="text-[24px] font-bold leading-tight mb-1">{{ $t('groups.rozpocznij') }}</h1>
+              <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8]">{{ $t('groups.utworzWlasneKryteriumLub') }}</p>
             </div>
 
             <!-- Utwórz własne -->
@@ -166,16 +162,14 @@ const handleSave = () => {
                 <RocketLaunchOutlineIcon :size="24" />
               </div>
               <div class="flex flex-col">
-                <span class="text-[17px] font-bold leading-tight">Utwórz własne</span>
-                <span class="text-[14px] text-[#65676b] dark:text-[#b0b3b8] mt-0.5">Dodaj niestandardowe kryterium do swojej grupy.</span>
+                <span class="text-[17px] font-bold leading-tight">{{ $t('groups.utworzWlasne') }}</span>
+                <span class="text-[14px] text-[#65676b] dark:text-[#b0b3b8] mt-0.5">{{ $t('groups.dodajNiestandardoweKryteriumDo') }}</span>
               </div>
             </button>
 
             <!-- Ustawienia domyślne -->
             <div>
-              <h2 class="text-[13px] font-bold text-[#65676b] dark:text-[#b0b3b8] uppercase tracking-wide mb-3">
-                Ustawienia domyślne
-              </h2>
+              <h2 class="text-[13px] font-bold text-[#65676b] dark:text-[#b0b3b8] uppercase tracking-wide mb-3">{{ $t('groups.ustawieniaDomyslne') }}</h2>
 
               <div class="flex flex-col gap-4">
                 <button
@@ -191,9 +185,7 @@ const handleSave = () => {
                     <span class="text-[17px] font-bold leading-tight">{{ tpl.title }}</span>
                     <span class="text-[14px] text-[#65676b] dark:text-[#b0b3b8] mt-1 leading-snug">{{ tpl.desc }}</span>
                     <!-- Pigułka z ilością kryteriów -->
-                    <div class="mt-2.5 bg-[#e4e6eb] dark:bg-[#4e4f50] text-[#050505] dark:text-[#e4e6eb] text-[13px] font-semibold px-2.5 py-1 rounded-full w-fit">
-                      {{ tpl.criteriaCount }} kryteriów
-                    </div>
+                    <div class="mt-2.5 bg-[#e4e6eb] dark:bg-[#4e4f50] text-[#050505] dark:text-[#e4e6eb] text-[13px] font-semibold px-2.5 py-1 rounded-full w-fit">{{ $t('groups.tplCriteriacountKryteriow') }}</div>
                   </div>
                 </button>
               </div>
@@ -229,9 +221,7 @@ const handleSave = () => {
           <!-- Przewijana zawartość -->
           <div class="p-4 sm:p-6 pt-5 overflow-y-auto flex-1">
 
-            <h2 class="text-[24px] font-bold leading-tight mb-6">
-              Świetnie! Sprawdź je i dostosuj przed dodaniem
-            </h2>
+            <h2 class="text-[24px] font-bold leading-tight mb-6">{{ $t('groups.swietnieSprawdzJeI') }}</h2>
 
             <!-- Wizytówka wybranego szablonu -->
             <div class="flex items-start gap-4 mb-8">
@@ -241,9 +231,7 @@ const handleSave = () => {
               <div class="flex flex-col flex-1">
                 <span class="text-[17px] font-bold leading-tight">{{ selectedTemplate.title }}</span>
                 <span class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] mt-1 leading-snug">{{ selectedTemplate.desc }}</span>
-                <div class="mt-2.5 bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#050505] dark:text-[#e4e6eb] text-[13px] font-semibold px-2.5 py-1 rounded-full w-fit">
-                  {{ selectedTemplate.criteriaCount }} kryteriów
-                </div>
+                <div class="mt-2.5 bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#050505] dark:text-[#e4e6eb] text-[13px] font-semibold px-2.5 py-1 rounded-full w-fit">{{ $t('groups.selectedtemplateCriteriacountKryteriow') }}</div>
               </div>
             </div>
 
@@ -281,14 +269,10 @@ const handleSave = () => {
             <button
               @click="handleSave"
               class="w-full bg-[#1877f2] hover:bg-[#166fe5] text-white font-semibold text-[15px] py-2.5 rounded-lg transition-colors cursor-pointer shadow-sm"
-            >
-              Dodaj do Asystenta administratora
-            </button>
+            >{{ $t('groups.dodajDoAsystentaAdministratora') }}</button>
 
             <!-- Widoczny tylko w niektórych widokach opcjonalny tekst - w zrzutach z tego prompota widać tylko wyszarzony fragment -->
-            <p class="text-[13px] text-[#bcc0c4] dark:text-[#65676b] font-semibold mt-3 text-center truncate w-full px-4">
-              Przekaż nadchodzący post do weryfikacji, jeśli
-            </p>
+            <p class="text-[13px] text-[#bcc0c4] dark:text-[#65676b] font-semibold mt-3 text-center truncate w-full px-4">{{ $t('groups.przekazNadchodzacyPostDo') }}</p>
           </div>
         </div>
 

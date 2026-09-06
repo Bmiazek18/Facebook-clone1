@@ -4,7 +4,7 @@
 
     <main class="flex-1 h-full mt-[56px] overflow-y-auto relative">
       <div class="max-w-[700px] mx-auto mt-3 px-4">
-        <p class="text-theme-text-secondary">Ostatnia aktywnośćś</p>
+        <p class="text-theme-text-secondary">{{ $t('groups.ostatniaAktywnoscs') }}</p>
         <PostItem v-for="post in posts" :key="post.id" :post="post" class="my-4" />
       </div>
     </main>

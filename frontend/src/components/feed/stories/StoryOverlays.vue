@@ -93,7 +93,7 @@ defineProps({
           <img
             v-if="currentItem.user.avatar"
             :src="currentItem.user.avatar"
-            alt="User avatar"
+            :alt="$t('feed.userAvatar')"
             class="w-full h-full object-cover"
           />
           <AccountCircle v-else :size="42" class="text-gray-300" />

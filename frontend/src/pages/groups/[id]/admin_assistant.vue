@@ -178,22 +178,16 @@ const handleAddCriteria = (item: { modal: ModalKey }) => {
           </div>
         </div>
 
-        <h1 class="text-[24px] font-bold mb-2">Asystent administratora</h1>
-        <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] mb-1">
-          Oszczędzaj czas, chroń grupę i osiągaj więcej dzięki działaniom automatycznym.
-        </p>
-        <a href="#" class="text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:underline">
-          Wiecej informacji
-        </a>
+        <h1 class="text-[24px] font-bold mb-2">{{ $t('groups.asystentAdministratora') }}</h1>
+        <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] mb-1">{{ $t('groups.oszczedzajCzasChronGrupe') }}</p>
+        <a href="#" class="text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:underline">{{ $t('groups.wiecejInformacji') }}</a>
       </div>
 
       <!-- Sekcja: Dzień w skrócie -->
       <div class="bg-white dark:bg-theme-bg-secondary rounded-xl shadow-sm p-5">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-[20px] font-bold">Dzień w skrócie</h2>
-          <button class="text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:underline cursor-pointer">
-            Wyświetl wszystko
-          </button>
+          <h2 class="text-[20px] font-bold">{{ $t('groups.dzienWSkrocie') }}</h2>
+          <button class="text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:underline cursor-pointer">{{ $t('notifications_page.viewAll') }}</button>
         </div>
 
         <!-- Przyciski filtrów czasu -->
@@ -204,23 +198,17 @@ const handleAddCriteria = (item: { modal: ModalKey }) => {
               'px-4 py-1.5 rounded-full text-[15px] font-semibold transition-colors cursor-pointer',
               timeFilter === 'dziś' ? 'bg-[#e7f3ff] dark:bg-[#263951] text-[#1877f2] dark:text-[#4599ff]' : 'bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#050505] dark:text-[#e4e6eb] hover:bg-[#d8dadf] dark:hover:bg-[#4e4f50]'
             ]"
-          >
-            dziś
-          </button>
+          >{{ $t('groups.dzis') }}</button>
           <button
             @click="timeFilter = 'Wczoraj'"
             :class="[
               'px-4 py-1.5 rounded-full text-[15px] font-semibold transition-colors cursor-pointer',
               timeFilter === 'Wczoraj' ? 'bg-[#e7f3ff] dark:bg-[#263951] text-[#1877f2] dark:text-[#4599ff]' : 'bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#050505] dark:text-[#e4e6eb] hover:bg-[#d8dadf] dark:hover:bg-[#4e4f50]'
             ]"
-          >
-            Wczoraj
-          </button>
+          >{{ $t('groups.wczoraj') }}</button>
         </div>
 
-        <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] mb-4">
-          Asystent administratora podjął dzisiaj działanie w grupie <span class="font-bold text-[#050505] dark:text-[#e4e6eb]">test</span> 0 razy
-        </p>
+        <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] mb-4">{{ $t('groups.asystentAdministratoraPodjalDzisiaj') }}<span class="font-bold text-[#050505] dark:text-[#e4e6eb]">{{ $t('dashboard.test') }}</span>{{ $t('groups.0Razy') }}</p>
 
         <!-- Karta statystyk -->
         <div class="bg-[#f7f8fa] dark:bg-[#1c1e21] rounded-xl p-4 w-40 flex flex-col justify-between border border-gray-200 dark:border-transparent">
@@ -230,18 +218,14 @@ const handleAddCriteria = (item: { modal: ModalKey }) => {
               <MessageCheckOutlineIcon :size="18" />
             </div>
           </div>
-          <span class="text-[15px] text-[#050505] dark:text-[#e4e6eb] font-medium leading-snug">
-            Zatwierdzone<br />posty
-          </span>
+          <span class="text-[15px] text-[#050505] dark:text-[#e4e6eb] font-medium leading-snug">{{ $t('groups.zatwierdzone') }}<br />{{ $t('search.posts') }}</span>
         </div>
       </div>
 
       <!-- Nagłówek sekcji z kryteriami -->
       <div class="pt-2 pb-1">
-        <h2 class="text-[20px] font-bold mb-1 text-[#050505] dark:text-[#e4e6eb]">Dodaj lub edytuj kryteria · 2</h2>
-        <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8]">
-          Zachowujesz kontrolę. Dostosuj kryteria, aby efektywnie zarządzać grupą.
-        </p>
+        <h2 class="text-[20px] font-bold mb-1 text-[#050505] dark:text-[#e4e6eb]">{{ $t('groups.dodajLubEdytujKryteria') }}</h2>
+        <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8]">{{ $t('groups.zachowujeszKontroleDostosujKryteria') }}</p>
       </div>
 
       <!-- Karty poszczególnych kategorii (Akordeony) -->
@@ -284,9 +268,7 @@ const handleAddCriteria = (item: { modal: ModalKey }) => {
               <button
                 @click="handleAddCriteria(item)"
                 class="px-4 py-1.5 rounded-lg bg-[#e7f3ff] dark:bg-[#263951] text-[#1877f2] dark:text-[#4599ff] font-semibold text-[15px] hover:bg-[#d8eaff] dark:hover:bg-[#32455e] transition-colors cursor-pointer shrink-0 ml-4"
-              >
-                Dodaj
-              </button>
+              >{{ $t('call.dodaj') }}</button>
             </div>
 
             <!-- Aktywne (dodane) reguły dla danej opcji -->

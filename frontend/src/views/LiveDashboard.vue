@@ -176,9 +176,7 @@ const pollOption2 = ref('')
             >
               <div
                 class="flex-1 px-3 flex items-center text-[13px] text-theme-text truncate select-all bg-theme-bg-tertiary"
-              >
-                https://www.facebook.com/live/producer/1584...
-              </div>
+              >{{ $t('createLive.httpsWwwFacebookCom') }}</div>
               <button
                 class="bg-theme-bg-tertiary hover:bg-theme-hover px-5 font-semibold text-[13px] text-theme-text transition-colors border-l border-theme-border"
               >
@@ -365,9 +363,7 @@ const pollOption2 = ref('')
               >
                 <LinkVariantIcon :size="20" />
               </div>
-              <div class="flex-1 truncate text-theme-text-secondary mr-2 leading-snug font-medium">
-                https://www.facebook.com/live/producer/1584...
-              </div>
+              <div class="flex-1 truncate text-theme-text-secondary mr-2 leading-snug font-medium">{{ $t('createLive.httpsWwwFacebookCom') }}</div>
               <button class="text-theme-primary font-semibold text-[15px] hover:underline px-2">
                 {{ t('createLive.viewPost') }}
               </button>

@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white dark:bg-[#242526] rounded-xl p-4 shadow-sm border border-gray-200 dark:border-[#3e4042]">
-    <h2 class="text-[20px] font-semibold text-[#050505] dark:text-[#e4e6eb] mb-2">Zarządzaj członkostwem</h2>
+    <h2 class="text-[20px] font-semibold text-[#050505] dark:text-[#e4e6eb] mb-2">{{ $t('groups.zarzadzajCzlonkostwem') }}</h2>
 
     <div class="flex flex-col">
       <template v-for="item in items" :key="item.id">
@@ -42,10 +42,8 @@
             <!-- Opcja 1: Profile i strony -->
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">Profile i strony</div>
-                <div class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] leading-tight mt-0.5">
-                  Zezwalaj na wysyłanie próśb o dołączenie do grupy stronom i profilom
-                </div>
+                <div class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">{{ $t('groups.profileIStrony') }}</div>
+                <div class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] leading-tight mt-0.5">{{ $t('groups.zezwalajNaWysylanieProsb') }}</div>
               </div>
               <input
                 type="radio"
@@ -59,10 +57,8 @@
             <!-- Opcja 2: Tylko profile -->
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">Tylko profile</div>
-                <div class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] leading-tight mt-0.5">
-                  Zezwalaj na wysyłanie próśb o dołączenie do grupy tylko profilom
-                </div>
+                <div class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">{{ $t('groups.tylkoProfile') }}</div>
+                <div class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] leading-tight mt-0.5">{{ $t('groups.zezwalajNaWysylanieProsb2') }}</div>
               </div>
               <input
                 type="radio"
@@ -80,9 +76,7 @@
               type="button"
               @click="cancelEdit"
               class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-gray-100 dark:hover:bg-[#3a3b3c] transition-colors"
-            >
-              Anuluj
-            </button>
+            >{{ $t('common.cancel') }}</button>
 
             <button
               type="button"
@@ -94,9 +88,7 @@
                   ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
                   : 'bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
               ]"
-            >
-              Zapisz
-            </button>
+            >{{ $t('createLive.save') }}</button>
           </div>
         </div>
 
@@ -113,10 +105,8 @@
             <!-- Opcja 1: Każdy członek grupy -->
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">Każdy członek grupy</div>
-                <div class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] leading-tight mt-0.5">
-                  Członkowie mogą tylko zatwierdzać prośby od znajomych.
-                </div>
+                <div class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">{{ $t('groups.kazdyCzlonekGrupy') }}</div>
+                <div class="text-[13px] text-[#65676b] dark:text-[#b0b3b8] leading-tight mt-0.5">{{ $t('groups.czlonkowieMogaTylkoZatwierdzac') }}</div>
               </div>
               <input
                 type="radio"
@@ -130,7 +120,7 @@
             <!-- Opcja 2: Tylko administratorzy i moderatorzy -->
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">Tylko administratorzy i moderatorzy</div>
+                <div class="text-[15px] font-bold text-[#050505] dark:text-[#e4e6eb]">{{ $t('groups.tylkoAdministratorzyIModeratorzy') }}</div>
               </div>
               <input
                 type="radio"
@@ -148,9 +138,7 @@
               type="button"
               @click="cancelEdit"
               class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-gray-100 dark:hover:bg-[#3a3b3c] transition-colors"
-            >
-              Anuluj
-            </button>
+            >{{ $t('common.cancel') }}</button>
 
             <button
               type="button"
@@ -162,9 +150,7 @@
                   ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
                   : 'bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
               ]"
-            >
-              Zapisz
-            </button>
+            >{{ $t('createLive.save') }}</button>
           </div>
         </div>
 

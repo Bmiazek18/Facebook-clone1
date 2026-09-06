@@ -58,16 +58,14 @@ const confirmSelection = () => {
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Szukaj"
+            :placeholder="$t('common.search')"
             class="w-full bg-gray-100 text-black placeholder-gray-500 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-1 focus:ring-gray-300"
           />
         </div>
         <button
           @click="confirmSelection"
           class="text-blue-600 font-semibold hover:text-blue-800 text-[15px]"
-        >
-          Gotowe
-        </button>
+        >{{ $t('postFilter.done') }}</button>
       </div>
 
       <div v-if="selectedUsers.length" class="flex flex-wrap gap-2 mb-4 px-1">
@@ -84,7 +82,7 @@ const confirmSelection = () => {
         </div>
       </div>
 
-      <div v-if="isLoading" class="text-center text-gray-500 py-8 text-sm">Ładowanie...</div>
+      <div v-if="isLoading" class="text-center text-gray-500 py-8 text-sm">{{ $t('common.loading') }}</div>
 
       <div v-else class="flex flex-col">
         <div
@@ -114,9 +112,7 @@ const confirmSelection = () => {
             </svg>
           </div>
         </div>
-        <div v-if="!filteredUsers.length" class="text-center text-gray-500 py-8 text-sm">
-          Brak wyników
-        </div>
+        <div v-if="!filteredUsers.length" class="text-center text-gray-500 py-8 text-sm">{{ $t('search.noResults') }}</div>
       </div>
     </HoverScrollbar>
   </div>

@@ -14,7 +14,7 @@
                 <img
                   class="rounded-full w-10 h-10 object-cover border border-gray-200 cursor-pointer hover:brightness-95"
                   :src="reelUser?.avatar"
-                  alt="Avatar"
+                  :alt="$t('chat.avatar')"
                 />
                 <div class="flex flex-col">
                   <div
@@ -35,9 +35,7 @@
                 v-if="!props.reel.isFollowing"
                 @click="handleFollowToggle"
                 class="text-blue-600 hover:bg-blue-50 font-semibold px-3 py-1.5 rounded-md text-sm transition-colors"
-              >
-                Obserwuj
-              </button>
+              >{{ $t('feed.obserwuj2') }}</button>
               <button
                 v-else
                 @click="handleFollowToggle"
@@ -109,7 +107,7 @@
       </div>
     </div>
     <BaseModal
-      title="Informacje o tej zawartości"
+      :title="$t('birthday.informacjeOTejZawartosci')"
       @close="closeLinkModal"
       v-if="isLinkModalVisible"
     >

@@ -195,7 +195,7 @@ watch(
           <NuxtLink :to="`/groups/${targetGroup.id}`">
             <img
               :src="targetGroup.image"
-              alt="Group"
+              :alt="$t('feed.group')"
               class="w-full h-full object-cover rounded-[8px] border border-black/10 dark:border-white/10"
             />
           </NuxtLink>
@@ -244,10 +244,8 @@ watch(
             <span
               v-else-if="effectiveGroupRole === 'MODERATOR'"
               class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-400 ml-1.5 leading-none"
-              title="Moderator grupy"
-            >
-              Moderator
-            </span>
+              :title="$t('feed.moderatorGrupy')"
+            >{{ $t('feed.moderator') }}</span>
             <span class="mx-1">·</span>
             <FormattedDate :date="post?.date" class="hover:underline" />
             <span class="mx-1">·</span>
@@ -272,7 +270,7 @@ watch(
             </span>
 
             <template v-if="post?.targetType === 'GroupCreated'">
-              <span class="text-meta">utworzył grupę</span>
+              <span class="text-meta">{{ $t('feed.utworzylGrupe') }}</span>
               <span class="font-bold hover:underline cursor-pointer text-theme-text">
                 <NuxtLink :to="`/groups/${post.targetId}`">{{ post.content }}</NuxtLink>
               </span>
@@ -281,20 +279,16 @@ watch(
             <span
               v-if="effectiveGroupRole === 'ADMIN'"
               class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-blue-100 text-[#1877F2] dark:bg-blue-950/80 dark:text-blue-400 ml-1 leading-none"
-              title="Administrator grupy"
+              :title="$t('feed.administratorGrupy')"
             >
               <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24">
                 <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
-              </svg>
-              Administrator
-            </span>
+              </svg>{{ $t('feed.administrator') }}</span>
             <span
               v-else-if="effectiveGroupRole === 'MODERATOR'"
               class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-400 ml-1 leading-none"
-              title="Moderator grupy"
-            >
-              Moderator
-            </span>
+              :title="$t('feed.moderatorGrupy')"
+            >{{ $t('feed.moderator') }}</span>
 
             <template v-if="targetUser">
               <Play :size="15" class="fill-meta self-center" />
@@ -314,23 +308,22 @@ watch(
             </template>
 
             <template v-if="taggedUsers.length">
-              <span class="text-meta">z</span>
+              <span class="text-meta">{{ $t('feed.z') }}</span>
               <span class="font-bold hover:underline cursor-pointer">
                 <ProfilePopper :name="taggedUsers[0]!.name" :user-id="taggedUsers[0]!.id" />
               </span>
-              <span v-if="taggedUsers.length > 1" class="text-meta">
-                i {{ taggedUsers.length - 1 }} innymi</span
+              <span v-if="taggedUsers.length > 1" class="text-meta">{{ $t('feed.iTaggedusersLength1') }}</span
               >
             </template>
 
             <template v-if="post?.context?.feeling">
-              <span class="text-meta">czuje się</span>
+              <span class="text-meta">{{ $t('feed.czujeSie') }}</span>
               <span class="font-bold">{{ post.context.feeling.label }}</span>
               <span v-if="post.context.feeling.emoji">{{ post.context.feeling.emoji }}</span>
             </template>
 
             <template v-if="post?.context?.location">
-              <span class="text-meta">— jest w:</span>
+              <span class="text-meta">{{ $t('feed.jestW') }}</span>
               <span
                 class="font-bold hover:underline cursor-pointer text-blue-600 dark:text-blue-400"
                 >{{ post.context.location.title }}</span

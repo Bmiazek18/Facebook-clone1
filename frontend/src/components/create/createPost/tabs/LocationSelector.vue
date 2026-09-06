@@ -304,7 +304,7 @@ onMounted(initLocation)
           v-model="searchQuery"
           @input="onInput"
           type="text"
-          placeholder="Gdzie jesteś?"
+          :placeholder="$t('create.gdzieJestes')"
           class="w-full bg-transparent border-none focus:ring-0 py-2 px-2 text-[15px] outline-none"
         />
         <button
@@ -322,9 +322,7 @@ onMounted(initLocation)
 
     <div class="flex-1 overflow-y-auto px-2 pb-24 custom-scrollbar">
       <div v-if="currentCity && !searchQuery" class="mb-4">
-        <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 px-4">
-          Twoja lokalizacja
-        </p>
+        <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 px-4">{{ $t('create.twojaLokalizacja') }}</p>
         <div
           @click="handleSelect(currentCity)"
           class="flex items-center gap-4 p-3 hover:bg-gray-100 cursor-pointer rounded-xl transition mx-2"
@@ -336,18 +334,14 @@ onMounted(initLocation)
             <navigation-icon :size="22" />
           </div>
           <div class="flex-1">
-            <p class="font-bold text-[15px] text-gray-900 leading-tight">
-              Użyj obecnej lokalizacji
-            </p>
+            <p class="font-bold text-[15px] text-gray-900 leading-tight">{{ $t('create.uzyjObecnejLokalizacji') }}</p>
             <p class="text-[13px] text-gray-500">{{ currentCity.title }}</p>
           </div>
         </div>
       </div>
 
       <div v-if="nearbyPlaces.length > 0 && !searchQuery" class="mb-4">
-        <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 px-4 pt-2">
-          Ciekawe miejsca w pobliżu
-        </p>
+        <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 px-4 pt-2">{{ $t('create.ciekaweMiejscaWPoblizu') }}</p>
         <ul class="space-y-1 mx-2">
           <li
             v-for="(loc, index) in nearbyPlaces"
@@ -371,9 +365,7 @@ onMounted(initLocation)
       </div>
 
       <div v-if="suggestions.length > 0">
-        <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 px-4 pt-2">
-          Propozycje
-        </p>
+        <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 px-4 pt-2">{{ $t('friends.suggestions') }}</p>
         <ul class="space-y-1 mx-2">
           <li
             v-for="(loc, index) in suggestions"
@@ -415,8 +407,8 @@ onMounted(initLocation)
         :disabled="!selectedLocation || loading"
         class="w-full py-3 rounded-lg font-bold text-white transition-all text-[16px] bg-[#1877f2] disabled:bg-gray-200 disabled:text-gray-400"
       >
-        <span v-if="loading">Pobieranie danych...</span>
-        <span v-else>Opublikuj z tą lokalizacją</span>
+        <span v-if="loading">{{ $t('create.pobieranieDanych') }}</span>
+        <span v-else>{{ $t('create.opublikujZTaLokalizacja') }}</span>
       </button>
     </div>
   </div>

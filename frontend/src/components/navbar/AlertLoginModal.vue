@@ -151,19 +151,17 @@ onBeforeUnmount(() => {
 
         <template v-if="currentView === 'main'">
           <!-- ...kod widoku main (identyczny jak wcześniej)... -->
-          <div class="px-5 py-4 text-[15px] text-gray-600 border-b border-gray-200 leading-snug">
-            Możesz wylogować się ze wszystkich nierozpoznanych urządzeń i porównać klucze, gdy zostaną zmienione, aby zapewnić bezpieczeństwo swoich czatów.
-            <a href="#" class="text-[#1A73E8] hover:underline font-medium">Dowiedz się więcej</a>
+          <div class="px-5 py-4 text-[15px] text-gray-600 border-b border-gray-200 leading-snug">{{ $t('header.mozeszWylogowacSieZe') }}<a href="#" class="text-[#1A73E8] hover:underline font-medium">{{ $t('auth.register.learnMore') }}</a>
           </div>
           <button @click="openView('logins')" class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors border-b border-gray-200">
-            <span class="text-[16px] font-bold">Zobacz logowania</span>
+            <span class="text-[16px] font-bold">{{ $t('header.zobaczLogowania') }}</span>
             <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
           </button>
           <button class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors border-b border-gray-200">
-            <span class="text-[16px] font-bold">Zarządzaj alertami zabezpieczeń</span>
+            <span class="text-[16px] font-bold">{{ $t('header.zarzadzajAlertamiZabezpieczen') }}</span>
             <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
           </button>
-          <div class="px-5 pt-4 pb-2 text-[15px] font-semibold text-gray-600">Nowe alerty zabezpieczeń</div>
+          <div class="px-5 pt-4 pb-2 text-[15px] font-semibold text-gray-600">{{ $t('header.noweAlertyZabezpieczen') }}</div>
           <div class="flex flex-col">
             <button v-for="alert in alerts.slice(0, 4)" :key="alert.id" class="w-full flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition-colors text-left">
               <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
@@ -179,7 +177,7 @@ onBeforeUnmount(() => {
           </div>
           <div class="px-5 mt-2">
             <button @click="openView('all-alerts')" class="w-full flex items-center justify-between py-4 hover:bg-gray-50 transition-colors border-t border-gray-200">
-              <span class="text-[16px] font-bold">Wyświetl wszystkie alerty zabezpieczeń</span>
+              <span class="text-[16px] font-bold">{{ $t('header.wyswietlWszystkieAlertyZabezpieczen') }}</span>
               <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
             </button>
           </div>
@@ -200,14 +198,12 @@ onBeforeUnmount(() => {
               <svg class="w-6 h-6 text-black shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
             </button>
           </div>
-          <p class="px-5 py-4 text-[14px] text-gray-500 text-center">Możesz sprawdzić do 100 alertów zabezpieczeń z ostatnich 30 dni.</p>
+          <p class="px-5 py-4 text-[14px] text-gray-500 text-center">{{ $t('header.mozeszSprawdzicDo100') }}</p>
         </template>
 
         <template v-else-if="currentView === 'logins'">
           <!-- ...kod widoku logins (identyczny jak wcześniej)... -->
-          <div class="px-5 py-4 text-[15px] text-gray-600 border-b border-gray-200 leading-snug">
-            W ramach tych logowań mogą być wysyłane i odbierane w pełni zaszyfrowane wiadomości oraz połączenia. Przejdź do ustawień Facebooka, aby wyświetlić pełną listę
-            <a href="#" class="text-[#1A73E8] hover:underline font-medium">lokalizacji zalogowań.</a>
+          <div class="px-5 py-4 text-[15px] text-gray-600 border-b border-gray-200 leading-snug">{{ $t('header.wRamachTychLogowan') }}<a href="#" class="text-[#1A73E8] hover:underline font-medium">{{ $t('header.lokalizacjiZalogowan') }}</a>
           </div>
           <div class="flex flex-col pt-2">
             <button v-for="login in logins" :key="'login-'+login.id" @click="openLoginInfo(login)" class="w-full flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition-colors text-left">
@@ -218,7 +214,7 @@ onBeforeUnmount(() => {
               <div class="flex-1 flex flex-col overflow-hidden">
                 <span class="text-[16px] font-bold truncate">{{ login.title }}</span>
                 <span class="text-[14px] text-gray-500 truncate mt-0.5">
-                  <span v-if="login.isCurrent" class="text-green-600 font-medium">Ta sesja</span>
+                  <span v-if="login.isCurrent" class="text-green-600 font-medium">{{ $t('header.taSesja') }}</span>
                   <span v-if="login.isCurrent"> · {{ login.location }}</span>
                   <span v-else>{{ login.subtitle }}</span>
                 </span>
@@ -241,7 +237,7 @@ onBeforeUnmount(() => {
 
             <!-- Widziano -->
             <div>
-              <p class="text-[15px] text-gray-600 mb-2">Widziano</p>
+              <p class="text-[15px] text-gray-600 mb-2">{{ $t('header.widziano') }}</p>
               <div class="bg-gray-100/80 px-4 py-3.5 rounded-[12px] text-[15px] font-medium text-black">
                 {{ selectedLogin.seen || 'około minuty temu' }}
               </div>
@@ -249,13 +245,12 @@ onBeforeUnmount(() => {
 
             <!-- Klucz -->
             <div class="pb-6">
-              <p class="text-[15px] text-gray-600 mb-2">Klucz</p>
+              <p class="text-[15px] text-gray-600 mb-2">{{ $t('header.klucz') }}</p>
               <div class="bg-gray-100/80 px-4 py-3.5 rounded-[12px]">
                 <p class="text-[14.5px] font-bold text-black tracking-wider leading-relaxed break-words font-mono">
                   {{ selectedLogin.key || '05 68 45 2E 48 73 D7 CC CE 4D 86 5D DB A5 0F 0D C3 B8 19 6A 16 AC 18 B8 72 E3 7F 44 4E B6 A7 F1 7F' }}
                 </p>
-                <div class="mt-2 text-[14px] text-gray-500">
-                  Zarejestrowano:<br/>
+                <div class="mt-2 text-[14px] text-gray-500">{{ $t('header.zarejestrowano') }}<br/>
                   {{ selectedLogin.keyRegistered || '11 min temu' }}
                 </div>
               </div>

@@ -234,13 +234,11 @@ onUnmounted(async () => {
             <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" class="w-full h-full object-cover" />
           </div>
           <div>
-            <h2 class="font-bold text-[15px] leading-tight text-white shadow-sm">Bartosz (Live Stream)</h2>
+            <h2 class="font-bold text-[15px] leading-tight text-white shadow-sm">{{ $t('createLive.bartoszLiveStream') }}</h2>
             <div class="flex items-center gap-2 mt-0.5 text-xs text-zinc-300">
-              <span class="px-1.5 py-0.5 bg-[#E41E3F] rounded text-[10px] font-bold uppercase tracking-wider text-white">NA ŻYWO</span>
+              <span class="px-1.5 py-0.5 bg-[#E41E3F] rounded text-[10px] font-bold uppercase tracking-wider text-white">{{ $t('createLive.naZywo') }}</span>
               <span class="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full" v-if="isStreamOnline">
-                <EyeIcon :size="12" class="text-zinc-200" />
-                {{ viewersCount }} widzów
-              </span>
+                <EyeIcon :size="12" class="text-zinc-200" />{{ $t('createLive.viewerscountWidzow') }}</span>
             </div>
           </div>
         </div>
@@ -260,10 +258,8 @@ onUnmounted(async () => {
           <div class="w-20 h-20 rounded-full bg-zinc-800/80 flex items-center justify-center text-zinc-500 mb-5 animate-pulse border border-zinc-700">
             <VideoOffIcon :size="40" />
           </div>
-          <h3 class="text-lg font-bold text-zinc-200">Transmisja na żywo jest offline</h3>
-          <p class="text-xs text-zinc-400 mt-2 leading-relaxed">
-            Obecnie nikt nie nadaje na tym kanale. Gdy nadawca ("glowny") rozpocznie transmisję, wideo pojawi się tutaj automatycznie.
-          </p>
+          <h3 class="text-lg font-bold text-zinc-200">{{ $t('createLive.transmisjaNaZywoJest') }}</h3>
+          <p class="text-xs text-zinc-400 mt-2 leading-relaxed">{{ $t('createLive.obecnieNiktNieNadaje') }}</p>
         </div>
 
         <!-- Floating Reactions overlay -->
@@ -293,16 +289,16 @@ onUnmounted(async () => {
 
         <!-- Reactions Selector Bar -->
         <div class="bg-black/60 backdrop-blur-md px-4 py-2.5 rounded-full flex gap-3 shadow-lg border border-white/10">
-          <button @click="emitReaction('like')" class="reaction-btn hover:scale-125 transition-transform" title="Lubię to">
+          <button @click="emitReaction('like')" class="reaction-btn hover:scale-125 transition-transform" :title="$t('home.like')">
             <span class="text-xl">👍</span>
           </button>
-          <button @click="emitReaction('love')" class="reaction-btn hover:scale-125 transition-transform" title="Super">
+          <button @click="emitReaction('love')" class="reaction-btn hover:scale-125 transition-transform" :title="$t('reaction.love')">
             <span class="text-xl">❤️</span>
           </button>
-          <button @click="emitReaction('laugh')" class="reaction-btn hover:scale-125 transition-transform" title="Haha">
+          <button @click="emitReaction('laugh')" class="reaction-btn hover:scale-125 transition-transform" :title="$t('reaction.haha')">
             <span class="text-xl">😂</span>
           </button>
-          <button @click="emitReaction('wow')" class="reaction-btn hover:scale-125 transition-transform" title="Wow">
+          <button @click="emitReaction('wow')" class="reaction-btn hover:scale-125 transition-transform" :title="$t('reaction.wow')">
             <span class="text-xl">😮</span>
           </button>
         </div>
@@ -313,8 +309,8 @@ onUnmounted(async () => {
     <div class="w-[360px] bg-[#242526] border-l border-zinc-800 flex flex-col justify-between shrink-0 h-[calc(100vh-56px)] z-25">
       <!-- Header -->
       <div class="p-4 border-b border-zinc-800 flex items-center justify-between">
-        <h3 class="font-bold text-[16px] text-zinc-100">Czat na żywo</h3>
-        <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-xs rounded font-medium">Agora Audio/Video</span>
+        <h3 class="font-bold text-[16px] text-zinc-100">{{ $t('createLive.czatNaZywo') }}</h3>
+        <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-xs rounded font-medium">{{ $t('createLive.agoraAudioVideo') }}</span>
       </div>
 
       <!-- Comments Stream list -->
@@ -343,7 +339,7 @@ onUnmounted(async () => {
           <input
             v-model="newComment"
             type="text"
-            placeholder="Napisz komentarz..."
+            :placeholder="$t('comments.placeholder')"
             class="flex-1 bg-zinc-800 border border-zinc-700 rounded-full px-4 py-2 text-[14px] text-white focus:outline-none focus:border-[#1877f2] placeholder-zinc-500"
           />
           <button 

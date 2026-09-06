@@ -27,7 +27,7 @@ const tabs = [
         <!-- Górna sekcja: Tytuł + Ustawienia -->
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
-            <h1 class="text-[24px] font-bold leading-tight">Alerty moderacji</h1>
+            <h1 class="text-[24px] font-bold leading-tight">{{ $t('groups.alertyModeracji') }}</h1>
             <InformationIcon :size="18" class="text-[#8c939d] cursor-pointer hover:text-[#65676b] transition-colors mt-1" />
           </div>
 
@@ -78,15 +78,11 @@ const tabs = [
       </div>
 
       <!-- Teksty -->
-      <h2 class="text-[20px] font-bold text-[#050505] mb-2">Brak alertów moderacji</h2>
-      <p class="text-[15px] text-[#65676b] mb-6">
-        Żaden post ani komentarz nie aktywował alertu moderacji.
-      </p>
+      <h2 class="text-[20px] font-bold text-[#050505] mb-2">{{ $t('groups.brakAlertowModeracji') }}</h2>
+      <p class="text-[15px] text-[#65676b] mb-6">{{ $t('groups.zadenPostAniKomentarz') }}</p>
 
       <!-- Niebieski przycisk -->
-      <button class="bg-[#1877f2] hover:bg-[#166fe5] text-white text-[15px] font-semibold px-10 py-2.5 rounded-lg transition-colors cursor-pointer shadow-sm">
-        Edytuj alerty
-      </button>
+      <button class="bg-[#1877f2] hover:bg-[#166fe5] text-white text-[15px] font-semibold px-10 py-2.5 rounded-lg transition-colors cursor-pointer shadow-sm">{{ $t('groups.edytujAlerty') }}</button>
 
     </main>
 

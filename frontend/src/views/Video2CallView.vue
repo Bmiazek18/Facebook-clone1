@@ -600,7 +600,7 @@ const closeAppWindow = () => {
       <!-- Minimalistyczne info o połączeniu -->
       <div v-show="callState === 'connected'" class="absolute top-4 left-4 flex items-center gap-3 z-20">
         <div class="w-10 h-10 rounded-full overflow-hidden bg-zinc-800">
-          <img :src="recipientAvatar" alt="Avatar" class="w-full h-full object-cover" />
+          <img :src="recipientAvatar" :alt="$t('chat.avatar')" class="w-full h-full object-cover" />
         </div>
         <div>
           <h2 class="text-sm font-semibold tracking-wide">{{ recipientName }}</h2>
@@ -614,7 +614,7 @@ const closeAppWindow = () => {
       <div class="relative h-full w-full max-w-[500px] bg-black flex items-center justify-center overflow-hidden">
         <img
           :src="recipientAvatar"
-          alt="Blur Background"
+          :alt="$t('call.blurBackground')"
           class="absolute inset-0 w-full h-full object-cover blur-3xl scale-110 opacity-40"
         />
         <div class="absolute inset-0 bg-black/50"></div>
@@ -630,7 +630,7 @@ const closeAppWindow = () => {
           class="w-24 h-24 rounded-full overflow-hidden shadow-lg bg-zinc-800 flex items-center justify-center relative z-10 transition-all duration-200 ease-in-out"
           :class="remoteUserSpeaking ? 'ring-[6px] ring-green-500 scale-105' : 'ring-1 ring-zinc-600/30'"
         >
-          <img :src="recipientAvatar" alt="Avatar" class="w-full h-full object-cover" />
+          <img :src="recipientAvatar" :alt="$t('chat.avatar')" class="w-full h-full object-cover" />
         </div>
 
         <div
@@ -670,11 +670,11 @@ const closeAppWindow = () => {
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
-            <p class="text-[10px] uppercase font-bold tracking-wider">Ekran wysyłany</p>
+            <p class="text-[10px] uppercase font-bold tracking-wider">{{ $t('call.ekranWysylany') }}</p>
           </div>
 
           <div v-show="!videoEnabled && !isSharingScreen" class="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 bg-zinc-950 text-zinc-500 rounded-xl">
-            <p class="text-xs">Kamera wyłączona</p>
+            <p class="text-xs">{{ $t('call.kameraWylaczona') }}</p>
           </div>
         </div>
       </div>

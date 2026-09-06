@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-[#F0F2F5] p-6 font-sans flex gap-6">
 
     <Sidebar
-      title="Strony"
+      :title="$t('home.pages')"
       :items="sidebarItems"
       :createButton="createPageBtn"
     />

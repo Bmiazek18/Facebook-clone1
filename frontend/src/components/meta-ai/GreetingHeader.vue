@@ -8,9 +8,7 @@
       <h1
         v-if="showGreeting"
         class="gemini-exact-title select-none"
-      >
-        What's the vibe, Bartosz?
-      </h1>
+      >{{ $t('metaAi.whatSTheVibe') }}</h1>
     </transition>
   </div>
 </template>

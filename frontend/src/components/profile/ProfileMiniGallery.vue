@@ -64,9 +64,7 @@ const emit = defineEmits<{
         <div
           v-if="item.mutualFriendsCount !== undefined"
           class="text-[13px] text-theme-text-secondary text-wrap"
-        >
-          {{ item.mutualFriendsCount }} wspólnych znajomych
-        </div>
+        >{{ $t('profile.itemMutualfriendscountWspolnychZnajomych') }}</div>
       </div>
     </div>
   </div>

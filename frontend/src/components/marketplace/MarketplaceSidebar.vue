@@ -32,7 +32,7 @@ const sidebarItems = computed(() => [
 
 <template>
   <Sidebar
-    title="Sprzedaż"
+    :title="$t('marketplace.sprzedaz')"
     backRoute="/marketplace"
     :showSearch="false"
     :items="sidebarItems"
@@ -42,7 +42,7 @@ const sidebarItems = computed(() => [
       route: '/marketplace/create/item',
     }"
   />
-  <BaseModal v-if="isProfileModalOpen" @close="isProfileModalOpen = false" title="Profil w Marketplace">
+  <BaseModal v-if="isProfileModalOpen" @close="isProfileModalOpen = false" :title="$t('marketplace.profilWMarketplace')">
     <ProfileModal/>
   </BaseModal>
 </template>

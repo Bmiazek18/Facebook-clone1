@@ -36,7 +36,7 @@ const handleApply = (radius: number) => {
   </div>
 
   <!-- Location Modal -->
-  <BaseModal v-if="showLocationModal" @close="closeLocationModal" title="Wybierz lokalizację">
+  <BaseModal v-if="showLocationModal" @close="closeLocationModal" :title="$t('common.wybierzLokalizacje')">
     <MapRadius @update:radius="handleRadiusUpdate" @apply="handleApply" />
   </BaseModal>
 </template>

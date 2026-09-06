@@ -10,7 +10,7 @@ const selectedRating = ref(0)
     class="w-full h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center   select-none"
   >
     <div class="flex flex-col items-center justify-center flex-grow text-center px-4">
-      <h2 class="text-xl font-medium tracking-wide mb-4">Jak oceniasz jakość połączenia?</h2>
+      <h2 class="text-xl font-medium tracking-wide mb-4">{{ $t('call.jakOceniaszJakoscPolaczenia') }}</h2>
 
       <div class="flex gap-2 mb-8">
         <svg
@@ -32,9 +32,7 @@ const selectedRating = ref(0)
       <button
         @click="emit('close')"
         class="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 text-sm font-medium rounded-lg transition-colors"
-      >
-        Nie teraz
-      </button>
+      >{{ $t('call.nieTeraz') }}</button>
     </div>
 
     <div class="pb-12 flex gap-12 justify-center items-center">
@@ -58,7 +56,7 @@ const selectedRating = ref(0)
             />
           </svg>
         </button>
-        <span class="text-xs text-zinc-400">Połącz ponownie</span>
+        <span class="text-xs text-zinc-400">{{ $t('call.polaczPonownie') }}</span>
       </div>
 
       <div class="flex flex-col items-center gap-2">
@@ -77,7 +75,7 @@ const selectedRating = ref(0)
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        <span class="text-xs text-zinc-400">Zamknij</span>
+        <span class="text-xs text-zinc-400">{{ $t('common.close') }}</span>
       </div>
     </div>
   </div>

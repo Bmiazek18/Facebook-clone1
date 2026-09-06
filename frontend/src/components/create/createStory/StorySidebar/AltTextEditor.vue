@@ -1,8 +1,6 @@
 <template>
   <div class="px-4 py-4">
-    <p class="text-gray-500 text-xs mb-4 leading-relaxed">
-      Użyj wygenerowanego tekstu alternatywnego do tego zdjęcia lub dodaj niestandardowy:
-    </p>
+    <p class="text-gray-500 text-xs mb-4 leading-relaxed">{{ $t('create.uzyjWygenerowanegoTekstuAlternatywnego') }}</p>
 
     <div
       class="flex items-start justify-between cursor-pointer mb-3 group p-2 rounded-lg hover:bg-gray-100 transition"
@@ -25,7 +23,7 @@
       <textarea
         v-model="customText"
         @focus="selectedOption = 'custom'"
-        placeholder="Niestandardowy tekst..."
+        :placeholder="$t('create.niestandardowyTekst')"
         class="flex-1 border rounded-lg p-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 transition resize-none h-20 bg-white"
         :class="selectedOption === 'custom' ? 'border-blue-500' : 'border-gray-300'"
       ></textarea>
@@ -43,9 +41,7 @@
     <button
       @click="saveAltText"
       class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm"
-    >
-      Zapisz zmiany
-    </button>
+    >{{ $t('create.zapiszZmiany') }}</button>
   </div>
 </template>
 

@@ -37,10 +37,8 @@
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           ></path>
         </svg>
-        <div class="text-[15px] font-semibold text-gray-200">Przetwarzanie wideo... 🎥</div>
-        <div class="text-[12px] text-gray-400 mt-1">
-          Strumień ABR HLS jest przygotowywany. Powiadomimy Cię, gdy będzie gotowy.
-        </div>
+        <div class="text-[15px] font-semibold text-gray-200">{{ $t('feed.przetwarzanieWideo') }}</div>
+        <div class="text-[12px] text-gray-400 mt-1">{{ $t('feed.strumienAbrHlsJest') }}</div>
       </div>
     </template>
     <div
@@ -76,10 +74,8 @@
               d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
             ></path>
           </svg>
-          <div class="text-[13px] font-semibold">Zdjęcie niedostępne 📷</div>
-          <div class="text-[10px] opacity-75 mt-0.5">
-            Plik graficzny nie został odnaleziony na serwerze.
-          </div>
+          <div class="text-[13px] font-semibold">{{ $t('feed.zdjecieNiedostepne') }}</div>
+          <div class="text-[10px] opacity-75 mt-0.5">{{ $t('feed.plikGraficznyNieZostal') }}</div>
         </div>
       </NuxtLink>
       <template v-if="media.tags?.length && !isImageError">

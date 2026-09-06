@@ -137,10 +137,10 @@ const daysHourOptions = ['Pn.', 'W..', 'Śr.', 'C..', 'Pt.', 'S..', 'N..'] // Zg
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
           <div>
             <div class="flex items-center gap-1.5">
-              <h2 class="text-[17px] font-bold leading-tight">0 postów</h2>
+              <h2 class="text-[17px] font-bold leading-tight">{{ $t('groups.0Postow') }}</h2>
               <InformationIcon :size="16" class="text-[#65676b] cursor-pointer hover:text-[#050505] transition-colors" />
             </div>
-            <p class="text-[13px] text-[#65676b] mt-0.5">16 lip 2026 - 12 sie 2026</p>
+            <p class="text-[13px] text-[#65676b] mt-0.5">{{ $t('groups.16Lip202612') }}</p>
           </div>
 
           <!-- Pigułki filtrów (Posty, Komentarze...) -->
@@ -175,10 +175,10 @@ const daysHourOptions = ['Pn.', 'W..', 'Śr.', 'C..', 'Pt.', 'S..', 'N..'] // Zg
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
         <div class="mb-4">
           <div class="flex items-center gap-1.5">
-            <h2 class="text-[17px] font-bold leading-tight">1 aktywny członek</h2>
+            <h2 class="text-[17px] font-bold leading-tight">{{ $t('groups.1AktywnyCzlonek') }}</h2>
             <InformationIcon :size="16" class="text-[#65676b] cursor-pointer hover:text-[#050505] transition-colors" />
           </div>
-          <p class="text-[13px] text-[#65676b] mt-0.5">16 lip 2026 - 12 sie 2026</p>
+          <p class="text-[13px] text-[#65676b] mt-0.5">{{ $t('groups.16Lip202612') }}</p>
         </div>
 
         <div class="h-[250px] w-full mt-4">
@@ -190,9 +190,7 @@ const daysHourOptions = ['Pn.', 'W..', 'Śr.', 'C..', 'Pt.', 'S..', 'N..'] // Zg
           />
         </div>
 
-        <p class="text-center text-[13px] text-[#65676b] mt-4">
-          Aktywni członkowie dziennie (16 lip - 12 sie)
-        </p>
+        <p class="text-center text-[13px] text-[#65676b] mt-4">{{ $t('groups.aktywniCzlonkowieDziennie16') }}</p>
       </div>
 
       <!-- Grid 2 Kolumny: Popularne dni / Popularne godziny -->
@@ -202,12 +200,10 @@ const daysHourOptions = ['Pn.', 'W..', 'Śr.', 'C..', 'Pt.', 'S..', 'N..'] // Zg
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col">
           <div class="mb-4">
             <div class="flex items-center gap-1.5">
-              <h2 class="text-[17px] font-bold leading-tight">Popularne dni</h2>
+              <h2 class="text-[17px] font-bold leading-tight">{{ $t('groups.popularneDni') }}</h2>
               <InformationIcon :size="16" class="text-[#65676b] cursor-pointer hover:text-[#050505] transition-colors" />
             </div>
-            <p class="text-[13px] text-[#65676b] mt-1 leading-snug">
-              Średnia liczba postów, komentarzy lub reakcji członków społeczności w danym dniu w określonym zakresie dat.
-            </p>
+            <p class="text-[13px] text-[#65676b] mt-1 leading-snug">{{ $t('groups.sredniaLiczbaPostowKomentarzy') }}</p>
           </div>
 
           <div class="h-[200px] w-full mt-auto">
@@ -224,12 +220,10 @@ const daysHourOptions = ['Pn.', 'W..', 'Śr.', 'C..', 'Pt.', 'S..', 'N..'] // Zg
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col">
           <div class="mb-4">
             <div class="flex items-center gap-1.5">
-              <h2 class="text-[17px] font-bold leading-tight">Popularne godziny</h2>
+              <h2 class="text-[17px] font-bold leading-tight">{{ $t('groups.popularneGodziny') }}</h2>
               <InformationIcon :size="16" class="text-[#65676b] cursor-pointer hover:text-[#050505] transition-colors" />
             </div>
-            <p class="text-[13px] text-[#65676b] mt-1 leading-snug">
-              Średnia liczba postów, komentarzy lub reakcji członków społeczności o danej godzinie w określonym zakresie dat.
-            </p>
+            <p class="text-[13px] text-[#65676b] mt-1 leading-snug">{{ $t('groups.sredniaLiczbaPostowKomentarzy2') }}</p>
           </div>
 
           <!-- Pigułki Dni -->
@@ -251,7 +245,7 @@ const daysHourOptions = ['Pn.', 'W..', 'Śr.', 'C..', 'Pt.', 'S..', 'N..'] // Zg
 
           <!-- Stan pusty -->
           <div class="flex-1 flex items-center justify-center min-h-[100px]">
-            <span class="text-[15px] font-semibold text-[#65676b]">Brak danych do wyświetlenia</span>
+            <span class="text-[15px] font-semibold text-[#65676b]">{{ $t('groups.brakDanychDoWyswietlenia') }}</span>
           </div>
         </div>
 

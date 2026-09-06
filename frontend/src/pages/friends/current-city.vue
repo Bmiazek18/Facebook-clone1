@@ -1,5 +1,5 @@
 <template>
-  <FriendsView title="Aktualne miejsce zamieszkania" />
+  <FriendsView :title="$t('friends.aktualneMiejsceZamieszkania')" />
 </template>
 
 <script setup lang="ts">

@@ -2,10 +2,8 @@
   <div>
     <!-- Zmiany dotyczące stron -->
     <div class="bg-white rounded-[12px] shadow-sm border border-gray-200 p-5 mb-5">
-      <h2 class="text-[20px] font-bold text-gray-900 mb-1">Zmiany dotyczące stron</h2>
-      <p class="text-[15px] text-gray-500 mb-5 leading-snug">
-        Nazwy tych stron zmieniły się od chwili ich polubienia. Kiedy strona dokonuje takiej zmiany, może to oznaczać, że zmienia swoją tematykę. Możesz zdecydować, czy chcesz zachować połączenie z takimi stronami.
-      </p>
+      <h2 class="text-[20px] font-bold text-gray-900 mb-1">{{ $t('pages.zmianyDotyczaceStron') }}</h2>
+      <p class="text-[15px] text-gray-500 mb-5 leading-snug">{{ $t('pages.nazwyTychStronZmienily') }}</p>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div v-for="page in changedPages" :key="page.id" class="border border-gray-200 rounded-[12px] p-4 flex gap-3 shadow-sm">
@@ -13,16 +11,13 @@
           <div class="flex flex-col">
             <span class="font-bold text-[15px] text-gray-900 leading-tight">{{ page.name }}</span>
             <span class="text-[13px] text-gray-500 mt-1 mb-2">{{ page.category }}</span>
-            <span class="text-[13px] text-gray-900">
-              Poprzednia nazwa: <b>{{ page.oldName }}</b>
+            <span class="text-[13px] text-gray-900">{{ $t('pages.poprzedniaNazwa') }}<b>{{ page.oldName }}</b>
             </span>
           </div>
         </div>
       </div>
 
-      <button class="w-full bg-[#E4E6EB] hover:bg-[#D8DADF] text-gray-900 font-semibold text-[15px] py-2 rounded-lg transition-colors flex justify-center items-center gap-1">
-        Zobacz wszystkie (34)
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+      <button class="w-full bg-[#E4E6EB] hover:bg-[#D8DADF] text-gray-900 font-semibold text-[15px] py-2 rounded-lg transition-colors flex justify-center items-center gap-1">{{ $t('pages.zobaczWszystkie34') }}<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
         </svg>
       </button>
@@ -31,10 +26,8 @@
     <!-- Wszystkie obserwowane strony -->
     <div class="bg-white rounded-[12px] shadow-sm border border-gray-200 p-5">
       <div class="flex justify-between items-center mb-5">
-        <h2 class="text-[20px] font-bold text-gray-900">All Pages you follow (110)</h2>
-        <button class="text-[#0866FF] hover:bg-gray-100 px-3 py-1.5 rounded-md text-[15px] font-medium transition-colors">
-          Sortuj
-        </button>
+        <h2 class="text-[20px] font-bold text-gray-900">{{ $t('pages.allPagesYouFollow') }}</h2>
+        <button class="text-[#0866FF] hover:bg-gray-100 px-3 py-1.5 rounded-md text-[15px] font-medium transition-colors">{{ $t('pages.sortuj') }}</button>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -49,9 +42,7 @@
           <button class="w-full bg-[#E7F3FF] hover:bg-[#DBE7F2] text-[#0866FF] font-semibold text-[15px] py-1.5 rounded-lg flex justify-center items-center gap-2 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-            </svg>
-            Obserwujesz
-          </button>
+            </svg>{{ $t('pages.obserwujesz') }}</button>
         </div>
       </div>
     </div>

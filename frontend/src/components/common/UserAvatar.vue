@@ -123,7 +123,7 @@ const toggleModal = () => {
     </div>
   </ProfilePopper>
 
-  <BaseModal v-if="isModalOpen" @close="toggleModal" title="Nowa notatka">
+  <BaseModal v-if="isModalOpen" @close="toggleModal" :title="$t('common.nowaNotatka')">
     <NotesModal :userId="user?.id" :currentNote="user?.note" @close="toggleModal" />
   </BaseModal>
 </template>

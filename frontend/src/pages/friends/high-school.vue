@@ -1,5 +1,5 @@
 <template>
-  <FriendsView title="Szkoła średnia" />
+  <FriendsView :title="$t('profile.info.highSchool')" />
 </template>
 
 <script setup lang="ts">

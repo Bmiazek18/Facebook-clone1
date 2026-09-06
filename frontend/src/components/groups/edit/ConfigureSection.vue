@@ -1,6 +1,6 @@
 <template>
   <div class="bg-theme-bg-secondary rounded-xl p-4 shadow-sm border border-theme-border">
-    <h2 class="text-[20px] font-semibold text-theme-text mb-2">Skonfiguruj grupę</h2>
+    <h2 class="text-[20px] font-semibold text-theme-text mb-2">{{ $t('groups.skonfigurujGrupe') }}</h2>
 
     <div class="flex flex-col">
       <template v-for="item in items" :key="item.id">
@@ -41,9 +41,7 @@
           <div class="space-y-3">
             <!-- Pole: Nazwa -->
             <div class="relative border border-theme-border rounded-xl px-3 py-2 focus-within:border-[#1877f2] dark:focus-within:border-[#4599ff] focus-within:ring-1 focus-within:ring-[#1877f2] dark:focus-within:ring-[#4599ff] transition-all">
-              <label class="block text-[12px] text-theme-text-secondary font-medium leading-tight">
-                Nazwa
-              </label>
+              <label class="block text-[12px] text-theme-text-secondary font-medium leading-tight">{{ $t('groups.nazwa') }}</label>
               <input
                 v-model="formName"
                 type="text"
@@ -56,7 +54,7 @@
               <textarea
                 v-model="formDescription"
                 rows="4"
-                placeholder="Opis"
+                :placeholder="$t('createLive.description')"
                 class="w-full bg-transparent text-[15px] text-theme-text placeholder-[#65676b] dark:placeholder-[#b0b3b8] font-normal focus:outline-none resize-none leading-relaxed pt-1"
               ></textarea>
             </div>
@@ -68,9 +66,7 @@
               type="button"
               @click="cancelEdit"
               class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-theme-hover transition-colors"
-            >
-              Anuluj
-            </button>
+            >{{ $t('common.cancel') }}</button>
 
             <button
               type="button"
@@ -82,9 +78,7 @@
                   ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
                   : 'bg-theme-bg-tertiary text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
               ]"
-            >
-              Zapisz
-            </button>
+            >{{ $t('createLive.save') }}</button>
           </div>
         </div>
 
@@ -100,16 +94,12 @@
             <ChevronUpIcon :size="24" class="text-theme-text-secondary" />
           </div>
 
-          <p class="text-[15px] text-theme-text leading-snug mb-4">
-            Utwórz wiadomość, którą zobaczą nowi członkowie odwiedzający Twoją grupę po raz pierwszy.
-          </p>
+          <p class="text-[15px] text-theme-text leading-snug mb-4">{{ $t('groups.utworzWiadomoscKtoraZobacza') }}</p>
 
           <button
             type="button"
             class="w-full bg-[#e7f3ff] hover:bg-[#d8eaff] dark:bg-[#252f3d] dark:hover:bg-[#2d3a4d] text-[#1877f2] dark:text-[#4599ff] font-semibold text-[15px] py-2.5 rounded-xl transition-colors"
-          >
-            Rozpocznij
-          </button>
+          >{{ $t('groups.rozpocznij') }}</button>
         </div>
 
         <!-- 3. PRYWATNOŚĆ (Informacja Inline) -->
@@ -129,16 +119,12 @@
               <LockIcon :size="20" />
             </div>
             <div class="flex-1 min-w-0 pt-0.5">
-              <div class="text-[15px] font-bold text-theme-text">Prywatna</div>
-              <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">
-                Tylko członkowie grupy mogą sprawdzić listę członków grupy i zobaczyć ich posty.
-              </div>
+              <div class="text-[15px] font-bold text-theme-text">{{ $t('groups.prywatna') }}</div>
+              <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">{{ $t('groups.tylkoCzlonkowieGrupyMoga') }}</div>
             </div>
           </div>
 
-          <p class="text-[15px] text-theme-text leading-relaxed">
-            W tej chwili nie można zmienić grupy na publiczną. Przy użyciu ustawień <span class="font-semibold">Ukryj grupę</span> i <span class="font-semibold">Kto może dołączyć do grupy</span> możesz zarządzać listą osób, które mogą wyszukać grupę i do niej dołączyć.
-          </p>
+          <p class="text-[15px] text-theme-text leading-relaxed">{{ $t('groups.wTejChwiliNie') }}<span class="font-semibold">{{ $t('groups.ukryjGrupe') }}</span>{{ $t('birthday.and') }}<span class="font-semibold">{{ $t('groups.ktoMozeDolaczycDo') }}</span>{{ $t('groups.mozeszZarzadzacListaOsob') }}</p>
         </div>
 
         <!-- 4. UKRYJ GRUPĘ (Radio Options Inline) -->
@@ -156,8 +142,8 @@
                 <EyeOutlineIcon :size="20" />
               </div>
               <div class="flex-1 min-w-0 pt-0.5">
-                <div class="text-[15px] font-bold text-theme-text">Widoczna</div>
-                <div class="text-[13px] text-theme-text-secondary">Każdy może znaleźć tę grupę.</div>
+                <div class="text-[15px] font-bold text-theme-text">{{ $t('groups.widoczna') }}</div>
+                <div class="text-[13px] text-theme-text-secondary">{{ $t('groups.visibleDescription') }}</div>
               </div>
               <input
                 type="radio"
@@ -173,8 +159,8 @@
                 <EyeOffOutlineIcon :size="20" />
               </div>
               <div class="flex-1 min-w-0 pt-0.5">
-                <div class="text-[15px] font-bold text-theme-text">Ukryta</div>
-                <div class="text-[13px] text-theme-text-secondary">Tylko członkowie mogą znaleźć tę grupę.</div>
+                <div class="text-[15px] font-bold text-theme-text">{{ $t('groups.ukryta') }}</div>
+                <div class="text-[13px] text-theme-text-secondary">{{ $t('groups.tylkoCzlonkowieMogaZnalezc') }}</div>
               </div>
               <input
                 type="radio"
@@ -192,9 +178,7 @@
               type="button"
               @click="cancelEdit"
               class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-theme-hover transition-colors"
-            >
-              Anuluj
-            </button>
+            >{{ $t('common.cancel') }}</button>
 
             <button
               type="button"
@@ -206,9 +190,7 @@
                   ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
                   : 'bg-theme-bg-tertiary text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
               ]"
-            >
-              Zapisz
-            </button>
+            >{{ $t('createLive.save') }}</button>
           </div>
         </div>
 
@@ -239,7 +221,7 @@
             <input
               v-model="locationValue"
               type="text"
-              placeholder="Lokalizacje tej grupy"
+              :placeholder="$t('groups.lokalizacjeTejGrupy')"
               class="w-full bg-transparent text-[15px] text-theme-text placeholder-[#65676b] dark:placeholder-[#b0b3b8] font-normal focus:outline-none"
             />
           </div>
@@ -249,9 +231,7 @@
               type="button"
               @click="cancelEdit"
               class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-theme-hover transition-colors"
-            >
-              Anuluj
-            </button>
+            >{{ $t('common.cancel') }}</button>
 
             <button
               type="button"
@@ -263,9 +243,7 @@
                   ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
                   : 'bg-theme-bg-tertiary text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
               ]"
-            >
-              Zapisz
-            </button>
+            >{{ $t('createLive.save') }}</button>
           </div>
         </div>
 

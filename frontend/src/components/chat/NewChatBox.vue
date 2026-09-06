@@ -4,9 +4,7 @@
     <div class="px-4 pt-4 pb-3 flex flex-col border-b border-gray-200 dark:border-gray-700 shrink-0">
 
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-[17px] font-semibold text-black dark:text-gray-100 tracking-wide">
-          Nowa wiadomość
-        </h2>
+        <h2 class="text-[17px] font-semibold text-black dark:text-gray-100 tracking-wide">{{ $t('notifications.newMessage') }}</h2>
         <button
           @click="$emit('close')"
           class="text-[#8c34ff] dark:text-[#a666ff] hover:bg-gray-100 dark:hover:bg-gray-700 p-1.5 rounded-full transition-colors outline-none flex items-center justify-center -mr-1"
@@ -16,7 +14,7 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <span class="text-[15px] text-black dark:text-gray-200">Do:</span>
+        <span class="text-[15px] text-black dark:text-gray-200">{{ $t('chat.do') }}</span>
         <input
           type="text"
           v-model="searchQuery"

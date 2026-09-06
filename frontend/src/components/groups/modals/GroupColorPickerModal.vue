@@ -60,23 +60,17 @@ const handleSave = () => {
     <div class="p-6">
 
       <!-- Opis na górze -->
-      <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] leading-relaxed mb-4">
-        Ustaw kolor przycisków, nagłówków i tła w grupie.
-      </p>
+      <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] leading-relaxed mb-4">{{ $t('groups.ustawKolorPrzyciskowNaglowkow') }}</p>
 
       <!-- Nagłówek sekcji + Przycisk "Dodaj kolor" -->
       <div class="flex items-center justify-between mb-5">
-        <h3 class="text-[17px] font-bold">
-          Kolor podstawowy
-        </h3>
+        <h3 class="text-[17px] font-bold">{{ $t('groups.kolorPodstawowy') }}</h3>
 
         <button
           type="button"
           @click="triggerCustomColorPicker"
           class="text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-[#e7f3ff]/50 dark:hover:bg-[#3a3b3c] px-2 py-1 rounded-md transition-colors"
-        >
-          Dodaj kolor
-        </button>
+        >{{ $t('groups.dodajKolor') }}</button>
 
         <!-- Ukryty natywny Input typu color -->
         <input
@@ -114,9 +108,7 @@ const handleSave = () => {
         type="button"
         @click="emit('close')"
         class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-[#e7f3ff]/50 dark:hover:bg-[#3a3b3c] transition-colors"
-      >
-        Anuluj
-      </button>
+      >{{ $t('common.cancel') }}</button>
 
       <button
         type="button"
@@ -128,9 +120,7 @@ const handleSave = () => {
             ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
             : 'bg-gray-200 dark:bg-[#3a3b3c] text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
         ]"
-      >
-        Zapisz
-      </button>
+      >{{ $t('createLive.save') }}</button>
     </div>
 
   </div>

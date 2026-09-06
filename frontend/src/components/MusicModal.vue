@@ -153,7 +153,7 @@ const selectTrack = (track: MusicTrack) => {
             v-model="musicQuery"
             @keydown.enter="searchMusic"
             type="text"
-            placeholder="Szukaj muzyki"
+            :placeholder="$t('media.szukajMuzyki')"
             class="w-full pl-10 pr-8 py-2 bg-gray-100 rounded-full text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition"
           />
           <button
@@ -175,8 +175,7 @@ const selectTrack = (track: MusicTrack) => {
               currentTab === 'saved' ? 'bg-gray-900 text-white' : 'hover:bg-gray-100 text-gray-600'
             "
           >
-            <Bookmark :size="14" />Zapisane
-          </button>
+            <Bookmark :size="14" />{{ $t('media.zapisane') }}</button>
           <button
             @click="currentTab = 'browse'"
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition"
@@ -184,8 +183,7 @@ const selectTrack = (track: MusicTrack) => {
               currentTab === 'browse' ? 'bg-gray-900 text-white' : 'hover:bg-gray-100 text-gray-600'
             "
           >
-            <FormatListBulleted :size="14" />Przeglądaj
-          </button>
+            <FormatListBulleted :size="14" />{{ $t('media.przegladaj') }}</button>
         </div>
       </div>
 
@@ -194,7 +192,7 @@ const selectTrack = (track: MusicTrack) => {
           <h3 class="text-xs font-bold text-gray-500 mb-2 px-2 uppercase tracking-wide">
             {{ currentTab === 'saved' ? 'Twoje ulubione' : 'Dla Ciebie' }}
           </h3>
-          <div v-if="isSearching" class="text-center py-4 text-gray-400 text-sm">Szukam...</div>
+          <div v-if="isSearching" class="text-center py-4 text-gray-400 text-sm">{{ $t('media.szukam') }}</div>
 
           <div
             v-for="track in displayedMusic"

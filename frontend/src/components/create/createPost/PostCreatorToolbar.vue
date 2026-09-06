@@ -46,9 +46,7 @@
         "
         @click="!isMediaDisabled && createPostStore.navigateTo('gifSelector')"
         v-tooltip="isMediaDisabled ? $t('post.cannotAddContentBgImage') : ''"
-      >
-        GIF
-      </div>
+      >{{ $t('ui.gif') }}</div>
     </div>
   </div>
 </template>

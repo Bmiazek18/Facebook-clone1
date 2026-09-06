@@ -146,12 +146,10 @@ onMounted(() => {
       <!-- Nagłówek i wyszukiwarka -->
       <section class="mb-4">
         <div class="flex items-center text-[20px] font-bold text-theme-text dark:text-[#E4E6EB] mb-1">
-          <h2>Członkowie</h2>
+          <h2>{{ $t('groups.members') }}</h2>
           <span class="text-theme-text-secondary dark:text-[#B0B3B8] font-normal ml-1">· {{ totalMembersCount }}</span>
         </div>
-        <p class="text-[15px] text-theme-text-secondary dark:text-[#B0B3B8] mb-4">
-          Tutaj będą widoczne nowe osoby i strony, które dołączą do grupy.
-          <a href="#" class="text-theme-text dark:text-[#E4E6EB] font-semibold hover:underline">Dowiedz się więcej</a>
+        <p class="text-[15px] text-theme-text-secondary dark:text-[#B0B3B8] mb-4">{{ $t('groups.tutajBedaWidoczneNowe') }}<a href="#" class="text-theme-text dark:text-[#E4E6EB] font-semibold hover:underline">{{ $t('auth.register.learnMore') }}</a>
         </p>
 
         <div class="relative flex items-center bg-theme-bg dark:bg-[#3A3B3C] rounded-full px-3 py-2">
@@ -161,7 +159,7 @@ onMounted(() => {
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Znajdź członka grupy"
+            :placeholder="$t('groups.znajdzCzlonkaGrupy')"
             class="bg-transparent border-none outline-none w-full ml-2 text-[15px] text-theme-text dark:text-[#E4E6EB] placeholder-[#65676B] dark:placeholder-[#B0B3B8]"
           />
         </div>
@@ -231,7 +229,7 @@ onMounted(() => {
         <!-- Administratorzy i moderatorzy -->
         <section v-if="admins.length > 0" class="mb-4">
           <div class="flex items-center text-[17px] font-bold text-theme-text dark:text-[#E4E6EB] mb-4">
-            <h3>Administratorzy i moderatorzy:</h3>
+            <h3>{{ $t('groups.administratorzyIModeratorzy2') }}</h3>
             <span class="text-theme-text-secondary dark:text-[#B0B3B8] font-normal ml-1">· {{ admins.length }}</span>
           </div>
 
@@ -244,14 +242,10 @@ onMounted(() => {
                     {{ admin.name }}
                   </div>
                   <div class="flex flex-wrap items-center gap-1.5 mt-1">
-                    <span class="bg-[#E7F3FF] dark:bg-[#263951] text-[#1877F2] dark:text-[#2D88FF] text-[13px] px-1.5 py-0.5 rounded font-medium flex items-center">
-                      Administrator
-                    </span>
+                    <span class="bg-[#E7F3FF] dark:bg-[#263951] text-[#1877F2] dark:text-[#2D88FF] text-[13px] px-1.5 py-0.5 rounded font-medium flex items-center">{{ $t('feed.administrator') }}</span>
                   </div>
                   <!-- Przykładowy tekst opisu (np. uczelnia, miasto) -->
-                  <div class="text-[13px] text-theme-text-secondary dark:text-[#B0B3B8] mt-1 leading-tight">
-                    Dołączył(a) {{ admin.joinedDateText }}
-                  </div>
+                  <div class="text-[13px] text-theme-text-secondary dark:text-[#B0B3B8] mt-1 leading-tight">{{ $t('groups.dolaczylAAdminJoineddatetext') }}</div>
                 </div>
               </div>
 
@@ -261,20 +255,16 @@ onMounted(() => {
                   <button
                     @click="handleUpdateRole(admin.id, GroupRole.MEMBER)"
                     class="bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600 text-theme-text dark:text-[#E4E6EB] px-2.5 py-1.5 rounded-md font-semibold text-[13px] transition flex items-center gap-1 cursor-pointer"
-                    title="Odbierz uprawnienia administratora"
-                  >
-                    Odbierz admina
-                  </button>
+                    :title="$t('groups.odbierzUprawnieniaAdministratora')"
+                  >{{ $t('groups.odbierzAdmina') }}</button>
                   <button
                     @click="handleRemoveMember(admin.id)"
                     class="bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 px-2.5 py-1.5 rounded-md font-semibold text-[13px] transition flex items-center gap-1 cursor-pointer"
-                    title="Usuń członka z grupy"
+                    :title="$t('groups.usunCzlonkaZGrupy')"
                   >
                     <svg class="w-3.5 h-3.5 fill-currentColor" viewBox="0 0 24 24">
                       <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                    </svg>
-                    Usuń
-                  </button>
+                    </svg>{{ $t('notifications_page.delete') }}</button>
                 </template>
 
                 <button
@@ -284,16 +274,12 @@ onMounted(() => {
                 >
                   <svg class="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                  </svg>
-                  Znajomy
-                </button>
+                  </svg>{{ $t('ui.friend') }}</button>
                 <button
                   v-else-if="sentRequests.has(admin.id)"
                   disabled
                   class="bg-[#E7F3FF] dark:bg-[#263951] text-[#1877F2] dark:text-[#2D88FF] px-3 py-1.5 rounded-md font-semibold text-[15px] flex items-center gap-1.5 cursor-not-allowed"
-                >
-                  Wysłano zaproszenie
-                </button>
+                >{{ $t('groups.wyslanoZaproszenie') }}</button>
                 <button
                   v-else
                   @click="handleSendFriendRequest(admin.id)"
@@ -301,16 +287,12 @@ onMounted(() => {
                 >
                   <svg class="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
                     <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                  </svg>
-                  Dodaj znajomego
-                </button>
+                  </svg>{{ $t('feed.dodajZnajomego') }}</button>
               </div>
             </div>
           </div>
 
-          <button class="w-full mt-4 bg-theme-bg-tertiary dark:bg-[#3A3B3C] hover:bg-theme-hover-strong dark:hover:bg-[#4E4F50] text-theme-text dark:text-[#E4E6EB] font-semibold py-2 rounded-md text-[15px] transition">
-            Wyświetl wszystkich
-          </button>
+          <button class="w-full mt-4 bg-theme-bg-tertiary dark:bg-[#3A3B3C] hover:bg-theme-hover-strong dark:hover:bg-[#4E4F50] text-theme-text dark:text-[#E4E6EB] font-semibold py-2 rounded-md text-[15px] transition">{{ $t('groups.wyswietlWszystkich') }}</button>
         </section>
 
         <!-- Linia oddzielająca -->
@@ -319,15 +301,11 @@ onMounted(() => {
         <!-- Nowi członkowie grupy -->
         <section>
           <div class="mb-4">
-            <h3 class="text-[17px] font-bold text-theme-text dark:text-[#E4E6EB]">Nowi członkowie grupy</h3>
-            <p class="text-[13px] text-theme-text-secondary dark:text-[#B0B3B8] mt-1 leading-snug">
-              Ta lista obejmuje osoby, które dołączyły do grupy, a także osoby wyświetlające podgląd tej grupy. Każda zaproszona i zatwierdzona osoba może wyświetlać podgląd zawartości grupy.
-            </p>
+            <h3 class="text-[17px] font-bold text-theme-text dark:text-[#E4E6EB]">{{ $t('groups.nowiCzlonkowieGrupy') }}</h3>
+            <p class="text-[13px] text-theme-text-secondary dark:text-[#B0B3B8] mt-1 leading-snug">{{ $t('groups.taListaObejmujeOsoby') }}</p>
           </div>
 
-          <div v-if="filteredMembers.length === 0" class="text-center py-6 text-theme-text-secondary dark:text-[#B0B3B8] text-[15px]">
-            Brak członków pasujących do wyszukiwania.
-          </div>
+          <div v-if="filteredMembers.length === 0" class="text-center py-6 text-theme-text-secondary dark:text-[#B0B3B8] text-[15px]">{{ $t('groups.brakCzlonkowPasujacychDo') }}</div>
 
           <div v-else class="space-y-4">
             <div v-for="(member, index) in filteredMembers" :key="member.id" class="flex items-center justify-between">
@@ -337,9 +315,7 @@ onMounted(() => {
                   <div class="font-semibold text-[15px] text-theme-text dark:text-[#E4E6EB] hover:underline cursor-pointer leading-tight">
                     {{ member.name }}
                   </div>
-                  <div class="text-[13px] text-theme-text-secondary dark:text-[#B0B3B8] mt-1 leading-tight">
-                    Dołączenie {{ member.joinedDateText }}
-                  </div>
+                  <div class="text-[13px] text-theme-text-secondary dark:text-[#B0B3B8] mt-1 leading-tight">{{ $t('groups.dolaczenieMemberJoineddatetext') }}</div>
                 </div>
               </div>
 
@@ -350,28 +326,22 @@ onMounted(() => {
                     v-if="member.role !== GroupRole.ADMIN"
                     @click="handleUpdateRole(member.id, GroupRole.ADMIN)"
                     class="bg-[#E7F3FF] dark:bg-[#263951] hover:bg-[#DBEAFE] dark:hover:bg-[#1E293B] text-[#1877F2] dark:text-[#2D88FF] px-2.5 py-1.5 rounded-md font-semibold text-[13px] transition flex items-center gap-1 cursor-pointer"
-                    title="Mianuj administratorem grupy"
-                  >
-                    Mianuj adminem
-                  </button>
+                    :title="$t('groups.mianujAdministratoremGrupy')"
+                  >{{ $t('groups.mianujAdminem') }}</button>
                   <button
                     v-else
                     @click="handleUpdateRole(member.id, GroupRole.MEMBER)"
                     class="bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600 text-theme-text dark:text-[#E4E6EB] px-2.5 py-1.5 rounded-md font-semibold text-[13px] transition flex items-center gap-1 cursor-pointer"
-                    title="Odbierz uprawnienia administratora"
-                  >
-                    Odbierz admina
-                  </button>
+                    :title="$t('groups.odbierzUprawnieniaAdministratora')"
+                  >{{ $t('groups.odbierzAdmina') }}</button>
                   <button
                     @click="handleRemoveMember(member.id)"
                     class="bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 px-2.5 py-1.5 rounded-md font-semibold text-[13px] transition flex items-center gap-1 cursor-pointer"
-                    title="Usuń członka z grupy"
+                    :title="$t('groups.usunCzlonkaZGrupy')"
                   >
                     <svg class="w-3.5 h-3.5 fill-currentColor" viewBox="0 0 24 24">
                       <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                    </svg>
-                    Usuń
-                  </button>
+                    </svg>{{ $t('notifications_page.delete') }}</button>
                 </template>
 
                 <button
@@ -381,16 +351,12 @@ onMounted(() => {
                 >
                   <svg class="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                  </svg>
-                  Znajomy
-                </button>
+                  </svg>{{ $t('ui.friend') }}</button>
                 <button
                   v-else-if="sentRequests.has(member.id)"
                   disabled
                   class="bg-[#E7F3FF] dark:bg-[#263951] text-[#1877F2] dark:text-[#2D88FF] px-3 py-1.5 rounded-md font-semibold text-[15px] flex items-center gap-1.5 cursor-not-allowed"
-                >
-                  Wysłano zaproszenie
-                </button>
+                >{{ $t('groups.wyslanoZaproszenie') }}</button>
                 <button
                   v-else
                   @click="handleSendFriendRequest(member.id)"
@@ -398,16 +364,12 @@ onMounted(() => {
                 >
                   <svg class="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
                     <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                  </svg>
-                  Dodaj znajomego
-                </button>
+                  </svg>{{ $t('feed.dodajZnajomego') }}</button>
               </div>
             </div>
           </div>
 
-          <button v-if="filteredMembers.length > 5" class="w-full mt-4 bg-theme-bg-tertiary dark:bg-[#3A3B3C] hover:bg-theme-hover-strong dark:hover:bg-[#4E4F50] text-theme-text dark:text-[#E4E6EB] font-semibold py-2 rounded-md text-[15px] transition">
-            Wyświetl wszystkich
-          </button>
+          <button v-if="filteredMembers.length > 5" class="w-full mt-4 bg-theme-bg-tertiary dark:bg-[#3A3B3C] hover:bg-theme-hover-strong dark:hover:bg-[#4E4F50] text-theme-text dark:text-[#E4E6EB] font-semibold py-2 rounded-md text-[15px] transition">{{ $t('groups.wyswietlWszystkich') }}</button>
         </section>
 
       </div>

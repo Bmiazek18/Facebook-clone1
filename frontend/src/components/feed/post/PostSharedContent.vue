@@ -31,13 +31,13 @@
 
     <div class="absolute top-4 left-4 flex items-center gap-3 z-20 pointer-events-none">
       <div class="w-10 h-10 rounded-full border-2 border-white/20 overflow-hidden bg-gray-300">
-        <img :src="reelAuthor?.avatar" alt="Avatar" class="w-full h-full object-cover" />
+        <img :src="reelAuthor?.avatar" :alt="$t('chat.avatar')" class="w-full h-full object-cover" />
       </div>
 
       <div class="flex flex-col text-white drop-shadow-md">
         <span class="font-bold text-sm leading-tight flex items-center gap-1">
           {{ reelAuthor?.name }}
-          <span class="text-gray-300 font-normal text-xs opacity-90">• Obserwuj</span>
+          <span class="text-gray-300 font-normal text-xs opacity-90">{{ $t('feed.obserwuj') }}</span>
         </span>
         <div class="flex items-center gap-1 text-xs text-gray-200 opacity-80 mt-0.5">
           <Earth :size="12" class="text-gray-200" />
@@ -88,7 +88,7 @@
       <img
         v-if="sharedEvent.images && sharedEvent.images[0]"
         :src="sharedEvent.images[0]"
-        alt="Event cover"
+        :alt="$t('feed.eventCover')"
         class="w-full h-full object-cover"
       />
     </div>

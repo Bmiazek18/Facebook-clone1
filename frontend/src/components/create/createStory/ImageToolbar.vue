@@ -62,9 +62,7 @@ const updateScale = (e: Event) => {
         @click="emit('rotate')"
         class="flex items-center gap-2 bg-gray-200 text-black hover:bg-gray-300 px-5 py-3 rounded-xl transition font-semibold text-sm shadow-md shrink-0"
       >
-        <RotateRight :size="20" />
-        Obróć
-      </button>
+        <RotateRight :size="20" />{{ $t('create.obroc') }}</button>
     </div>
   </div>
 </template>

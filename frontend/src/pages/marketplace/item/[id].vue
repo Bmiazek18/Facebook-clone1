@@ -200,7 +200,7 @@ const openSellerModal = () => {
       <button
         @click="goBack"
         class="absolute top-4 left-4 p-2 text-white rounded-full hover:bg-theme-bg-secondary/10 z-[60] bg-black/30 backdrop-blur-sm transition-colors"
-        aria-label="Zamknij"
+        :aria-label="$t('common.close')"
       >
         <Close :size="24" fillColor="#FFFFFF" />
       </button>
@@ -250,9 +250,7 @@ const openSellerModal = () => {
               <div class="text-xl font-bold text-theme-text mb-1">
                 {{ currentItem?.price }}
               </div>
-              <div class="text-[13px] text-theme-text-secondary mb-4">
-                Opublikowano {{ currentItem?.postedDate }} w: {{ currentItem?.location }}
-              </div>
+              <div class="text-[13px] text-theme-text-secondary mb-4">{{ $t('marketplace.opublikowanoCurrentitemPosteddateW') }}</div>
 
               <!-- Przyciski akcji (Wiadomość, Zakładka, Udostępnij, Opcje) -->
               <div class="flex items-center gap-2 mb-6">
@@ -260,9 +258,7 @@ const openSellerModal = () => {
                   @click="isMessageModalOpen = true"
                   class="flex-1 flex items-center justify-center gap-2 bg-theme-bg-tertiary hover:bg-theme-hover-strong text-theme-text font-semibold py-2.5 px-4 rounded-lg transition-colors text-[15px]"
                 >
-                  <FacebookMessenger :size="20" />
-                  Wyślij wiadomość
-                </button>
+                  <FacebookMessenger :size="20" />{{ $t('profile.sendMessage') }}</button>
                 <button class="bg-theme-bg-tertiary hover:bg-theme-hover-strong p-2.5 rounded-lg text-theme-text transition-colors">
                   <Bookmark :size="20" />
                 </button>
@@ -279,11 +275,11 @@ const openSellerModal = () => {
 
               <!-- Informacje o pojeździe (Grid 2 kolumny) -->
               <div class="mb-6" v-if="currentItem?.category === 'Pojazdy'">
-                <h2 class="text-lg font-bold text-theme-text mb-3">Informacje o pojeździe</h2>
+                <h2 class="text-lg font-bold text-theme-text mb-3">{{ $t('marketplace.informacjeOPojezdzie') }}</h2>
                 <div class="grid grid-cols-2 gap-y-3 gap-x-4 text-theme-text">
                   <div class="flex items-start gap-2.5">
                     <Speedometer :size="20" class="text-theme-text-secondary shrink-0 mt-0.5" />
-                    <span class="text-[14px]">Przebieg {{ currentItem?.details?.mileage }}</span>
+                    <span class="text-[14px]">{{ $t('marketplace.przebiegCurrentitemDetailsMileage') }}</span>
                   </div>
                   <div class="flex items-start gap-2.5">
                     <CarShiftPattern :size="20" class="text-theme-text-secondary shrink-0 mt-0.5" />
@@ -291,62 +287,60 @@ const openSellerModal = () => {
                   </div>
                   <div class="flex items-start gap-2.5">
                     <Palette :size="20" class="text-theme-text-secondary shrink-0 mt-0.5" />
-                    <span class="text-[14px]">Kolor karoserii: {{ currentItem?.details?.color }}</span>
+                    <span class="text-[14px]">{{ $t('marketplace.kolorKaroseriiCurrentitemDetails') }}</span>
                   </div>
                   <div class="flex items-start gap-2.5">
                     <Fuel :size="20" class="text-theme-text-secondary shrink-0 mt-0.5" />
-                    <span class="text-[14px]">Typ paliwa: {{ currentItem?.details?.fuel }}</span>
+                    <span class="text-[14px]">{{ $t('marketplace.typPaliwaCurrentitemDetails') }}</span>
                   </div>
                 </div>
-                <button class="text-[#0064D1] font-semibold text-[15px] hover:underline mt-3 block">
-                  Zobacz więcej
-                </button>
+                <button class="text-[#0064D1] font-semibold text-[15px] hover:underline mt-3 block">{{ $t('groups.seeMore') }}</button>
               </div>
 
               <hr class="border-theme-border my-4" />
 
               <!-- SEKCJA SPONSOROWANE -->
               <div class="mb-6">
-                <h2 class="text-lg font-bold text-theme-text mb-3">Sponsorowane</h2>
+                <h2 class="text-lg font-bold text-theme-text mb-3">{{ $t('home.sponsorowane') }}</h2>
                 <div class="grid grid-cols-3 gap-2">
                   <!-- Karta 1 -->
                   <div class="flex flex-col cursor-pointer group">
                     <div class="w-full aspect-square rounded-lg overflow-hidden bg-theme-bg-tertiary relative mb-1.5 border border-theme-border">
-                      <img src="https://picsum.photos/seed/ad1/300/300" alt="Ad" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      <img src="https://picsum.photos/seed/ad1/300/300" :alt="$t('marketplace.ad')" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                       <div class="absolute top-2 left-2 bg-theme-bg-secondary/90 rounded-full p-1 shadow-sm">
-                        <span class="text-[10px] font-bold text-orange-600 px-1">allegro</span>
+                        <span class="text-[10px] font-bold text-orange-600 px-1">{{ $t('marketplace.allegro') }}</span>
                       </div>
                     </div>
                     <div class="flex justify-between items-start">
-                      <span class="text-[13px] font-bold text-theme-text truncate">Allegro</span>
+                      <span class="text-[13px] font-bold text-theme-text truncate">{{ $t('marketplace.allegro2') }}</span>
                       <button class="text-theme-text-secondary hover:text-theme-text-secondary"><DotsHorizontal :size="16" /></button>
                     </div>
-                    <span class="text-[12px] text-theme-text-secondary">Sprawdź!</span>
+                    <span class="text-[12px] text-theme-text-secondary">{{ $t('marketplace.sprawdz') }}</span>
                   </div>
                   <!-- Karta 2 -->
                   <div class="flex flex-col cursor-pointer group">
                     <div class="w-full aspect-square rounded-lg overflow-hidden bg-theme-bg-tertiary relative mb-1.5 border border-theme-border flex items-center justify-center">
-                      <img src="https://picsum.photos/seed/ad2/300/300" alt="Ad" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      <img src="https://picsum.photos/seed/ad2/300/300" :alt="$t('marketplace.ad')" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                       <div class="absolute inset-0 flex items-center justify-center bg-black/20">
                         <PlayCircle :size="36" fillColor="#FFFFFF" />
                       </div>
                     </div>
                     <div class="flex justify-between items-start">
-                      <span class="text-[13px] font-bold text-theme-text truncate">Loopy's World Gd...</span>
+                      <span class="text-[13px] font-bold text-theme-text truncate">{{ $t('marketplace.loopySWorldGd') }}</span>
                       <button class="text-theme-text-secondary hover:text-theme-text-secondary"><DotsHorizontal :size="16" /></button>
                     </div>
-                    <span class="text-[12px] text-theme-text-secondary truncate">Morze frajdy w Loopy's World</span>
+                    <span class="text-[12px] text-theme-text-secondary truncate">{{ $t('marketplace.morzeFrajdyWLoopy') }}</span>
                   </div>
                   <!-- Karta 3 -->
                   <div class="flex flex-col cursor-pointer group">
                     <div class="w-full aspect-square rounded-lg overflow-hidden bg-theme-bg-tertiary relative mb-1.5 border border-theme-border">
-                      <img src="https://picsum.photos/seed/ad3/300/300" alt="Ad" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      <img src="https://picsum.photos/seed/ad3/300/300" :alt="$t('marketplace.ad')" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                     </div>
                     <div class="flex justify-between items-start">
-                      <span class="text-[13px] font-bold text-theme-text truncate">Muller PL</span>
+                      <span class="text-[13px] font-bold text-theme-text truncate">{{ $t('marketplace.mullerPl') }}</span>
                       <button class="text-theme-text-secondary hover:text-theme-text-secondary"><DotsHorizontal :size="16" /></button>
                     </div>
-                    <span class="text-[12px] text-theme-text-secondary">Sprawdź!</span>
+                    <span class="text-[12px] text-theme-text-secondary">{{ $t('marketplace.sprawdz') }}</span>
                   </div>
                 </div>
               </div>
@@ -355,14 +349,12 @@ const openSellerModal = () => {
 
               <!-- OPIS SPRZEDAWCY -->
               <div class="mb-6">
-                <h2 class="text-lg font-bold text-theme-text mb-3">Opis sprzedawcy</h2>
+                <h2 class="text-lg font-bold text-theme-text mb-3">{{ $t('marketplace.opisSprzedawcy') }}</h2>
                 <div class="text-[15px] text-theme-text leading-relaxed whitespace-pre-wrap break-words">
                   <template v-if="isDescriptionExpanded || (currentItem?.description?.length || 0) <= 250">
                     {{ currentItem?.description }}
                   </template>
-                  <template v-else>
-                    {{ currentItem?.description?.substring(0, 250) }}...
-                  </template>
+                  <template v-else>{{ $t('marketplace.currentitemDescriptionSubstring0') }}</template>
                 </div>
                 <button
                   @click="isDescriptionExpanded = !isDescriptionExpanded"
@@ -379,24 +371,22 @@ const openSellerModal = () => {
                   class="rounded-lg overflow-hidden h-32 w-full relative bg-theme-bg-tertiary mb-2 border border-theme-border z-0"
                 ></div>
                 <div class="text-[14px] text-theme-text font-medium">{{ currentItem?.location }}</div>
-                <div class="text-xs text-theme-text-secondary">Lokacja jest przybliżona</div>
+                <div class="text-xs text-theme-text-secondary">{{ $t('marketplace.lokacjaJestPrzyblizona') }}</div>
               </div>
 
               <hr class="border-theme-border my-4" />
 
               <!-- INFORMACJE O SPRZEDAWCY -->
               <div class="flex justify-between items-baseline mb-4">
-                <h2 class="text-lg font-bold text-theme-text">Informacje o sprzedawcy</h2>
-                <button @click="openSellerModal" class="text-[#0064D1] font-semibold text-[15px] hover:underline">
-                  Informacje o sprzedawcy
-                </button>
+                <h2 class="text-lg font-bold text-theme-text">{{ $t('marketplace.informacjeOSprzedawcy') }}</h2>
+                <button @click="openSellerModal" class="text-[#0064D1] font-semibold text-[15px] hover:underline">{{ $t('marketplace.informacjeOSprzedawcy') }}</button>
               </div>
 
               <div @click="openSellerModal" class="flex items-center gap-3 mb-3 cursor-pointer">
                 <img
                   class="rounded-full w-12 h-12 object-cover bg-theme-bg-tertiary"
                   :src="currentItem?.seller?.avatar"
-                  alt="Seller avatar"
+                  :alt="$t('marketplace.sellerAvatar')"
                 />
                 <div class="flex flex-col justify-center">
                   <div class="font-bold text-[17px] text-theme-text hover:underline">
@@ -409,9 +399,7 @@ const openSellerModal = () => {
                 <div class="w-6 h-6 rounded-full bg-theme-bg-tertiary flex items-center justify-center shrink-0">
                   <Facebook :size="14" class="text-theme-text" />
                 </div>
-                <div class="text-[15px] text-theme-text">
-                  Użytkownik Facebooka od {{ currentItem?.seller?.memberSince }}
-                </div>
+                <div class="text-[15px] text-theme-text">{{ $t('marketplace.uzytkownikFacebookaOdCurrentitem') }}</div>
               </div>
 
               <!-- PRZYCISK GŁÓWNY NA DOLE -->
@@ -419,13 +407,10 @@ const openSellerModal = () => {
                 @click="isMessageModalOpen = true"
                 class="w-full bg-[#0064D1] hover:bg-[#0052ad] text-white font-bold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 h-11 text-[16px] shadow-sm"
               >
-                <FacebookMessenger :size="20" fillColor="#FFFFFF" />
-                Wyślij wiadomość do sprzedawcy
-              </button>
+                <FacebookMessenger :size="20" fillColor="#FFFFFF" />{{ $t('marketplace.wyslijWiadomoscDoSprzedawcy') }}</button>
 
               <div class="text-center mt-4 text-[12px] text-theme-text-secondary leading-relaxed px-2">
-                <a href="#" class="text-[#0064D1] hover:underline font-semibold">Dowiedz się więcej</a> about purchasing from consumers, including your limited consumer rights and Facebook's role as an intermediary.
-              </div>
+                <a href="#" class="text-[#0064D1] hover:underline font-semibold">{{ $t('auth.register.learnMore') }}</a>{{ $t('marketplace.aboutPurchasingFromConsumers') }}</div>
             </div>
           </HoverScrollbar>
         </div>
@@ -437,7 +422,7 @@ const openSellerModal = () => {
       <SellerModal :profile="currentItem?.seller" @close="isSellerModalOpen = false" />
     </BaseModal>
 
-    <BaseModal v-if="isShareModalOpen" @close="isShareModalOpen = false" title="Udostępnij">
+    <BaseModal v-if="isShareModalOpen" @close="isShareModalOpen = false" :title="$t('sharePost.shareButton')">
       <StoryShareModal :marketplaceItem="currentItem" @close="handleShareComplete" />
     </BaseModal>
 
@@ -461,15 +446,13 @@ const openSellerModal = () => {
               {{ reply }}
             </button>
           </div>
-          <CustomTextarea v-model="messageText" label="Wpisz wiadomość do sprzedawcy" />
-          <p class="text-[13px] text-theme-text-secondary mt-3">Nie udostępniaj adresu e-mail, numeru telefonu ani informacji finansowych.</p>
+          <CustomTextarea v-model="messageText" :label="$t('marketplace.wpiszWiadomoscDoSprzedawcy')" />
+          <p class="text-[13px] text-theme-text-secondary mt-3">{{ $t('marketplace.nieUdostepniajAdresuE') }}</p>
         </div>
         <div class="p-4 border-t border-theme-border flex justify-end items-center gap-4">
-          <button @click="isMessageModalOpen = false" class="text-[#0064D1] font-semibold hover:underline px-4 py-2">Anuluj</button>
+          <button @click="isMessageModalOpen = false" class="text-[#0064D1] font-semibold hover:underline px-4 py-2">{{ $t('common.cancel') }}</button>
           <button @click="handleSendMessage" class="bg-[#0084ff] hover:bg-[#0070d6] text-white font-semibold py-2 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors">
-            <FacebookMessenger :size="20" fillColor="#FFFFFF" />
-            Wyślij wiadomość
-          </button>
+            <FacebookMessenger :size="20" fillColor="#FFFFFF" />{{ $t('profile.sendMessage') }}</button>
         </div>
       </div>
     </BaseModal>

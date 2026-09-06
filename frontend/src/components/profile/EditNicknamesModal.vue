@@ -1,5 +1,5 @@
 <template>
-  <BaseModal title="Nicki" @close="emit('close')">
+  <BaseModal :title="$t('profile.nicki')" @close="emit('close')">
     <div class="p-2 w-[550px] flex flex-col space-y-1">
       <div
         v-for="user in participants"
@@ -22,7 +22,7 @@
               @keyup.enter="saveNickname(user)"
               @keyup.esc="cancelEditing"
               class="w-full bg-[#f0f2f5] dark:bg-theme-bg text-theme-text font-medium px-4 py-2.5 rounded-full text-[15px] outline-none border border-transparent focus:border-theme-border transition"
-              placeholder="Wpisz nick..."
+              :placeholder="$t('profile.wpiszNick')"
             />
           </div>
 
@@ -44,7 +44,7 @@
             v-if="editingUserId === user.id"
             @click="saveNickname(user)"
             class="p-2 text-theme-text hover:bg-theme-bg rounded-full transition flex items-center justify-center active:scale-95"
-            title="Zapisz"
+            :title="$t('createLive.save')"
           >
             <CheckIcon :size="24" class="text-black dark:text-white" />
           </button>
@@ -54,7 +54,7 @@
             v-else
             @click="startEditing(user)"
             class="p-2 text-theme-text hover:bg-theme-bg rounded-full transition flex items-center justify-center"
-            title="Edytuj nick"
+            :title="$t('profile.edytujNick')"
           >
             <PencilIcon :size="20" />
           </button>

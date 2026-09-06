@@ -641,7 +641,7 @@ const goBack = () => emit('back')
       class="absolute inset-0 bg-black/90 flex items-center justify-center z-50"
     >
       <div class="bg-theme-bg-secondary rounded-lg p-8 max-w-md w-full mx-4 text-center">
-        <h3 class="text-xl font-semibold text-theme-text mb-4">Przetwarzanie Story...</h3>
+        <h3 class="text-xl font-semibold text-theme-text mb-4">{{ $t('create.przetwarzanieStory') }}</h3>
         <div class="w-full bg-theme-border rounded-full h-2.5">
           <div
             class="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
@@ -672,7 +672,7 @@ const goBack = () => emit('back')
         class="bg-theme-bg-secondary rounded-xl shadow-sm border border-theme-border p-4 w-full h-full max-w-[1000px] flex flex-col relative"
       >
         <div class="flex justify-between items-center mb-2 px-1">
-          <span class="text-sm font-semibold text-theme-text-secondary">Podgląd</span>
+          <span class="text-sm font-semibold text-theme-text-secondary">{{ $t('chat.podglad') }}</span>
         </div>
 
         <!-- MIEJSCE ROBOCZE -->

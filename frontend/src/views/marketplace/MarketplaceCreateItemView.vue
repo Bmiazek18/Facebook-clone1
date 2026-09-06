@@ -191,26 +191,24 @@ const lightboxMedia = computed(() =>
       <AppCloseHeader class="shadow-sm pb-2" />
       <div class="px-4 pt-4 pb-2 flex-shrink-0">
         <div class="flex justify-between items-start mb-1">
-          <span class="text-[13px] text-theme-text-secondary font-normal">Marketplace</span>
-          <button class="text-[15px] text-theme-primary font-semibold hover:underline">
-            Zapisz wersję roboczą
-          </button>
+          <span class="text-[13px] text-theme-text-secondary font-normal">{{ $t('login.marketplace') }}</span>
+          <button class="text-[15px] text-theme-primary font-semibold hover:underline">{{ $t('marketplace.zapiszWersjeRobocza') }}</button>
         </div>
-        <h1 class="text-2xl font-bold leading-tight mb-4">Przedmiot na sprzedaż</h1>
+        <h1 class="text-2xl font-bold leading-tight mb-4">{{ $t('marketplace.przedmiotNaSprzedaz') }}</h1>
 
         <div class="flex items-center gap-3 mb-4">
           <img
             :src="auth.currentUser?.avatar"
-            alt="Avatar"
+            :alt="$t('chat.avatar')"
             class="w-10 h-10 rounded-full border border-gray-100"
           />
           <div>
             <p class="font-bold text-[15px] text-theme-text">{{ auth.currentUser?.name }}</p>
             <div class="flex items-center gap-1 text-[13px] text-theme-text-secondary">
-              <span>Ogłaszanie w Marketplace</span>
+              <span>{{ $t('marketplace.oglaszanieWMarketplace') }}</span>
               <span>·</span>
               <EarthIcon :size="12" />
-              <span>Publiczne</span>
+              <span>{{ $t('postFilter.privacyPublic') }}</span>
             </div>
           </div>
         </div>
@@ -223,12 +221,9 @@ const lightboxMedia = computed(() =>
           class="group transition duration-200"
         >
           <div class="flex items-center gap-1 mb-3">
-            <span class="font-medium text-gray-700 text-[12px]">
-              Zdjęcia · <span class="text-gray-900">{{ uploadedImages.length }} / 10</span>
+            <span class="font-medium text-gray-700 text-[12px]">{{ $t('marketplace.zdjecia') }}<span class="text-gray-900">{{ $t('marketplace.uploadedimagesLength10') }}</span>
             </span>
-            <span class="text-[12px] text-gray-500 font-normal">
-              — Możesz dodać maksymalnie 10 zdjęć
-            </span>
+            <span class="text-[12px] text-gray-500 font-normal">{{ $t('marketplace.mozeszDodacMaksymalnie10') }}</span>
           </div>
 
           <div
@@ -263,8 +258,8 @@ const lightboxMedia = computed(() =>
               </div>
 
               <div class="text-center">
-                <h3 class="text-[18px] font-bold text-gray-900 leading-tight">Dodaj zdjęcia</h3>
-                <p class="text-[16px] text-gray-500 font-normal">lub przeciągnij i upuść</p>
+                <h3 class="text-[18px] font-bold text-gray-900 leading-tight">{{ $t('marketplace.dodajZdjecia') }}</h3>
+                <p class="text-[16px] text-gray-500 font-normal">{{ $t('pages.lubPrzeciagnijIUpusc') }}</p>
               </div>
 
               <input
@@ -283,32 +278,26 @@ const lightboxMedia = computed(() =>
           <div class="flex items-center gap-3">
             <CellphoneIcon :size="24" class="text-gray-800" />
             <div>
-              <p class="text-[13px] font-semibold leading-tight mb-0.5">
-                Dodaj zdjęcia bezpośrednio z telefonu.
-              </p>
+              <p class="text-[13px] font-semibold leading-tight mb-0.5">{{ $t('marketplace.dodajZdjeciaBezposrednioZ') }}</p>
               <a href="#" class="text-[13px] text-theme-primary hover:underline"
-                >Dowiedz się więcej</a
+                >{{ $t('auth.register.learnMore') }}</a
               >
             </div>
           </div>
           <button
             class="bg-theme-hover-strong hover:bg-[#cdd0d5] text-theme-text text-[13px] font-semibold px-3 py-1.5 rounded-md transition"
-          >
-            Wypróbuj
-          </button>
+          >{{ $t('marketplace.wyprobuj') }}</button>
         </div>
 
         <div class="space-y-3">
           <div class="mb-1">
-            <h3 class="font-bold text-[17px]">Wymagane</h3>
-            <p class="text-[13px] text-theme-text-secondary">
-              Opis powinien być jak najbardziej szczegółowy.
-            </p>
+            <h3 class="font-bold text-[17px]">{{ $t('profile.wymagane') }}</h3>
+            <p class="text-[13px] text-theme-text-secondary">{{ $t('marketplace.opisPowinienBycJak') }}</p>
           </div>
 
           <CustomInput
             id="title"
-            label="Tytuł"
+            :label="$t('groups.tytul')"
             v-model="form.title"
             @focus="focusedField = 'title'"
             @blur="focusedField = null"
@@ -316,7 +305,7 @@ const lightboxMedia = computed(() =>
 
           <CustomInput
             id="price"
-            label="Cena"
+            :label="$t('marketplace.cena')"
             v-model="form.price"
             @focus="focusedField = 'price'"
             @blur="focusedField = null"
@@ -325,7 +314,7 @@ const lightboxMedia = computed(() =>
           <CustomDropdown
             v-model="form.category"
             :options="categories"
-            label="Kategoria"
+            :label="$t('marketplace.kategoria')"
             @focus="focusedField = 'category'"
             @blur="focusedField = null"
           />
@@ -333,7 +322,7 @@ const lightboxMedia = computed(() =>
           <CustomDropdown
             v-model="form.condition"
             :options="conditions"
-            label="Stan"
+            :label="$t('marketplace.stan')"
             @focus="focusedField = 'condition'"
             @blur="focusedField = null"
           />
@@ -344,10 +333,8 @@ const lightboxMedia = computed(() =>
               class="flex justify-between items-center cursor-pointer"
             >
               <div>
-                <h3 class="font-bold text-[17px]">Więcej informacji</h3>
-                <p class="text-[13px] text-theme-text-secondary mt-0.5 max-w-[280px]">
-                  Wzbudź większe zainteresowanie, podając więcej szczegółów informacji.
-                </p>
+                <h3 class="font-bold text-[17px]">{{ $t('marketplace.wiecejInformacji') }}</h3>
+                <p class="text-[13px] text-theme-text-secondary mt-0.5 max-w-[280px]">{{ $t('marketplace.wzbudzWiekszeZainteresowaniePodajac') }}</p>
               </div>
               <div
                 class="p-2 bg-theme-bg-subtle rounded-full transition-transform"
@@ -360,7 +347,7 @@ const lightboxMedia = computed(() =>
             <CustomTextarea
               v-if="showMoreInfo"
               id="description"
-              label="Opis"
+              :label="$t('createLive.description')"
               v-model="form.description"
               @focus="focusedField = 'description'"
               @blur="focusedField = null"
@@ -374,11 +361,8 @@ const lightboxMedia = computed(() =>
               <div class="flex gap-3">
                 <div class="mt-0.5"><RocketLaunchIcon :size="24" class="text-gray-800" /></div>
                 <div class="max-w-[220px]">
-                  <h4 class="font-semibold text-[15px]">Promuj ogłoszenie po opublikowaniu</h4>
-                  <p class="text-[12px] text-theme-text-secondary mt-0.5 leading-snug">
-                    Dodaj krok w celu promowania ogłoszenia po jego opublikowaniu, aby dotrzeć do
-                    większej liczby...
-                  </p>
+                  <h4 class="font-semibold text-[15px]">{{ $t('marketplace.promujOgloszeniePoOpublikowaniu') }}</h4>
+                  <p class="text-[12px] text-theme-text-secondary mt-0.5 leading-snug">{{ $t('marketplace.dodajKrokWCelu') }}</p>
                 </div>
               </div>
               <div class="w-12 h-7 bg-theme-border rounded-full relative cursor-pointer">
@@ -390,10 +374,8 @@ const lightboxMedia = computed(() =>
               <div class="flex gap-3 items-center">
                 <div><LockIcon :size="24" class="text-gray-800" /></div>
                 <div>
-                  <h4 class="font-semibold text-[15px]">Ukryj przed znajomymi</h4>
-                  <p class="text-[12px] text-theme-text-secondary mt-0.5">
-                    To ogłoszenie jest nadal publiczne.
-                  </p>
+                  <h4 class="font-semibold text-[15px]">{{ $t('marketplace.ukryjPrzedZnajomymi') }}</h4>
+                  <p class="text-[12px] text-theme-text-secondary mt-0.5">{{ $t('marketplace.toOgloszenieJestNadal') }}</p>
                 </div>
               </div>
               <div class="w-12 h-7 bg-theme-border rounded-full relative cursor-pointer">
@@ -422,8 +404,8 @@ const lightboxMedia = computed(() =>
           "
           :disabled="!form.title || isPublishing"
         >
-          <span v-if="isPublishing">Publikowanie...</span>
-          <span v-else>Opublikuj</span>
+          <span v-if="isPublishing">{{ $t('post.publishing') }}</span>
+          <span v-else>{{ $t('post.publish') }}</span>
         </button>
       </div>
     </aside>
@@ -432,7 +414,7 @@ const lightboxMedia = computed(() =>
       class="flex-1 flex flex-col items-center justify-center p-8 relative overflow-hidden bg-theme-bg"
     >
       <div class="w-full h-[90vh] max-w-[980px] z-10 flex flex-col items-center">
-        <h2 class="text-[17px] font-semibold mb-3 text-theme-text w-full text-left">Podgląd</h2>
+        <h2 class="text-[17px] font-semibold mb-3 text-theme-text w-full text-left">{{ $t('chat.podglad') }}</h2>
 
         <div
           class="bg-theme-bg-secondary rounded-lg shadow-sm border border-theme-border w-full h-full flex overflow-hidden"
@@ -457,13 +439,8 @@ const lightboxMedia = computed(() =>
             />
 
             <div v-else class="max-w-[260px] select-none">
-              <h3 class="text-[17px] font-bold text-theme-text-secondary mb-2">
-                Podgląd Twojego ogłoszenia
-              </h3>
-              <p class="text-[13px] text-theme-text-secondary leading-[1.3]">
-                Tworząc ogłoszenie, możesz wyświetlić jego podgląd i sprawdzić, jak będzie wyglądać
-                dla innych użytkowników w Marketplace.
-              </p>
+              <h3 class="text-[17px] font-bold text-theme-text-secondary mb-2">{{ $t('marketplace.podgladTwojegoOgloszenia') }}</h3>
+              <p class="text-[13px] text-theme-text-secondary leading-[1.3]">{{ $t('marketplace.tworzacOgloszenieMozeszWyswietlic') }}</p>
             </div>
           </div>
 
@@ -486,9 +463,7 @@ const lightboxMedia = computed(() =>
                   <p class="text-[17px] text-theme-text">
                     {{ form.price ? form.price + ' zł' : 'Cena' }}
                   </p>
-                  <p class="text-xs text-theme-text-secondary mt-1">
-                    Opublikowano kilka sekund temu w:
-                    <span class="font-semibold">Łęczyca (Gmina)</span>
+                  <p class="text-xs text-theme-text-secondary mt-1">{{ $t('marketplace.opublikowanoKilkaSekundTemu') }}<span class="font-semibold">{{ $t('marketplace.leczycaGmina') }}</span>
                   </p>
                 </div>
               </div>
@@ -497,13 +472,13 @@ const lightboxMedia = computed(() =>
                 class="transition-all duration-300 rounded-lg py-2"
                 :class="getHighlightClass('details')"
               >
-                <h3 class="text-[17px] font-bold mb-3 text-theme-text">Szczegóły</h3>
+                <h3 class="text-[17px] font-bold mb-3 text-theme-text">{{ $t('marketplace.szczegoly') }}</h3>
                 <div class="flex justify-between text-[15px] py-1">
-                  <span class="text-theme-text-secondary">Stan</span>
+                  <span class="text-theme-text-secondary">{{ $t('marketplace.stan') }}</span>
                   <span class="text-theme-text">{{ form.condition || '–' }}</span>
                 </div>
                 <div class="flex justify-between text-[15px] py-1">
-                  <span class="text-theme-text-secondary">Kategoria</span>
+                  <span class="text-theme-text-secondary">{{ $t('marketplace.kategoria') }}</span>
                   <span class="text-theme-text">{{ form.category || '–' }}</span>
                 </div>
               </div>
@@ -526,22 +501,20 @@ const lightboxMedia = computed(() =>
                 :class="focusedField ? 'opacity-30 blur-[1px]' : 'opacity-100'"
               >
                 <div class="flex justify-between items-center mb-4">
-                  <h3 class="text-[17px] font-bold text-theme-text">Informacje o sprzedawcy</h3>
+                  <h3 class="text-[17px] font-bold text-theme-text">{{ $t('marketplace.informacjeOSprzedawcy') }}</h3>
                   <a href="#" class="text-[15px] text-theme-primary font-semibold hover:underline"
-                    >Szczegóły</a
+                    >{{ $t('marketplace.szczegoly') }}</a
                   >
                 </div>
                 <div @click="openSellerModal" class="flex items-center gap-3 cursor-pointer">
                   <img
                     src="https://i.pravatar.cc/150?img=12"
-                    alt="Avatar"
+                    :alt="$t('chat.avatar')"
                     class="w-10 h-10 rounded-full border border-gray-200"
                   />
                   <div>
-                    <p class="font-semibold text-[15px] text-theme-text">Bartosz Miazek</p>
-                    <p class="text-[13px] text-theme-text-secondary">
-                      Dołączył(a) do Facebooka w 2015
-                    </p>
+                    <p class="font-semibold text-[15px] text-theme-text">{{ $t('marketplace.bartoszMiazek') }}</p>
+                    <p class="text-[13px] text-theme-text-secondary">{{ $t('marketplace.dolaczylADoFacebooka') }}</p>
                   </div>
                 </div>
               </div>
@@ -551,13 +524,9 @@ const lightboxMedia = computed(() =>
               <button
                 disabled
                 class="w-full bg-theme-bg-subtle text-theme-text-secondary font-bold py-2 rounded-md mb-3 cursor-not-allowed select-none transition-colors"
-              >
-                Wyślij wiadomość
-              </button>
+              >{{ $t('profile.sendMessage') }}</button>
               <p class="text-[11px] text-theme-text-secondary text-center leading-[1.2] px-1">
-                <a href="#" class="text-theme-primary hover:underline">Dowiedz się więcej</a> about
-                purchasing from consumers.
-              </p>
+                <a href="#" class="text-theme-primary hover:underline">{{ $t('auth.register.learnMore') }}</a>{{ $t('marketplace.aboutPurchasingFromConsumers2') }}</p>
             </div>
           </div>
         </div>

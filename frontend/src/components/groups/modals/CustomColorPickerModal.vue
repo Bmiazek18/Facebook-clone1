@@ -73,9 +73,7 @@ const handleAddColor = () => {
 
         <!-- Prawa strona: Instrukcja i Input HEX -->
         <div class="w-full sm:w-56 flex flex-col justify-start">
-          <p class="text-[14px] text-[#65676b] dark:text-[#b0b3b8] leading-snug mb-2">
-            Ustaw niestandardowy kolor szesnastkowy.
-          </p>
+          <p class="text-[14px] text-[#65676b] dark:text-[#b0b3b8] leading-snug mb-2">{{ $t('groups.ustawNiestandardowyKolorSzesnastkowy') }}</p>
 
           <!-- Input dla kodu HEX -->
           <div class="relative border border-gray-300 dark:border-[#525355] rounded-xl px-3 py-3 focus-within:border-[#1877f2] dark:focus-within:border-[#4599ff] focus-within:ring-1 focus-within:ring-[#1877f2] dark:focus-within:ring-[#4599ff] transition-all">
@@ -83,7 +81,7 @@ const handleAddColor = () => {
               v-model="hexInput"
               @input="handleHexInput"
               type="text"
-              placeholder="Kod szesnastkowy"
+              :placeholder="$t('groups.kodSzesnastkowy')"
               maxlength="7"
               class="w-full bg-transparent text-[15px] text-[#050505] dark:text-[#e4e6eb] placeholder-[#8c939d] dark:placeholder-[#808285] font-normal focus:outline-none"
             />
@@ -99,9 +97,7 @@ const handleAddColor = () => {
         type="button"
         @click="emit('close')"
         class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-[#e7f3ff]/50 dark:hover:bg-[#3a3b3c] transition-colors cursor-pointer"
-      >
-        Anuluj
-      </button>
+      >{{ $t('common.cancel') }}</button>
 
       <button
         type="button"
@@ -113,9 +109,7 @@ const handleAddColor = () => {
             ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
             : 'bg-[#e4e6eb] dark:bg-[#3a3b3c] text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
         ]"
-      >
-        Dodaj kolor
-      </button>
+      >{{ $t('groups.dodajKolor') }}</button>
     </div>
 
   </div>

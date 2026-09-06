@@ -86,11 +86,8 @@ const saveSelection = () => {
   <div class="flex flex-col h-full w-full select-none bg-white   text-[#050505]">
     <!-- SEKCJA INFORMACYJNA I WYSZUKIWARKA -->
     <div class="px-4 pt-3 pb-3 border-b border-gray-200">
-      <p class="text-[#65676b] text-[14px] mb-3 leading-snug">
-        Zmiany dotyczą wszystkich materiałów udostępnionych bliskim znajomym na Facebooku i w
-        Messengerze.
-        <a href="#" class="text-[#1877f2] font-semibold hover:underline cursor-pointer"
-          >Dowiedz się więcej</a
+      <p class="text-[#65676b] text-[14px] mb-3 leading-snug">{{ $t('common.zmianyDotyczaWszystkichMaterialow') }}<a href="#" class="text-[#1877f2] font-semibold hover:underline cursor-pointer"
+          >{{ $t('auth.register.learnMore') }}</a
         >
       </p>
 
@@ -103,7 +100,7 @@ const saveSelection = () => {
           @focus="isInputFocused = true"
           @blur="isInputFocused = false"
           type="text"
-          placeholder="Szukaj znajomych"
+          :placeholder="$t('common.szukajZnajomych')"
           class="w-full bg-[#f0f2f5] text-[#050505] placeholder-[#65676b] rounded-full py-2 pl-10 pr-4 focus:outline-none text-[15px]"
         />
       </div>
@@ -117,16 +114,12 @@ const saveSelection = () => {
         class="px-4 py-4 border-b border-gray-200"
       >
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-[17px] font-bold text-[#050505]">
-            Proponowani znajomi ({{ selectedUsers.length }})
-          </h3>
+          <h3 class="text-[17px] font-bold text-[#050505]">{{ $t('common.proponowaniZnajomiSelectedusersLength') }}</h3>
           <button
             type="button"
             @click="removeAll"
             class="text-[15px] text-[#1877f2] hover:underline font-normal cursor-pointer"
-          >
-            Usuń wszystkich
-          </button>
+          >{{ $t('common.usunWszystkich') }}</button>
         </div>
 
         <div class="relative group">
@@ -187,7 +180,7 @@ const saveSelection = () => {
 
       <!-- PIONOWA LISTA WSZYSTKICH ZNAJOMYCH -->
       <div class="px-2 py-4">
-        <h3 class="text-[17px] font-bold text-[#050505] px-2 mb-2">Wszyscy znajomi</h3>
+        <h3 class="text-[17px] font-bold text-[#050505] px-2 mb-2">{{ $t('friends.allFriends') }}</h3>
         <div class="flex flex-col">
           <div
             v-for="user in filteredUsers"
@@ -226,9 +219,7 @@ const saveSelection = () => {
         type="button"
         class="w-full py-2.5 bg-[#1877f2] hover:bg-[#166fe5] active:scale-[0.99] text-white font-semibold text-[15px] rounded-lg transition-all shadow-sm flex items-center justify-center cursor-pointer"
         @click="saveSelection"
-      >
-        Zapisz
-      </button>
+      >{{ $t('createLive.save') }}</button>
     </div>
   </div>
 </template>

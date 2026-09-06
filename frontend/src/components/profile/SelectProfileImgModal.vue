@@ -19,9 +19,7 @@
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          Dodaj zdjęcie
-        </button>
+          </svg>{{ $t('profile.dodajZdjecie') }}</button>
         <button class="flex items-center justify-center bg-[#edf2fa] hover:bg-[#e0e8f6] text-gray-700 p-2.5 rounded-lg transition cursor-pointer">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
@@ -31,7 +29,7 @@
 
       <!-- Proponowane zdjęcia -->
       <div>
-        <h3 class="text-base font-semibold text-gray-900 mb-3">Proponowane zdjęcia</h3>
+        <h3 class="text-base font-semibold text-gray-900 mb-3">{{ $t('profile.proponowaneZdjecia') }}</h3>
         <div class="flex flex-row gap-3">
           <div
             v-for="(img, index) in proponowane"
@@ -39,14 +37,14 @@
             @click="selectImage(img)"
             class="aspect-square w-[105px] overflow-hidden cursor-pointer border border-gray-100 hover:brightness-95 transition first:rounded-l-xl last:rounded-r-xl"
           >
-            <img :src="img" alt="Proponowane" class="w-full h-full object-cover" />
+            <img :src="img" :alt="$t('profile.proponowane')" class="w-full h-full object-cover" />
           </div>
         </div>
       </div>
 
       <!-- Przesłane -->
       <div>
-        <h3 class="text-base font-semibold text-gray-900 mb-3">Przesłane</h3>
+        <h3 class="text-base font-semibold text-gray-900 mb-3">{{ $t('profile.przeslane') }}</h3>
         <div class="flex flex-row gap-3">
           <div
             v-for="(img, index) in przeslane"
@@ -54,14 +52,14 @@
             @click="selectImage(img)"
             class="aspect-square w-[105px] overflow-hidden cursor-pointer border border-gray-100 hover:brightness-95 transition first:rounded-l-xl last:rounded-r-xl"
           >
-            <img :src="img" alt="Przesłane" class="w-full h-full object-cover" />
+            <img :src="img" :alt="$t('profile.przeslane')" class="w-full h-full object-cover" />
           </div>
         </div>
       </div>
 
       <!-- Zdjęcia profilowe -->
       <div>
-        <h3 class="text-base font-semibold text-gray-900 mb-3">Zdjęcia profilowe</h3>
+        <h3 class="text-base font-semibold text-gray-900 mb-3">{{ $t('profile.zdjeciaProfilowe') }}</h3>
         <div class="flex flex-row gap-3">
           <div
             v-for="(img, index) in profilowe"
@@ -69,7 +67,7 @@
             @click="selectImage(img)"
             class="aspect-square w-[105px] overflow-hidden cursor-pointer border border-gray-100 hover:brightness-95 transition first:rounded-l-xl last:rounded-r-xl"
           >
-            <img :src="img" alt="Profilowe" class="w-full h-full object-cover" />
+            <img :src="img" :alt="$t('profile.profilowe')" class="w-full h-full object-cover" />
           </div>
         </div>
       </div>
@@ -85,7 +83,7 @@
       <div class="mb-6">
         <textarea
           v-model="description"
-          placeholder="Opis"
+          :placeholder="$t('createLive.description')"
           class="w-full h-20 p-3 border border-gray-200 rounded-xl outline-none resize-none text-gray-800 placeholder-gray-400 text-base focus:border-blue-500 transition-colors"
         ></textarea>
       </div>
@@ -102,7 +100,7 @@
             <img
               ref="imageRef"
               :src="selectedImage"
-              alt="Podgląd"
+              :alt="$t('chat.podglad')"
               class="max-w-none pointer-events-auto select-none"
               @load="onImageLoad"
               @dragstart.prevent
@@ -167,20 +165,14 @@
             :class="isCropMode ? 'bg-[#ebf5ff] text-[#0b57d0]' : 'bg-[#e4e6eb] hover:bg-[#d8dadf] text-gray-900'"
             class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
           >
-            <crop-icon :size="16" class="mt-[1px]" />
-            Przytnij zdjęcie
-          </button>
+            <crop-icon :size="16" class="mt-[1px]" />{{ $t('profile.przytnijZdjecie') }}</button>
 
           <button class="flex items-center gap-2 px-4 py-2 bg-[#e4e6eb] hover:bg-[#d8dadf] text-gray-900 rounded-lg text-sm font-semibold transition-colors cursor-pointer">
-            <clock-outline-icon :size="16" class="mt-[1px]" />
-            Ustaw jako tymczasowe
-          </button>
+            <clock-outline-icon :size="16" class="mt-[1px]" />{{ $t('profile.ustawJakoTymczasowe') }}</button>
         </div>
       </div>
 
-      <div class="text-xs text-gray-500 leading-relaxed text-center">
-        Twoje zdjęcie profilowe dla profilu <span class="font-bold text-gray-900">Bartosz Miazek</span> zostanie także zaktualizowane na platformach Instagram.
-      </div>
+      <div class="text-xs text-gray-500 leading-relaxed text-center">{{ $t('profile.twojeZdjecieProfiloweDla') }}<span class="font-bold text-gray-900">{{ $t('marketplace.bartoszMiazek') }}</span>{{ $t('profile.zostanieTakzeZaktualizowaneNa2') }}</div>
     </div>
 
     <!-- Stopka zapisu/anulowania -->
@@ -188,9 +180,7 @@
       <button
         @click="cancelSelection"
         class="px-6 py-2 text-blue-600 font-semibold text-sm hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-      >
-        Anuluj
-      </button>
+      >{{ $t('common.cancel') }}</button>
       <button
         @click="savePhoto"
         :disabled="isSaving"

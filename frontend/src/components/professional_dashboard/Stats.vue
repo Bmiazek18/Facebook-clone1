@@ -140,7 +140,7 @@ const chartOptions = computed(() => ({
       const value = series[seriesIndex][dataPointIndex]
       return `
         <div class="bg-white rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.12)] p-3 min-w-[130px] text-left">
-          <div class="text-[14px] text-[#050505] font-medium leading-tight mb-1">Wyświetlenia</div>
+          <div class="text-[14px] text-[#050505] font-medium leading-tight mb-1">{{ $t('dashboard.wyswietlenia') }}</div>
           <div class="text-[17px] font-bold text-[#050505] leading-tight mb-1">${value}</div>
           <div class="text-[13px] text-[#65676B] leading-tight">${date}</div>
         </div>
@@ -154,7 +154,7 @@ const chartOptions = computed(() => ({
   <div class="bg-white rounded-[8px] shadow-sm p-4 flex flex-col">
     <div class="flex justify-between items-start mb-4">
       <div>
-        <h2 class="text-[20px] font-bold text-[#050505] leading-tight">Statystyki</h2>
+        <h2 class="text-[20px] font-bold text-[#050505] leading-tight">{{ $t('createLive.stats') }}</h2>
         <!-- Wyświetlanie poprawnego przedziału dat nad wykresem -->
         <p class="text-[13px] text-[#65676B] mt-1">{{ rangeText }}</p>
       </div>
@@ -164,7 +164,7 @@ const chartOptions = computed(() => ({
           :modelValue="selectedRange"
           @update:modelValue="selectedRange = $event"
         />
-        <a href="#" class="text-[#1877F2] text-[15px] font-semibold hover:underline">Wyświetl wszystko</a>
+        <a href="#" class="text-[#1877F2] text-[15px] font-semibold hover:underline">{{ $t('notifications_page.viewAll') }}</a>
       </div>
     </div>
 
@@ -175,9 +175,7 @@ const chartOptions = computed(() => ({
           <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
         </svg>
         <div class="font-bold text-[20px] leading-tight text-[#050505]">0 <span class="text-[#65676B] text-[15px] font-normal">- 0%</span></div>
-        <div class="text-[13px] text-[#65676B] flex items-center gap-1 font-medium">
-          Wyświetlenia
-        </div>
+        <div class="text-[13px] text-[#65676B] flex items-center gap-1 font-medium">{{ $t('dashboard.wyswietlenia') }}</div>
       </div>
 
       <div class="rounded-lg p-3 cursor-pointer hover:bg-[#F0F2F5] transition-colors flex flex-col gap-1">
@@ -185,9 +183,7 @@ const chartOptions = computed(() => ({
           <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
         </svg>
         <div class="font-bold text-[20px] leading-tight text-[#050505]">0 <span class="text-[#65676B] text-[15px] font-normal">- 0%</span></div>
-        <div class="text-[13px] text-[#65676B] flex items-center gap-1 font-medium">
-          Aktywność
-        </div>
+        <div class="text-[13px] text-[#65676B] flex items-center gap-1 font-medium">{{ $t('emojiPicker.categories.activity') }}</div>
       </div>
 
       <div class="rounded-lg p-3 cursor-pointer hover:bg-[#F0F2F5] transition-colors flex flex-col gap-1">
@@ -195,9 +191,7 @@ const chartOptions = computed(() => ({
           <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
         </svg>
         <div class="font-bold text-[20px] leading-tight text-[#050505]">0 <span class="text-[#65676B] text-[15px] font-normal">- 0%</span></div>
-        <div class="text-[13px] text-[#65676B] flex items-center gap-1 font-medium">
-          Liczba obserwatorów netto
-        </div>
+        <div class="text-[13px] text-[#65676B] flex items-center gap-1 font-medium">{{ $t('dashboard.liczbaObserwatorowNetto') }}</div>
       </div>
     </div>
 

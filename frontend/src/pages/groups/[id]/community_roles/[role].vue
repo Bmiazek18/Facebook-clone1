@@ -95,10 +95,8 @@ const currentRole = computed(() => rolesData[currentRoleKey.value])
       <!-- Lewa Kolumna: Członkowie (Members) -->
       <div class="w-full lg:w-3/5 bg-[#242526] border border-[#3e4042] rounded-xl p-4 shadow-sm min-h-[300px]">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-[17px] font-bold">Członkowie pełniący tę rolę</h2>
-          <button class="text-[15px] font-semibold text-[#4599FF] hover:bg-[#3a3b3c] px-3 py-1.5 rounded-md transition-colors">
-            Dodaj
-          </button>
+          <h2 class="text-[17px] font-bold">{{ $t('groups.czlonkowiePelniacyTeRole') }}</h2>
+          <button class="text-[15px] font-semibold text-[#4599FF] hover:bg-[#3a3b3c] px-3 py-1.5 rounded-md transition-colors">{{ $t('call.dodaj') }}</button>
         </div>
 
         <!-- Stan ze zdefiniowanymi członkami (np. Admin) -->
@@ -109,7 +107,7 @@ const currentRole = computed(() => rolesData[currentRoleKey.value])
             class="flex items-center justify-between p-2 rounded-lg hover:bg-[#3a3b3c] transition-colors group cursor-pointer"
           >
             <div class="flex items-center gap-3">
-              <img :src="member.avatar" alt="Avatar" class="w-10 h-10 rounded-full bg-gray-500 object-cover" />
+              <img :src="member.avatar" :alt="$t('chat.avatar')" class="w-10 h-10 rounded-full bg-gray-500 object-cover" />
               <span class="text-[15px] font-semibold">{{ member.name }}</span>
             </div>
             <button class="p-2 rounded-full hover:bg-[#4e4f50] transition-colors text-[#b0b3b8] group-hover:text-[#e4e6eb]">
@@ -131,13 +129,9 @@ const currentRole = computed(() => rolesData[currentRoleKey.value])
             <path d="M42 75C42 62 48 55 62 55C76 55 82 62 82 75L82 75L42 75L42 75Z" fill="#75777a" />
           </svg>
 
-          <h3 class="text-[17px] font-bold text-[#e4e6eb] mb-1">Jeszcze nikt nie pełni tej roli</h3>
-          <p class="text-[15px] text-[#b0b3b8] max-w-md">
-            Sprawdź, kto jest zainteresowany! Członkowie będą mogli zaakceptować zaproszenie lub je odrzucić.
-          </p>
-          <button class="mt-5 bg-[#2d88ff] hover:bg-[#1a73e8] transition-colors text-white font-semibold text-[15px] px-6 py-2 rounded-md">
-            Dodaj członków grupy
-          </button>
+          <h3 class="text-[17px] font-bold text-[#e4e6eb] mb-1">{{ $t('groups.jeszczeNiktNiePelni') }}</h3>
+          <p class="text-[15px] text-[#b0b3b8] max-w-md">{{ $t('groups.sprawdzKtoJestZainteresowany') }}</p>
+          <button class="mt-5 bg-[#2d88ff] hover:bg-[#1a73e8] transition-colors text-white font-semibold text-[15px] px-6 py-2 rounded-md">{{ $t('groups.dodajCzlonkowGrupy') }}</button>
         </div>
       </div>
 
@@ -145,14 +139,14 @@ const currentRole = computed(() => rolesData[currentRoleKey.value])
       <div class="w-full lg:w-2/5 flex flex-col gap-4">
 
         <div class="bg-[#242526] border border-[#3e4042] rounded-xl p-4 shadow-sm">
-          <h2 class="text-[17px] font-bold mb-2">Opis</h2>
+          <h2 class="text-[17px] font-bold mb-2">{{ $t('createLive.description') }}</h2>
           <p class="text-[15px] text-[#b0b3b8] leading-relaxed">
             {{ currentRole.description }}
           </p>
         </div>
 
         <div class="bg-[#242526] border border-[#3e4042] rounded-xl p-4 shadow-sm">
-          <h2 class="text-[17px] font-bold mb-4">Uprawnienia</h2>
+          <h2 class="text-[17px] font-bold mb-4">{{ $t('groups.uprawnienia') }}</h2>
           <div class="space-y-4">
             <div
               v-for="(permission, index) in currentRole.permissions"

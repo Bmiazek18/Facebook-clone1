@@ -113,7 +113,7 @@ const hasUnsavedChanges = computed(() => selectedThemeId.value !== initialThemeI
         <div class="absolute inset-0 z-0">
           <img
             :src="selectedTheme?.backgroundImage"
-            alt="Theme Background"
+            :alt="$t('chat.themeBackground')"
             class="w-full h-full object-cover"
           />
         </div>
@@ -125,26 +125,20 @@ const hasUnsavedChanges = computed(() => selectedThemeId.value !== initialThemeI
             <div
               class="px-4 py-2.5 text-white text-[15px] leading-snug rounded-2xl rounded-br-[4px] max-w-[75%] shadow-sm transition-colors duration-300"
               :style="{ backgroundColor: selectedTheme?.sentBubbleColor || '#0064e0' }"
-            >
-              Masz wiele motywów do wyboru, a każdy jest nieco inny.
-            </div>
+            >{{ $t('chat.maszWieleMotywowDo') }}</div>
           </div>
 
           <div class="flex justify-end mb-3">
             <div
               class="px-4 py-2.5 text-white text-[15px] leading-snug rounded-2xl rounded-tr-[4px] max-w-[75%] shadow-sm transition-colors duration-300"
               :style="{ backgroundColor: selectedTheme?.sentBubbleColor || '#0064e0' }"
-            >
-              Wiadomości przesyłane do innych osób będą oznaczane tym kolorem.
-            </div>
+            >{{ $t('chat.wiadomosciPrzesylaneDoInnych') }}</div>
           </div>
 
           <div class="flex justify-start">
             <div
               class="bg-white text-gray-900 px-4 py-2.5 text-[15px] leading-snug rounded-2xl rounded-bl-[4px] max-w-[75%] shadow-sm mt-3"
-            >
-              Wiadomości od znajomych będą tak wyglądać.
-            </div>
+            >{{ $t('chat.wiadomosciOdZnajomychBeda') }}</div>
           </div>
 
           <div
@@ -158,9 +152,7 @@ const hasUnsavedChanges = computed(() => selectedThemeId.value !== initialThemeI
             <div
               class="px-4 py-2.5 text-white text-[15px] leading-snug rounded-2xl rounded-br-[4px] max-w-[75%] shadow-sm transition-colors duration-300"
               :style="{ backgroundColor: selectedTheme?.sentBubbleColor || '#0064e0' }"
-            >
-              Kliknij przycisk Wybierz, aby wybrać ten motyw.
-            </div>
+            >{{ $t('chat.kliknijPrzyciskWybierzAby') }}</div>
           </div>
 
         </div>
@@ -173,9 +165,7 @@ const hasUnsavedChanges = computed(() => selectedThemeId.value !== initialThemeI
       <button
         @click="cancelTheme"
         class="flex-1 bg-[#e4e6eb] hover:bg-[#d8dadf] text-gray-900 font-semibold text-[15px] py-2.5 rounded-xl transition-colors cursor-pointer"
-      >
-        Anuluj
-      </button>
+      >{{ $t('common.cancel') }}</button>
 
       <!-- Przycisk "Wybierz" uaktywnia się dopiero po kliknięciu nowego motywu -->
       <button
@@ -184,9 +174,7 @@ const hasUnsavedChanges = computed(() => selectedThemeId.value !== initialThemeI
         :class="hasUnsavedChanges
           ? 'bg-[#0064e0] hover:bg-[#0053ba] text-white cursor-pointer'
           : 'bg-[#e4e6eb] text-[#bcc0c4] cursor-not-allowed'"
-      >
-        Wybierz
-      </button>
+      >{{ $t('chat.wybierz') }}</button>
     </div>
 
   </div>

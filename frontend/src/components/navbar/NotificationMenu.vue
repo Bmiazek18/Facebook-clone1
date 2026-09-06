@@ -93,7 +93,7 @@
                   <div class="relative shrink-0 mr-3 mt-0.5">
                     <img
                       :src="notification.avatarUrl"
-                      alt="Awatar"
+                      :alt="$t('header.awatar')"
                       class="h-14 w-14 rounded-full object-cover bg-gray-200 border border-black/5 dark:border-white/5"
                     />
                     <div class="absolute -bottom-1 -right-1 h-7 w-7 flex items-center justify-center rounded-full ring-2 ring-white dark:ring-[#242526] bg-[#0866FF] text-white">
@@ -157,7 +157,7 @@
                 <div class="relative shrink-0 mr-3 self-start mt-0.5">
                   <img
                     :src="notification.avatarUrl"
-                    alt="Awatar"
+                    :alt="$t('header.awatar')"
                     class="h-14 w-14 rounded-full object-cover bg-gray-200 border border-black/5 dark:border-white/5"
                   />
                   <div

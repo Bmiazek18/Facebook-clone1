@@ -37,7 +37,7 @@ const { t } = useI18n()
         <img
           :src="currentItem.user.avatar"
           class="w-full h-full rounded-full object-cover shadow-inner"
-          alt="Birthday User"
+          :alt="$t('feed.birthdayUser')"
         />
       </div>
       <h2 class="text-white text-2xl font-bold mb-2 drop-shadow-md px-4">

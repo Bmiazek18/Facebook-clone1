@@ -198,7 +198,7 @@ onUnmounted(() => {
         @click="zoomIn"
         :disabled="currentZoom >= maxZoom"
         class="p-2 bg-[#e2e5e9] text-black rounded-full hover:bg-white disabled:opacity-30 transition"
-        aria-label="Powiększ"
+        :aria-label="$t('common.powieksz')"
       >
         <MagnifyPlus :size="22" fillColor="#000" />
       </button>
@@ -206,14 +206,14 @@ onUnmounted(() => {
         @click="zoomOut"
         :disabled="currentZoom <= minZoom"
         class="p-2 bg-[#e2e5e9] text-black rounded-full hover:bg-white disabled:opacity-30 transition"
-        aria-label="Pomniejsz"
+        :aria-label="$t('common.pomniejsz')"
       >
         <MagnifyMinus :size="22" fillColor="#000" />
       </button>
       <button
         @click="toggleFullScreen"
         class="p-2 bg-[#e2e5e9] text-black rounded-full hover:bg-white transition"
-        aria-label="Pełny ekran"
+        :aria-label="$t('common.pelnyEkran')"
       >
         <component
           :is="isFullScreen ? ArrowCollapse : ArrowExpand"
@@ -232,7 +232,7 @@ onUnmounted(() => {
         'opacity-100': showArrows,
         'opacity-0 pointer-events-none': !showArrows
       }"
-      aria-label="Poprzednie"
+      :aria-label="$t('common.previous')"
     >
       <div class="p-2.5 bg-white rounded-full shadow-lg hover:scale-105 transition-transform flex items-center justify-center">
         <ChevronLeft :size="32" fillColor="#111827" />
@@ -248,7 +248,7 @@ onUnmounted(() => {
         'opacity-100': showArrows,
         'opacity-0 pointer-events-none': !showArrows
       }"
-      aria-label="Następne"
+      :aria-label="$t('common.nastepne')"
     >
       <div class="p-2.5 bg-white rounded-full shadow-lg hover:scale-105 transition-transform flex items-center justify-center">
         <ChevronRight :size="32" fillColor="#111827" />

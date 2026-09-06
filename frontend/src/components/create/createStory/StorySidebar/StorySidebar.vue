@@ -56,7 +56,7 @@ const goBack = () => {
       <AppCloseHeader />
 
       <div class="flex items-center justify-between px-4 pb-4 pt-2">
-        <h1 class="text-2xl font-bold text-theme-text tracking-tight">Twoja relacja</h1>
+        <h1 class="text-2xl font-bold text-theme-text tracking-tight">{{ $t('story.myStory') }}</h1>
         <button
           @click="showSettingsModal = true"
           class="bg-gray-200/50 p-2 rounded-full cursor-pointer hover:bg-gray-200 transition-colors flex items-center justify-center"
@@ -70,7 +70,7 @@ const goBack = () => {
           <img
             :src="auth.currentUser?.avatar || 'https://via.placeholder.com/150'"
             class="w-full h-full object-cover"
-            alt="User Avatar"
+            :alt="$t('create.userAvatar')"
           />
         </div>
         <span class="text-[17px] font-semibold text-theme-text">
@@ -111,22 +111,18 @@ const goBack = () => {
       <button
         @click="emit('back')"
         class="w-[40%] py-2.5 rounded-lg bg-gray-200 text-black font-semibold hover:bg-gray-300 transition-colors text-[15px]"
-      >
-        Odrzuć
-      </button>
+      >{{ $t('chat.odrzuc') }}</button>
 
       <button
         @click="emit('export-story')"
         class="w-[60%] py-2.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors shadow-sm text-[15px]"
-      >
-        Udostępnij w relacji
-      </button>
+      >{{ $t('createLive.shareToStory') }}</button>
     </div>
   </aside>
 
   <BaseModal
     v-if="showSettingsModal"
-    title="Ustawienia prywatności relacji"
+    :title="$t('create.ustawieniaPrywatnosciRelacji')"
     @close="showSettingsModal = false"
   >
     <PrivacyModal @close="showSettingsModal = false" />

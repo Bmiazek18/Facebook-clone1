@@ -1,6 +1,6 @@
 <template>
   <div class="bg-theme-bg-secondary rounded-xl p-4 shadow-sm border border-theme-border">
-    <h2 class="text-[20px] font-semibold text-theme-text mb-2">Zarządzaj dyskusją</h2>
+    <h2 class="text-[20px] font-semibold text-theme-text mb-2">{{ $t('groups.zarzadzajDyskusja') }}</h2>
 
     <div class="flex flex-col">
       <template v-for="item in items" :key="item.id">
@@ -40,7 +40,7 @@
 
           <div class="space-y-4">
             <label class="flex items-center justify-between cursor-pointer group">
-              <span class="text-[15px] font-bold text-theme-text">Każdy członek grupy</span>
+              <span class="text-[15px] font-bold text-theme-text">{{ $t('groups.kazdyCzlonekGrupy') }}</span>
               <input
                 type="radio"
                 name="who_post_radio"
@@ -51,7 +51,7 @@
             </label>
 
             <label class="flex items-center justify-between cursor-pointer group">
-              <span class="text-[15px] font-bold text-theme-text">Tylko administratorzy</span>
+              <span class="text-[15px] font-bold text-theme-text">{{ $t('groups.tylkoAdministratorzy') }}</span>
               <input
                 type="radio"
                 name="who_post_radio"
@@ -68,9 +68,7 @@
               type="button"
               @click="cancelEdit"
               class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-theme-hover transition-colors"
-            >
-              Anuluj
-            </button>
+            >{{ $t('common.cancel') }}</button>
 
             <button
               type="button"
@@ -82,9 +80,7 @@
                   ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
                   : 'bg-theme-bg-tertiary text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
               ]"
-            >
-              Zapisz
-            </button>
+            >{{ $t('createLive.save') }}</button>
           </div>
         </div>
 
@@ -96,13 +92,11 @@
           <h3 class="text-[17px] font-bold text-theme-text mb-1">
             {{ item.label }}
           </h3>
-          <p class="text-[14px] text-theme-text-secondary mb-4 leading-snug">
-            Włącz tę funkcję, jeśli chcesz, aby administratorzy i moderatorzy zatwierdzali każdy post
-          </p>
+          <p class="text-[14px] text-theme-text-secondary mb-4 leading-snug">{{ $t('groups.wlaczTeFunkcjeJesli') }}</p>
 
           <div class="space-y-4">
             <label class="flex items-center justify-between cursor-pointer group">
-              <span class="text-[15px] font-bold text-theme-text">Wszystkie posty</span>
+              <span class="text-[15px] font-bold text-theme-text">{{ $t('postFilter.taggedAll') }}</span>
               <input
                 type="radio"
                 name="post_approval_radio"
@@ -113,7 +107,7 @@
             </label>
 
             <label class="flex items-center justify-between cursor-pointer group">
-              <span class="text-[15px] font-bold text-theme-text">Tylko posty anonimowe</span>
+              <span class="text-[15px] font-bold text-theme-text">{{ $t('groups.tylkoPostyAnonimowe') }}</span>
               <input
                 type="radio"
                 name="post_approval_radio"
@@ -124,7 +118,7 @@
             </label>
 
             <label class="flex items-center justify-between cursor-pointer group">
-              <span class="text-[15px] font-bold text-theme-text">Wył.</span>
+              <span class="text-[15px] font-bold text-theme-text">{{ $t('ui.off') }}</span>
               <input
                 type="radio"
                 name="post_approval_radio"
@@ -140,9 +134,7 @@
               type="button"
               @click="cancelEdit"
               class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-theme-hover transition-colors"
-            >
-              Anuluj
-            </button>
+            >{{ $t('common.cancel') }}</button>
 
             <button
               type="button"
@@ -154,9 +146,7 @@
                   ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
                   : 'bg-theme-bg-tertiary text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
               ]"
-            >
-              Zapisz
-            </button>
+            >{{ $t('createLive.save') }}</button>
           </div>
         </div>
 
@@ -172,10 +162,8 @@
           <div class="space-y-4">
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-theme-text">Włączone</div>
-                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">
-                  Edytowane posty muszą być zatwierdzone przez administratora lub moderatora
-                </div>
+                <div class="text-[15px] font-bold text-theme-text">{{ $t('groups.wlaczone') }}</div>
+                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">{{ $t('groups.edytowanePostyMuszaByc') }}</div>
               </div>
               <input
                 type="radio"
@@ -188,10 +176,8 @@
 
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-theme-text">Wyłączone</div>
-                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">
-                  Członkowie mogą edytować swoje posty bezpośrednio
-                </div>
+                <div class="text-[15px] font-bold text-theme-text">{{ $t('groups.wylaczone') }}</div>
+                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">{{ $t('groups.czlonkowieMogaEdytowacSwoje') }}</div>
               </div>
               <input
                 type="radio"
@@ -208,9 +194,7 @@
               type="button"
               @click="cancelEdit"
               class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-theme-hover transition-colors"
-            >
-              Anuluj
-            </button>
+            >{{ $t('common.cancel') }}</button>
 
             <button
               type="button"
@@ -222,9 +206,7 @@
                   ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
                   : 'bg-theme-bg-tertiary text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
               ]"
-            >
-              Zapisz
-            </button>
+            >{{ $t('createLive.save') }}</button>
           </div>
         </div>
 
@@ -236,17 +218,13 @@
           <h3 class="text-[17px] font-bold text-theme-text mb-1">
             {{ item.label }}
           </h3>
-          <p class="text-[14px] text-theme-text-secondary mb-4 leading-snug">
-            Będzie to ustawienie domyślne. Członkowie nadal będą mogli zmieniać kolejność wyświetlania komentarzy do poszczególnych postów.
-          </p>
+          <p class="text-[14px] text-theme-text-secondary mb-4 leading-snug">{{ $t('groups.bedzieToUstawienieDomyslne') }}</p>
 
           <div class="space-y-4">
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-theme-text">Proponowane ustawienie domyślne</div>
-                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">
-                  Automatyczne wyświetlanie komentarzy w dowolnej kolejności, która zachęca do uczestnictwa w grupie.
-                </div>
+                <div class="text-[15px] font-bold text-theme-text">{{ $t('groups.proponowaneUstawienieDomyslne') }}</div>
+                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">{{ $t('groups.automatyczneWyswietlanieKomentarzyW') }}</div>
               </div>
               <input
                 type="radio"
@@ -259,10 +237,8 @@
 
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-theme-text">Najpopularniejsze komentarze</div>
-                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">
-                  Wyświetl najpierw komentarze o największej aktywności.
-                </div>
+                <div class="text-[15px] font-bold text-theme-text">{{ $t('groups.najpopularniejszeKomentarze') }}</div>
+                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">{{ $t('groups.wyswietlNajpierwKomentarzeO') }}</div>
               </div>
               <input
                 type="radio"
@@ -275,10 +251,8 @@
 
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-theme-text">Od najnowszych</div>
-                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">
-                  Wyświetlanie najnowszych komentarzy jako pierwszych.
-                </div>
+                <div class="text-[15px] font-bold text-theme-text">{{ $t('groups.odNajnowszych') }}</div>
+                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">{{ $t('groups.wyswietlanieNajnowszychKomentarzyJako') }}</div>
               </div>
               <input
                 type="radio"
@@ -291,10 +265,8 @@
 
             <label class="flex items-start justify-between cursor-pointer group">
               <div class="flex-1 pr-4">
-                <div class="text-[15px] font-bold text-theme-text">Wszystkie komentarze</div>
-                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">
-                  Wyświetlanie wszystkich komentarzy w kolejności chronologicznej, w tym potencjalny spam.
-                </div>
+                <div class="text-[15px] font-bold text-theme-text">{{ $t('ui.allComments') }}</div>
+                <div class="text-[13px] text-theme-text-secondary leading-tight mt-0.5">{{ $t('groups.wyswietlanieWszystkichKomentarzyW') }}</div>
               </div>
               <input
                 type="radio"
@@ -311,9 +283,7 @@
               type="button"
               @click="cancelEdit"
               class="px-4 py-2 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-theme-hover transition-colors"
-            >
-              Anuluj
-            </button>
+            >{{ $t('common.cancel') }}</button>
 
             <button
               type="button"
@@ -325,9 +295,7 @@
                   ? 'bg-[#1877f2] text-white hover:bg-[#166fe5] cursor-pointer'
                   : 'bg-theme-bg-tertiary text-[#8c939d] dark:text-[#808285] cursor-not-allowed'
               ]"
-            >
-              Zapisz
-            </button>
+            >{{ $t('createLive.save') }}</button>
           </div>
         </div>
       </template>

@@ -184,7 +184,7 @@ onMounted(() => {
   <!-- Stan ładowania -->
   <div v-if="isLoading" class="min-h-screen bg-theme-bg dark:bg-[#18191a] text-theme-text font-sans flex flex-col items-center justify-center py-12">
     <div class="w-8 h-8 border-4 border-[#2d88ff] border-t-transparent rounded-full animate-spin"></div>
-    <p class="mt-4 text-[#b0b3b8] text-sm font-semibold">Ładowanie statystyk...</p>
+    <p class="mt-4 text-[#b0b3b8] text-sm font-semibold">{{ $t('groups.ladowanieStatystyk') }}</p>
   </div>
 
   <!-- Brak dostępu (Nie-Admin) -->
@@ -194,13 +194,9 @@ onMounted(() => {
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
       </svg>
     </div>
-    <h2 class="text-2xl font-bold mb-2">Brak dostępu</h2>
-    <p class="text-sm text-theme-text-secondary max-w-md mb-6 leading-relaxed">
-      Tylko administratorzy tej grupy mają uprawnienia do przeglądania podsumowania statystyk oraz panelu zarządzania.
-    </p>
-    <NuxtLink :to="`/groups/${groupId}`" class="bg-[#2d88ff] hover:bg-[#1a73e8] text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors shadow">
-      Wróć do grupy
-    </NuxtLink>
+    <h2 class="text-2xl font-bold mb-2">{{ $t('groups.brakDostepu') }}</h2>
+    <p class="text-sm text-theme-text-secondary max-w-md mb-6 leading-relaxed">{{ $t('groups.tylkoAdministratorzyTejGrupy') }}</p>
+    <NuxtLink :to="`/groups/${groupId}`" class="bg-[#2d88ff] hover:bg-[#1a73e8] text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors shadow">{{ $t('groups.wrocDoGrupy') }}</NuxtLink>
   </div>
 
   <!-- Główny Widok Overview -->
@@ -210,10 +206,8 @@ onMounted(() => {
       <!-- Sekcja 1: Do sprawdzenia -->
       <div class="bg-theme-bg-secondary rounded-xl p-5 shadow-sm border border-theme-border">
         <div class="mb-4">
-          <h2 class="text-[20px] font-bold text-theme-text">Do sprawdzenia</h2>
-          <p class="text-[15px] text-theme-text-secondary mt-0.5">
-            {{ reviewItems.reduce((acc, item) => acc + item.count, 0) }} aktualizacji do sprawdzenia
-          </p>
+          <h2 class="text-[20px] font-bold text-theme-text">{{ $t('groups.doSprawdzenia') }}</h2>
+          <p class="text-[15px] text-theme-text-secondary mt-0.5">{{ $t('groups.reviewitemsReduceAccItem') }}</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
@@ -253,8 +247,8 @@ onMounted(() => {
         <!-- Sekcja 2A: Podsumowanie statystyk -->
         <div class="bg-theme-bg-secondary rounded-xl p-5 shadow-sm border border-theme-border flex flex-col h-full">
           <div class="mb-4">
-            <h2 class="text-[17px] font-bold text-theme-text">Podsumowanie statystyk</h2>
-            <p class="text-[14px] text-theme-text-secondary mt-0.5">W ciągu ostatnich 7 dni</p>
+            <h2 class="text-[17px] font-bold text-theme-text">{{ $t('groups.podsumowanieStatystyk') }}</h2>
+            <p class="text-[14px] text-theme-text-secondary mt-0.5">{{ $t('groups.wCiaguOstatnich7') }}</p>
           </div>
 
           <div class="flex flex-col gap-2.5 flex-1">
@@ -277,22 +271,18 @@ onMounted(() => {
             </div>
           </div>
 
-          <button class="w-full mt-4 bg-theme-bg-tertiary hover:bg-theme-hover-strong dark:bg-[#3a3b3c] dark:hover:bg-[#4e4f50] transition-colors text-theme-text font-semibold text-[15px] py-2.5 rounded-lg cursor-pointer">
-            Zobacz statystyki aktywności
-          </button>
+          <button class="w-full mt-4 bg-theme-bg-tertiary hover:bg-theme-hover-strong dark:bg-[#3a3b3c] dark:hover:bg-[#4e4f50] transition-colors text-theme-text font-semibold text-[15px] py-2.5 rounded-lg cursor-pointer">{{ $t('groups.zobaczStatystykiAktywnosci') }}</button>
         </div>
 
         <!-- Sekcja 2B: Członkowie aktywni co tydzień (Wykres ApexCharts) -->
         <div class="bg-theme-bg-secondary rounded-xl p-5 shadow-sm border border-theme-border flex flex-col h-full">
           <div class="mb-2">
             <div class="flex items-center gap-1.5">
-              <h2 class="text-[17px] font-bold text-theme-text">Członkowie aktywni co tydzień</h2>
+              <h2 class="text-[17px] font-bold text-theme-text">{{ $t('groups.czlonkowieAktywniCoTydzien') }}</h2>
               <InformationIcon :size="16" class="text-theme-text-secondary cursor-pointer hover:text-theme-text transition-colors" />
             </div>
             <div class="flex items-center gap-1.5 mt-0.5 text-theme-text-secondary">
-              <span class="text-[14px]">
-                {{ chartSeries[0].data.reduce((acc, v) => Math.max(acc, v), 0) }} w ciągu ostatnich 7 dni
-              </span>
+              <span class="text-[14px]">{{ $t('groups.chartseries0DataReduce') }}</span>
               <div class="flex items-center text-[#8c939d]">
                 <ArrowTopRightIcon :size="14" />
                 <span class="text-[13px] ml-0.5 font-semibold">0%</span>
@@ -310,9 +300,7 @@ onMounted(() => {
             />
           </div>
 
-          <button class="w-full mt-2 bg-theme-bg-tertiary hover:bg-theme-hover-strong dark:bg-[#3a3b3c] dark:hover:bg-[#4e4f50] transition-colors text-theme-text font-semibold text-[15px] py-2.5 rounded-lg cursor-pointer">
-            Zobacz statystyki aktywności
-          </button>
+          <button class="w-full mt-2 bg-theme-bg-tertiary hover:bg-theme-hover-strong dark:bg-[#3a3b3c] dark:hover:bg-[#4e4f50] transition-colors text-theme-text font-semibold text-[15px] py-2.5 rounded-lg cursor-pointer">{{ $t('groups.zobaczStatystykiAktywnosci') }}</button>
         </div>
 
       </div>

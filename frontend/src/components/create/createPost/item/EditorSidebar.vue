@@ -70,29 +70,21 @@ const emit = defineEmits<{
         <button
           @click="emit('done')"
           class="flex-1 py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md text-[15px] transition-colors"
-        >
-          Gotowe
-        </button>
+        >{{ $t('postFilter.done') }}</button>
         <button
           @click="emit('cancel-edit')"
           class="flex-1 py-2 px-4 bg-theme-bg-tertiary hover:bg-theme-hover text-theme-text font-semibold rounded-md text-[15px] transition-colors"
-        >
-          Anuluj
-        </button>
+        >{{ $t('common.cancel') }}</button>
       </template>
       <template v-else>
         <button
           @click="emit('confirm-crop')"
           class="flex-1 py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md text-[15px] transition-colors"
-        >
-          Przytnij
-        </button>
+        >{{ $t('create.przytnij') }}</button>
         <button
           @click="emit('cancel-crop')"
           class="flex-1 py-2 px-4 bg-theme-bg-tertiary hover:bg-theme-hover text-theme-text font-semibold rounded-md text-[15px] transition-colors"
-        >
-          Anuluj
-        </button>
+        >{{ $t('common.cancel') }}</button>
       </template>
     </div>
   </aside>

@@ -7,7 +7,7 @@
       <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center shrink-0">
         <FormatFont :size="24" class="text-black" />
       </div>
-      <span class="font-semibold text-gray-900 text-[15px]">Dodaj tekst</span>
+      <span class="font-semibold text-gray-900 text-[15px]">{{ $t('create.dodajTekst') }}</span>
     </div>
 
     <div
@@ -22,7 +22,7 @@
       <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center shrink-0">
         <MusicNote :size="24" class="text-black" />
       </div>
-      <span class="font-semibold text-gray-900 text-[15px]">Dodaj muzykę</span>
+      <span class="font-semibold text-gray-900 text-[15px]">{{ $t('create.dodajMuzyke') }}</span>
     </div>
 
     <div
@@ -32,7 +32,7 @@
       <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center shrink-0">
         <Link :size="24" class="text-black" />
       </div>
-      <span class="font-semibold text-gray-900 text-[15px]">Dodaj link</span>
+      <span class="font-semibold text-gray-900 text-[15px]">{{ $t('create.dodajLink') }}</span>
     </div>
 
     <div class="flex flex-col">
@@ -44,7 +44,7 @@
           <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center shrink-0">
             <AlphaABox :size="24" class="text-black" />
           </div>
-          <span class="font-semibold text-gray-900 text-[15px]">Tekst alternatywny</span>
+          <span class="font-semibold text-gray-900 text-[15px]">{{ $t('create.tekstAlternatywny') }}</span>
         </div>
       </div>
 

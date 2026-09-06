@@ -27,7 +27,7 @@ const filteredNotifications = computed(() => notifications.value)
     <div
       class="bg-theme-bg-secondary rounded-t-lg shadow-sm border-b border-theme-border p-4 flex justify-between items-center"
     >
-      <h1 class="text-2xl font-bold">Powiadomienia sprzedawcy</h1>
+      <h1 class="text-2xl font-bold">{{ $t('marketplace.powiadomieniaSprzedawcy') }}</h1>
       <button class="p-2 hover:bg-theme-hover rounded-full">
         <DotsHorizontal class="text-theme-text-secondary" />
       </button>
@@ -68,9 +68,7 @@ const filteredNotifications = computed(() => notifications.value)
         <div
           v-if="filteredNotifications.length === 0"
           class="p-8 text-center text-theme-text-secondary"
-        >
-          Brak powiadomień
-        </div>
+        >{{ $t('notifications_page.noNotifications') }}</div>
       </div>
     </div>
   </div>

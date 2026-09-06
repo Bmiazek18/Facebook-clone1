@@ -44,7 +44,7 @@ const reactionsByType = computed(() => {
       <div
         class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"
       >
-        <h3 class="font-bold text-lg dark:text-white">Reactions</h3>
+        <h3 class="font-bold text-lg dark:text-white">{{ $t('feed.reactions') }}</h3>
         <button
           @click="emit('close')"
           class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
@@ -53,9 +53,7 @@ const reactionsByType = computed(() => {
         </button>
       </div>
       <div class="flex-1 overflow-y-auto p-4">
-        <div v-if="reactionsByType.length === 0" class="text-center text-gray-500">
-          No reactions yet.
-        </div>
+        <div v-if="reactionsByType.length === 0" class="text-center text-gray-500">{{ $t('feed.noReactionsYet') }}</div>
         <div v-else>
           <div v-for="{ reaction, users } in reactionsByType" :key="reaction" class="mb-4">
             <div class="flex items-center mb-2">

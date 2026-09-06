@@ -86,13 +86,11 @@ const clearSelection = () => {
   <div class="flex flex-col h-[85vh] bg-white rounded-xl overflow-hidden relative">
     <!-- Nagłówek -->
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0">
-      <h2 class="text-[18px] font-medium text-gray-900">Wybierz posty, którymi chcesz zarządzać</h2>
+      <h2 class="text-[18px] font-medium text-gray-900">{{ $t('profile.wybierzPostyKtorymiChcesz') }}</h2>
       <button
         class="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold text-[14px] text-gray-800 transition-colors"
       >
-        <Tune :size="18" class="mr-2" />
-        Filtry
-      </button>
+        <Tune :size="18" class="mr-2" />{{ $t('search.filters') }}</button>
     </div>
 
     <!-- Obszar przewijany (Lista postów) -->
@@ -104,9 +102,7 @@ const clearSelection = () => {
           <button
             @click="selectAllInGroup(group.posts)"
             class="text-blue-600 hover:text-blue-700 font-medium text-[15px] transition-colors"
-          >
-            Zaznacz wszystkie
-          </button>
+          >{{ $t('profile.zaznaczWszystkie') }}</button>
         </div>
 
         <!-- Siatka postów -->
@@ -199,9 +195,7 @@ const clearSelection = () => {
               ? 'bg-gray-100 hover:bg-gray-200 text-gray-800'
               : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-70'
           "
-        >
-          Wyczyść
-        </button>
+        >{{ $t('postFilter.clear') }}</button>
 
         <button
           :disabled="!isAnySelected"
@@ -211,9 +205,7 @@ const clearSelection = () => {
               ? 'bg-blue-600 hover:bg-blue-700 text-white'
               : 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-70'
           "
-        >
-          Dalej
-        </button>
+        >{{ $t('common.next') }}</button>
       </div>
     </div>
   </div>

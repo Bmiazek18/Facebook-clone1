@@ -54,16 +54,14 @@ const navigateToEvent = (eventId: string) => {
       <p
         class="text-gray-500 dark:text-gray-400 truncate text-[13px] mb-4"
         v-tooltip="'16 osób zainteresowanych · 24 osoby weźmie udział'"
-      >
-        16 osób zainteresowanych · 24 osoby weźmie udział
-      </p>
+      >{{ $t('events.16OsobZainteresowanych24') }}</p>
 
       <div class="flex gap-2 mt-auto">
         <button
           class="flex-grow flex items-center justify-center gap-2 py-2 bg-[#E4E6EB] dark:bg-white/10 hover:bg-[#D8DADF] dark:hover:bg-white/20 text-gray-800 dark:text-gray-200 font-semibold rounded-lg transition text-[15px]"
         >
           <StarOutlineIcon :size="20" />
-          <span>Zainteresowany(a)</span>
+          <span>{{ $t('events.zainteresowanyA') }}</span>
         </button>
 
         <button

@@ -20,11 +20,11 @@ const totalFriendsCount = 541
   <div class="bg-theme-bg-secondary p-4 mt-4 rounded-lg shadow-lg">
     <div class="flex justify-between items-baseline mb-2">
       <div>
-        <h2 class="text-xl font-extrabold text-theme-text">Znajomi</h2>
-        <div class="text-sm text-theme-text-secondary">{{ totalFriendsCount }} znajomych</div>
+        <h2 class="text-xl font-extrabold text-theme-text">{{ $t('postFilter.privacyFriends') }}</h2>
+        <div class="text-sm text-theme-text-secondary">{{ $t('profile.totalfriendscountZnajomych') }}</div>
       </div>
       <a class="text-blue-500 font-semibold text-[15px] hover:underline cursor-pointer"
-        >Pokaż wszystkich znajomych</a
+        >{{ $t('profile.pokazWszystkichZnajomych') }}</a
       >
     </div>
 

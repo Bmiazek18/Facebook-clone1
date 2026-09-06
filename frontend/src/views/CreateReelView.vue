@@ -8,9 +8,9 @@
         class="flex items-center gap-2 hover:text-blue-400 transition-colors"
       >
         <ChevronLeftIcon :size="24" />
-        <span class="font-medium">Wstecz</span>
+        <span class="font-medium">{{ $t('createLive.back') }}</span>
       </button>
-      <h2 class="text-lg font-bold">Edytor Video</h2>
+      <h2 class="text-lg font-bold">{{ $t('create.edytorVideo') }}</h2>
       <button
         @click="handleSave"
         :disabled="clips.length === 0 || isRendering"
@@ -29,7 +29,7 @@
       class="absolute inset-0 bg-black/90 flex items-center justify-center z-50"
     >
       <div class="bg-gray-900 rounded-lg p-8 max-w-md w-full mx-4 text-center">
-        <h3 class="text-white text-xl font-bold mb-4">Renderowanie...</h3>
+        <h3 class="text-white text-xl font-bold mb-4">{{ $t('create.renderowanie') }}</h3>
         <div class="mb-4">
           <div class="bg-gray-700 rounded-full h-4 overflow-hidden">
             <div
@@ -37,9 +37,9 @@
               :style="{ width: renderProgress + '%' }"
             ></div>
           </div>
-          <div class="text-white text-center mt-2 font-bold">{{ renderProgress }}%</div>
+          <div class="text-white text-center mt-2 font-bold">{{ $t('create.renderprogress') }}</div>
         </div>
-        <p class="text-gray-400 text-sm">Nie zamykaj tej karty przeglądarki.</p>
+        <p class="text-gray-400 text-sm">{{ $t('create.nieZamykajTejKarty') }}</p>
       </div>
     </div>
 
@@ -135,61 +135,51 @@
         <div class="p-4 space-y-4">
           <div>
             <h3 class="text-white font-bold mb-3 flex items-center gap-2">
-              <VideoIcon :size="20" />
-              Dodaj Video
-            </h3>
+              <VideoIcon :size="20" />{{ $t('create.dodajVideo') }}</h3>
             <label class="block">
               <input type="file" accept="video/*" @change="handleAddVideo" class="hidden" />
               <div
                 class="border-2 border-dashed border-gray-600 hover:border-blue-500 rounded-lg p-4 text-center cursor-pointer transition-colors"
               >
                 <PlusIcon :size="32" class="mx-auto text-gray-400" />
-                <p class="text-gray-400 text-sm mt-2">Kliknij aby dodać video</p>
+                <p class="text-gray-400 text-sm mt-2">{{ $t('create.kliknijAbyDodacVideo') }}</p>
               </div>
             </label>
           </div>
 
           <div>
             <h3 class="text-white font-bold mb-3 flex items-center gap-2">
-              <TextIcon :size="20" />
-              Dodaj Tekst
-            </h3>
+              <TextIcon :size="20" />{{ $t('create.dodajTekst2') }}</h3>
             <button
               @click="addTextOverlay"
               class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition-colors"
-            >
-              + Nowy Tekst
-            </button>
+            >{{ $t('create.nowyTekst') }}</button>
           </div>
 
           <div>
             <h3 class="text-white font-bold mb-3 flex items-center gap-2">
-              <ImageIcon :size="20" />
-              Dodaj Obrazek
-            </h3>
+              <ImageIcon :size="20" />{{ $t('create.dodajObrazek') }}</h3>
             <label class="block">
               <input type="file" accept="image/*" @change="handleAddImage" class="hidden" />
               <div
                 class="w-full border-2 border-dashed border-gray-600 hover:border-blue-500 rounded-lg p-4 text-center cursor-pointer transition-colors"
               >
                 <ImageIcon :size="32" class="mx-auto text-gray-400" />
-                <p class="text-gray-400 text-sm mt-2">Kliknij aby dodać obrazek</p>
+                <p class="text-gray-400 text-sm mt-2">{{ $t('create.kliknijAbyDodacObrazek') }}</p>
               </div>
             </label>
           </div>
 
           <div>
             <h3 class="text-white font-bold mb-3 flex items-center gap-2">
-              <VideoIcon :size="20" />
-              Dodaj Video PiP
-            </h3>
+              <VideoIcon :size="20" />{{ $t('create.dodajVideoPip') }}</h3>
             <label class="block">
               <input type="file" accept="video/*" @change="handleAddPipVideo" class="hidden" />
               <div
                 class="w-full border-2 border-dashed border-gray-600 hover:border-blue-500 rounded-lg p-4 text-center cursor-pointer transition-colors"
               >
                 <VideoIcon :size="32" class="mx-auto text-gray-400" />
-                <p class="text-gray-400 text-sm mt-2">Kliknij aby dodać video</p>
+                <p class="text-gray-400 text-sm mt-2">{{ $t('create.kliknijAbyDodacVideo') }}</p>
               </div>
             </label>
           </div>
@@ -209,7 +199,7 @@
     <div class="bg-gray-900 border-t border-gray-700 p-4">
       <div class="max-w-full">
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-white font-bold">Timeline</h3>
+          <h3 class="text-white font-bold">{{ $t('create.timeline') }}</h3>
           <div class="text-gray-400 text-sm">
             {{ formatTime(currentTime) }} / {{ formatTime(totalDuration) }}
           </div>
@@ -221,16 +211,12 @@
           @click="handleTimelineClick"
         >
           <div class="flex items-center gap-2 mb-2 text-gray-400 text-xs pointer-events-none">
-            <div v-for="i in Math.floor(totalDuration)" :key="i" class="flex-1 text-right">
-              {{ i }}s
-            </div>
+            <div v-for="i in Math.floor(totalDuration)" :key="i" class="flex-1 text-right">{{ $t('create.iS') }}</div>
           </div>
 
           <div class="mb-2">
             <div class="text-white text-xs mb-1 flex items-center gap-1">
-              <VideoIcon :size="14" />
-              Video
-            </div>
+              <VideoIcon :size="14" />{{ $t('create.video') }}</div>
             <div class="relative h-16 bg-gray-700 rounded flex">
               <template v-for="(clip, index) in clips" :key="clip.id">
                 <div

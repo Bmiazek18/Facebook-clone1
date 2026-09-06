@@ -103,9 +103,9 @@ const filteredPosts = computed(() => {
       class="w-[360px] flex-shrink-0 bg-white shadow-sm flex flex-col h-full overflow-y-auto border-r border-gray-200 z-20"
     >
       <div class="px-4 pt-5 pb-2">
-        <h1 class="text-2xl font-bold text-gray-900 mb-4">Wyniki wyszukiwania</h1>
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">{{ $t('emojiPicker.searchResults') }}</h1>
         <div class="h-[1px] bg-gray-300 w-full mb-4"></div>
-        <h2 class="text-[17px] font-semibold text-gray-900 mb-2">Filtry</h2>
+        <h2 class="text-[17px] font-semibold text-gray-900 mb-2">{{ $t('search.filters') }}</h2>
       </div>
 
       <div class="px-2 pb-10">
@@ -125,13 +125,13 @@ const filteredPosts = computed(() => {
           <span
             class="font-medium text-[15px]"
             :class="activeFilter === 'all' ? 'text-[#1877F2]' : 'text-gray-900'"
-            >Wszystkie</span
+            >{{ $t('postFilter.privacyAll') }}</span
           >
         </button>
 
         <div v-if="activeFilter === 'all'" class="pl-14 pr-2 py-2 space-y-4 mb-2">
           <div class="flex items-center justify-between">
-            <span class="text-[15px] text-gray-900">Najnowsze posty</span>
+            <span class="text-[15px] text-gray-900">{{ $t('search.najnowszePosty') }}</span>
             <button
               @click="filters.latestPosts = !filters.latestPosts"
               class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
@@ -145,7 +145,7 @@ const filteredPosts = computed(() => {
           </div>
 
           <div class="flex items-center justify-between">
-            <span class="text-[15px] text-gray-900">Wyświetlone przez Ciebie</span>
+            <span class="text-[15px] text-gray-900">{{ $t('search.wyswietlonePrzezCiebie') }}</span>
             <button
               @click="filters.seenPosts = !filters.seenPosts"
               class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
@@ -160,7 +160,7 @@ const filteredPosts = computed(() => {
 
           <div class="pt-2 space-y-4">
             <div class="flex items-center justify-between cursor-pointer group">
-              <span class="text-[15px] text-gray-900">Data zamieszczenia</span>
+              <span class="text-[15px] text-gray-900">{{ $t('marketplace.dataZamieszczenia') }}</span>
               <ChevronDown :size="20" class="text-gray-500 bg-gray-200 rounded-full p-0.5" />
             </div>
           </div>
@@ -182,7 +182,7 @@ const filteredPosts = computed(() => {
           <span
             class="font-medium text-[15px]"
             :class="activeFilter === 'people' ? 'text-[#1877F2]' : 'text-gray-900'"
-            >Osoby</span
+            >{{ $t('search.people') }}</span
           >
         </button>
 
@@ -205,7 +205,7 @@ const filteredPosts = computed(() => {
           >
             <MoviePlay :size="20" />
           </div>
-          <span class="font-medium text-[15px] text-gray-900">Rolki</span>
+          <span class="font-medium text-[15px] text-gray-900">{{ $t('feed.rolki') }}</span>
         </button>
         <button
           class="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-100 transition mb-1"
@@ -215,7 +215,7 @@ const filteredPosts = computed(() => {
           >
             <Storefront :size="20" />
           </div>
-          <span class="font-medium text-[15px] text-gray-900">Marketplace</span>
+          <span class="font-medium text-[15px] text-gray-900">{{ $t('login.marketplace') }}</span>
         </button>
         <button
           class="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-100 transition mb-1"
@@ -225,7 +225,7 @@ const filteredPosts = computed(() => {
           >
             <Flag :size="20" />
           </div>
-          <span class="font-medium text-[15px] text-gray-900">Strony</span>
+          <span class="font-medium text-[15px] text-gray-900">{{ $t('home.pages') }}</span>
         </button>
         <button
           class="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-100 transition mb-1"
@@ -235,7 +235,7 @@ const filteredPosts = computed(() => {
           >
             <AccountGroup :size="20" />
           </div>
-          <span class="font-medium text-[15px] text-gray-900">Grupy</span>
+          <span class="font-medium text-[15px] text-gray-900">{{ $t('login.groups') }}</span>
         </button>
         <button
           class="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-100 transition mb-1"
@@ -245,7 +245,7 @@ const filteredPosts = computed(() => {
           >
             <CalendarMonth :size="20" />
           </div>
-          <span class="font-medium text-[15px] text-gray-900">Wydarzenia</span>
+          <span class="font-medium text-[15px] text-gray-900">{{ $t('groups.events') }}</span>
         </button>
       </div>
     </aside>
@@ -258,7 +258,7 @@ const filteredPosts = computed(() => {
             class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
           >
             <div class="px-4 py-3">
-              <h2 class="text-[20px] font-bold text-gray-900">Osoby</h2>
+              <h2 class="text-[20px] font-bold text-gray-900">{{ $t('search.people') }}</h2>
             </div>
             <div>
               <div
@@ -284,32 +284,24 @@ const filteredPosts = computed(() => {
                         person.mutualFriendsCount !== undefined && person.mutualFriendsCount > 0
                       "
                     >
-                      <span class="text-[13px] text-gray-500">
-                        {{ person.mutualFriendsCount }} wspólnych znajomych
-                      </span>
+                      <span class="text-[13px] text-gray-500">{{ $t('search.personMutualfriendscountWspolnychZnajomych') }}</span>
                     </div>
                     <div
                       v-if="person.inHistory"
                       class="text-[13px] text-blue-600 font-medium mt-0.5"
-                    >
-                      {{ person.newPostsCount }} nowych postów od ostatniego wyszukiwania
-                    </div>
+                    >{{ $t('search.personNewpostscountNowychPostow') }}</div>
                   </div>
                 </div>
 
                 <button
                   class="flex-shrink-0 bg-[#EBF5FF] text-[#0064D1] px-3 py-1.5 rounded-md font-semibold text-[15px] hover:bg-[#D4E9FF] transition"
-                >
-                  Dodaj znajomego
-                </button>
+                >{{ $t('feed.dodajZnajomego') }}</button>
               </div>
             </div>
             <button
               @click="activeFilter = 'people'"
               class="w-full py-2.5 bg-white hover:bg-gray-50 text-[15px] font-semibold text-gray-700 border-t border-gray-100"
-            >
-              Zobacz wszystkie
-            </button>
+            >{{ $t('feed.zobaczWszystkie') }}</button>
           </div>
 
           <PostItem v-for="post in filteredPosts" :key="post.id" :post="post" />
@@ -338,21 +330,15 @@ const filteredPosts = computed(() => {
                   class="flex items-center gap-2"
                   v-if="person.mutualFriendsCount !== undefined && person.mutualFriendsCount > 0"
                 >
-                  <span class="text-[13px] text-gray-500">
-                    {{ person.mutualFriendsCount }} wspólnych znajomych
-                  </span>
+                  <span class="text-[13px] text-gray-500">{{ $t('search.personMutualfriendscountWspolnychZnajomych') }}</span>
                 </div>
-                <div v-if="person.inHistory" class="text-[13px] text-blue-600 font-medium mt-0.5">
-                  {{ person.newPostsCount }} nowych postów od ostatniego wyszukiwania
-                </div>
+                <div v-if="person.inHistory" class="text-[13px] text-blue-600 font-medium mt-0.5">{{ $t('search.personNewpostscountNowychPostow') }}</div>
               </div>
             </div>
 
             <button
               class="flex-shrink-0 bg-[#EBF5FF] text-[#0064D1] px-3 py-1.5 rounded-md font-semibold text-[15px] hover:bg-[#D4E9FF] transition"
-            >
-              Dodaj znajomego
-            </button>
+            >{{ $t('feed.dodajZnajomego') }}</button>
           </div>
         </div>
       </div>

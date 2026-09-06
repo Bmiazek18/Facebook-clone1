@@ -95,14 +95,14 @@ const chart2Options = ref({
     <header class="bg-white border-b border-theme-border px-4 py-3 flex items-center justify-between sticky top-0 z-50">
       <!-- Opcje po lewej (Wybór zakresu) -->
       <button class="bg-theme-bg-tertiary hover:bg-theme-hover-strong transition-colors rounded-lg px-3.5 py-2 flex items-center gap-1.5 cursor-pointer">
-        <span class="text-[15px] font-semibold text-theme-text">Ostatnie 28 dni</span>
+        <span class="text-[15px] font-semibold text-theme-text">{{ $t('groups.ostatnie28Dni') }}</span>
         <ChevronDownIcon :size="20" class="text-theme-text" />
       </button>
 
       <!-- Opcje po prawej (Pobieranie) -->
       <button class="bg-theme-bg-tertiary hover:bg-theme-hover-strong transition-colors rounded-lg px-3.5 py-2 flex items-center gap-2 cursor-pointer">
         <DownloadIcon :size="18" class="text-theme-text" />
-        <span class="text-[15px] font-semibold text-theme-text">Pobierz</span>
+        <span class="text-[15px] font-semibold text-theme-text">{{ $t('groups.pobierz') }}</span>
       </button>
     </header>
 
@@ -113,10 +113,10 @@ const chart2Options = ref({
       <div class="bg-white rounded-xl shadow-sm border border-theme-border p-5">
         <div class="mb-4">
           <div class="flex items-center gap-1.5">
-            <h2 class="text-[17px] font-bold leading-tight">Łącznie 1 członków</h2>
+            <h2 class="text-[17px] font-bold leading-tight">{{ $t('groups.lacznie1Czlonkow') }}</h2>
             <InformationIcon :size="16" class="text-theme-text-secondary cursor-pointer hover:text-theme-text transition-colors" />
           </div>
-          <p class="text-[13px] text-theme-text-secondary mt-0.5">12 sie 2026</p>
+          <p class="text-[13px] text-theme-text-secondary mt-0.5">{{ $t('groups.12Sie2026') }}</p>
         </div>
 
         <!-- Wykres 1 -->
@@ -134,10 +134,10 @@ const chart2Options = ref({
       <div class="bg-white rounded-xl shadow-sm border border-theme-border p-5">
         <div class="mb-4">
           <div class="flex items-center gap-1.5">
-            <h2 class="text-[17px] font-bold leading-tight">0 próśb o dołączenie</h2>
+            <h2 class="text-[17px] font-bold leading-tight">{{ $t('groups.0ProsbODolaczenie') }}</h2>
             <InformationIcon :size="16" class="text-theme-text-secondary cursor-pointer hover:text-theme-text transition-colors" />
           </div>
-          <p class="text-[13px] text-theme-text-secondary mt-0.5">16 lip 2026 - 12 sie 2026</p>
+          <p class="text-[13px] text-theme-text-secondary mt-0.5">{{ $t('groups.16Lip202612') }}</p>
         </div>
 
         <!-- Wykres 2 -->
@@ -152,12 +152,8 @@ const chart2Options = ref({
 
         <!-- Stopka karty 2 -->
         <div class="mt-4">
-          <p class="text-[13px] text-theme-text-secondary text-center mb-3">
-            Liczba nowych próśb o dołączenie dziennie (16 lip - 12 sie)
-          </p>
-          <button class="w-full bg-theme-bg-tertiary hover:bg-theme-hover-strong transition-colors text-theme-text text-[15px] font-semibold py-2 rounded-lg cursor-pointer">
-            Zobacz wszystkie prośby o dołączenie
-          </button>
+          <p class="text-[13px] text-theme-text-secondary text-center mb-3">{{ $t('groups.liczbaNowychProsbO') }}</p>
+          <button class="w-full bg-theme-bg-tertiary hover:bg-theme-hover-strong transition-colors text-theme-text text-[15px] font-semibold py-2 rounded-lg cursor-pointer">{{ $t('groups.zobaczWszystkieProsbyO') }}</button>
         </div>
       </div>
 
@@ -165,7 +161,7 @@ const chart2Options = ref({
       <div class="bg-white rounded-xl shadow-sm border border-theme-border p-5">
         <div>
           <div class="flex items-center gap-2">
-            <h2 class="text-[17px] font-bold leading-tight">Rozpatrzono 0 próśb</h2>
+            <h2 class="text-[17px] font-bold leading-tight">{{ $t('groups.rozpatrzono0Prosb') }}</h2>
             <!-- Zielony wskaźnik trendu -->
             <div class="flex items-center text-[#31a24c] font-semibold text-[13px]">
               <MenuUpIcon :size="20" class="-mr-1" />
@@ -173,14 +169,14 @@ const chart2Options = ref({
             </div>
             <InformationIcon :size="16" class="text-theme-text-secondary cursor-pointer hover:text-theme-text transition-colors ml-1" />
           </div>
-          <p class="text-[13px] text-theme-text-secondary mt-0.5">16 lip 2026 - 12 sie 2026</p>
+          <p class="text-[13px] text-theme-text-secondary mt-0.5">{{ $t('groups.16Lip202612') }}</p>
         </div>
 
         <!-- Siatka z 3 kolumnami -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
           <!-- Zatwierdzone -->
           <div class="bg-theme-bg rounded-xl p-4 flex flex-col justify-between h-[120px]">
-            <h3 class="text-[16px] font-semibold text-theme-text">Zatwierdzone</h3>
+            <h3 class="text-[16px] font-semibold text-theme-text">{{ $t('groups.zatwierdzone') }}</h3>
             <div>
               <div class="text-[36px] font-light text-theme-text leading-none mb-1">0</div>
               <div class="flex items-center text-theme-text-secondary text-[13px] font-semibold">
@@ -192,13 +188,13 @@ const chart2Options = ref({
 
           <!-- Odrzucone -->
           <div class="bg-theme-bg rounded-xl p-4 flex flex-col justify-start h-[120px]">
-            <h3 class="text-[16px] font-semibold text-theme-text">Odrzucone</h3>
+            <h3 class="text-[16px] font-semibold text-theme-text">{{ $t('groups.odrzucone') }}</h3>
             <div class="text-[36px] font-light text-theme-text leading-none mt-auto pb-1">0</div>
           </div>
 
           <!-- Zablokowane -->
           <div class="bg-theme-bg rounded-xl p-4 flex flex-col justify-start h-[120px]">
-            <h3 class="text-[16px] font-semibold text-theme-text">Zablokowane</h3>
+            <h3 class="text-[16px] font-semibold text-theme-text">{{ $t('groups.zablokowane') }}</h3>
             <div class="text-[36px] font-light text-theme-text leading-none mt-auto pb-1">0</div>
           </div>
         </div>

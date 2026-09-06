@@ -44,9 +44,7 @@ defineProps<{
           <div
             v-else-if="friend.mutual !== undefined"
             class="text-[13px] font-medium text-theme-text-secondary hover:underline cursor-pointer mt-0.5"
-          >
-            {{ friend.mutual }} wspólnych znajomych
-          </div>
+          >{{ $t('friends.friendMutualWspolnychZnajomych') }}</div>
         </div>
       </div>
 
@@ -88,7 +86,7 @@ defineProps<{
                     d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.198 5.474a.562.562 0 01-.812.59l-4.721-2.735a.563.563 0 00-.541 0L4.17 21l1.197-5.474a.563.563 0 00-.182-.557l-4.204-3.602a.562.562 0 01.32-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
                   />
                 </svg>
-                <span>Ulubione</span>
+                <span>{{ $t('friends.ulubione') }}</span>
               </button>
 
               <!-- Opcja: Edytuj listę znajomych -->
@@ -109,7 +107,7 @@ defineProps<{
                     d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
                   />
                 </svg>
-                <span>Edytuj listę znajomych</span>
+                <span>{{ $t('friends.edytujListeZnajomych') }}</span>
               </button>
 
               <!-- Opcja: Przestań obserwować -->
@@ -130,7 +128,7 @@ defineProps<{
                     d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>Przestań obserwować</span>
+                <span>{{ $t('friends.przestanObserwowac') }}</span>
               </button>
 
               <!-- Opcja: Usuń z grona znajomych -->
@@ -151,7 +149,7 @@ defineProps<{
                     d="M22 10.5h-6m-2.25-1.5a3 3 0 11-6 0 3 3 0 016 0zm-11.25 9.75c0-3.175 2.146-5.85 5.147-6.634A6.002 6.002 0 006 15c0 3.314 2.686 6 6 6 1.012 0 1.957-.251 2.793-.694"
                   />
                 </svg>
-                <span>Usuń z grona znajomych</span>
+                <span>{{ $t('friends.usunZGronaZnajomych') }}</span>
               </button>
             </div>
           </template>
@@ -160,9 +158,7 @@ defineProps<{
         <button
           v-else
           class="bg-theme-primary hover:bg-theme-primary-hover cursor-pointer text-white text-sm px-3 py-2 rounded-lg font-semibold whitespace-nowrap"
-        >
-          Dodaj znajomego
-        </button>
+        >{{ $t('feed.dodajZnajomego') }}</button>
       </div>
     </div>
   </div>

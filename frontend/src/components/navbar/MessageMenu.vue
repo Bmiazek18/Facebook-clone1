@@ -94,19 +94,19 @@
                 <template v-if="chat.isGroup && chat.extraAvatars && chat.extraAvatars.length >= 2">
                   <img
                     :src="chat.extraAvatars[0]"
-                    alt="Awatar"
+                    :alt="$t('header.awatar')"
                     class="absolute z-999 bottom-0 left-0 h-8 w-8 rounded-full object-cover border border-theme-border bg-theme-bg ring-2 ring-[#fff]"
                   />
                   <img
                     :src="chat.extraAvatars[1]"
-                    alt="Awatar"
+                    :alt="$t('header.awatar')"
                     class="absolute top-0 right-0 h-8 w-8 rounded-full object-cover bg-theme-bg border border-theme-border"
                   />
                 </template>
                 <template v-else>
                   <img
                     :src="chat.avatarUrl"
-                    alt="Awatar"
+                    :alt="$t('header.awatar')"
                     class="h-12 w-12 rounded-full object-cover bg-theme-bg border border-theme-border"
                   />
                 </template>
@@ -170,7 +170,7 @@
 
     <div v-else class="flex-1 overflow-y-auto px-4 min-h-0">
       <div v-if="recentSearches.length > 0 && !searchQuery" class="mb-4">
-        <h3 class="text-sm font-semibold text-theme-text-secondary mb-2">Ostatnie wyszukiwania</h3>
+        <h3 class="text-sm font-semibold text-theme-text-secondary mb-2">{{ $t('search.recent') }}</h3>
         <ul>
           <li
             v-for="item in recentSearches"
@@ -189,7 +189,7 @@
       </div>
 
       <div>
-        <h3 class="text-sm font-semibold text-theme-text-secondary mb-2">Twoje kontakty</h3>
+        <h3 class="text-sm font-semibold text-theme-text-secondary mb-2">{{ $t('header.twojeKontakty') }}</h3>
         <ul>
           <li
             v-for="contact in filteredContacts"

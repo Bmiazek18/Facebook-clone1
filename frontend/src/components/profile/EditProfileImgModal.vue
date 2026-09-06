@@ -5,7 +5,7 @@
         <div class="mb-6">
           <textarea
             v-model="description"
-            placeholder="Opis"
+            :placeholder="$t('createLive.description')"
             class="w-full h-24 p-3 border border-gray-200 rounded-xl outline-none resize-none text-gray-800 placeholder-gray-400 text-base focus:border-blue-500 transition-colors"
           ></textarea>
         </div>
@@ -25,7 +25,7 @@
               <img
                 ref="imageRef"
                 src="https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                alt="Podgląd"
+                :alt="$t('chat.podglad')"
                 class="max-w-none pointer-events-auto"
                 @load="onImageLoad"
                 :style="{
@@ -107,30 +107,20 @@
             <button
               class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg text-sm font-semibold text-gray-700 transition-colors"
             >
-              <clock-outline-icon :size="18" />
-              Tymczasowe
-            </button>
+              <clock-outline-icon :size="18" />{{ $t('profile.tymczasowe') }}</button>
           </div>
         </div>
 
-        <div class="text-xs text-gray-500 leading-relaxed text-center sm:text-left">
-          Twoje zdjęcie profilowe dla profilu
-          <span class="font-bold text-gray-900">Bartosz Miazek</span> zostanie także zaktualizowane
-          na platformach Instagram.
-        </div>
+        <div class="text-xs text-gray-500 leading-relaxed text-center sm:text-left">{{ $t('profile.twojeZdjecieProfiloweDla') }}<span class="font-bold text-gray-900">{{ $t('marketplace.bartoszMiazek') }}</span>{{ $t('profile.zostanieTakzeZaktualizowaneNa') }}</div>
       </div>
 
       <div class="border-t border-gray-100 p-4 flex justify-end gap-3 bg-white">
         <button
           class="px-6 py-2 text-blue-600 font-semibold text-sm hover:bg-blue-50 rounded-lg transition-colors"
-        >
-          Anuluj
-        </button>
+        >{{ $t('common.cancel') }}</button>
         <button
           class="px-8 py-2 bg-blue-600 text-white font-semibold text-sm rounded-lg hover:bg-blue-700 transition-colors shadow-md shadow-blue-200"
-        >
-          Zapisz
-        </button>
+        >{{ $t('createLive.save') }}</button>
       </div>
     </div>
   </div>

@@ -115,16 +115,10 @@ const detailConfig = computed(() => {
         <div v-if="currentView === 'list'" key="list" class="view-container">
           <div class="p-4 sm:p-6 pb-8">
 
-            <h1 class="text-[20px] font-bold leading-tight mb-1">
-              Zarządzaj opublikowanymi postami
-            </h1>
-            <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] mb-6 leading-snug">
-              Rozpocznij od jednego kryterium, a potem dodaj ich więcej.
-            </p>
+            <h1 class="text-[20px] font-bold leading-tight mb-1">{{ $t('groups.zarzadzajOpublikowanymiPostami') }}</h1>
+            <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] mb-6 leading-snug">{{ $t('groups.rozpocznijOdJednegoKryterium') }}</p>
 
-            <h2 class="text-[14px] font-normal text-[#050505] dark:text-[#b0b3b8] uppercase tracking-wide mb-3">
-              KRYTERIA DOTYCZĄCE POSTÓW
-            </h2>
+            <h2 class="text-[14px] font-normal text-[#050505] dark:text-[#b0b3b8] uppercase tracking-wide mb-3">{{ $t('groups.kryteriaDotyczacePostow') }}</h2>
 
             <div class="flex flex-col gap-1">
               <button
@@ -169,9 +163,7 @@ const detailConfig = computed(() => {
               </button>
             </div>
 
-            <h1 class="text-[24px] font-bold leading-tight mb-4">
-              Dostosuj kryteria do potrzeb grupy
-            </h1>
+            <h1 class="text-[24px] font-bold leading-tight mb-4">{{ $t('groups.dostosujKryteriaDoPotrzeb') }}</h1>
 
             <!-- Baner z podpowiedzią (Żarówka) -->
             <div class="flex items-start gap-3 bg-[#f7f8fa] dark:bg-[#3a3b3c]/50 p-4 rounded-xl mb-8 border border-gray-100 dark:border-transparent">
@@ -183,9 +175,7 @@ const detailConfig = computed(() => {
 
             <!-- Konfiguracja Reguły -->
             <div class="mb-8">
-              <h2 class="text-[20px] font-bold mb-4">
-                Przenieś opublikowany post do weryfikacji, jeśli
-              </h2>
+              <h2 class="text-[20px] font-bold mb-4">{{ $t('groups.przeniesOpublikowanyPostDo') }}</h2>
 
               <!-- Złożone zdanie z wyróżnioną wartością -->
               <p class="text-[16px] text-[#050505] dark:text-[#e4e6eb] mb-4">
@@ -216,11 +206,9 @@ const detailConfig = computed(() => {
 
             <!-- Ustawienia opcjonalne (Checkbox) -->
             <div>
-              <h3 class="text-[17px] font-bold mb-4">Ustawienia opcjonalne</h3>
+              <h3 class="text-[17px] font-bold mb-4">{{ $t('groups.ustawieniaOpcjonalne') }}</h3>
               <label class="flex items-center justify-between cursor-pointer group">
-                <span class="text-[16px] font-medium text-[#050505] dark:text-[#e4e6eb]">
-                  Połącz te kryteria z innym działaniem
-                </span>
+                <span class="text-[16px] font-medium text-[#050505] dark:text-[#e4e6eb]">{{ $t('groups.polaczTeKryteriaZ') }}</span>
                 <input
                   type="checkbox"
                   v-model="linkWithAction"
@@ -236,9 +224,7 @@ const detailConfig = computed(() => {
             <button
               @click="handleSave"
               class="w-full bg-[#1877f2] hover:bg-[#166fe5] text-white font-semibold text-[15px] py-2.5 rounded-lg transition-colors cursor-pointer"
-            >
-              Dodaj do Asystenta administratora
-            </button>
+            >{{ $t('groups.dodajDoAsystentaAdministratora') }}</button>
           </div>
         </div>
 

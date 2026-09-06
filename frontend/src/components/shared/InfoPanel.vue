@@ -19,7 +19,7 @@
                 <img
                   class="rounded-full w-10 h-10 object-cover border border-gray-200 cursor-pointer hover:brightness-95"
                   :src="author?.avatar"
-                  alt="Avatar"
+                  :alt="$t('chat.avatar')"
                 />
                 <div class="flex flex-col">
                   <div
@@ -37,9 +37,7 @@
               <button
                 v-if="showFollowButton && !item.isFollowing"
                 class="text-blue-600 hover:bg-blue-50 font-semibold px-3 py-1.5 rounded-md text-sm transition-colors"
-              >
-                Obserwuj
-              </button>
+              >{{ $t('feed.obserwuj2') }}</button>
               <button
                 v-else
                 class="text-gray-600 hover:bg-gray-100 rounded-full p-2 -mr-2 transition-colors"
@@ -131,8 +129,8 @@
           <!-- Comments section -->
           <div v-if="!hideComments" class="pt-1 px-4 pb-20">
             <div v-if="!hasComments" class="text-center py-8 text-gray-500">
-              <p class="text-sm">Brak komentarzy</p>
-              <p class="text-xs mt-1">Bądź pierwszą osobą, która skomentuje</p>
+              <p class="text-sm">{{ $t('createLive.noComments') }}</p>
+              <p class="text-xs mt-1">{{ $t('common.badzPierwszaOsobaKtora') }}</p>
             </div>
             <CommentItem
               v-else
@@ -161,7 +159,7 @@
             <img
               class="rounded-full w-8 h-8 object-cover border border-gray-200 mr-2"
               src="https://i.pravatar.cc/150?u=current-user"
-              alt="Your avatar"
+              :alt="$t('common.yourAvatar')"
             />
             <div class="flex-1 relative">
               <input

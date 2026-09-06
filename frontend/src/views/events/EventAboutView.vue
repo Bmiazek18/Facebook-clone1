@@ -140,7 +140,7 @@ const organizers = [
       <EventAboutDetails :event-details="props.eventDetails" />
 
       <div class="bg-theme-bg-secondary rounded-xl shadow-sm p-6">
-        <h2 class="text-[20px] font-bold mb-6">Poznaj organizatorów</h2>
+        <h2 class="text-[20px] font-bold mb-6">{{ $t('events.poznajOrganizatorow') }}</h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div
@@ -170,14 +170,12 @@ const organizers = [
                 v-if="org.name.includes('Technikalia')"
                 class="w-full bg-[#E4E6EB] dark:bg-white/10 hover:bg-[#D8DADF] dark:hover:bg-white/20 text-theme-text py-2.5 rounded-lg font-semibold text-[15px] flex items-center justify-center gap-2 transition"
               >
-                <InformationIcon :size="20" /> Dowiedz się więcej
-              </button>
+                <InformationIcon :size="20" />{{ $t('auth.register.learnMore') }}</button>
               <button
                 v-else
                 class="w-full bg-[#E4E6EB] dark:bg-white/10 hover:bg-[#D8DADF] dark:hover:bg-white/20 text-theme-text py-2.5 rounded-lg font-semibold text-[15px] flex items-center justify-center gap-2 transition"
               >
-                <ShareVariantIcon :size="20" class="scale-x-[-1]" /> Skontaktuj się z nami
-              </button>
+                <ShareVariantIcon :size="20" class="scale-x-[-1]" />{{ $t('events.skontaktujSieZNami') }}</button>
             </div>
           </div>
         </div>
@@ -209,10 +207,8 @@ const organizers = [
 
       <div class="bg-theme-bg-secondary rounded-xl shadow-sm p-4">
         <div class="flex justify-between items-center mb-5">
-          <h3 class="text-[20px] font-bold text-theme-text">Goście</h3>
-          <button class="text-[#0866FF] hover:underline text-[15px] font-medium transition-colors">
-            Pokaż wszystkich
-          </button>
+          <h3 class="text-[20px] font-bold text-theme-text">{{ $t('events.goscie') }}</h3>
+          <button class="text-[#0866FF] hover:underline text-[15px] font-medium transition-colors">{{ $t('home.showAll') }}</button>
         </div>
 
         <div class="flex justify-around text-center mb-3">
@@ -220,19 +216,19 @@ const organizers = [
             <div class="text-[20px] font-bold text-theme-text">
               {{ eventDetails?.guestsGoing || 15 }}
             </div>
-            <div class="text-[14px] text-theme-text-secondary">Wezmą udział</div>
+            <div class="text-[14px] text-theme-text-secondary">{{ $t('events.wezmaUdzial') }}</div>
           </div>
           <div class="flex-1">
             <div class="text-[20px] font-bold text-theme-text">
               {{ eventDetails?.guestsInterested || 58 }}
             </div>
-            <div class="text-[14px] text-theme-text-secondary">Zainteresowani</div>
+            <div class="text-[14px] text-theme-text-secondary">{{ $t('events.zainteresowani') }}</div>
           </div>
         </div>
 
         <div class="border-t border-theme-border my-4"></div>
 
-        <h4 class="text-[17px] font-bold mb-4">Wybierz się ze znajomymi</h4>
+        <h4 class="text-[17px] font-bold mb-4">{{ $t('events.wybierzSieZeZnajomymi') }}</h4>
         <ul class="space-y-4">
           <li
             v-for="friend in friends"
@@ -252,21 +248,17 @@ const organizers = [
             </div>
             <button
               class="bg-[#E4E6EB] dark:bg-white/10 hover:bg-[#D8DADF] dark:hover:bg-white/20 text-theme-text px-4 py-1.5 rounded-md text-[15px] font-semibold transition"
-            >
-              Zaproś
-            </button>
+            >{{ $t('groups.invite') }}</button>
           </li>
         </ul>
 
         <button
           class="w-full mt-5 bg-[#E7F3FF] dark:bg-[#E7F3FF]/10 hover:bg-[#DBE7F2] dark:hover:bg-[#E7F3FF]/20 text-[#0866FF] dark:text-[#E7F3FF] font-semibold py-2 rounded-lg text-[15px] transition-colors"
-        >
-          Wyślij wiadomości do znajomych
-        </button>
+        >{{ $t('events.wyslijWiadomosciDoZnajomych') }}</button>
       </div>
 
       <div class="bg-theme-bg-secondary rounded-xl shadow-sm p-4">
-        <h3 class="text-[20px] font-bold mb-5">Popularne wśród znajomych</h3>
+        <h3 class="text-[20px] font-bold mb-5">{{ $t('events.popularneWsrodZnajomych') }}</h3>
 
         <div class="space-y-6">
           <div v-for="item in popularEvents" :key="item.id" class="flex gap-3">
@@ -293,15 +285,14 @@ const organizers = [
                   :src="item.friendAvatar"
                   class="w-4 h-4 rounded-full border border-theme-border"
                 />
-                <span class="truncate">{{ item.friend }} jest zainteresowany</span>
+                <span class="truncate">{{ $t('events.itemFriendJestZainteresowany') }}</span>
               </div>
 
               <div class="flex gap-2 mt-3">
                 <button
                   class="flex-1 bg-[#E4E6EB] dark:bg-white/10 hover:bg-[#D8DADF] dark:hover:bg-white/20 text-theme-text py-1.5 rounded-lg font-semibold text-[15px] flex items-center justify-center gap-1.5 transition"
                 >
-                  <StarOutlineIcon :size="20" /> Zainteresowany(a)
-                </button>
+                  <StarOutlineIcon :size="20" />{{ $t('events.zainteresowanyA') }}</button>
                 <button
                   class="bg-[#E4E6EB] dark:bg-white/10 hover:bg-[#D8DADF] dark:hover:bg-white/20 text-theme-text px-4 py-1.5 rounded-lg transition flex items-center justify-center"
                 >

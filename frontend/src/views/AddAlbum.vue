@@ -191,7 +191,7 @@ const openLocationSelector = (item) => {
       class="w-[360px] bg-theme-bg-secondary border-r border-theme-border flex flex-col shadow-2xl z-10 shrink-0"
     >
       <div class="p-4">
-        <h1 class="text-[24px] font-bold">Utwórz album</h1>
+        <h1 class="text-[24px] font-bold">{{ $t('profile.utworzAlbum') }}</h1>
       </div>
 
       <div class="p-4 flex-1 overflow-y-auto space-y-4">
@@ -202,13 +202,12 @@ const openLocationSelector = (item) => {
           <span class="text-theme-text-secondary">{{ privacyIcon }}</span> {{ privacyLabel }}
         </div>
 
-        <CustomInput id="album-input" label="Nazwa albumu" v-model="albumName" />
+        <CustomInput id="album-input" :label="$t('media.nazwaAlbumu')" v-model="albumName" />
 
         <label
           class="flex items-center justify-center gap-2 w-full bg-theme-bg-tertiary hover:bg-theme-hover-strong transition-colors cursor-pointer rounded-lg p-2.5 font-semibold text-theme-primary"
         >
-          <span class="text-xl">+</span> Prześlij zdjęcia lub filmy
-          <input
+          <span class="text-xl">+</span>{{ $t('media.przeslijZdjeciaLubFilmy') }}<input
             type="file"
             multiple
             class="hidden"
@@ -218,7 +217,7 @@ const openLocationSelector = (item) => {
         </label>
 
         <CustomDropdown
-          label="Sortuj według"
+          :label="$t('marketplace.sortujWedlug')"
           v-model="sortBy"
           :options="sortByOptions"
           @update:modelValue="sortFiles"
@@ -232,17 +231,14 @@ const openLocationSelector = (item) => {
           "
           class="flex items-center gap-2 w-full bg-theme-bg-tertiary hover:bg-theme-hover-strong transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-lg p-2.5 font-semibold text-sm"
         >
-          <ClockOutline :size="16" /> Użyj daty ze zdjęć
-        </button>
+          <ClockOutline :size="16" />{{ $t('media.uzyjDatyZeZdjec') }}</button>
       </div>
 
       <div class="p-4 border-t border-theme-border">
         <button
           :disabled="!albumName || files.length === 0"
           class="w-full py-2 rounded-lg font-semibold transition-all bg-theme-primary text-white hover:bg-theme-primary-hover disabled:bg-theme-bg-tertiary disabled:text-theme-text-secondary disabled:cursor-not-allowed"
-        >
-          Opublikuj
-        </button>
+        >{{ $t('post.publish') }}</button>
       </div>
     </aside>
 
@@ -259,8 +255,8 @@ const openLocationSelector = (item) => {
             class="absolute -top-1 -right-1 w-5 h-5 bg-theme-primary rounded-full border-4 border-theme-bg"
           ></div>
         </div>
-        <h2 class="text-xl font-bold text-theme-text-secondary">Może coś dodasz?</h2>
-        <p class="text-theme-text-secondary">Przeciągnij zdjęcia i filmy tutaj, aby rozpocząć.</p>
+        <h2 class="text-xl font-bold text-theme-text-secondary">{{ $t('media.mozeCosDodasz') }}</h2>
+        <p class="text-theme-text-secondary">{{ $t('media.przeciagnijZdjeciaIFilmy') }}</p>
       </div>
 
       <div v-else>
@@ -312,7 +308,7 @@ const openLocationSelector = (item) => {
               <div class="relative">
                 <CustomTextarea
                   :id="`description-${item.id}`"
-                  label="Opis (opcjonalnie)"
+                  :label="$t('media.opisOpcjonalnie')"
                   v-model="item.description"
                 />
               </div>
@@ -320,7 +316,7 @@ const openLocationSelector = (item) => {
               <div class="flex items-center justify-between pt-1">
                 <div class="flex gap-1">
                   <button
-                    title="Oznacz osoby"
+                    :title="$t('post.tagUsers')"
                     class="p-2 text-theme-text-secondary hover:text-theme-text hover:bg-theme-bg-tertiary rounded-full transition-all"
                   >
                     <AccountPlus :size="20" />
@@ -362,7 +358,7 @@ const openLocationSelector = (item) => {
 
     <BaseModal
       v-if="showPrivacyModal"
-      title="Wybierz grupę odbiorców"
+      :title="$t('profile.wybierzGrupeOdbiorcow')"
       @close="showPrivacyModal = false"
     >
       <PrivacySelector

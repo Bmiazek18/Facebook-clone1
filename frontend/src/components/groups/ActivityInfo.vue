@@ -5,9 +5,7 @@
     <div class="w-full  bg-white dark:bg-[#242526] rounded-lg border border-gray-200 dark:border-zinc-700 shadow-sm p-4">
 
       <!-- Nagłówek -->
-      <h2 class="text-[20px] font-bold text-[#050505] dark:text-[#E4E6EB] mb-3">
-        Aktywność
-      </h2>
+      <h2 class="text-[20px] font-bold text-[#050505] dark:text-[#E4E6EB] mb-3">{{ $t('emojiPicker.categories.activity') }}</h2>
 
       <!-- Delikatna linia oddzielająca -->
       <hr class="border-[#CED0D4] dark:border-[#3E4042] mb-4" />
@@ -27,9 +25,7 @@
             <span class="text-[15px] text-[#050505] dark:text-[#E4E6EB] leading-snug">
               {{ groupDetails?.newPostsToday ? groupDetails.newPostsToday + ' nowych postów dzisiaj' : 'Dzisiaj brak nowych postów' }}
             </span>
-            <span class="text-[15px] text-[#65676B] dark:text-[#B0B3B8] leading-snug mt-0.5">
-              {{ groupDetails?.newPostsMonth || 0 }} w ostatnim miesiącu
-            </span>
+            <span class="text-[15px] text-[#65676B] dark:text-[#B0B3B8] leading-snug mt-0.5">{{ $t('groups.groupdetailsNewpostsmonth0W') }}</span>
           </div>
         </div>
 
@@ -41,12 +37,8 @@
             </svg>
           </div>
           <div class="flex flex-col">
-            <span class="text-[15px] text-[#050505] dark:text-[#E4E6EB] leading-snug">
-              Łącznie {{ groupDetails?.members || 0 }} członków grupy
-            </span>
-            <span class="text-[15px] text-[#65676B] dark:text-[#B0B3B8] leading-snug mt-0.5">
-              {{ groupDetails?.newMembersWeek || 'Brak nowych członków' }} w ostatnim tygodniu
-            </span>
+            <span class="text-[15px] text-[#050505] dark:text-[#E4E6EB] leading-snug">{{ $t('groups.lacznieGroupdetailsMembers0') }}</span>
+            <span class="text-[15px] text-[#65676B] dark:text-[#B0B3B8] leading-snug mt-0.5">{{ $t('groups.groupdetailsNewmembersweekBrakNowych') }}</span>
           </div>
         </div>
 
@@ -59,9 +51,7 @@
             </svg>
           </div>
           <div class="flex flex-col">
-            <span class="text-[15px] text-[#050505] dark:text-[#E4E6EB] leading-snug">
-              Utworzono
-            </span>
+            <span class="text-[15px] text-[#050505] dark:text-[#E4E6EB] leading-snug">{{ $t('groups.utworzono') }}</span>
             <span class="text-[15px] text-[#050505] dark:text-[#E4E6EB] leading-snug mt-0.5">
               {{ getFormattedCreatedAge(groupDetails?.createdAge) }}
             </span>

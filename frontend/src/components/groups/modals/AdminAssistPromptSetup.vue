@@ -27,35 +27,33 @@ const handleSave = () => {
         <RobotOutlineIcon :size="24" />
       </div>
       <div>
-        <h2 class="text-xl font-bold">Asystent AI - Konfiguracja podpowiedzi</h2>
-        <p class="text-xs text-[#65676b] dark:text-[#b0b3b8]">Automatyzacja moderacji z wykorzystaniem sztucznej inteligencji</p>
+        <h2 class="text-xl font-bold">{{ $t('groups.asystentAiKonfiguracjaPodpowiedzi') }}</h2>
+        <p class="text-xs text-[#65676b] dark:text-[#b0b3b8]">{{ $t('groups.automatyzacjaModeracjiZWykorzystaniem') }}</p>
       </div>
     </div>
 
     <div class="space-y-4">
       <!-- Akcja asystenta -->
       <div>
-        <label class="block text-sm font-semibold mb-2">Działanie asystenta</label>
+        <label class="block text-sm font-semibold mb-2">{{ $t('groups.dzialanieAsystenta') }}</label>
         <select v-model="selectedAction" class="w-full bg-[#f0f2f5] dark:bg-[#3a3b3c] border border-gray-300 dark:border-[#525355] rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:ring-1 focus:ring-[#1877f2] dark:text-[#e4e6eb]">
-          <option value="reject">Odrzuć nadchodzący post</option>
-          <option value="approve">Automatycznie zatwierdź post</option>
-          <option value="flag">Przekaż do weryfikacji przez moderatora</option>
+          <option value="reject">{{ $t('groups.odrzucNadchodzacyPost') }}</option>
+          <option value="approve">{{ $t('groups.automatycznieZatwierdzPost') }}</option>
+          <option value="flag">{{ $t('groups.przekazDoWeryfikacjiPrzez') }}</option>
         </select>
       </div>
 
       <!-- Treść podpowiedzi (AI Prompt) -->
       <div>
         <div class="flex justify-between items-center mb-2">
-          <label class="block text-sm font-semibold">Kryteria AI (Prompt)</label>
+          <label class="block text-sm font-semibold">{{ $t('groups.kryteriaAiPrompt') }}</label>
           <span class="flex items-center gap-1 text-xs text-[#1877f2] dark:text-[#4599ff] font-medium">
-            <SparklesIcon :size="14" />
-            Wspierane przez AI
-          </span>
+            <SparklesIcon :size="14" />{{ $t('groups.wspieranePrzezAi') }}</span>
         </div>
         <textarea
           v-model="promptText"
           rows="5"
-          placeholder="np. Odrzuć posty zawierające mowę nienawiści, obraźliwe sformułowania lub linki prowadzące do zewnętrznych sklepów..."
+          :placeholder="$t('groups.npOdrzucPostyZawierajace')"
           class="w-full border border-gray-300 dark:border-[#525355] rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:ring-1 focus:ring-[#1877f2] dark:bg-[#242526] resize-none leading-relaxed dark:text-[#e4e6eb] placeholder-gray-400"
         ></textarea>
       </div>
@@ -66,9 +64,7 @@ const handleSave = () => {
       <button
         @click="emit('close')"
         class="px-4 py-2.5 rounded-lg text-[15px] font-semibold text-[#1877f2] dark:text-[#4599ff] hover:bg-gray-100 dark:hover:bg-[#3a3b3c] transition-colors"
-      >
-        Anuluj
-      </button>
+      >{{ $t('common.cancel') }}</button>
       <button
         @click="handleSave"
         :disabled="!promptText.trim()"
@@ -76,9 +72,7 @@ const handleSave = () => {
           'px-6 py-2.5 rounded-lg text-[15px] font-semibold transition-colors',
           promptText.trim() ? 'bg-[#1877f2] hover:bg-[#166fe5] text-white cursor-pointer' : 'bg-gray-200 dark:bg-[#3a3b3c] text-gray-400 cursor-not-allowed'
         ]"
-      >
-        Zapisz kryterium
-      </button>
+      >{{ $t('groups.zapiszKryterium') }}</button>
     </div>
   </div>
 </template>

@@ -21,11 +21,9 @@
           </svg>
         </div>
 
-        <h2 class="text-[22px] font-bold text-gray-900 mb-3 tracking-tight">Asystent moderacji</h2>
+        <h2 class="text-[22px] font-bold text-gray-900 mb-3 tracking-tight">{{ $t('dashboard.asystentModeracji') }}</h2>
 
-        <p class="text-[15px] text-gray-500 leading-relaxed max-w-[600px]">
-          Przypisz działania do Asystenta moderacji w celu ich automatycznej realizacji w Twoim imieniu. Dostęp do tego narzędzia możesz uzyskać w dowolnej chwili na
-          <span class="font-semibold text-gray-900">pulpicie profesjonalnym</span>.
+        <p class="text-[15px] text-gray-500 leading-relaxed max-w-[600px]">{{ $t('dashboard.przypiszDzialaniaDoAsystenta') }}<span class="font-semibold text-gray-900">{{ $t('dashboard.pulpicieProfesjonalnym') }}</span>.
         </p>
       </div>
 
@@ -33,13 +31,9 @@
       <div>
         <!-- Nagłówek sekcji -->
         <div class="mb-5 px-1">
-          <h3 class="text-xl font-bold text-gray-900 flex items-center">
-            Dodaj lub edytuj kryteria
-            <span class="text-gray-400 font-normal ml-2 text-lg">· 1</span>
+          <h3 class="text-xl font-bold text-gray-900 flex items-center">{{ $t('dashboard.dodajLubEdytujKryteria') }}<span class="text-gray-400 font-normal ml-2 text-lg">· 1</span>
           </h3>
-          <p class="text-[15px] text-gray-500 mt-1">
-            Zachowujesz kontrolę. Dostosuj kryteria, aby efektywnie zarządzać stroną.
-          </p>
+          <p class="text-[15px] text-gray-500 mt-1">{{ $t('dashboard.zachowujeszKontroleDostosujKryteria') }}</p>
         </div>
 
         <!-- Karta 2: Zarządzanie komentarzami (Akordion) -->
@@ -52,7 +46,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 text-blue-600 fill-current">
                 <path d="M12 2C6.477 2 2 6.03 2 11c0 2.84 1.48 5.38 3.79 7.04L5 22l3.85-2.05c1.02.29 2.1.45 3.15.45 5.523 0 10-4.03 10-9s-4.477-9-10-9zm0 13.5l-2.6 1.5 1-3-2.4-2h3.1l1-3 1 3h3.1l-2.4 2 1 3-2.6-1.5z" />
               </svg>
-              <h4 class="text-[16px] font-semibold text-blue-600">Zarządzaj komentarzami · 1</h4>
+              <h4 class="text-[16px] font-semibold text-blue-600">{{ $t('dashboard.zarzadzajKomentarzami1') }}</h4>
             </div>
             <!-- Strzałka (zwiń) -->
             <button class="p-1 hover:bg-gray-100 rounded-full transition-colors">
@@ -65,17 +59,13 @@
           <!-- Zawartość akordionu -->
           <div class="pl-1">
             <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
-              <p class="text-[16px] font-medium text-gray-900 leading-snug">
-                W przypadku spełnienia dowolnego z następujących kryteriów komentarz zostanie automatycznie ukryty.
-              </p>
-              <button class="shrink-0 px-5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold rounded-lg text-sm transition-colors">
-                Dodaj
-              </button>
+              <p class="text-[16px] font-medium text-gray-900 leading-snug">{{ $t('dashboard.wPrzypadkuSpelnieniaDowolnego') }}</p>
+              <button class="shrink-0 px-5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold rounded-lg text-sm transition-colors">{{ $t('call.dodaj') }}</button>
             </div>
 
             <!-- Pojedyncze kryterium -->
             <div class="bg-gray-50 rounded-xl p-4 flex items-center justify-between group hover:bg-gray-100 transition-colors cursor-pointer">
-              <span class="text-[15px] text-gray-900">Autor nie ma żadnych znajomych ani obserwujących osób</span>
+              <span class="text-[15px] text-gray-900">{{ $t('dashboard.autorNieMaZadnych') }}</span>
               <!-- Ikona edycji (ołówek) -->
               <button class="text-gray-400 group-hover:text-gray-600 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

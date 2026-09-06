@@ -106,14 +106,14 @@ watch(() => props.modelValue, async (isOpen) => {
               ref="inputRef"
               v-model="searchQuery"
               type="text"
-              placeholder="Wyszukaj czaty"
+              :placeholder="$t('metaAi.wyszukajCzaty')"
               class="w-full text-base bg-transparent border-none outline-none pr-8 text-neutral-800 placeholder-neutral-400 focus:ring-0"
             />
             <button
               type="button"
               @click="close"
               class="absolute right-6 p-1.5 text-neutral-400 hover:text-neutral-600 rounded-full hover:bg-neutral-100 transition-colors"
-              aria-label="Zamknij"
+              :aria-label="$t('common.close')"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -132,13 +132,11 @@ watch(() => props.modelValue, async (isOpen) => {
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
-              <span>Nowy czat</span>
+              <span>{{ $t('metaAi.nowyCzat') }}</span>
             </button>
 
             <div>
-              <p class="px-4 py-1 text-xs font-normal text-neutral-400">
-                Ostatnie
-              </p>
+              <p class="px-4 py-1 text-xs font-normal text-neutral-400">{{ $t('emojiPicker.recent') }}</p>
 
               <div class="mt-1 space-y-0.5">
                 <button
@@ -159,9 +157,7 @@ watch(() => props.modelValue, async (isOpen) => {
                 <div
                   v-if="filteredChats.length === 0"
                   class="px-4 py-6 text-center text-sm text-neutral-400"
-                >
-                  Nie znaleziono czatów
-                </div>
+                >{{ $t('metaAi.nieZnalezionoCzatow') }}</div>
               </div>
             </div>
           </div>

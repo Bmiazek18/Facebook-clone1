@@ -479,7 +479,7 @@ const handleToolAction = (action: string | undefined) => {
           v-if="isCroppingMode"
           ref="cropperRef"
           :src="imageUrl"
-          alt="Edytowane zdjęcie"
+          :alt="$t('create.edytowaneZdjecie')"
           class="w-full h-full"
           v-bind="cropperOptions"
           @crop="onCropChange"
@@ -495,7 +495,7 @@ const handleToolAction = (action: string | undefined) => {
                 v-if="imageUrl"
                 :src="imageUrl"
                 ref="imageWrapperRef"
-                alt="Edytowane zdjęcie"
+                :alt="$t('create.edytowaneZdjecie')"
                 class="max-h-[50vh] lg:max-h-[70vh] max-w-[85vw] lg:max-w-[800px] object-contain w-auto h-full shadow-2xl transition-transform duration-300 ease-out"
                 :style="{ transform: `rotate(${imageRotation}deg)` }"
                 @click="handleImageClickForTagging"
@@ -529,7 +529,7 @@ const handleToolAction = (action: string | undefined) => {
                           v-model="searchQuery"
                           type="text"
                           class="w-full text-[15px] outline-none text-gray-700 placeholder-gray-400 bg-transparent py-1"
-                          placeholder="Wprowadź dowolne imię i nazwisko"
+                          :placeholder="$t('create.wprowadzDowolneImieI')"
                           @keydown.enter="createTag"
                           autoFocus
                         />
@@ -561,16 +561,11 @@ const handleToolAction = (action: string | undefined) => {
                         <div
                           v-if="isUserSearchLoading"
                           class="px-4 py-4 text-sm text-gray-500 text-center"
-                        >
-                          Szukam...
-                        </div>
+                        >{{ $t('media.szukam') }}</div>
                         <div
                           v-else-if="filteredUsers.length === 0"
                           class="px-4 py-4 text-sm text-gray-500 text-center"
-                        >
-                          Brak wyników dla "{{ searchQuery }}".<br />Naciśnij Enter, aby dodać nowy
-                          tag.
-                        </div>
+                        >{{ $t('create.brakWynikowDlaSearchquery') }}<br />{{ $t('create.nacisnijEnterAbyDodac') }}</div>
                       </div>
                     </div>
                   </template>
@@ -646,9 +641,7 @@ const handleToolAction = (action: string | undefined) => {
           <button
             @click="isCroppingMode ? handleCropCancel() : handleCancel()"
             class="flex-1 py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold rounded-lg text-sm transition-colors"
-          >
-            Anuluj
-          </button>
+          >{{ $t('common.cancel') }}</button>
         </div>
       </div>
     </main>

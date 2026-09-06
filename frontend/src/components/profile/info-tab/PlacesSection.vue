@@ -64,7 +64,7 @@ const handleCancel = () => {
 
 <template>
   <div class="max-w-[850px] text-theme-text antialiased">
-    <h2 class="font-semibold text-[17px] mb-4">Praca</h2>
+    <h2 class="font-semibold text-[17px] mb-4">{{ $t('profile.info.work') }}</h2>
 
     <div v-if="!isEditing">
       <div v-if="position || company" class="flex justify-between items-start group mb-4">
@@ -73,10 +73,9 @@ const handleCancel = () => {
             <Briefcase :size="24" class="text-[#1877F2]" />
           </div>
           <div class="flex flex-col mt-0.5">
-            <span class="text-[15px] font-medium text-theme-text">
-              Pracuje jako: <span class="font-semibold">{{ position }}</span> w <span class="font-semibold">{{ company }}</span>
+            <span class="text-[15px] font-medium text-theme-text">{{ $t('profile.pracujeJako') }}<span class="font-semibold">{{ position }}</span>{{ $t('profile.w') }}<span class="font-semibold">{{ company }}</span>
             </span>
-            <span class="text-[13px] text-theme-text-secondary">Doświadczenie zawodowe</span>
+            <span class="text-[13px] text-theme-text-secondary">{{ $t('profile.doswiadczenieZawodowe') }}</span>
           </div>
         </div>
         <div v-if="isOwner" class="flex items-center gap-3">
@@ -94,41 +93,37 @@ const handleCancel = () => {
         class="inline-flex items-center text-[15px] text-theme-text-secondary font-medium transition-colors cursor-pointer"
         :class="isOwner ? 'hover:bg-theme-hover p-2 -ml-2 rounded-md' : ''"
       >
-        <Briefcase :size="20" class="text-theme-text mr-3" />
-        Dodaj doświadczenie zawodowe
-      </button>
+        <Briefcase :size="20" class="text-theme-text mr-3" />{{ $t('profile.dodajDoswiadczenieZawodowe') }}</button>
     </div>
 
     <div v-else class="space-y-4">
       <div
         class="inline-flex items-center gap-1.5 bg-theme-bg-tertiary px-3 py-1.5 rounded-md font-semibold text-[15px] text-theme-text mb-2"
       >
-        <Earth :size="16" class="text-theme-text-secondary" />
-        Publiczne
+        <Earth :size="16" class="text-theme-text-secondary" />{{ $t('postFilter.privacyPublic') }}</div>
+
+      <div>
+        <CustomInput id="company-input" :label="$t('profile.info.company')" v-model="company" variant="new" />
+        <p class="text-[12px] text-theme-text-secondary px-1 mt-1">{{ $t('profile.wymagane') }}</p>
       </div>
 
       <div>
-        <CustomInput id="company-input" label="Firma" v-model="company" variant="new" />
-        <p class="text-[12px] text-theme-text-secondary px-1 mt-1">Wymagane</p>
-      </div>
-
-      <div>
-        <CustomInput id="position-input" label="Stanowisko" v-model="position" variant="new" />
-        <p class="text-[12px] text-theme-text-secondary px-1 mt-1">Wymagane</p>
+        <CustomInput id="position-input" :label="$t('profile.stanowisko')" v-model="position" variant="new" />
+        <p class="text-[12px] text-theme-text-secondary px-1 mt-1">{{ $t('profile.wymagane') }}</p>
       </div>
 
       <div class="space-y-3 pt-2">
-        <h4 class="font-semibold text-[15px]">Okres</h4>
+        <h4 class="font-semibold text-[15px]">{{ $t('profile.okres') }}</h4>
 
         <div class="flex items-center gap-3">
-          <span class="text-[15px] text-theme-text">Od</span>
+          <span class="text-[15px] text-theme-text">{{ $t('profile.od') }}</span>
 
           <div class="relative inline-block">
             <select
               v-model="startYear"
               class="appearance-none bg-theme-bg-tertiary hover:bg-theme-bg-tertiary transition-colors pl-3 pr-8 py-1.5 rounded-md font-semibold text-[15px] text-theme-text outline-none cursor-pointer"
             >
-              <option value="" disabled selected>Rok</option>
+              <option value="" disabled selected>{{ $t('postFilter.yearLabel') }}</option>
               <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
             </select>
             <ChevronDown
@@ -144,14 +139,14 @@ const handleCancel = () => {
             type="checkbox"
             class="w-5 h-5 rounded text-[#1877F2] border-theme-border focus:ring-[#1877F2] cursor-pointer"
           />
-          <span class="font-semibold text-[15px]">Obecnie pracuję tutaj</span>
+          <span class="font-semibold text-[15px]">{{ $t('profile.obecniePracujeTutaj') }}</span>
         </label>
       </div>
 
       <div class="pt-2">
         <CustomInput
           id="location-input"
-          label="Miejscowość"
+          :label="$t('pages.miejscowosc')"
           v-model="location"
           variant="new"
           :disableFocusColor="true"
@@ -169,9 +164,7 @@ const handleCancel = () => {
                 ? 'top-1 scale-75 -translate-y-0'
                 : 'top-1/2 -translate-y-1/2 scale-100 group-focus-within:top-1 group-focus-within:-translate-y-0 group-focus-within:scale-75'
             "
-          >
-            Opis
-          </label>
+          >{{ $t('createLive.description') }}</label>
           <textarea
             v-model="description"
             rows="3"
@@ -184,9 +177,7 @@ const handleCancel = () => {
         <button
           @click="handleCancel"
           class="px-5 py-2 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
-        >
-          Anuluj
-        </button>
+        >{{ $t('common.cancel') }}</button>
         <button
           @click="handleSave"
           :disabled="!isValid"
@@ -196,9 +187,7 @@ const handleCancel = () => {
               ? 'bg-theme-bg-tertiary text-theme-text hover:bg-theme-bg-tertiary'
               : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed'
           "
-        >
-          Zapisz
-        </button>
+        >{{ $t('createLive.save') }}</button>
       </div>
     </div>
   </div>

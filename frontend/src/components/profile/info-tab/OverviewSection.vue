@@ -52,24 +52,22 @@ const saveBio = async () => {
     <!-- ============================================== -->
     <!-- SEKCJA 1: BIOGRAM                              -->
     <!-- ============================================== -->
-    <h2 class="font-semibold text-[17px] mb-5">Biogram</h2>
+    <h2 class="font-semibold text-[17px] mb-5">{{ $t('profile.biogram') }}</h2>
 
     <!-- TRYB EDYCJI BIOGRAMU -->
     <div v-if="isEditingBio" class="mb-8">
       <div
         class="inline-flex items-center gap-1.5 bg-theme-bg-tertiary px-3 py-1.5 rounded-md font-semibold text-[15px] text-theme-text mb-4"
       >
-        <Earth :size="16" class="text-theme-text-secondary" />
-        Publiczne
-      </div>
+        <Earth :size="16" class="text-theme-text-secondary" />{{ $t('postFilter.privacyPublic') }}</div>
 
-      <h3 class="font-semibold text-[17px] mb-3">Edytuj biogram</h3>
+      <h3 class="font-semibold text-[17px] mb-3">{{ $t('profile.info.editBio') }}</h3>
 
       <div
         class="relative border-[2px] border-[#1877F2] rounded-lg p-3 pt-6 pb-[8px] bg-white focus-within:ring-0"
       >
         <span class="absolute top-2 left-3 text-[13px] text-[#1877F2] font-normal"
-          >Przedstaw się</span
+          >{{ $t('profile.przedstawSie') }}</span
         >
         <textarea
           v-model="bioText"
@@ -88,9 +86,7 @@ const saveBio = async () => {
         <button
           @click="isEditingBio = false"
           class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
-        >
-          Anuluj
-        </button>
+        >{{ $t('common.cancel') }}</button>
         <button
           @click="saveBio"
           :disabled="bioText.length === 0"
@@ -100,9 +96,7 @@ const saveBio = async () => {
               ? 'bg-theme-bg-tertiary text-theme-text hover:bg-theme-bg-tertiary'
               : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed'
           "
-        >
-          Zapisz
-        </button>
+        >{{ $t('createLive.save') }}</button>
       </div>
     </div>
 
@@ -124,15 +118,12 @@ const saveBio = async () => {
     <!-- SEKCJA 2: PRZYPIĘTE SZCZEGÓŁY                  -->
     <!-- ============================================== -->
     <div class="flex justify-between items-center mb-5">
-      <h3 class="font-semibold text-[17px]">Przypięte szczegóły</h3>
+      <h3 class="font-semibold text-[17px]">{{ $t('profile.przypieteSzczegoly') }}</h3>
     </div>
 
     <!-- TRYB EDYCJI PRZYPIĘTYCH -->
     <div v-if="isEditingPinned" class="mt-1 pb-[8px]">
-      <p class="text-[15px] text-theme-text-secondary mb-5 leading-5">
-        Wybierz maksymalnie 5 szczegółów do wyświetlenia u góry Twojego profilu. Informacje
-        szczegółowe będą wyświetlane na podstawie ustawień grupy odbiorców.
-      </p>
+      <p class="text-[15px] text-theme-text-secondary mb-5 leading-5">{{ $t('profile.wybierzMaksymalnie5Szczegolow') }}</p>
 
       <div class="space-y-5">
         <label v-if="profileUser.location" class="flex items-start space-x-3 cursor-pointer">
@@ -145,8 +136,7 @@ const saveBio = async () => {
           <div class="flex flex-col">
             <span class="font-medium text-[15px] leading-5">{{ profileUser.location }}</span>
             <div class="flex items-center text-[13px] text-theme-text-secondary mt-0.5 gap-1">
-              <Earth :size="12" /> Publiczne
-            </div>
+              <Earth :size="12" />{{ $t('postFilter.privacyPublic') }}</div>
           </div>
         </label>
 
@@ -160,8 +150,7 @@ const saveBio = async () => {
           <div class="flex flex-col">
             <span class="font-medium text-[15px] leading-5">{{ profileUser.school }}</span>
             <div class="flex items-center text-[13px] text-theme-text-secondary mt-0.5 gap-1">
-              <Earth :size="12" /> Publiczne
-            </div>
+              <Earth :size="12" />{{ $t('postFilter.privacyPublic') }}</div>
           </div>
         </label>
       </div>
@@ -170,15 +159,11 @@ const saveBio = async () => {
         <button
           @click="isEditingPinned = false"
           class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
-        >
-          Anuluj
-        </button>
+        >{{ $t('common.cancel') }}</button>
         <button
           @click="savePinned"
           class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
-        >
-          Zapisz
-        </button>
+        >{{ $t('createLive.save') }}</button>
       </div>
     </div>
 

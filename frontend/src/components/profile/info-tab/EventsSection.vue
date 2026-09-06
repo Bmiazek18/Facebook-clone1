@@ -61,9 +61,9 @@ const handleSave = () => {
     <div v-if="!isEditing" @click="isEditing = true" class="cursor-pointer group select-none">
       <!-- Tytuł Sekcji -->
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-[20px] font-bold text-theme-text">Hobby</h2>
+        <h2 class="text-[20px] font-bold text-theme-text">{{ $t('profile.hobby') }}</h2>
         <!-- Opcjonalny przycisk podświetlany jak na FB przy hoverze -->
-        <span class="text-[14px] text-[#1877F2] font-medium hidden group-hover:block">Edytuj</span>
+        <span class="text-[14px] text-[#1877F2] font-medium hidden group-hover:block">{{ $t('common.edit') }}</span>
       </div>
 
       <!-- Wiersz z ikoną figur i tekstem (Zrzut ekranu 2026-06-25 o 10.37.50.png) -->
@@ -71,7 +71,7 @@ const handleSave = () => {
         <div class="text-theme-text flex items-center justify-center">
           <Shapes :size="24" class="stroke-[1.5]" />
         </div>
-        <span class="text-[15px] text-theme-text-secondary font-normal"> Hobby </span>
+        <span class="text-[15px] text-theme-text-secondary font-normal">{{ $t('profile.hobby') }}</span>
       </div>
     </div>
 
@@ -81,15 +81,13 @@ const handleSave = () => {
     <div v-else class="space-y-4">
       <!-- Nagłówek sekcji -->
       <div class="space-y-3">
-        <h2 class="text-[20px] font-bold text-theme-text">Hobby</h2>
+        <h2 class="text-[20px] font-bold text-theme-text">{{ $t('profile.hobby') }}</h2>
 
         <!-- Badge prywatności -->
         <div
           class="inline-flex items-center gap-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary transition-colors px-3 py-1.5 rounded-md font-semibold text-[15px] text-theme-text cursor-pointer select-none"
         >
-          <AccountMultiple :size="16" class="text-theme-text" />
-          Znajomi znajomych
-        </div>
+          <AccountMultiple :size="16" class="text-theme-text" />{{ $t('profile.znajomiZnajomych') }}</div>
       </div>
 
       <!-- Główny Kontener Pola Wyszukiwania wraz z Listą -->
@@ -111,9 +109,7 @@ const handleSave = () => {
                 ? 'top-1.5 text-[12px] text-[#1877F2]'
                 : 'top-1/2 -translate-y-1/2 text-[15px] text-theme-text-secondary',
             ]"
-          >
-            Szukaj
-          </label>
+          >{{ $t('common.search') }}</label>
 
           <input
             type="text"
@@ -128,7 +124,7 @@ const handleSave = () => {
           v-if="isFocused"
           class="border border-t-0 border-[#1877F2] rounded-b-xl bg-white shadow-lg overflow-hidden z-50 p-4 pt-2 space-y-3"
         >
-          <h3 class="text-[17px] font-bold text-theme-text px-1">Popularne</h3>
+          <h3 class="text-[17px] font-bold text-theme-text px-1">{{ $t('profile.popularne') }}</h3>
 
           <div class="space-y-1">
             <div
@@ -151,7 +147,7 @@ const handleSave = () => {
                   hobby.name
                 }}</span>
                 <span class="text-[13px] text-theme-text-secondary mt-0.5"
-                  >Dodane przez {{ hobby.count }}</span
+                  >{{ $t('profile.dodanePrzezHobbyCount') }}</span
                 >
               </div>
             </div>
@@ -159,7 +155,7 @@ const handleSave = () => {
         </div>
 
         <!-- Podpis pod polem (widoczny, gdy lista jest zamknięta) -->
-        <p v-if="!isFocused" class="text-[13px] text-theme-text-secondary px-1 mt-1.5">Dodaj do 10 hobby.</p>
+        <p v-if="!isFocused" class="text-[13px] text-theme-text-secondary px-1 mt-1.5">{{ $t('profile.dodajDo10Hobby') }}</p>
       </div>
 
       <!-- Linia separatora i przyciski akcji (Zrzut ekranu 2026-06-25 o 10.35.46.png) -->
@@ -167,9 +163,7 @@ const handleSave = () => {
         <button
           @click="handleCancel"
           class="px-5 py-2 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold text-[15px] rounded-lg transition-colors"
-        >
-          Anuluj
-        </button>
+        >{{ $t('common.cancel') }}</button>
         <button
           @click="handleSave"
           :disabled="selectedHobbies.length === 0"
@@ -179,9 +173,7 @@ const handleSave = () => {
               ? 'bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text'
               : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed',
           ]"
-        >
-          Zapisz
-        </button>
+        >{{ $t('createLive.save') }}</button>
       </div>
     </div>
   </div>

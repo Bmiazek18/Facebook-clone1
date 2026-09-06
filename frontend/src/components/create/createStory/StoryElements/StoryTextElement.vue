@@ -63,7 +63,7 @@ watch(
     :style="element.styles"
   >
     <span v-if="element.content" v-html="formattedContent"></span>
-    <span v-else class="opacity-50">Zacznij pisać</span>
+    <span v-else class="opacity-50">{{ $t('create.zacznijPisac') }}</span>
   </div>
 
   <!-- Edit Mode -->
@@ -76,6 +76,6 @@ watch(
     :inputClass="'bg-transparent text-center resize-none outline-none border-none ring-0 focus:ring-0 focus:outline-none overflow-visible min-w-[200px] p-2 rounded-lg placeholder:text-white/60 w-full h-full'"
     placeholderClass="w-full text-center p-2 text-white/60"
     :style="element.styles"
-    placeholder="Zacznij pisać"
+    :placeholder="$t('create.zacznijPisac')"
   />
 </template>

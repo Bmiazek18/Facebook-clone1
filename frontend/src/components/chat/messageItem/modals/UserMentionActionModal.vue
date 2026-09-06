@@ -84,7 +84,7 @@ function handleViewProfile() {
           <img
             :src="userData?.avatar || '/default-avatar.png'"
             class="w-full h-full object-cover"
-            alt="Avatar"
+            :alt="$t('chat.avatar')"
           />
         </div>
 
@@ -92,9 +92,7 @@ function handleViewProfile() {
           <h3 class="text-lg font-bold text-gray-900 dark:text-white">
             {{ userData?.name || 'Użytkownik' }}
           </h3>
-          <p class="text-xs text-gray-500 dark:text-gray-400">
-            Wybierz akcję dla oznaczonego użytkownika
-          </p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('chat.wybierzAkcjeDlaOznaczonego') }}</p>
         </div>
       </div>
 
@@ -106,7 +104,7 @@ function handleViewProfile() {
           class="w-full py-2.5 px-4 bg-[#1877F2] hover:bg-[#166FE5] text-white font-semibold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]"
         >
           <MessageOutline :size="18" />
-          <span>Wyślij wiadomość</span>
+          <span>{{ $t('profile.sendMessage') }}</span>
         </button>
 
         <button
@@ -115,7 +113,7 @@ function handleViewProfile() {
           class="w-full py-2.5 px-4 bg-gray-100 dark:bg-gray-700/80 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold rounded-xl text-sm transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
         >
           <AccountCircleOutline :size="18" />
-          <span>Wejdź na profil</span>
+          <span>{{ $t('chat.wejdzNaProfil') }}</span>
         </button>
       </div>
     </div>

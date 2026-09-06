@@ -4,11 +4,11 @@
       <button
         @click="$emit('close')"
         class="mr-4 hover:bg-gray-100 rounded-full p-1 transition"
-        aria-label="Powrót"
+        :aria-label="$t('chat.powrot')"
       >
         <ArrowLeftIcon :size="24" class="text-black" />
       </button>
-      <h2 class="text-[17px] font-bold text-gray-900">Multimedia i pliki</h2>
+      <h2 class="text-[17px] font-bold text-gray-900">{{ $t('chat.multimediaIPliki') }}</h2>
     </div>
 
     <div class="flex border-b border-gray-200 px-4  ">
@@ -16,16 +16,12 @@
         @click="activeTab = 'media'"
         class="px-4 py-3 font-semibold text-[14px] cursor-pointer transition relative"
         :class="activeTab === 'media' ? 'text-blue-600 border-b-[3px] border-blue-600' : 'text-gray-500 hover:bg-gray-50 rounded-t-md ml-2'"
-      >
-        Multimedia
-      </button>
+      >{{ $t('groups.media') }}</button>
       <button
         @click="activeTab = 'files'"
         class="px-4 py-3 font-semibold text-[14px] cursor-pointer transition relative ml-2"
         :class="activeTab === 'files' ? 'text-blue-600 border-b-[3px] border-blue-600' : 'text-gray-500 hover:bg-gray-50 rounded-t-md'"
-      >
-        Pliki
-      </button>
+      >{{ $t('groups.files') }}</button>
     </div>
 
     <!-- Zawartość zakładki: MULTIMEDIA -->
@@ -49,9 +45,7 @@
         </div>
       </div>
 
-      <div v-if="groupedPhotos.length === 0" class="text-center py-10 text-gray-500 text-sm">
-        Brak multimediów
-      </div>
+      <div v-if="groupedPhotos.length === 0" class="text-center py-10 text-gray-500 text-sm">{{ $t('chat.brakMultimediow') }}</div>
     </div>
 
     <!-- Zawartość zakładki: PLIKI (stylizowana pod zrzut ekranu) -->
@@ -73,9 +67,7 @@
         </div>
       </div>
 
-      <div v-if="fileList.length === 0" class="text-center py-10 text-gray-500 text-sm">
-        Brak plików
-      </div>
+      <div v-if="fileList.length === 0" class="text-center py-10 text-gray-500 text-sm">{{ $t('chat.brakPlikow') }}</div>
     </div>
   </div>
 </template>

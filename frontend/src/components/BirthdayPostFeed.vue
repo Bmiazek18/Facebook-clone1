@@ -3,10 +3,7 @@
     <div class="w-full">
       <div class="bg-white rounded-lg shadow-sm border border-gray-300 overflow-hidden">
         <div class="px-4 pt-4 pb-1 flex items-start justify-between">
-          <div class="text-[15px] text-gray-500 leading-snug">
-            {{ birthdayPosts.length }} znajomych opublikowało post na Twoim profilu z okazji Twoich
-            urodzin.
-          </div>
+          <div class="text-[15px] text-gray-500 leading-snug">{{ $t('birthday.birthdaypostsLengthZnajomychOpublikowalo') }}</div>
           <DotsHorizontalIcon class="text-gray-500 cursor-pointer -mt-1" />
         </div>
 
@@ -19,7 +16,7 @@
           class="p-3 text-center border-t border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"
         >
           <span class="text-[15px] font-semibold text-gray-600"
-            >Wyświetl jeszcze {{ birthdayPosts.length - 2 }}</span
+            >{{ $t('birthday.wyswietlJeszczeBirthdaypostsLength') }}</span
           >
         </div>
       </div>

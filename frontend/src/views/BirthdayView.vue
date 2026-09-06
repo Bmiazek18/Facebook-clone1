@@ -66,9 +66,7 @@
                     <button
                       @click="user.wishText = 'Stówka! 🌟🥂🎂'"
                       class="px-3 py-1.5 rounded-full border border-gray-200 text-[14px] text-gray-700 hover:bg-gray-50 transition-colors bg-white"
-                    >
-                      Stówka! 🌟🥂🎂
-                    </button>
+                    >{{ $t('birthday.stowka') }}</button>
                   </div>
                 </div>
               </div>
@@ -77,7 +75,7 @@
 
           <!-- Ostatni solenizanci -->
           <div class="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-            <h2 class="text-[20px] font-bold text-gray-900 mb-6">Ostatni solenizanci</h2>
+            <h2 class="text-[20px] font-bold text-gray-900 mb-6">{{ $t('birthday.ostatniSolenizanci') }}</h2>
 
             <div
               v-for="user in recentBirthdays"
@@ -91,7 +89,7 @@
                     <h3 class="text-[16px] font-bold text-gray-900">{{ user.name }}</h3>
                     <p class="text-[13px] text-gray-500">{{ user.dateLabel }}</p>
                   </div>
-                  <span v-if="user.age" class="text-[13px] text-gray-500">{{ user.age }} lat</span>
+                  <span v-if="user.age" class="text-[13px] text-gray-500">{{ $t('birthday.userAgeLat') }}</span>
                 </div>
 
                 <div class="flex items-center space-x-3 mb-3 mt-3">
@@ -138,7 +136,7 @@
 
           <!-- Nadchodzące urodziny -->
           <div class="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-            <h2 class="text-[20px] font-bold text-gray-900 mb-6">Nadchodzące urodziny</h2>
+            <h2 class="text-[20px] font-bold text-gray-900 mb-6">{{ $t('birthday.nadchodzaceUrodziny') }}</h2>
             <div class="space-y-4">
               <div
                 v-for="user in upcomingBirthdays"
@@ -162,9 +160,7 @@
                     <path
                       d="M12 2C6.477 2 2 6.14 2 11.25c0 2.91 1.5 5.51 3.84 7.23v3.13c0 .38.44.6.75.38l3.15-2.02c.73.2 1.48.31 2.26.31 5.523 0 10-4.14 10-9.25S17.523 2 12 2zm1.09 12.31l-2.5-2.67-4.8 2.67 5.27-5.59 2.5 2.67 4.8-2.67-5.27 5.59z"
                     />
-                  </svg>
-                  Wyślij wiadomość
-                </button>
+                  </svg>{{ $t('profile.sendMessage') }}</button>
               </div>
             </div>
           </div>

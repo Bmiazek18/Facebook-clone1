@@ -38,12 +38,12 @@ const notifications = ref([
 <template>
   <div class="max-w-2xl mt-14 mx-auto">
     <div class="bg-theme-bg-secondary rounded-t-lg shadow-sm p-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold">Powiadomienia</h1>
+      <h1 class="text-2xl font-bold">{{ $t('notifications_page.title') }}</h1>
     </div>
 
     <div class="bg-theme-bg-secondary rounded-b-lg shadow-sm">
       <div class="p-4">
-        <h2 class="text-[17px] font-semibold text-theme-text mb-3">Wcześniejsze</h2>
+        <h2 class="text-[17px] font-semibold text-theme-text mb-3">{{ $t('notifications_page.earlier') }}</h2>
 
         <div class="space-y-2">
           <div
@@ -54,7 +54,7 @@ const notifications = ref([
             <div class="relative shrink-0 mr-3">
               <img
                 :src="notification.image"
-                alt="Product"
+                :alt="$t('marketplace.product')"
                 class="w-14 h-14 rounded-md object-cover border border-theme-border"
               />
               <div
@@ -76,7 +76,7 @@ const notifications = ref([
               <span
                 class="text-xs font-medium text-theme-primary block mt-1"
                 v-if="notification.unread"
-                >Nowe</span
+                >{{ $t('notifications_page.new') }}</span
               >
               <span class="text-xs text-theme-text-secondary block mt-1" v-else>{{
                 notification.time
@@ -92,9 +92,7 @@ const notifications = ref([
         </div>
       </div>
 
-      <div v-if="notifications.length === 0" class="p-8 text-center text-theme-text-secondary">
-        Brak powiadomień
-      </div>
+      <div v-if="notifications.length === 0" class="p-8 text-center text-theme-text-secondary">{{ $t('notifications_page.noNotifications') }}</div>
     </div>
   </div>
 </template>

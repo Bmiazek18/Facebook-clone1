@@ -1,5 +1,5 @@
 <template>
-  <FriendsView title="Obserwowani" />
+  <FriendsView :title="$t('profile.following')" />
 </template>
 
 <script setup lang="ts">

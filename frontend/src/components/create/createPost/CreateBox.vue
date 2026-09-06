@@ -195,7 +195,7 @@ const closeCreatePost = () => {
           class="flex items-center justify-center gap-2 hover:bg-theme-hover py-2 rounded-lg transition-colors text-theme-text-secondary font-semibold text-[14px] sm:text-[15px] cursor-pointer w-full"
         >
           <Poll :size="24" fillColor="#0866FF" />
-          <span class="truncate">Ankieta</span>
+          <span class="truncate">{{ $t('create.ankieta') }}</span>
         </button>
         <NuxtLink
           v-else
@@ -203,7 +203,7 @@ const closeCreatePost = () => {
           class="flex items-center justify-center gap-2 hover:bg-theme-hover py-2 rounded-lg transition-colors text-theme-text-secondary font-semibold text-[14px] sm:text-[15px] cursor-pointer"
         >
           <VideoImage :size="24" fillColor="#F12848" />
-          <span class="truncate">Transmisja wideo na żywo</span>
+          <span class="truncate">{{ $t('createEvent.liveVideo') }}</span>
         </NuxtLink>
 
         <!-- 2. Zdjęcie/film -->
@@ -212,7 +212,7 @@ const closeCreatePost = () => {
           class="flex items-center justify-center gap-2 hover:bg-theme-hover py-2 rounded-lg transition-colors text-theme-text-secondary font-semibold text-[14px] sm:text-[15px] cursor-pointer"
         >
           <Image :size="24" fillColor="#43BE62" />
-          <span class="truncate">Zdjęcie/film</span>
+          <span class="truncate">{{ $t('post.photoVideo') }}</span>
         </button>
 
         <!-- 3. Dynamiczny przycisk: Post anonimowy (dla grup) LUB Wydarzenie z życia (dla reszty) -->
@@ -222,7 +222,7 @@ const closeCreatePost = () => {
           class="flex items-center justify-center gap-2 hover:bg-theme-hover py-2 rounded-lg transition-colors text-theme-text-secondary font-semibold text-[14px] sm:text-[15px] cursor-pointer"
         >
           <Incognito :size="24" fillColor="#1877F2" />
-          <span class="truncate">Post anonimowy</span>
+          <span class="truncate">{{ $t('post.anonymousPost') }}</span>
         </button>
 
         <button
@@ -231,7 +231,7 @@ const closeCreatePost = () => {
           class="flex items-center justify-center gap-2 hover:bg-theme-hover py-2 rounded-lg transition-colors text-theme-text-secondary font-semibold text-[14px] sm:text-[15px] cursor-pointer"
         >
           <Flag :size="24" fillColor="#1877F2" />
-          <span class="truncate">Wydarzenie z życia</span>
+          <span class="truncate">{{ $t('create.wydarzenieZZycia') }}</span>
         </button>
       </div>
     </div>

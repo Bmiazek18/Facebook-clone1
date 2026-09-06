@@ -21,9 +21,7 @@ const emit = defineEmits<{
     v-if="members.length > 0"
     class="absolute bottom-full left-0 mb-2 z-50 bg-white dark:bg-[#242526] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden w-64 max-h-60 overflow-y-auto py-1 animate-in fade-in slide-in-from-bottom-2 duration-150"
   >
-    <div class="px-3 py-1.5 text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-      Oznacz w grupie
-    </div>
+    <div class="px-3 py-1.5 text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ $t('chat.oznaczWGrupie') }}</div>
     <div
       v-for="(member, idx) in members"
       :key="member.id"

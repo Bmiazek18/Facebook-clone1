@@ -126,7 +126,7 @@ const otworzOknoRozmowy = async (typPolaczenia: 'audio' | 'video') => {
           :class="{ 'w-8 h-8': !hideIcons, 'w-10 h-10': hideIcons }"
           class="relative shrink-0 rounded-full bg-black/5 flex items-center justify-center border border-black/10"
         >
-          <img v-if="avatarUrl" :src="avatarUrl" alt="Avatar" class="w-full h-full object-cover rounded-full" />
+          <img v-if="avatarUrl" :src="avatarUrl" :alt="$t('chat.avatar')" class="w-full h-full object-cover rounded-full" />
           <span v-else class="text-xl">🧑‍🤝‍🧑</span>
           <span
             v-if="isOnline || subtitle?.includes('teraz')"
@@ -257,7 +257,7 @@ const otworzOknoRozmowy = async (typPolaczenia: 'audio' | 'video') => {
       </div>
     </div>
   </div>
-  <BaseModal title="Przypięte wiadomości" v-if="showPinnedModal" @close="showPinnedModal = false">
+  <BaseModal :title="$t('chat.przypieteWiadomosci')" v-if="showPinnedModal" @close="showPinnedModal = false">
     <PinnedModal :boxId="boxId" @close="showPinnedModal = false" />
   </BaseModal>
 </template>

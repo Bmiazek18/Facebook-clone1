@@ -6,7 +6,7 @@
       <img
         :src="avatarUrl "
         class="w-20 h-20 rounded-full object-cover shadow-sm"
-        alt="Avatar"
+        :alt="$t('chat.avatar')"
       />
     </div>
 
@@ -23,7 +23,7 @@
     <!-- Pigułka szyfrowania -->
     <div class="mt-3.5 inline-flex items-center px-3 py-1 rounded-full bg-gray-200/60 text-black font-semibold text-[13px]">
       <LockIcon :size="14" class="mr-1.5 text-black" />
-      <span>W pełni szyfrowane</span>
+      <span>{{ $t('chat.wPelniSzyfrowane') }}</span>
     </div>
 
     <!-- Szybkie akcje -->
@@ -33,7 +33,7 @@
         <div class="w-9 h-9 bg-gray-200/70 rounded-full flex items-center justify-center group-hover:bg-gray-300/80 transition mb-1.5">
           <AccountCircleIcon :size="22" class="text-black" />
         </div>
-        <span  class="text-[13px]  text-theme-text text-center">Profil</span>
+        <span  class="text-[13px]  text-theme-text text-center">{{ $t('chat.profil') }}</span>
       </NuxtLink>
 
       <!-- Wycisz -->
@@ -41,7 +41,7 @@
         <div class="w-9 h-9 bg-gray-200/70 rounded-full flex items-center justify-center group-hover:bg-gray-300/80 transition mb-1.5">
           <BellIcon :size="22" class="text-black" />
         </div>
-        <span  class="text-[13px]  text-theme-text text-center">Wycisz</span>
+        <span  class="text-[13px]  text-theme-text text-center">{{ $t('actions.mute') }}</span>
       </div>
 
       <!-- Szukaj -->
@@ -49,7 +49,7 @@
         <div class="w-9 h-9 bg-gray-200/70 rounded-full flex items-center justify-center group-hover:bg-gray-300/80 transition mb-1.5">
           <MagnifyIcon :size="22" class="text-black" />
         </div>
-        <span  class="text-[13px]  text-theme-text text-center">Szukaj</span>
+        <span  class="text-[13px]  text-theme-text text-center">{{ $t('common.search') }}</span>
       </div>
     </div>
   </div>

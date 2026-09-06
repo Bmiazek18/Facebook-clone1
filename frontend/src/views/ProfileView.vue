@@ -473,7 +473,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109]
   <BaseModal
     v-if="isCoverPickerOpen"
     @close="isCoverPickerOpen = false"
-    title="Edytuj zdjęcie w tle"
+    :title="$t('profile.edytujZdjecieWTle')"
   >
     <SelectProfileImgModal
       :is-cover="true"
@@ -487,10 +487,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109]
   <BaseModal v-if="isInfoModalOpen" @close="isInfoModalOpen = false" :title="profileUser?.name || ''">
     <div class="p-3 w-[550px]  text-left">
       <!-- Główny opis informacyjny -->
-      <p class="text-[#65676b] text-[15px] leading-[1.4] mb-5 tracking-normal">
-        Aby zapewnić bezpieczeństwo Facebooka, wyświetlamy informacje o użytkownikach i ich
-        profilach.
-      </p>
+      <p class="text-[#65676b] text-[15px] leading-[1.4] mb-5 tracking-normal">{{ $t('profile.abyZapewnicBezpieczenstwoFacebooka') }}</p>
 
       <!-- Lista z informacjami -->
       <div class="flex flex-col gap-4">
@@ -499,9 +496,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109]
           <div class="flex items-center justify-center text-[#050505] shrink-0">
             <CalendarMonthOutline :size="24" />
           </div>
-          <span class="text-[#050505] text-[15px] font-normal leading-tight">
-            Dołączenie do Facebooka: {{ formatDate(profileUser?.createdAt) }}
-          </span>
+          <span class="text-[#050505] text-[15px] font-normal leading-tight">{{ $t('profile.dolaczenieDoFacebookaFormatdate') }}</span>
         </div>
 
         <!-- Pozycja 2: Ostatnia aktualizacja -->
@@ -509,9 +504,7 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109]
           <div class="flex items-center justify-center text-[#050505] shrink-0">
             <AccountCircleOutline :size="24" />
           </div>
-          <span class="text-[#050505] text-[15px] font-normal leading-tight">
-            Zaktualizowano profil: {{ formatRelativeOrAbsoluteTime(profileUser?.updatedAt) }}
-          </span>
+          <span class="text-[#050505] text-[15px] font-normal leading-tight">{{ $t('profile.zaktualizowanoProfilFormatrelativeorabsolutetimeProfileuser') }}</span>
         </div>
       </div>
     </div>

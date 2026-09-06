@@ -84,8 +84,8 @@ const actionCards: ActionCard[] = [
   <div class="flex min-h-screen bg-theme-bg   text-theme-text">
     <main class="flex-1 w-[30vw] p-8 flex flex-col items-center">
       <div class="text-center mb-8 mt-4">
-        <h2 class="text-2xl font-bold mb-1">Witaj ponownie, {{ userName }}!</h2>
-        <p class="text-theme-text-secondary">Określ, jak chcesz poprowadzić transmisję na żywo.</p>
+        <h2 class="text-2xl font-bold mb-1">{{ $t('createLive.witajPonownieUsername') }}</h2>
+        <p class="text-theme-text-secondary">{{ $t('createLive.okreslJakChceszPoprowadzic') }}</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-5xl mb-8">
@@ -134,9 +134,7 @@ const actionCards: ActionCard[] = [
                 ? 'bg-blue-100 text-blue-700'
                 : 'text-theme-text-secondary hover:bg-theme-hover',
             ]"
-          >
-            Na żywo teraz
-          </button>
+          >{{ $t('createLive.naZywoTeraz') }}</button>
           <button
             @click="currentTab = 'scheduled'"
             :class="[
@@ -145,21 +143,15 @@ const actionCards: ActionCard[] = [
                 ? 'bg-blue-100 text-blue-700'
                 : 'bg-theme-bg-tertiary text-theme-text-secondary hover:bg-theme-hover',
             ]"
-          >
-            Zaplanowane transmisje
-          </button>
+          >{{ $t('createLive.zaplanowaneTransmisje') }}</button>
         </div>
 
         <div class="flex flex-col items-center justify-center text-center py-8">
           <div class="bg-theme-bg-tertiary rounded-full p-4 mb-4">
             <VideoOutlineIcon :size="32" class="text-theme-text-secondary" />
           </div>
-          <h4 class="text-lg font-medium text-theme-text mb-1">
-            Obecnie nie transmitujesz na żywo.
-          </h4>
-          <p class="text-sm text-theme-text-secondary">
-            Szukasz transmisji? Upewnij się, że wybrałeś odpowiednią stronę.
-          </p>
+          <h4 class="text-lg font-medium text-theme-text mb-1">{{ $t('createLive.obecnieNieTransmitujeszNa') }}</h4>
+          <p class="text-sm text-theme-text-secondary">{{ $t('createLive.szukaszTransmisjiUpewnijSie') }}</p>
         </div>
       </div>
     </main>

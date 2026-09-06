@@ -234,19 +234,19 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
     :class="{ 'shadow-lg border border-theme-border': !isFullView }"
   >
     <div class="flex justify-between font-semibold items-center mb-4 pb-3">
-      <h2 class="text-theme-text text-xl">Znajomi</h2>
+      <h2 class="text-theme-text text-xl">{{ $t('postFilter.privacyFriends') }}</h2>
 
       <!-- Dodatkowe elementy nagłówka dla FullView -->
       <div v-if="isFullView" class="flex items-center space-x-4">
         <div class="relative w-48">
-          <SearchInput v-model="searchQuery" placeholder="Szukaj" />
+          <SearchInput v-model="searchQuery" :placeholder="$t('common.search')" />
         </div>
         <template v-if="isOwner && isFullView">
           <a class="text-theme-primary font-semibold text-[15px] hover:underline cursor-pointer"
-            >Zaproszenia do grona znajomych</a
+            >{{ $t('friends.friendRequests') }}</a
           >
           <a class="text-theme-primary font-semibold text-[15px] hover:underline cursor-pointer"
-            >Szukaj znajomych</a
+            >{{ $t('common.szukajZnajomych') }}</a
           >
 
           <button
@@ -262,7 +262,7 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
         v-if="!isFullView"
         @click="goToAllFriends"
         class="text-theme-primary font-semibold text-[15px] hover:underline cursor-pointer"
-        >Wszyscy znajomi</a
+        >{{ $t('friends.allFriends') }}</a
       >
     </div>
 
@@ -275,9 +275,7 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
         class="pb-3 text-[15px] cursor-pointer transition-all"
         active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
         inactive-class="hover:border-b-3 hover:border-b-theme-border"
-      >
-        Wszyscy znajomi
-      </NuxtLink>
+      >{{ $t('friends.allFriends') }}</NuxtLink>
 
       <!-- Niedawno dodani -->
       <NuxtLink
@@ -286,9 +284,7 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
         class="pb-3 text-[15px] cursor-pointer transition-all"
         active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
         inactive-class="hover:border-b-3 hover:border-b-theme-border"
-      >
-        Niedawno dodani
-      </NuxtLink>
+      >{{ $t('friends.niedawnoDodani') }}</NuxtLink>
 
       <!-- Urodziny -->
       <NuxtLink
@@ -296,9 +292,7 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
         class="pb-3 text-[15px] cursor-pointer transition-all"
         active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
         inactive-class="hover:border-b-3 hover:border-b-theme-border"
-      >
-        Urodziny
-      </NuxtLink>
+      >{{ $t('friends.birthdays') }}</NuxtLink>
 
       <!-- Szkoła średnia -->
       <NuxtLink
@@ -306,9 +300,7 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
         class="pb-3 text-[15px] cursor-pointer transition-all"
         active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
         inactive-class="hover:border-b-3 hover:border-b-theme-border"
-      >
-        Szkoła średnia
-      </NuxtLink>
+      >{{ $t('profile.info.highSchool') }}</NuxtLink>
 
       <!-- Aktualne miejsce zamieszkania -->
       <NuxtLink
@@ -316,9 +308,7 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
         class="pb-3 text-[15px] cursor-pointer transition-all"
         active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
         inactive-class="hover:border-b-3 hover:border-b-theme-border"
-      >
-        Aktualne miejsce zamieszkania
-      </NuxtLink>
+      >{{ $t('friends.aktualneMiejsceZamieszkania') }}</NuxtLink>
 
       <!-- Obserwowani -->
       <NuxtLink
@@ -326,9 +316,7 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
         class="pb-3 text-[15px] cursor-pointer transition-all"
         active-class="border-b-3 border-b-theme-primary text-theme-primary font-medium"
         inactive-class="hover:border-b-3 hover:border-b-theme-border"
-      >
-        Obserwowani
-      </NuxtLink>
+      >{{ $t('profile.following') }}</NuxtLink>
     </div>
 
     <!-- Kontener listy znajomych -->
@@ -339,24 +327,18 @@ const handlePrivacyConfirm = (payload: { id: string; setDefault: boolean }) => {
         :friend="friend"
       />
     </div>
-    <div v-else-if="isLoading" class="p-8 text-center text-theme-text-secondary animate-pulse">
-      Ładowanie listy znajomych...
-    </div>
-    <div v-else class="p-8 text-center text-theme-text-secondary">
-      Brak znajomych do wyświetlenia
-    </div>
+    <div v-else-if="isLoading" class="p-8 text-center text-theme-text-secondary animate-pulse">{{ $t('friends.ladowanieListyZnajomych') }}</div>
+    <div v-else class="p-8 text-center text-theme-text-secondary">{{ $t('friends.brakZnajomychDoWyswietlenia') }}</div>
 
     <button
       v-if="!isFullView && filteredFriendsList.length > 0"
       @click="goToAllFriends"
       class="w-full bg-theme-bg-subtle hover:bg-theme-hover-strong rounded-lg p-2 font-bold mt-4 text-theme-text cursor-pointer transition-colors"
-    >
-      Zobacz wszystko
-    </button>
+    >{{ $t('friends.zobaczWszystko') }}</button>
 
     <BaseModal
       v-if="showFriendsModal"
-      title="Edytuj ustawienia prywatności"
+      :title="$t('friends.edytujUstawieniaPrywatnosci')"
       @close="showFriendsModal = false"
       :back="!!selectedSetting"
       @back="handleBack"

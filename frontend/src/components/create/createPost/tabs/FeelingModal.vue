@@ -149,9 +149,7 @@ const selectFeeling = (feeling: Feeling) => {
         @click="activeTab = 'feelings'"
         class="py-4 font-medium text-[15px] transition-all relative"
         :class="activeTab === 'feelings' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'"
-      >
-        Uczucia
-        <div
+      >{{ $t('create.uczucia') }}<div
           v-if="activeTab === 'feelings'"
           class="absolute bottom-0 left-0 w-full h-[3px] bg-blue-600 rounded-t-full"
         ></div>
@@ -161,9 +159,7 @@ const selectFeeling = (feeling: Feeling) => {
         @click="activeTab = 'activities'"
         class="py-4 font-medium text-[15px] transition-all relative"
         :class="activeTab === 'activities' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'"
-      >
-        Zajęcia
-        <div
+      >{{ $t('create.zajecia') }}<div
           v-if="activeTab === 'activities'"
           class="absolute bottom-0 left-0 w-full h-[3px] bg-blue-600 rounded-t-full"
         ></div>
@@ -220,7 +216,7 @@ const selectFeeling = (feeling: Feeling) => {
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Szukaj"
+            :placeholder="$t('common.search')"
             class="bg-transparent w-full outline-none text-[15px] placeholder-gray-500"
           />
         </div>

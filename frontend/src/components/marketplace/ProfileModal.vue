@@ -40,23 +40,21 @@ const emit = defineEmits(['close'])
           <div class="relative -mt-16 mb-2">
             <img
               src="https://placehold.co/400x400/333/fff?text=BM"
-              alt="Zdjęcie profilowe"
+              :alt="$t('marketplace.zdjecieProfilowe')"
               class="w-[132px] h-[132px] rounded-full border-4 border-white object-cover bg-gray-200 shadow-sm"
             />
           </div>
 
           <!-- Nagłówek (Imię i nazwisko) -->
-          <h1 class="text-[28px] font-bold text-[#050505] leading-tight">Bartosz Miazek</h1>
-          <p class="text-[15px] text-[#65676B] mt-1 mb-4 font-medium">Na Facebooku od 2020</p>
+          <h1 class="text-[28px] font-bold text-[#050505] leading-tight">{{ $t('marketplace.bartoszMiazek') }}</h1>
+          <p class="text-[15px] text-[#65676B] mt-1 mb-4 font-medium">{{ $t('marketplace.naFacebookuOd2020') }}</p>
 
           <!-- Informacja o prywatności -->
           <div class="bg-[#F0F2F5] p-3 rounded-lg flex items-start gap-3 mb-5">
             <div class="pt-0.5">
               <LockIcon class="text-[#65676B]" :size="18" />
             </div>
-            <p class="text-[14px] text-[#050505] leading-snug">
-              Twoje ustawienia prywatności na Facebooku określają, co osoby, łącznie z użytkownikami Marketplace, mogą zobaczyć w Twoim profilu na Facebooku.
-              <a href="#" class="text-[#0064D1] hover:underline font-semibold">Przejdź do ustawień</a>
+            <p class="text-[14px] text-[#050505] leading-snug">{{ $t('marketplace.twojeUstawieniaPrywatnosciNa') }}<a href="#" class="text-[#0064D1] hover:underline font-semibold">{{ $t('marketplace.przejdzDoUstawien') }}</a>
             </p>
           </div>
         </div>
@@ -65,7 +63,7 @@ const emit = defineEmits(['close'])
 
         <!-- Sekcja: Ocena i zalety -->
         <div class="px-4 py-4">
-          <h2 class="text-[17px] font-bold text-[#050505] mb-2">Ocena i zalety</h2>
+          <h2 class="text-[17px] font-bold text-[#050505] mb-2">{{ $t('marketplace.ocenaIZalety') }}</h2>
           <div class="flex items-center gap-1.5 text-[15px]">
             <div class="flex text-[#8A8D91]">
               <StarOutlineIcon v-for="i in 5" :key="i" :size="22" />
@@ -79,10 +77,10 @@ const emit = defineEmits(['close'])
 
         <!-- Sekcja: Informacje -->
         <div class="px-4 py-4">
-          <h2 class="text-[17px] font-bold text-[#050505] mb-3">Informacje</h2>
+          <h2 class="text-[17px] font-bold text-[#050505] mb-3">{{ $t('groups.information') }}</h2>
           <div class="flex items-center gap-3 text-[15px] text-[#050505]">
             <HomeIcon class="text-[#8A8D91]" :size="24" />
-            <span>Mieszka w: <span class="font-semibold">Łuków, Siedlce, Poland</span></span>
+            <span>{{ $t('marketplace.mieszkaW') }}<span class="font-semibold">{{ $t('marketplace.lukowSiedlcePoland') }}</span></span>
           </div>
         </div>
 
@@ -90,10 +88,8 @@ const emit = defineEmits(['close'])
 
         <!-- Sekcja: Ogłoszenia -->
         <div class="px-4 pt-4 pb-12">
-          <h2 class="text-[17px] font-bold text-[#050505]">Ogłoszenia Bartosz</h2>
-          <p class="text-[14px] text-[#65676B] mt-1 mb-4 leading-snug">
-            Ogłoszeniami możesz zarządzać na stronie <a href="#" class="text-[#0064D1] hover:underline font-semibold">Twoje ogłoszenia</a>. Ogłoszenia w grupach prywatnych mogą nie ...
-          </p>
+          <h2 class="text-[17px] font-bold text-[#050505]">{{ $t('marketplace.ogloszeniaBartosz') }}</h2>
+          <p class="text-[14px] text-[#65676B] mt-1 mb-4 leading-snug">{{ $t('marketplace.ogloszeniamiMozeszZarzadzacNa') }}<a href="#" class="text-[#0064D1] hover:underline font-semibold">{{ $t('marketplace.twojeOgloszenia') }}</a>{{ $t('marketplace.ogloszeniaWGrupachPrywatnych') }}</p>
 
           <!-- Pasek narzędzi ogłoszeń -->
           <div class="flex flex-col sm:flex-row gap-2 mb-10">
@@ -103,16 +99,14 @@ const emit = defineEmits(['close'])
               <input
                 v-model="searchQuery"
                 type="text"
-                placeholder="Wyszukaj ogłoszenia"
+                :placeholder="$t('marketplace.wyszukajOgloszenia')"
                 class="w-full bg-[#F0F2F5] text-[15px] text-[#050505] rounded-full py-2 pl-9 pr-4 focus:outline-none placeholder-[#65676B] font-medium"
               />
             </div>
             <!-- Filtry -->
-            <button class="bg-[#E4E6EB] hover:bg-[#D8DADF] transition-colors text-[#050505] font-semibold text-[15px] px-3.5 py-2 rounded-lg flex items-center justify-between gap-1 shrink-0">
-              Dostępne i na stanie <MenuDownIcon :size="20" class="text-[#65676B]" />
+            <button class="bg-[#E4E6EB] hover:bg-[#D8DADF] transition-colors text-[#050505] font-semibold text-[15px] px-3.5 py-2 rounded-lg flex items-center justify-between gap-1 shrink-0">{{ $t('marketplace.dostepneINaStanie') }}<MenuDownIcon :size="20" class="text-[#65676B]" />
             </button>
-            <button class="bg-[#E4E6EB] hover:bg-[#D8DADF] transition-colors text-[#050505] font-semibold text-[15px] px-3.5 py-2 rounded-lg flex items-center justify-between gap-1 shrink-0">
-              Sortuj według <MenuDownIcon :size="20" class="text-[#65676B]" />
+            <button class="bg-[#E4E6EB] hover:bg-[#D8DADF] transition-colors text-[#050505] font-semibold text-[15px] px-3.5 py-2 rounded-lg flex items-center justify-between gap-1 shrink-0">{{ $t('marketplace.sortujWedlug') }}<MenuDownIcon :size="20" class="text-[#65676B]" />
             </button>
           </div>
 
@@ -134,7 +128,7 @@ const emit = defineEmits(['close'])
               <path d="M75 35 L65 45 L70 50" fill="#4B4F56" stroke="#4B4F56" stroke-width="6" stroke-linecap="round"/>
               <circle cx="82" cy="25" r="8" fill="#1C1E21" />
             </svg>
-            <p class="text-[16px] text-[#65676B] font-semibold">Nie znaleziono ogłoszeń</p>
+            <p class="text-[16px] text-[#65676B] font-semibold">{{ $t('marketplace.nieZnalezionoOgloszen') }}</p>
           </div>
 
         </div>

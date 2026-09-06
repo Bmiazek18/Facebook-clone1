@@ -55,7 +55,7 @@ const emit = defineEmits<{
         'w-12 h-12 rounded-full flex items-center justify-center transition-colors cursor-pointer shadow-md',
         isSharingScreen ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-white/20 hover:bg-white/30 text-white',
       ]"
-      title="Udostępnij ekran"
+      :title="$t('call.udostepnijEkran')"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -66,7 +66,7 @@ const emit = defineEmits<{
     <button
       @click="emit('open-add-user')"
       class="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors cursor-pointer shadow-md text-white"
-      title="Dodaj osobę do rozmowy"
+      :title="$t('call.dodajOsobeDoRozmowy')"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -78,7 +78,7 @@ const emit = defineEmits<{
       <button
         @click="emit('toggle-filter-menu')"
         class="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors cursor-pointer shadow-md text-white"
-        title="Efekty i filtry"
+        :title="$t('call.efektyIFiltry')"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -95,27 +95,21 @@ const emit = defineEmits<{
             'text-xs text-left px-3 py-2 rounded-lg transition-colors cursor-pointer',
             currentFilter === 'none' ? 'bg-white/10 text-white font-bold' : 'text-zinc-400 hover:bg-white/5 hover:text-white',
           ]"
-        >
-          Brak filtra
-        </button>
+        >{{ $t('call.brakFiltra') }}</button>
         <button
           @click="emit('change-filter', 'blur')"
           :class="[
             'text-xs text-left px-3 py-2 rounded-lg transition-colors cursor-pointer',
             currentFilter === 'blur' ? 'bg-white/10 text-white font-bold' : 'text-zinc-400 hover:bg-white/5 hover:text-white',
           ]"
-        >
-          Rozmycie postaci
-        </button>
+        >{{ $t('call.rozmyciePostaci') }}</button>
         <button
           @click="emit('change-filter', 'image')"
           :class="[
             'text-xs text-left px-3 py-2 rounded-lg transition-colors cursor-pointer',
             currentFilter === 'image' ? 'bg-white/10 text-white font-bold' : 'text-zinc-400 hover:bg-white/5 hover:text-white',
           ]"
-        >
-          Wgraj własne tło...
-        </button>
+        >{{ $t('call.wgrajWlasneTlo') }}</button>
       </div>
     </div>
 
@@ -123,7 +117,7 @@ const emit = defineEmits<{
     <button
       @click="emit('disconnect')"
       class="w-12 h-12 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition-colors shadow-lg cursor-pointer text-white"
-      title="Zakończ połączenie"
+      :title="$t('call.zakonczPolaczenie')"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 rotate-[135deg]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />

@@ -1,7 +1,7 @@
 <!-- components/MarketplaceSidebar.vue -->
 <template>
   <Sidebar
-    title="Wyniki wyszukiwania"
+    :title="$t('emojiPicker.searchResults')"
     subtitle="Marketplace"
     searchPlaceholder="Pojazdy"
     :showSearch="true"
@@ -11,9 +11,7 @@
     <!-- SLOT: Historia wyszukiwania (Dropdown) -->
     <template #search-dropdown>
       <div class="w-full px-4 flex flex-col">
-        <h3 class="font-semibold text-[17px] text-theme-text mb-3">
-          Ostatnie wyszukiwania
-        </h3>
+        <h3 class="font-semibold text-[17px] text-theme-text mb-3">{{ $t('search.recent') }}</h3>
 
         <!-- Lista ostatnich wyszukiwań -->
         <div class="space-y-1" v-if="recentSearches.length > 0">
@@ -30,18 +28,14 @@
           </button>
         </div>
 
-        <div v-else class="text-sm text-theme-text-secondary mb-2">
-          Brak ostatnich wyszukiwań
-        </div>
+        <div v-else class="text-sm text-theme-text-secondary mb-2">{{ $t('search.noRecent') }}</div>
 
         <!-- Przycisk usuwania -->
         <button
           v-if="recentSearches.length > 0"
           @click="recentSearches = []"
           class="mt-3 w-full bg-[#F1F2F5] dark:bg-[#333334] hover:bg-[#E4E6EB] dark:hover:bg-[#4E4F50] text-theme-text font-semibold py-2 rounded-lg transition-colors text-[15px]"
-        >
-          Usuń ostatnie wyszukiwania
-        </button>
+        >{{ $t('marketplace.usunOstatnieWyszukiwania') }}</button>
       </div>
     </template>
 
@@ -49,21 +43,19 @@
     <template #actions>
       <button @click="isAlertOpen = true" class="w-full bg-[#E7F3FF] hover:bg-[#DBE7F2] text-[#0866FF] font-semibold py-2 rounded-lg flex items-center justify-center gap-2 transition text-[15px]">
         <BellOutlineIcon :size="20" />
-        <span>Powiadom mnie</span>
+        <span>{{ $t('marketplace.powiadomMnie') }}</span>
       </button>
       <button @click="createListing" class="w-full bg-[#E7F3FF] hover:bg-[#DBE7F2] text-[#0866FF] font-semibold py-2 rounded-lg flex items-center justify-center gap-2 transition text-[15px]">
         <PlusIcon :size="20" />
-        <span>Utwórz nowe ogłoszenie</span>
+        <span>{{ $t('marketplace.utworzNoweOgloszenie') }}</span>
       </button>
     </template>
 
     <!-- Nagłówek sekcji filtrów -->
     <template #list-header>
       <div class="w-full mb-1">
-        <h2 class="text-lg font-bold text-theme-text mb-2">Filtry</h2>
-        <button class="text-[#0866FF] font-semibold text-[15px] hover:underline text-left">
-          Łęczyca gmina · W promieniu 500 km
-        </button>
+        <h2 class="text-lg font-bold text-theme-text mb-2">{{ $t('search.filters') }}</h2>
+        <button class="text-[#0866FF] font-semibold text-[15px] hover:underline text-left">{{ $t('marketplace.leczycaGminaWPromieniu') }}</button>
       </div>
     </template>
 
@@ -73,7 +65,7 @@
       <!-- 1. Sortuj według -->
       <div class="border-b border-theme-border py-3">
         <button @click="toggleSection('sort')" class="w-full flex justify-between items-center font-semibold text-[15px] text-theme-text">
-          <span>Sortuj według</span>
+          <span>{{ $t('marketplace.sortujWedlug') }}</span>
           <ChevronUpIcon v-if="openSections.sort" :size="20" />
           <ChevronDownIcon v-else :size="20" />
         </button>
@@ -106,19 +98,19 @@
 
       <!-- 2. Cena -->
       <div class="border-b border-theme-border py-3">
-        <div class="font-semibold text-[15px] text-theme-text mb-3">Cena</div>
+        <div class="font-semibold text-[15px] text-theme-text mb-3">{{ $t('marketplace.cena') }}</div>
         <div class="flex items-center gap-3">
           <input
             type="number"
             v-model="filters.priceMin"
-            placeholder="Min."
+            :placeholder="$t('marketplace.min')"
             class="w-full bg-[#F1F2F5] dark:bg-[#333334] border-transparent rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-[#0866FF] text-theme-text text-[15px] placeholder-theme-text-secondary"
           />
-          <span class="text-[15px] text-theme-text">do</span>
+          <span class="text-[15px] text-theme-text">{{ $t('marketplace.do') }}</span>
           <input
             type="number"
             v-model="filters.priceMax"
-            placeholder="Maks."
+            :placeholder="$t('marketplace.maks')"
             class="w-full bg-[#F1F2F5] dark:bg-[#333334] border-transparent rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-[#0866FF] text-theme-text text-[15px] placeholder-theme-text-secondary"
           />
         </div>
@@ -127,7 +119,7 @@
       <!-- 3. Data zamieszczenia -->
       <div class="border-b border-theme-border py-3">
         <button @click="toggleSection('date')" class="w-full flex justify-between items-center font-semibold text-[15px] text-theme-text">
-          <span>Data zamieszczenia</span>
+          <span>{{ $t('marketplace.dataZamieszczenia') }}</span>
           <ChevronUpIcon v-if="openSections.date" :size="20" />
           <ChevronDownIcon v-else :size="20" />
         </button>
@@ -161,7 +153,7 @@
       <!-- 4. Typ pojazdu -->
       <div class="py-3">
         <button @click="toggleSection('type')" class="w-full flex justify-between items-center font-semibold text-[15px] text-theme-text">
-          <span>Typ pojazdu</span>
+          <span>{{ $t('marketplace.typPojazdu') }}</span>
           <ChevronUpIcon v-if="openSections.type" :size="20" />
           <ChevronDownIcon v-else :size="20" />
         </button>
@@ -195,7 +187,7 @@
     </template>
   </Sidebar>
 
-  <BaseModal v-if="isAlertOpen" @close="isAlertOpen = false" title="Utwórz alert">
+  <BaseModal v-if="isAlertOpen" @close="isAlertOpen = false" :title="$t('marketplace.utworzAlert')">
     <CreateAlertDialog
       :search-phrase="filters.searchQuery"
       :price-min="filters.priceMin"

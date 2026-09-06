@@ -8,12 +8,8 @@ import FileDocument from 'vue-material-design-icons/FileDocument.vue'
       <FileDocument :size="90" class="text-theme-text-secondary opacity-50" />
     </div>
 
-    <h3 class="text-xl md:text-2xl font-bold text-theme-text-secondary mb-2">
-      Nie ma jeszcze komentarzy
-    </h3>
+    <h3 class="text-xl md:text-2xl font-bold text-theme-text-secondary mb-2">{{ $t('feed.nieMaJeszczeKomentarzy') }}</h3>
 
-    <p class="text-theme-text-secondary text-sm md:text-base max-w-xs">
-      Bądź pierwszą osobą, która to skomentuje.
-    </p>
+    <p class="text-theme-text-secondary text-sm md:text-base max-w-xs">{{ $t('feed.badzPierwszaOsobaKtora') }}</p>
   </div>
 </template>

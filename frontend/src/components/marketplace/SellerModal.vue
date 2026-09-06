@@ -79,7 +79,7 @@ const listings = ref([
         <div class="relative w-full h-[220px] bg-gray-200">
           <img
             :src="userProfile.coverUrl"
-            alt="Zdjęcie w tle"
+            :alt="$t('createEvent.coverPhoto')"
             class="w-full h-full object-cover"
           />
           <!-- Przycisk zamykania na zdjęciu -->
@@ -98,7 +98,7 @@ const listings = ref([
             <div class="w-[152px] h-[152px] rounded-full bg-white p-1">
               <img
                 :src="userProfile.avatarUrl"
-                alt="Avatar"
+                :alt="$t('chat.avatar')"
                 class="w-full h-full rounded-full object-cover border border-gray-100"
               />
             </div>
@@ -106,25 +106,21 @@ const listings = ref([
 
           <!-- Nagłówek profilu -->
           <h1 class="text-[28px] font-bold text-theme-text leading-tight">{{ userProfile.name }}</h1>
-          <p class="text-[15px] text-theme-text-secondary mt-1">Na Facebooku od {{ userProfile.joinedYear }}</p>
+          <p class="text-[15px] text-theme-text-secondary mt-1">{{ $t('marketplace.naFacebookuOdUserprofile') }}</p>
           <p class="text-[15px] text-theme-text-secondary mb-5">
-            <span class="font-bold text-theme-text">{{ userProfile.activeListingsCount }}</span> aktywne ogłoszenia
-          </p>
+            <span class="font-bold text-theme-text">{{ userProfile.activeListingsCount }}</span>{{ $t('marketplace.aktywneOgloszenia') }}</p>
 
           <!-- Główny panel przycisków akcji -->
           <div class="flex gap-2 mb-2">
             <button class="flex-1 bg-[#0866FF] hover:bg-blue-600 text-white font-semibold py-1.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors h-10 text-[15px]">
-              <AccountPlusIcon :size="20" /> Obserwuj
-            </button>
+              <AccountPlusIcon :size="20" />{{ $t('feed.obserwuj2') }}</button>
             <button class="flex-1 bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed font-semibold py-1.5 px-4 rounded-lg flex items-center justify-center gap-2 h-10 text-[15px]">
-              <FacebookMessengerIcon :size="18" /> Wyślij wiadomość
-            </button>
+              <FacebookMessengerIcon :size="18" />{{ $t('profile.sendMessage') }}</button>
           </div>
 
           <div class="flex gap-2 mb-4">
             <button class="flex-1 bg-theme-bg-tertiary hover:bg-theme-hover-strong text-theme-text font-semibold py-1.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors h-10 text-[15px]">
-              <AccountOutlineIcon :size="20" /> Wyświetl profil
-            </button>
+              <AccountOutlineIcon :size="20" />{{ $t('profile.viewProfile') }}</button>
             <button class="bg-theme-bg-tertiary hover:bg-theme-hover-strong text-theme-text font-semibold px-4 rounded-lg flex items-center justify-center transition-colors h-10">
               <DotsHorizontalIcon :size="20" />
             </button>
@@ -134,15 +130,15 @@ const listings = ref([
 
           <!-- Sekcja: Informacje -->
           <div class="mb-4">
-            <h2 class="text-[17px] font-bold text-theme-text mb-3">Informacje</h2>
+            <h2 class="text-[17px] font-bold text-theme-text mb-3">{{ $t('groups.information') }}</h2>
             <div class="space-y-3">
               <div class="flex items-center text-theme-text">
                 <HomeIcon class="text-theme-text-secondary mr-3" :size="24" />
-                <span class="text-[15px]">Mieszka w: <span class="font-bold">{{ userProfile.location }}</span></span>
+                <span class="text-[15px]">{{ $t('marketplace.mieszkaW') }}<span class="font-bold">{{ userProfile.location }}</span></span>
               </div>
               <div class="flex items-center text-theme-text">
                 <FacebookIcon class="text-theme-text-secondary mr-3" :size="24" />
-                <span class="text-[15px]">Dołączenie do Facebooka: {{ userProfile.joinedYear }}</span>
+                <span class="text-[15px]">{{ $t('marketplace.dolaczenieDoFacebookaUserprofile') }}</span>
               </div>
             </div>
           </div>
@@ -151,7 +147,7 @@ const listings = ref([
 
           <!-- Sekcja: Ogłoszenia -->
           <div>
-            <h2 class="text-[17px] font-bold text-theme-text mb-4">Ogłoszenia {{ userProfile.name.split(' ')[0] }}</h2>
+            <h2 class="text-[17px] font-bold text-theme-text mb-4">{{ $t('marketplace.ogloszeniaUserprofileNameSplit') }}</h2>
 
             <!-- Pasek filtrów (Wyszukiwarka + Selecty) -->
             <div class="flex flex-col sm:flex-row gap-2 mb-4">
@@ -160,18 +156,16 @@ const listings = ref([
                 <MagnifyIcon class="absolute left-3 top-1/2 -translate-y-1/2 text-theme-text-secondary" :size="20" />
                 <input
                   type="text"
-                  placeholder="Wyszukaj ogłoszenia"
+                  :placeholder="$t('marketplace.wyszukajOgloszenia')"
                   class="w-full bg-theme-bg text-[15px] text-theme-text rounded-full py-2 pl-9 pr-4 focus:outline-none placeholder-[#65676B]"
                   v-model="searchQuery"
                 />
               </div>
 
               <!-- Filtry -->
-              <button class="bg-theme-bg-tertiary hover:bg-theme-hover-strong text-theme-text font-semibold py-2 px-3.5 rounded-lg flex items-center justify-between gap-1 text-[15px] transition-colors shrink-0">
-                Dostępne i na stanie <MenuDownIcon class="text-theme-text-secondary" :size="20" />
+              <button class="bg-theme-bg-tertiary hover:bg-theme-hover-strong text-theme-text font-semibold py-2 px-3.5 rounded-lg flex items-center justify-between gap-1 text-[15px] transition-colors shrink-0">{{ $t('marketplace.dostepneINaStanie') }}<MenuDownIcon class="text-theme-text-secondary" :size="20" />
               </button>
-              <button class="bg-theme-bg-tertiary hover:bg-theme-hover-strong text-theme-text font-semibold py-2 px-3.5 rounded-lg flex items-center justify-between gap-1 text-[15px] transition-colors shrink-0">
-                Sortuj według <MenuDownIcon class="text-theme-text-secondary" :size="20" />
+              <button class="bg-theme-bg-tertiary hover:bg-theme-hover-strong text-theme-text font-semibold py-2 px-3.5 rounded-lg flex items-center justify-between gap-1 text-[15px] transition-colors shrink-0">{{ $t('marketplace.sortujWedlug') }}<MenuDownIcon class="text-theme-text-secondary" :size="20" />
               </button>
             </div>
 

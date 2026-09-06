@@ -7,7 +7,7 @@
         <MagnifyIcon class="text-gray-500 mr-2" :size="20" />
         <input
           type="text"
-          placeholder="Wyszukaj osoby..."
+          :placeholder="$t('events.wyszukajOsoby')"
           v-model="searchQuery"
           class="bg-transparent border-none outline-none text-[15px] w-full text-black"
         />
@@ -22,7 +22,7 @@
             class="flex items-center p-3 px-4 font-semibold text-sm text-black cursor-pointer select-none hover:bg-gray-50 transition-colors"
           >
             <AccountMultipleIcon class="mr-3 text-black" :size="20" />
-            <span>Znajomi z Facebooka</span>
+            <span>{{ $t('events.znajomiZFacebooka') }}</span>
             <ChevronDownIcon
               class="ml-auto text-gray-500 transition-transform duration-200"
               :class="{ 'rotate-180': !isFriendsOpen }"
@@ -32,14 +32,10 @@
           <div v-show="isFriendsOpen" class="px-2 pb-2">
             <div
               class="px-9 py-2 rounded-md text-sm cursor-pointer mb-0.5 bg-[#e7f3ff] text-[#1877f2] font-medium"
-            >
-              Proponowani
-            </div>
+            >{{ $t('events.proponowani') }}</div>
             <div
               class="px-9 py-2 rounded-md text-sm text-gray-600 cursor-pointer mb-0.5 hover:bg-theme-hover"
-            >
-              Wszyscy znajomi
-            </div>
+            >{{ $t('friends.allFriends') }}</div>
           </div>
         </div>
 
@@ -49,7 +45,7 @@
             class="flex items-center p-3 px-4 font-semibold text-sm text-black cursor-pointer select-none hover:bg-gray-50 transition-colors"
           >
             <CalendarIcon class="mr-3 text-black shrink-0" :size="20" />
-            <span class="leading-tight">Wydarzenia, w których wziąłeś udział</span>
+            <span class="leading-tight">{{ $t('events.wydarzeniaWKtorychWziales') }}</span>
             <ChevronDownIcon
               class="ml-auto text-gray-500 transition-transform duration-200 shrink-0"
               :class="{ 'rotate-180': !isEventsOpen }"
@@ -59,9 +55,7 @@
           <div v-show="isEventsOpen" class="px-2 pb-2">
             <div
               class="px-9 py-2 rounded-md text-sm text-gray-600 cursor-pointer mb-0.5 hover:bg-theme-hover leading-snug"
-            >
-              Wielkie Otrzęsiny Studenckie
-            </div>
+            >{{ $t('events.wielkieOtrzesinyStudenckie') }}</div>
           </div>
         </div>
 
@@ -71,7 +65,7 @@
             class="flex items-center p-3 px-4 font-semibold text-sm text-black cursor-pointer select-none hover:bg-gray-50 transition-colors"
           >
             <CalendarStarIcon class="mr-3 text-black shrink-0" :size="20" />
-            <span class="leading-tight">Zorganizowane przez Ciebie wydarzenia</span>
+            <span class="leading-tight">{{ $t('events.zorganizowanePrzezCiebieWydarzenia') }}</span>
             <ChevronDownIcon
               class="ml-auto text-gray-500 transition-transform duration-200 shrink-0"
               :class="{ 'rotate-180': !isMyEventsOpen }"
@@ -79,9 +73,7 @@
             />
           </div>
           <div v-show="isMyEventsOpen" class="px-2 pb-2">
-            <div class="px-9 py-2 rounded-md text-sm text-gray-500 mb-0.5 cursor-default">
-              Nie znaleziono wydarzeń.
-            </div>
+            <div class="px-9 py-2 rounded-md text-sm text-gray-500 mb-0.5 cursor-default">{{ $t('events.nieZnalezionoWydarzen') }}</div>
           </div>
         </div>
 
@@ -91,7 +83,7 @@
             class="flex items-center p-3 px-4 font-semibold text-sm text-black cursor-pointer select-none hover:bg-gray-50 transition-colors"
           >
             <AccountGroupIcon class="mr-3 text-black shrink-0" :size="20" />
-            <span>Twoje grupy</span>
+            <span>{{ $t('events.twojeGrupy') }}</span>
             <ChevronDownIcon
               class="ml-auto text-gray-500 transition-transform duration-200 shrink-0"
               :class="{ 'rotate-180': !isGroupsOpen }"
@@ -101,16 +93,14 @@
           <div v-show="isGroupsOpen" class="px-2 pb-2">
             <div
               class="px-9 py-2 rounded-md text-sm text-gray-600 cursor-pointer mb-0.5 hover:bg-theme-hover"
-            >
-              Kolegium Sędziów BOZPN
-            </div>
+            >{{ $t('events.kolegiumSedziowBozpn') }}</div>
           </div>
         </div>
       </div>
 
       <div class="w-1/3 flex flex-col border-r border-theme-border">
         <div class="flex justify-between items-center p-4">
-          <h3 class="m-0 text-base font-semibold text-black">Proponowani</h3>
+          <h3 class="m-0 text-base font-semibold text-black">{{ $t('events.proponowani') }}</h3>
           <button
             class="bg-transparent border-none text-[#1877f2] font-semibold text-sm cursor-pointer px-2 py-1 rounded hover:bg-theme-hover transition-colors"
             @click="toggleSelectAll"
@@ -132,7 +122,7 @@
               <img
                 v-if="user.avatar"
                 :src="user.avatar"
-                alt="Avatar"
+                :alt="$t('chat.avatar')"
                 class="w-full h-full object-cover"
               />
               <AccountIcon v-else class="text-gray-400" :size="28" />
@@ -158,9 +148,7 @@
 
       <div class="w-1/3 bg-theme-bg flex flex-col">
         <div class="p-4 pb-2">
-          <p class="text-xs font-semibold text-gray-500 m-0 tracking-wide uppercase">
-            POZOSTAŁO {{ 500 - selectedIds.length }} ZAPROSZEŃ
-          </p>
+          <p class="text-xs font-semibold text-gray-500 m-0 tracking-wide uppercase">{{ $t('events.pozostalo500SelectedidsLength') }}</p>
         </div>
 
         <div class="flex-1 overflow-y-auto px-2 custom-scrollbar">
@@ -175,7 +163,7 @@
               <img
                 v-if="user.avatar"
                 :src="user.avatar"
-                alt="Avatar"
+                :alt="$t('chat.avatar')"
                 class="w-full h-full object-cover"
               />
               <AccountIcon v-else class="text-gray-400" :size="20" />
@@ -199,15 +187,11 @@
     <div class="p-4 border-t border-theme-border flex justify-end gap-3 bg-white">
       <button
         class="bg-transparent border-none text-[#1877f2] font-semibold text-[15px] cursor-pointer px-3 py-2 rounded-md hover:bg-theme-hover transition-colors"
-      >
-        Anuluj
-      </button>
+      >{{ $t('common.cancel') }}</button>
       <button
         class="bg-[#1877f2] text-white border-none font-semibold text-[15px] px-6 py-2 rounded-md cursor-pointer disabled:bg-theme-bg-tertiary disabled:text-[#bcc0c4] disabled:cursor-not-allowed transition-colors"
         :disabled="selectedIds.length === 0"
-      >
-        Wyślij zaproszenia
-      </button>
+      >{{ $t('events.wyslijZaproszenia') }}</button>
     </div>
   </div>
 </template>

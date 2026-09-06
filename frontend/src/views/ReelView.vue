@@ -3,7 +3,7 @@
 
     <!-- LEWA SEKCJA (SIDEBAR) - Dokładnie 220px szerokości -->
     <aside class="hidden md:flex flex-col w-[220px] h-full pt-[8px] bg-black  shrink-0 select-none">
-      <h1 class="text-[#e2e5e9] text-2xl font-bold px-[16px] py-[8px] tracking-tight">Rolki</h1>
+      <h1 class="text-[#e2e5e9] text-2xl font-bold px-[16px] py-[8px] tracking-tight">{{ $t('feed.rolki') }}</h1>
 
       <nav class="flex flex-col gap-1 px-[8px]">
         <button
@@ -16,7 +16,7 @@
           <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
           </svg>
-          <span>Dla Ciebie</span>
+          <span>{{ $t('feed.dlaCiebie') }}</span>
         </button>
 
         <button
@@ -29,7 +29,7 @@
           <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
             <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
           </svg>
-          <span>Obserwujesz</span>
+          <span>{{ $t('pages.obserwujesz') }}</span>
         </button>
 
         <button
@@ -42,7 +42,7 @@
           <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
           </svg>
-          <span>Profil</span>
+          <span>{{ $t('chat.profil') }}</span>
         </button>
       </nav>
     </aside>

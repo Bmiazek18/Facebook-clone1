@@ -6,7 +6,7 @@
     <div class="absolute inset-x-0 top-0 h-[70%] z-0">
       <img
         :src="auth.currentUser?.avatar"
-        alt="Osoby na stacji metra"
+        :alt="$t('feed.osobyNaStacjiMetra')"
         class="w-full h-full object-cover transition duration-300 ease-in-out group-hover:scale-103 filter brightness-90 contrast-100 group-hover:brightness-85 group-hover:contrast-105"
       />
     </div>
@@ -16,7 +16,7 @@
     >
       <button
         class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-md transition-colors mt-[-30px] ring-4 dark:ring-[#252729] p-0"
-        aria-label="Utwórz relację"
+        :aria-label="$t('story.createStory')"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -30,9 +30,7 @@
         </svg>
       </button>
 
-      <p class="text-theme-text text-center text-xs font-semibold leading-tight pt-1">
-        Utwórz<br />relację
-      </p>
+      <p class="text-theme-text text-center text-xs font-semibold leading-tight pt-1">{{ $t('feed.utworz') }}<br />{{ $t('feed.relacje') }}</p>
     </div>
   </div>
 </template>

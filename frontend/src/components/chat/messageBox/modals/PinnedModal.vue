@@ -4,7 +4,7 @@
       <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3 opacity-60 text-theme-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
       </svg>
-      <p class="text-sm font-medium">Brak przypiętych wiadomości w tym czacie.</p>
+      <p class="text-sm font-medium">{{ $t('chat.brakPrzypietychWiadomosciW') }}</p>
     </div>
 
     <div v-else class="space-y-4 max-h-[400px] overflow-y-auto pr-1 scrollbar-thin">
@@ -16,7 +16,7 @@
         <div class="flex items-start space-x-3 min-w-0 flex-1 cursor-pointer" @click="goToMessage(msg.id)">
           <img
             :src="getAvatar(msg)"
-            alt="Avatar"
+            :alt="$t('chat.avatar')"
             class="w-10 h-10 rounded-full object-cover shrink-0 border border-theme-border shadow-sm bg-gray-100"
           />
 
@@ -39,7 +39,7 @@
         <button
           @click="unpinMessage(msg.id)"
           class="ml-3 shrink-0 p-2 rounded-full hover:bg-theme-bg/80 text-theme-text-secondary hover:text-red-500 transition-colors shadow-sm bg-theme-bg border border-theme-border"
-          title="Odepnij wiadomość"
+          :title="$t('chat.odepnijWiadomosc')"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 transform rotate-45">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15m0 0l6.75 6.75M4.5 12l6.75-6.75" />

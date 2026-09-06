@@ -3,7 +3,7 @@
     <!-- PASEK BOCZNY -->
     <aside class="w-[360px] bg-white flex flex-col shrink-0 border-r border-[#CED0D4] z-10 h-full">
       <div class="p-4 pb-2">
-        <h1 class="text-[20px] font-bold text-[#050505]">Pulpit profesjonalny</h1>
+        <h1 class="text-[20px] font-bold text-[#050505]">{{ $t('common.pulpitProfesjonalny') }}</h1>
       </div>
 
       <nav class="flex-1 overflow-y-auto px-2 py-2 flex flex-col gap-1 custom-scrollbar">
@@ -21,7 +21,7 @@
               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
             </svg>
           </div>
-          <span class="font-medium text-[15px]">Strona główna</span>
+          <span class="font-medium text-[15px]">{{ $t('friends.home') }}</span>
         </NuxtLink>
 
         <!-- Dynamiczne sekcje menu z podmenu -->
@@ -79,9 +79,7 @@
 
       <!-- Przycisk Utwórz post -->
       <div class="p-4 border-t border-[#CED0D4] bg-white shrink-0">
-        <button class="w-full bg-[#1877F2] text-white font-semibold text-[15px] py-2 rounded-md flex items-center justify-center gap-1.5 hover:bg-[#166FE5] transition-colors cursor-pointer">
-          Utwórz post
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+        <button class="w-full bg-[#1877F2] text-white font-semibold text-[15px] py-2 rounded-md flex items-center justify-center gap-1.5 hover:bg-[#166FE5] transition-colors cursor-pointer">{{ $t('post.createPost') }}<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
             <path d="M7 10l5 5 5-5z" />
           </svg>
         </button>

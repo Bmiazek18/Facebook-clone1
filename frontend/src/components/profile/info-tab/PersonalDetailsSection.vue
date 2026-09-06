@@ -343,7 +343,7 @@ const saveHometown = async () => {
   <div class="max-w-[850px] mx-auto text-theme-text antialiased">
     <!-- LOKALIZACJA -->
     <div class="mb-8">
-      <h3 class="font-bold text-[17px] mb-4">Lokalizacja</h3>
+      <h3 class="font-bold text-[17px] mb-4">{{ $t('post.location') }}</h3>
 
       <div v-if="isEditingLocation" class="mt-2">
         <button
@@ -367,14 +367,12 @@ const saveHometown = async () => {
             <span
               class="absolute top-2 left-3 text-[13px] font-normal transition-colors cursor-text"
               :class="isLocationFocused ? 'text-[#1877F2]' : 'text-theme-text-secondary'"
-            >
-              Aktualna miejscowość
-            </span>
+            >{{ $t('profile.aktualnaMiejscowosc') }}</span>
             <input
               v-model="locationForm.value"
               @focus="isLocationFocused = true"
               @blur="handleLocationBlur"
-              placeholder="Wpisz min. 3 znaki miejscowości..."
+              :placeholder="$t('profile.wpiszMin3Znaki')"
               class="w-full pt-6 pb-2 px-3 bg-transparent outline-none text-[15px] text-theme-text"
             />
 
@@ -424,9 +422,7 @@ const saveHometown = async () => {
               !isLoadingLocations
             "
             class="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-[0_2px_12px_rgba(0,0,0,0.2)] z-50 p-4 border border-theme-border text-center text-theme-text-secondary text-[14px]"
-          >
-            Nie znaleziono pasujących miejsc dla tej frazy
-          </div>
+          >{{ $t('profile.nieZnalezionoPasujacychMiejsc') }}</div>
         </div>
 
         <div class="flex justify-between items-center pt-4 border-t border-theme-border mt-4">
@@ -435,18 +431,14 @@ const saveHometown = async () => {
             type="button"
             class="flex items-center gap-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary px-4 py-1.5 rounded-md font-semibold text-[15px] text-theme-text transition-colors"
           >
-            <DeleteOutline :size="20" />
-            Usuń
-          </button>
+            <DeleteOutline :size="20" />{{ $t('notifications_page.delete') }}</button>
 
           <div class="flex gap-2">
             <button
               @click="cancelEditingLocation"
               type="button"
               class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
-            >
-              Anuluj
-            </button>
+            >{{ $t('common.cancel') }}</button>
             <button
               @click="saveLocation"
               :disabled="!isLocationChanged"
@@ -456,9 +448,7 @@ const saveHometown = async () => {
                   : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed'
               "
               class="px-4 py-1.5 font-semibold rounded-md text-[15px] transition-colors"
-            >
-              Zapisz
-            </button>
+            >{{ $t('createLive.save') }}</button>
           </div>
         </div>
       </div>
@@ -474,14 +464,14 @@ const saveHometown = async () => {
             <span class="text-[15px] font-medium text-[#1877F2] hover:underline cursor-pointer">
               {{ locationForm.value || 'Dodaj aktualne miejsce zamieszkania' }}
             </span>
-            <span class="text-[13px] text-theme-text-secondary">Aktualne miejsce zamieszkania</span>
+            <span class="text-[13px] text-theme-text-secondary">{{ $t('friends.aktualneMiejsceZamieszkania') }}</span>
           </div>
         </div>
         <div v-if="isOwner" class="flex items-center gap-3">
           <button
             @click="openPrivacySelector('location')"
             class="p-1.5 hover:bg-theme-bg-tertiary rounded-full transition-colors cursor-pointer"
-            title="Zmień ustawienia prywatności"
+            :title="$t('profile.zmienUstawieniaPrywatnosci')"
           >
             <component :is="getPrivacyIcon(locationPrivacy)" :size="16" class="text-theme-text-secondary" />
           </button>
@@ -497,28 +487,24 @@ const saveHometown = async () => {
 
     <!-- MIEJSCOWOŚĆ RODZINNA -->
     <div class="mb-8">
-      <h3 class="font-bold text-[17px] mb-4">Miejscowość rodzinna</h3>
+      <h3 class="font-bold text-[17px] mb-4">{{ $t('profile.miejscowoscRodzinna') }}</h3>
       <div v-if="isEditingHometown" class="mt-2">
         <input
           v-model="hometownForm"
-          placeholder="Wpisz miejscowość rodzinną..."
+          :placeholder="$t('profile.wpiszMiejscowoscRodzinna')"
           class="w-full border border-theme-border rounded-md p-2 text-[15px] text-theme-text outline-none focus:border-[#1877F2]"
         />
         <div class="flex justify-end space-x-2 pt-4 border-t border-theme-border mt-4">
           <button
             @click="isEditingHometown = false"
             class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
-          >
-            Anuluj
-          </button>
+          >{{ $t('common.cancel') }}</button>
           <button
             @click="saveHometown"
             :disabled="!isHometownChanged"
             class="px-4 py-1.5 font-semibold rounded-md text-[15px] transition-colors"
             :class="isHometownChanged ? 'bg-[#1877F2] hover:bg-[#166FE5] text-white' : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed'"
-          >
-            Zapisz
-          </button>
+          >{{ $t('createLive.save') }}</button>
         </div>
       </div>
       <div v-else class="flex justify-between items-center group">
@@ -528,7 +514,7 @@ const saveHometown = async () => {
             <span class="text-[15px] font-medium text-[#1877F2] hover:underline cursor-pointer">
               {{ hometownForm || 'Dodaj miejscowość rodzinną' }}
             </span>
-            <span class="text-[13px] text-theme-text-secondary">Miejscowość rodzinna</span>
+            <span class="text-[13px] text-theme-text-secondary">{{ $t('profile.miejscowoscRodzinna') }}</span>
           </div>
         </div>
         <div v-if="isOwner" class="flex items-center gap-3">
@@ -544,7 +530,7 @@ const saveHometown = async () => {
 
     <!-- PŁEĆ -->
     <div class="mb-8">
-      <h3 class="font-bold text-[17px] mb-4">Płeć</h3>
+      <h3 class="font-bold text-[17px] mb-4">{{ $t('auth.register.gender') }}</h3>
       <div v-if="isEditingGender" class="mt-2">
         <div
           class="relative bg-theme-bg-tertiary hover:bg-theme-bg-tertiary transition-colors rounded-md px-3 py-2.5 flex justify-between items-center cursor-pointer mb-4"
@@ -553,9 +539,9 @@ const saveHometown = async () => {
             v-model="genderForm.value"
             class="w-full bg-transparent outline-none appearance-none cursor-pointer text-[15px] text-theme-text pr-8 font-medium"
           >
-            <option value="Mężczyzna">Mężczyzna</option>
-            <option value="Kobieta">Kobieta</option>
-            <option value="Inna">Inna</option>
+            <option value="Mężczyzna">{{ $t('profile.mezczyzna') }}</option>
+            <option value="Kobieta">{{ $t('profile.kobieta') }}</option>
+            <option value="Inna">{{ $t('profile.inna') }}</option>
           </select>
           <ChevronDown :size="24" class="text-theme-text absolute right-3 pointer-events-none" />
         </div>
@@ -563,17 +549,13 @@ const saveHometown = async () => {
           <button
             @click="isEditingGender = false"
             class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
-          >
-            Anuluj
-          </button>
+          >{{ $t('common.cancel') }}</button>
           <button
             @click="saveGender"
             :disabled="!isGenderChanged"
             class="px-4 py-1.5 font-semibold rounded-md text-[15px] transition-colors"
             :class="isGenderChanged ? 'bg-[#1877F2] hover:bg-[#166FE5] text-white' : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed'"
-          >
-            Zapisz
-          </button>
+          >{{ $t('createLive.save') }}</button>
         </div>
       </div>
       <div v-else class="flex justify-between items-center group">
@@ -581,14 +563,14 @@ const saveHometown = async () => {
           <CircleMultipleOutline :size="28" class="text-theme-text" />
           <div class="flex flex-col mt-0.5">
             <span class="text-[15px] text-theme-text">{{ genderForm.value }}</span>
-            <span class="text-[13px] text-theme-text-secondary">Płeć</span>
+            <span class="text-[13px] text-theme-text-secondary">{{ $t('auth.register.gender') }}</span>
           </div>
         </div>
         <div v-if="isOwner" class="flex items-center gap-3">
           <button
             @click="openPrivacySelector('gender')"
             class="p-1.5 hover:bg-theme-bg-tertiary rounded-full transition-colors cursor-pointer"
-            title="Zmień ustawienia prywatności"
+            :title="$t('profile.zmienUstawieniaPrywatnosci')"
           >
             <component :is="getPrivacyIcon(genderPrivacy)" :size="16" class="text-[#BCC0C4]" />
           </button>
@@ -604,28 +586,24 @@ const saveHometown = async () => {
 
     <!-- ZAIMKI -->
     <div class="mb-8">
-      <h3 class="font-bold text-[17px] mb-4">Zaimki</h3>
+      <h3 class="font-bold text-[17px] mb-4">{{ $t('profile.info.pronouns') }}</h3>
       <div v-if="isEditingPronouns" class="mt-2">
         <input
           v-model="pronounsForm"
-          placeholder="Zaimki np. on/jego"
+          :placeholder="$t('profile.zaimkiNpOnJego')"
           class="w-full border border-theme-border rounded-md p-2 text-[15px] text-theme-text outline-none focus:border-[#1877F2]"
         />
         <div class="flex justify-end space-x-2 pt-4 border-t border-theme-border mt-4">
           <button
             @click="isEditingPronouns = false"
             class="px-4 py-1.5 bg-theme-bg-tertiary hover:bg-theme-bg-tertiary text-theme-text font-semibold rounded-md text-[15px] transition-colors"
-          >
-            Anuluj
-          </button>
+          >{{ $t('common.cancel') }}</button>
           <button
             @click="savePronouns"
             :disabled="!isPronounsChanged"
             class="px-4 py-1.5 font-semibold rounded-md text-[15px] transition-colors"
             :class="isPronounsChanged ? 'bg-[#1877F2] hover:bg-[#166FE5] text-white' : 'bg-theme-bg-tertiary text-[#BCC0C4] cursor-not-allowed'"
-          >
-            Zapisz
-          </button>
+          >{{ $t('createLive.save') }}</button>
         </div>
       </div>
       <div v-else class="flex justify-between items-center group">
@@ -633,14 +611,14 @@ const saveHometown = async () => {
           <MessageOutline :size="28" class="text-theme-text" />
           <div class="flex flex-col mt-0.5">
             <span class="text-[15px] text-theme-text">{{ pronounsForm || 'on/jego' }}</span>
-            <span class="text-[13px] text-theme-text-secondary">Zaimki systemowe</span>
+            <span class="text-[13px] text-theme-text-secondary">{{ $t('profile.zaimkiSystemowe') }}</span>
           </div>
         </div>
         <div v-if="isOwner" class="flex items-center gap-3">
           <button
             @click="openPrivacySelector('pronouns')"
             class="p-1.5 hover:bg-theme-bg-tertiary rounded-full transition-colors cursor-pointer"
-            title="Zmień ustawienia prywatności"
+            :title="$t('profile.zmienUstawieniaPrywatnosci')"
           >
             <component :is="getPrivacyIcon(pronounsPrivacy)" :size="16" class="text-[#BCC0C4]" />
           </button>
@@ -657,7 +635,7 @@ const saveHometown = async () => {
     <!-- Modal Prywatności -->
     <BaseModal
       v-if="showPrivacyModal"
-      title="Wybierz grupę odbiorców"
+      :title="$t('profile.wybierzGrupeOdbiorcow')"
       @close="showPrivacyModal = false"
     >
       <PrivacySelector

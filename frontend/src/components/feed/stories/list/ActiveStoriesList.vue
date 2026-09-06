@@ -3,9 +3,7 @@
     <div
       v-if="allUserStories.length === 0"
       class="text-gray-500 dark:text-gray-400 text-sm text-center py-4"
-    >
-      Brak aktywnych relacji
-    </div>
+    >{{ $t('feed.brakAktywnychRelacji') }}</div>
 
     <div v-else class="space-y-1">
       <div

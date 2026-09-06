@@ -5,13 +5,11 @@
       <button
         @click="emit('back')"
         class="rounded-full p-2 -ml-2 hover:bg-theme-hover transition duration-150 mr-2 cursor-pointer"
-        aria-label="Wróć"
+        :aria-label="$t('ui.back')"
       >
         <ArrowLeftIcon class="text-2xl text-theme-text" />
       </button>
-      <span class="text-theme-text font-bold text-lg leading-snug">
-        Wszystkie profile i strony
-      </span>
+      <span class="text-theme-text font-bold text-lg leading-snug">{{ $t('header.wszystkieProfileIStrony') }}</span>
     </div>
 
     <!-- Lista kont -->
@@ -32,9 +30,7 @@
             <div class="font-semibold text-theme-text text-[15px]">
               {{ authStore.originalUser?.name || 'Mój Profil' }}
             </div>
-            <div class="text-xs text-theme-text-secondary">
-              Profil osobisty
-            </div>
+            <div class="text-xs text-theme-text-secondary">{{ $t('header.profilOsobisty') }}</div>
           </div>
         </div>
         <div v-if="!authStore.isActingAsPage" class="w-2.5 h-2.5 bg-blue-500 rounded-full mr-2"></div>
@@ -42,9 +38,7 @@
 
       <!-- Strony użytkownika -->
       <div v-if="authStore.userPages.length > 0" class="pt-2">
-        <div class="text-xs font-semibold text-theme-text-secondary px-2 mb-1 uppercase tracking-wider">
-          Twoje strony ({{ authStore.userPages.length }})
-        </div>
+        <div class="text-xs font-semibold text-theme-text-secondary px-2 mb-1 uppercase tracking-wider">{{ $t('header.twojeStronyAuthstoreUserpages') }}</div>
         <button
           v-for="page in authStore.userPages"
           :key="page.id"
@@ -82,7 +76,7 @@
         <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0">
           <PlusIcon :size="22" class="text-blue-600 dark:text-blue-400" />
         </div>
-        <span>Utwórz nową stronę</span>
+        <span>{{ $t('header.utworzNowaStrone') }}</span>
       </NuxtLink>
     </div>
   </div>

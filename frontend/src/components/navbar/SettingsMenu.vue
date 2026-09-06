@@ -3,8 +3,8 @@
 
     <!-- Nagłówek -->
     <div class="px-4 py-3.5 border-b border-gray-200">
-      <h2 class="text-[17px] font-semibold leading-tight">Ustawienia czatu</h2>
-      <p class="text-[14px] text-gray-500 mt-0.5">Dostosuj interfejs Messengera.</p>
+      <h2 class="text-[17px] font-semibold leading-tight">{{ $t('header.ustawieniaCzatu') }}</h2>
+      <p class="text-[14px] text-gray-500 mt-0.5">{{ $t('header.dostosujInterfejsMessengera') }}</p>
     </div>
 
     <!-- View security alerts (Wysyła event do rodzica, aby otworzyć modal) -->
@@ -15,7 +15,7 @@
     >
       <div class="flex items-center gap-4">
         <ShieldLockOutlineIcon class="h-6 w-6 text-black shrink-0" />
-        <span class="text-[15px] font-medium">View security alerts</span>
+        <span class="text-[15px] font-medium">{{ $t('header.viewSecurityAlerts') }}</span>
       </div>
       <span class="bg-[#E8F0FE] text-[#1A73E8] text-[12px] font-bold w-[22px] h-[22px] rounded-full flex items-center justify-center shrink-0">
         2
@@ -26,7 +26,7 @@
     <div class="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
       <div class="flex items-center gap-4">
         <PhoneInTalkOutlineIcon class="h-6 w-6 text-black shrink-0" />
-        <span class="text-[15px] font-medium leading-snug text-left">Dźwięki połączenia<br/>przychodzącego</span>
+        <span class="text-[15px] font-medium leading-snug text-left">{{ $t('header.dzwiekiPolaczenia') }}<br/>{{ $t('header.przychodzacego') }}</span>
       </div>
       <button
         type="button"
@@ -51,7 +51,7 @@
     <div class="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
       <div class="flex items-center gap-4">
         <VolumeHighIcon class="h-6 w-6 text-black shrink-0" />
-        <span class="text-[15px] font-medium">Dźwięki wiadomości</span>
+        <span class="text-[15px] font-medium">{{ $t('header.dzwiekiWiadomosci') }}</span>
       </div>
       <button
         type="button"
@@ -77,8 +77,8 @@
       <div class="flex items-start gap-4 pr-3">
         <ForumOutlineIcon class="h-6 w-6 text-black shrink-0 mt-0.5" />
         <div class="flex flex-col text-left">
-          <span class="text-[15px] font-medium leading-tight mb-0.5">Wyświetlaj nowe wiadomości w oknie podręcznym</span>
-          <span class="text-[13px] text-gray-500 leading-snug">Automatycznie otwieraj nowe wiadomości.</span>
+          <span class="text-[15px] font-medium leading-tight mb-0.5">{{ $t('header.wyswietlajNoweWiadomosciW') }}</span>
+          <span class="text-[13px] text-gray-500 leading-snug">{{ $t('header.automatycznieOtwierajNoweWiadomosci') }}</span>
         </div>
       </div>
       <button
@@ -104,7 +104,7 @@
     <button type="button" class="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-200 focus:outline-none text-left">
       <div class="flex items-center gap-4">
         <ShieldLockOutlineIcon class="h-6 w-6 text-black shrink-0" />
-        <span class="text-[15px] font-medium">Prywatność i bezpieczeństwo</span>
+        <span class="text-[15px] font-medium">{{ $t('header.prywatnoscIBezpieczenstwo') }}</span>
       </div>
       <ChevronRightIcon class="h-6 w-6 text-gray-400 shrink-0" />
     </button>
@@ -112,32 +112,32 @@
     <!-- Pozostałe opcje menu -->
     <button type="button" class="w-full flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors text-left focus:outline-none">
       <AccountCircleOutlineIcon class="h-6 w-6 text-black shrink-0" />
-      <span class="text-[15px] font-medium">Status aktywności: Wł.</span>
+      <span class="text-[15px] font-medium">{{ $t('header.statusAktywnosciWl') }}</span>
     </button>
 
     <button type="button" class="w-full flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors text-left focus:outline-none">
       <MessageOutlineIcon class="h-6 w-6 text-black shrink-0" />
-      <span class="text-[15px] font-medium">Inne</span>
+      <span class="text-[15px] font-medium">{{ $t('header.inne') }}</span>
     </button>
 
     <button type="button" class="w-full flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors text-left focus:outline-none">
       <CloseBoxOutlineIcon class="h-6 w-6 text-black shrink-0" />
-      <span class="text-[15px] font-medium">Zarchiwizowane czaty</span>
+      <span class="text-[15px] font-medium">{{ $t('header.zarchiwizowaneCzaty') }}</span>
     </button>
 
     <button type="button" class="w-full flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-200 focus:outline-none">
       <SendClockOutlineIcon class="h-6 w-6 text-black shrink-0" />
-      <span class="text-[15px] font-medium">Ustawienia dostarczania wiadomości</span>
+      <span class="text-[15px] font-medium">{{ $t('header.ustawieniaDostarczaniaWiadomosci') }}</span>
     </button>
 
     <button type="button" class="w-full flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors text-left focus:outline-none">
       <AccountCancelOutlineIcon class="h-6 w-6 text-black shrink-0" />
-      <span class="text-[15px] font-medium">Ograniczone konta</span>
+      <span class="text-[15px] font-medium">{{ $t('header.ograniczoneKonta') }}</span>
     </button>
 
     <button type="button" class="w-full flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors text-left focus:outline-none pb-4">
       <MinusCircleOutlineIcon class="h-6 w-6 text-black shrink-0" />
-      <span class="text-[15px] font-medium">Ustawienia blokowania</span>
+      <span class="text-[15px] font-medium">{{ $t('header.ustawieniaBlokowania') }}</span>
     </button>
 
   </div>

@@ -47,8 +47,8 @@
 
       <!-- Tekst -->
       <div class="ml-4 flex flex-col justify-center">
-        <span class="text-base font-semibold text-black dark:text-white leading-tight">Utwórz relację</span>
-        <span class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Udostępnij zdjęcie lub coś napisz.</span>
+        <span class="text-base font-semibold text-black dark:text-white leading-tight">{{ $t('story.createStory') }}</span>
+        <span class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ $t('story.sharePhotoOrWriteSomething') }}</span>
       </div>
     </div>
   </div>

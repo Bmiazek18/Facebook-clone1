@@ -234,7 +234,7 @@ const isStandaloneAdminRoute = computed(() => {
                   v-for="i in 8"
                   :key="i"
                   :src="`https://i.pravatar.cc/150?img=${i + 10}`"
-                  alt="Member"
+                  :alt="$t('common.member')"
                   class="w-[36px] h-[36px] rounded-full border-2 border-white dark:border-theme-bg-secondary cursor-pointer hover:z-10 relative object-cover shadow-sm"
                 />
               </div>
@@ -258,21 +258,19 @@ const isStandaloneAdminRoute = computed(() => {
                   @click="handleJoin"
                   class="bg-[#0866FF] hover:bg-[#0052CC] text-white h-9 px-3 rounded-md font-semibold text-[15px] transition flex items-center gap-1.5"
                 >
-                  <PlusIcon :size="18" /> Dołącz do grupy
-                </button>
+                  <PlusIcon :size="18" />{{ $t('common.dolaczDoGrupy') }}</button>
                 <button
                   v-else-if="membershipRole === 'PENDING'"
                   @click="handleLeave"
                   class="h-9 px-3 rounded-md font-semibold text-[15px] transition flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white"
-                  title="Kliknij, aby wycofać prośbę"
+                  :title="$t('common.kliknijAbyWycofacProsbe')"
                 >
-                  <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Oczekiwanie...
-                </button>
+                  <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>{{ $t('common.oczekiwanie') }}</button>
                 <button
                   v-else
                   @click="handleLeave"
                   class="h-9 px-3 rounded-md font-semibold text-[15px] transition flex items-center gap-1.5 bg-gray-100 dark:bg-theme-bg-subtle hover:bg-gray-200 dark:hover:bg-theme-hover-strong text-theme-text"
-                  title="Kliknij, aby opuścić grupę"
+                  :title="$t('common.kliknijAbyOpuscicGrupe')"
                 >
                   <AccountGroupIcon :size="18" /> <!-- Ikona Dołączono -->
                   {{ membershipRole === 'ADMIN' ? 'Admin' : 'Dołączono' }}
@@ -326,21 +324,15 @@ const isStandaloneAdminRoute = computed(() => {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h2 class="text-xl font-bold text-theme-text mb-2">Ta grupa jest prywatna</h2>
-          <p class="text-theme-text-secondary text-[15px] mb-6">
-            Dołącz do tej grupy, aby zobaczyć jej zawartość, publikować posty i brać udział w dyskusjach.
-          </p>
+          <h2 class="text-xl font-bold text-theme-text mb-2">{{ $t('common.taGrupaJestPrywatna') }}</h2>
+          <p class="text-theme-text-secondary text-[15px] mb-6">{{ $t('common.dolaczDoTejGrupy') }}</p>
           <button
             v-if="membershipRole === ''"
             @click="handleJoin"
             class="bg-[#0866FF] hover:bg-[#0052CC] text-white px-6 py-2.5 rounded-lg font-semibold text-[15px] transition"
-          >
-            Dołącz do grupy
-          </button>
+          >{{ $t('common.dolaczDoGrupy') }}</button>
           <div v-else-if="membershipRole === 'PENDING'" class="text-amber-500 font-semibold flex items-center justify-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-            Oczekiwanie na zatwierdzenie przez administratora
-          </div>
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>{{ $t('common.oczekiwanieNaZatwierdzeniePrzez') }}</div>
         </div>
         <NuxtPage v-else v-slot="{ Component }">
           <component :is="Component" :group-details="groupDetails" :sticky-top="stickyTop" />

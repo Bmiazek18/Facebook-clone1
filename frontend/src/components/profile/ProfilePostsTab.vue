@@ -247,16 +247,14 @@ const handleDeletePost = (postId: number) => {
       <ProfileIntroCard :profile-user="profileUser" :is-owner="isOwner" />
 
       <ProfileMiniGallery
-        title="Znajomi"
+        :title="$t('postFilter.privacyFriends')"
         :subtitle="`${friendsList?.length || 0} znajomych`"
         action-text="Pokaż wszystkich znajomych"
         :items="friendItems"
       />
-      <ProfileMiniGallery title="Zdjęcia" action-text="Zobacz wszystkie" :items="photoItems" />
+      <ProfileMiniGallery :title="$t('profile.tabs.photos')" action-text="Zobacz wszystkie" :items="photoItems" />
 
-      <div class="mt-4 text-[13px] text-gray-500 px-2 pb-4">
-        Prywatność · Regulamin · Reklama · Pliki cookie · Meta © 2026
-      </div>
+      <div class="mt-4 text-[13px] text-gray-500 px-2 pb-4">{{ $t('profile.prywatnoscRegulaminReklamaPliki') }}</div>
     </div>
 
     <div id="ContentSection" class="w-full md:w-[58%] min-h-screen pb-20">

@@ -7,7 +7,7 @@
           {{ dateRangeText }}
           <svg class="dropdown-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"></path></svg>
         </h1>
-        <div class="gc-subtitle">czas środkowoeuropejski letni (Europe/Warsaw)</div>
+        <div class="gc-subtitle">{{ $t('dashboard.czasSrodkowoeuropejskiLetniEurope') }}</div>
       </div>
 
       <div class="gc-header-right">
@@ -15,15 +15,13 @@
           <button class="gc-btn icon" @click="vuecal?.previous()">
             <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"></path></svg>
           </button>
-          <button class="gc-btn text" @click="goToToday">Dziś</button>
+          <button class="gc-btn text" @click="goToToday">{{ $t('dashboard.dzis') }}</button>
           <button class="gc-btn icon" @click="vuecal?.next()">
             <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path></svg>
           </button>
         </div>
 
-        <button class="gc-btn select">
-          Tydzień
-          <svg class="dropdown-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"></path></svg>
+        <button class="gc-btn select">{{ $t('dashboard.tydzien') }}<svg class="dropdown-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"></path></svg>
         </button>
 
         <button class="gc-btn icon settings">
@@ -84,7 +82,7 @@
                   v-if="!isPastSlot(cell.startDate, hour - 1)"
                   class="gc-hover-edit-btn"
                   @click.stop="handleCellEdit(cell, hour - 1)"
-                  title="Dodaj wpis"
+                  :title="$t('dashboard.dodajWpis')"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -94,7 +92,7 @@
 
                 <!-- MINIONA GODZINA: Tooltip informacyjny -->
                 <div v-else class="gc-past-tooltip-wrapper">
-                  <div class="gc-past-tooltip">Ten dzień/godzina już minęła</div>
+                  <div class="gc-past-tooltip">{{ $t('dashboard.tenDzienGodzinaJuz') }}</div>
                 </div>
               </div>
             </div>

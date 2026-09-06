@@ -23,7 +23,7 @@ const searchQuery = ref('')
     <div class="bg-white rounded-xl p-3 px-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 max-w-5xl mx-auto">
 
       <!-- Tytuł -->
-      <h1 class="text-[24px] font-bold text-black">Twoje ogłoszenia</h1>
+      <h1 class="text-[24px] font-bold text-black">{{ $t('marketplace.twojeOgloszenia') }}</h1>
 
       <!-- Wyszukiwarka i przełączniki -->
       <div class="flex items-center gap-2">
@@ -34,7 +34,7 @@ const searchQuery = ref('')
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Wyszukaj swoje ogłoszenia"
+            :placeholder="$t('marketplace.wyszukajSwojeOgloszenia')"
             class="bg-[#F0F2F5] text-[15px] text-gray-800 rounded-full pl-10 pr-4 py-2 w-[280px] md:w-[320px] focus:outline-none placeholder-gray-500"
           />
         </div>
@@ -76,19 +76,17 @@ const searchQuery = ref('')
         <div class="flex flex-col justify-between flex-1">
           <!-- Teksty -->
           <div>
-            <h3 class="text-[17px] font-bold text-black leading-tight">ff</h3>
-            <p class="text-[15px] text-black font-normal mt-0.5">PLN0</p>
-            <p class="text-[14px] text-gray-500 mt-0.5">Wersja robocza</p>
+            <h3 class="text-[17px] font-bold text-black leading-tight">{{ $t('marketplace.ff') }}</h3>
+            <p class="text-[15px] text-black font-normal mt-0.5">{{ $t('marketplace.pln0') }}</p>
+            <p class="text-[14px] text-gray-500 mt-0.5">{{ $t('marketplace.wersjaRobocza') }}</p>
           </div>
 
           <!-- Przyciski akcji -->
           <div class="flex flex-wrap md:flex-nowrap gap-2 mt-4 md:mt-0">
             <button class="flex-1 md:flex-none md:w-auto px-4 py-2 bg-[#EBF5FF] text-[#0064D1] font-semibold text-[15px] rounded-lg flex items-center justify-center gap-1.5 hover:bg-blue-100 transition-colors">
-              <Pencil :size="18" /> Kontynuuj
-            </button>
+              <Pencil :size="18" />{{ $t('marketplace.kontynuuj') }}</button>
             <button class="flex-1 md:flex-none md:w-auto px-4 py-2 bg-[#E4E6EB] text-gray-900 font-semibold text-[15px] rounded-lg flex items-center justify-center gap-1.5 hover:bg-gray-300 transition-colors">
-              <Delete :size="18" /> Usuń wersję roboczą
-            </button>
+              <Delete :size="18" />{{ $t('common.usunWersjeRobocza') }}</button>
             <button class="px-3 py-2 bg-[#E4E6EB] text-gray-900 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors">
               <DotsHorizontal :size="20" />
             </button>
@@ -106,9 +104,9 @@ const searchQuery = ref('')
           </div>
           <!-- Teksty -->
           <div>
-            <h3 class="text-[16px] font-bold text-black leading-tight group-hover:underline">ff</h3>
-            <p class="text-[14px] text-black font-normal mt-0.5">PLN0</p>
-            <p class="text-[13px] text-gray-500 mt-0.5">Wersja robocza</p>
+            <h3 class="text-[16px] font-bold text-black leading-tight group-hover:underline">{{ $t('marketplace.ff') }}</h3>
+            <p class="text-[14px] text-black font-normal mt-0.5">{{ $t('marketplace.pln0') }}</p>
+            <p class="text-[13px] text-gray-500 mt-0.5">{{ $t('marketplace.wersjaRobocza') }}</p>
           </div>
         </div>
       </div>

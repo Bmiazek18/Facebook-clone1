@@ -302,8 +302,8 @@ const transcode = async () => {
             class="pl-3 pr-1 py-2 flex items-center justify-between transition-all"
           >
             <div class="flex flex-col">
-              <span class="font-bold text-black text-[16px]">Dodaj napisy ręcznie</span>
-              <span class="text-gray-500 text-xs">Użyj plików Subrip (.srt)</span>
+              <span class="font-bold text-black text-[16px]">{{ $t('create.dodajNapisyRecznie') }}</span>
+              <span class="text-gray-500 text-xs">{{ $t('create.uzyjPlikowSubripSrt') }}</span>
             </div>
 
             <label
@@ -320,9 +320,7 @@ const transcode = async () => {
                   stroke-linejoin="round"
                   d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
                 />
-              </svg>
-              Prześlij
-              <input type="file" accept=".srt" class="hidden" @change="handleSrtUpload" />
+              </svg>{{ $t('chat.przeslij') }}<input type="file" accept=".srt" class="hidden" @change="handleSrtUpload" />
             </label>
           </div>
         </template>
@@ -343,9 +341,7 @@ const transcode = async () => {
           <span
             v-if="isProcessing"
             class="animate-spin inline-block w-4 h-4 border-2 border-white rounded-full border-t-transparent"
-          ></span>
-          Gotowe
-        </button>
+          ></span>{{ $t('postFilter.done') }}</button>
       </div>
     </aside>
 
@@ -390,9 +386,7 @@ const transcode = async () => {
             <div
               v-else
               class="w-full h-full flex items-center justify-center text-gray-500 text-xs"
-            >
-              Generowanie podglądu...
-            </div>
+            >{{ $t('create.generowaniePodgladu') }}</div>
           </div>
 
           <div
@@ -425,9 +419,7 @@ const transcode = async () => {
 
         <div
           class="flex items-center justify-center min-w-[55px] text-gray-300 text-sm font-medium"
-        >
-          {{ (range.end - range.start).toFixed(1) }}s
-        </div>
+        >{{ $t('create.rangeEndRangeStart') }}</div>
       </div>
     </main>
   </div>

@@ -1,6 +1,6 @@
 <!-- components/chat/modals/ChatMuteModal.vue -->
 <template>
-  <BaseModal title="Wycisz powiadomienia" @close="emit('close')">
+  <BaseModal :title="$t('chat.muteNotifications')" @close="emit('close')">
     <div class="px-5 py-3 flex flex-col gap-4">
       <!-- Lista opcji radio -->
       <div class="flex flex-col gap-1 my-1">
@@ -35,24 +35,18 @@
       </div>
 
       <!-- Opis informacyjny -->
-      <p class="text-[13px] text-gray-600 dark:text-gray-400 leading-snug px-1">
-        Okna czatu będą zamknięte i nie będziesz otrzymywać powiadomień push na urządzeniach.
-      </p>
+      <p class="text-[13px] text-gray-600 dark:text-gray-400 leading-snug px-1">{{ $t('chat.oknaCzatuBedaZamkniete') }}</p>
 
       <!-- Przyciski akcji -->
       <div class="flex space-x-3 pt-2">
         <button
           @click="emit('close')"
           class="flex-1 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-[15px] font-semibold text-gray-900 dark:text-white transition cursor-pointer"
-        >
-          Anuluj
-        </button>
+        >{{ $t('common.cancel') }}</button>
         <button
           @click="handleSave"
           class="flex-1 py-2 rounded-xl bg-[#0064e0] hover:bg-[#0053ba] text-[15px] font-semibold text-white transition cursor-pointer"
-        >
-          Wycisz
-        </button>
+        >{{ $t('actions.mute') }}</button>
       </div>
     </div>
   </BaseModal>

@@ -10,14 +10,14 @@
           class="p-6 bg-theme-bg-secondary my-4 mx-auto rounded-2xl shadow-sm relative border border-theme-border"
         >
           <header class="mb-8 relative">
-            <h2 class="text-[24px] font-bold mb-6">Odkryj wydarzenia</h2>
+            <h2 class="text-[24px] font-bold mb-6">{{ $t('events.odkryjWydarzenia') }}</h2>
 
             <div class="flex flex-wrap gap-2 items-center">
               <button
                 class="flex items-center gap-2 px-3 py-2 bg-theme-bg-subtle hover:bg-theme-hover rounded-lg font-semibold text-[15px] transition-colors text-theme-text border border-transparent"
               >
                 <MapMarkerIcon :size="18" />
-                <span>Moja lokalizacja</span>
+                <span>{{ $t('events.mojaLokalizacja') }}</span>
                 <ChevronDownIcon :size="18" />
               </button>
 
@@ -72,7 +72,7 @@
                       class="flex items-center justify-between px-5 py-4 hover:bg-gray-50 cursor-pointer transition-colors mt-1"
                     >
                       <span class="text-[17px] font-medium text-gray-900"
-                        >Niestandardowy zakres dat</span
+                        >{{ $t('events.niestandardowyZakresDat') }}</span
                       >
                       <ChevronRightIcon :size="24" class="text-gray-500" />
                     </div>
@@ -87,7 +87,7 @@
                         <ArrowLeftIcon :size="24" />
                       </button>
                       <span class="ml-2 font-semibold text-[19px] text-gray-900"
-                        >Niestandardowy zakres dat</span
+                        >{{ $t('events.niestandardowyZakresDat') }}</span
                       >
                     </div>
 
@@ -114,9 +114,7 @@
                               ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                               : 'bg-[#E8EAED] text-[#9AA0A6] cursor-not-allowed',
                           ]"
-                        >
-                          Zastosuj
-                        </button>
+                        >{{ $t('marketplace.zastosuj') }}</button>
                       </div>
                     </div>
                   </div>
@@ -125,14 +123,10 @@
 
               <button
                 class="px-4 py-2 bg-theme-bg-subtle hover:bg-theme-hover text-theme-text rounded-full font-semibold text-[15px] transition-colors"
-              >
-                Najpopularniejsze
-              </button>
+              >{{ $t('events.najpopularniejsze') }}</button>
               <button
                 class="px-4 py-2 bg-theme-primary-subtle text-theme-primary rounded-full font-semibold text-[15px] transition-colors"
-              >
-                Znajomi
-              </button>
+              >{{ $t('postFilter.privacyFriends') }}</button>
             </div>
           </header>
           <div
@@ -145,7 +139,7 @@
     </div>
   </div>
 
-  <BaseModal v-if="isOpen" @close="isOpen = false" title="Utwórz wydarzenie">
+  <BaseModal v-if="isOpen" @close="isOpen = false" :title="$t('createEvent.createEvent')">
     <CreateEventModal @close="isOpen = false" class="w-[500px]" />
   </BaseModal>
 </template>

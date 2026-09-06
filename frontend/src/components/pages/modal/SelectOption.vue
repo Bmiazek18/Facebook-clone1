@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-[550px] mx-auto bg-white  p-4 font-sans text-gray-900 shadow-sm ">
-    <h2 class="text-xl font-bold mb-5">Która opcja jest dla Ciebie najlepsza?</h2>
+    <h2 class="text-xl font-bold mb-5">{{ $t('pages.ktoraOpcjaJestDla') }}</h2>
 
     <div class="space-y-4">
       <!-- Opcja 1: Strona publiczna -->
@@ -27,11 +27,11 @@
         </div>
 
         <div class="flex-grow pr-10">
-          <h3 class="text-base font-bold">Strona publiczna</h3>
-          <p class="text-gray-500 text-sm mt-0.5">Rozwijaj się jako firma, twórca lub organizacja.</p>
+          <h3 class="text-base font-bold">{{ $t('pages.stronaPubliczna') }}</h3>
+          <p class="text-gray-500 text-sm mt-0.5">{{ $t('pages.rozwijajSieJakoFirma') }}</p>
           <ul class="list-disc list-inside text-sm text-gray-500 mt-2 space-y-1">
-            <li>Uzyskaj dostęp do zaawansowanych narzędzi profesjonalnych</li>
-            <li>Przyznaj dostęp innym osobom</li>
+            <li>{{ $t('pages.uzyskajDostepDoZaawansowanych') }}</li>
+            <li>{{ $t('pages.przyznajDostepInnymOsobom') }}</li>
           </ul>
         </div>
 
@@ -66,10 +66,8 @@
         </div>
 
         <div class="flex-grow pr-10">
-          <h3 class="text-base font-bold">Ulepsz swój istniejący profil</h3>
-          <p class="text-gray-500 text-sm mt-0.5">
-            Dodaj narzędzia profesjonalne do swojego profilu głównego, aby dalej powiększać obecną grupę odbiorców.
-          </p>
+          <h3 class="text-base font-bold">{{ $t('pages.ulepszSwojIstniejacyProfil') }}</h3>
+          <p class="text-gray-500 text-sm mt-0.5">{{ $t('pages.dodajNarzedziaProfesjonalneDo') }}</p>
         </div>
 
         <!-- Custom Radio Button -->
@@ -87,14 +85,10 @@
         :class="selectedOption ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
         :disabled="!selectedOption"
         @click="handleNextClick"
-      >
-        Dalej
-      </button>
+      >{{ $t('common.next') }}</button>
       <button
         class="flex-1 py-3 bg-gray-200 text-black font-semibold text-base rounded-lg hover:bg-gray-300 transition-colors duration-200"
-      >
-        Porównaj opcje
-      </button>
+      >{{ $t('pages.porownajOpcje') }}</button>
     </div>
   </div>
 </template>

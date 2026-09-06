@@ -37,13 +37,13 @@ const handleSelect = (categoryName: string) => {
   <div
     class="w-full h-[160px] bg-blue-50 relative flex justify-center items-center overflow-hidden"
   >
-    <span class="text-blue-300 text-sm font-medium">Grafika: Balon i Tort</span>
+    <span class="text-blue-300 text-sm font-medium">{{ $t('create.grafikaBalonITort') }}</span>
   </div>
 
   <div class="flex flex-col items-center">
     <div class="text-center pt-6 pb-5 px-6">
-      <h1 class="text-[24px] font-bold text-black mb-1.5">Wydarzenia z życia</h1>
-      <p class="text-[15px] text-gray-500">Udostępniaj ważne chwile z życia i zapamiętuj je.</p>
+      <h1 class="text-[24px] font-bold text-black mb-1.5">{{ $t('profile.info.events') }}</h1>
+      <p class="text-[15px] text-gray-500">{{ $t('create.udostepniajWazneChwileZ') }}</p>
     </div>
 
     <div class="w-full px-8">
@@ -51,9 +51,7 @@ const handleSelect = (categoryName: string) => {
     </div>
 
     <div class="w-full pt-8 pb-14 px-8 flex flex-col items-center">
-      <h2 class="text-[15px] font-bold text-black uppercase tracking-wide mb-10">
-        Wybierz kategorię
-      </h2>
+      <h2 class="text-[15px] font-bold text-black uppercase tracking-wide mb-10">{{ $t('create.wybierzKategorie') }}</h2>
 
       <div class="grid grid-cols-4 gap-x-2 gap-y-10 w-full max-w-[650px]">
         <div

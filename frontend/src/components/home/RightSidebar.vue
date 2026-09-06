@@ -127,17 +127,14 @@ watch(
           >
             <span class="text-2xl">🎁</span>
             <p class="text-theme-text text-sm leading-snug">
-              <span class="font-semibold">{{ birthdayText }}</span> {{ $t('home.birthdayHas') }}.
-            </p>
+              <span class="font-semibold">{{ birthdayText }}</span>{{ $t('home.tHomeBirthdayhas') }}</p>
           </div>
         </div>
 
         <!-- Sekcja kontaktów (tylko aktywni znajomi) -->
         <div class="pt-2">
           <div class="flex items-center justify-between pb-1">
-            <span class="text-[17px] font-semibold text-theme-text-secondary antialiased">
-              Kontakty
-            </span>
+            <span class="text-[17px] font-semibold text-theme-text-secondary antialiased">{{ $t('home.kontakty') }}</span>
             <div class="flex items-center gap-1">
               <div
                 class="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full cursor-pointer transition-colors"
@@ -163,7 +160,7 @@ watch(
                 <img
                   class="w-[38px] h-[38px] rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm"
                   :src="contact.avatarUrl"
-                  alt="Avatar"
+                  :alt="$t('chat.avatar')"
                 />
                 <div
                   v-if="contact.status"
@@ -182,9 +179,7 @@ watch(
             <div
               v-if="activeContacts.length === 0"
               class="p-4 text-center text-sm text-theme-text-secondary italic"
-            >
-              Brak aktywnych znajomych online
-            </div>
+            >{{ $t('home.brakAktywnychZnajomychOnline') }}</div>
           </div>
         </div>
       </div>

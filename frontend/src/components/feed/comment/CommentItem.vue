@@ -189,7 +189,7 @@ const commentWrapperClass = computed(() => {
             @click="showMoreReplies"
             class="flex items-center text-[15px] font-semibold text-theme-text-secondary focus:outline-none"
           >
-            <span>Wyswietl wszystkie {{ props.comment.replies?.length ?? 0 }} odpowiedzi</span>
+            <span>{{ $t('feed.wyswietlWszystkiePropsComment') }}</span>
           </button>
         </div>
 

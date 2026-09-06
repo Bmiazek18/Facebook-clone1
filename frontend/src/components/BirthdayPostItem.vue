@@ -20,7 +20,7 @@
     </div>
 
     <BaseModal
-      title="Informacje o tej zawartości"
+      :title="$t('birthday.informacjeOTejZawartosci')"
       @close="closeLinkModal"
       v-if="isLinkModalVisible"
     >

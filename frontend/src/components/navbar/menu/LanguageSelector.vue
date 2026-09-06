@@ -7,7 +7,7 @@
       <button
         @click="handleBackClick"
         class="rounded-full p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-theme-hover transition duration-150 mr-2"
-        aria-label="Powrót"
+        :aria-label="$t('chat.powrot')"
       >
         <ArrowLeftIcon class="text-2xl text-theme-text" />
       </button>
@@ -63,18 +63,14 @@
 
       <!-- Sekcja 2: Tłumaczenia postów -->
       <section>
-        <h2 class="text-base font-bold text-theme-text px-2 mb-1">
-          Posty od znajomych i stron
-        </h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400 px-2 mb-3 leading-snug">
-          Język, na który mają być automatycznie tłumaczone posty.
-        </p>
+        <h2 class="text-base font-bold text-theme-text px-2 mb-1">{{ $t('header.postyOdZnajomychI') }}</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 px-2 mb-3 leading-snug">{{ $t('header.jezykNaKtoryMaja') }}</p>
 
         <button
           class="w-full flex items-center justify-between py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-theme-hover transition duration-150 text-left cursor-pointer"
         >
           <div class="flex flex-col">
-            <span class="text-xs text-gray-500 dark:text-gray-400">Język docelowy</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ $t('header.jezykDocelowy') }}</span>
             <span class="text-[15px] font-semibold text-theme-text">
               {{ currentLanguageName }}
             </span>

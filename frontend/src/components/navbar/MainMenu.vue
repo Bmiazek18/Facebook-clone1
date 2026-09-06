@@ -7,7 +7,7 @@
         <div
           class="w-full sm:w-3/5 min-w-0 bg-white dark:bg-[#242526] rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.1)] p-4"
         >
-          <h1 class="text-2xl font-bold mb-4 px-2 text-theme-text">Menu</h1>
+          <h1 class="text-2xl font-bold mb-4 px-2 text-theme-text">{{ $t('header.menu') }}</h1>
 
           <div class="relative mb-6 px-2">
             <span class="absolute inset-y-0 left-5 flex items-center">
@@ -16,7 +16,7 @@
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Wyszukaj w menu"
+              :placeholder="$t('header.wyszukajWMenu')"
               class="w-full bg-[#f0f2f5] dark:bg-gray-700 rounded-full py-2 pl-10 pr-4 focus:outline-none border-none placeholder:text-gray-500 text-theme-text"
             />
           </div>
@@ -46,15 +46,13 @@
             </NuxtLink>
           </div>
 
-          <div v-if="filteredMenu.length === 0" class="text-center py-10 text-gray-500">
-            Nie znaleziono wyników dla "{{ searchQuery }}"
-          </div>
+          <div v-if="filteredMenu.length === 0" class="text-center py-10 text-gray-500">{{ $t('header.nieZnalezionoWynikowDla') }}</div>
         </div>
 
         <div
           class="w-full sm:w-2/5 bg-white dark:bg-[#242526] rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.1)] p-4 sm:sticky lg:top-0 h-fit"
         >
-          <h2 class="text-xl font-bold mb-4 px-2 text-theme-text">Utwórz</h2>
+          <h2 class="text-xl font-bold mb-4 px-2 text-theme-text">{{ $t('feed.utworz') }}</h2>
 
           <div
             v-for="(group, idx) in createMenu"

@@ -127,16 +127,10 @@ const detailConfig = computed(() => {
         <div v-if="currentView === 'list'" key="list" class="view-container">
           <div class="p-4 sm:p-6 pb-8">
 
-            <h1 class="text-[20px] font-bold leading-tight mb-1">
-              Jakiego typu prośby powinien zatwierdzać Asystent administratora?
-            </h1>
-            <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] mb-6 leading-snug">
-              Rozpocznij od jednego kryterium, a potem dodaj ich więcej.
-            </p>
+            <h1 class="text-[20px] font-bold leading-tight mb-1">{{ $t('groups.jakiegoTypuProsbyPowinien') }}</h1>
+            <p class="text-[15px] text-[#65676b] dark:text-[#b0b3b8] mb-6 leading-snug">{{ $t('groups.rozpocznijOdJednegoKryterium') }}</p>
 
-            <h2 class="text-[14px] font-semibold text-[#65676b] dark:text-[#b0b3b8] uppercase tracking-wide mb-3">
-              Kryteria dotyczące osób
-            </h2>
+            <h2 class="text-[14px] font-semibold text-[#65676b] dark:text-[#b0b3b8] uppercase tracking-wide mb-3">{{ $t('groups.kryteriaDotyczaceOsob') }}</h2>
 
             <div class="flex flex-col gap-1">
               <button
@@ -176,9 +170,7 @@ const detailConfig = computed(() => {
             >
               <ArrowLeftIcon :size="24" />
             </button>
-            <h1 class="text-[22px] font-bold leading-tight">
-              Dostosuj kryteria do potrzeb grupy
-            </h1>
+            <h1 class="text-[22px] font-bold leading-tight">{{ $t('groups.dostosujKryteriaDoPotrzeb') }}</h1>
           </div>
 
           <!-- Przewijana zawartość szczegółów -->
@@ -232,9 +224,7 @@ const detailConfig = computed(() => {
             <button
               @click="handleSave"
               class="w-full bg-[#1877f2] hover:bg-[#166fe5] text-white font-semibold text-[15px] py-2.5 rounded-lg transition-colors cursor-pointer"
-            >
-              Dodaj do Asystenta administratora
-            </button>
+            >{{ $t('groups.dodajDoAsystentaAdministratora') }}</button>
           </div>
         </div>
 

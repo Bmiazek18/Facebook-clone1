@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white rounded-2xl shadow-sm p-5 max-w-sm font-sans border border-gray-100">
-    <h2 class="text-[22px] font-bold text-gray-900 mb-5 tracking-tight">Status strony</h2>
+    <h2 class="text-[22px] font-bold text-gray-900 mb-5 tracking-tight">{{ $t('dashboard.statusStrony') }}</h2>
 
     <div class="flex items-center gap-4">
 
@@ -8,7 +8,7 @@
       <div class="relative w-[56px] h-[56px] shrink-0">
         <!-- Tło i ikona użytkownika -->
         <div class="w-full h-full bg-[#E4E6EB] border border-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-          <img :src="images" alt="Avatar" class="w-full h-full object-cover" />
+          <img :src="images" :alt="$t('chat.avatar')" class="w-full h-full object-cover" />
         </div>
 
         <!-- Zielona plakietka (Checkmark) -->
@@ -21,9 +21,9 @@
 
       <!-- Informacje (Imię i postęp) -->
       <div class="flex flex-col">
-        <div class="font-semibold text-[17px] text-gray-900 leading-tight mb-0.5">Kont</div>
+        <div class="font-semibold text-[17px] text-gray-900 leading-tight mb-0.5">{{ $t('dashboard.kont') }}</div>
         <div class="text-[15px] text-[#65676B] flex items-center">
-          <span>Postęp tygodniowy</span>
+          <span>{{ $t('dashboard.postepTygodniowy') }}</span>
           <span class="text-gray-900 font-semibold ml-1.5">0 %</span>
           <div class="w-[15px] h-[15px] rounded-full border-[2.5px] border-[#CED0D4] ml-2"></div>
         </div>

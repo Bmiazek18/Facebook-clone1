@@ -549,7 +549,7 @@ defineExpose({ scrollToMessage })
                 class="w-4 h-4 border-2 border-theme-border border-t-theme-primary rounded-full animate-spin"
               ></div>
               <span class="text-xs font-semibold uppercase tracking-wide"
-                >Ładowanie historii...</span
+                >{{ $t('chat.ladowanieHistorii') }}</span
               >
             </div>
           </div>
@@ -617,7 +617,7 @@ defineExpose({ scrollToMessage })
             v-if="showScrollToBottomBtn"
             @click="scrollToBottom()"
             class="absolute bottom-16 left-1/2 -translate-x-1/2 p-3 z-40 rounded-full shadow-lg flex items-center justify-center text-blue-500 bg-theme-bg hover:bg-blue-600 transition-colors backdrop-blur-md"
-            aria-label="Przewiń na dół"
+            :aria-label="$t('chat.przewinNaDol')"
           >
             <svg
               class="w-5 h-5"
@@ -657,13 +657,9 @@ defineExpose({ scrollToMessage })
             <div class="flex-1 flex flex-col items-center justify-center pointer-events-none select-none">
 
 
-              <h3 class="text-base font-extrabold text-slate-800 dark:text-slate-100 max-w-[220px] leading-snug">
-                Upuść pliki tutaj
-              </h3>
+              <h3 class="text-base font-extrabold text-slate-800 dark:text-slate-100 max-w-[220px] leading-snug">{{ $t('chat.upuscPlikiTutaj') }}</h3>
 
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
-                Maksymalnie 100 MB
-              </p>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">{{ $t('chat.maksymalnie100Mb') }}</p>
             </div>
 
           </div>

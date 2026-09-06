@@ -5,25 +5,25 @@
     <button
       @click="$emit('close')"
       class="absolute top-4 right-4 w-9 h-9 bg-gray-200 hover:bg-gray-300 transition-colors rounded-full flex items-center justify-center text-gray-700"
-      title="Zamknij"
+      :title="$t('common.close')"
     >
       <Close :size="20" />
     </button>
 
     <div class="px-5 pt-12 pb-5">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-[22px] font-bold text-black leading-tight">Data urodzenia</h2>
-        <button class="text-blue-600 font-semibold text-[15px] hover:underline pr-8">Edytuj</button>
+        <h2 class="text-[22px] font-bold text-black leading-tight">{{ $t('auth.register.birthdate') }}</h2>
+        <button class="text-blue-600 font-semibold text-[15px] hover:underline pr-8">{{ $t('common.edit') }}</button>
       </div>
 
       <div class="flex items-start gap-4">
         <CakeVariantOutline :size="28" class="text-black shrink-0 mt-0.5" />
 
         <div class="flex flex-col">
-          <span class="text-[18px] font-bold text-black leading-snug"> 23 lutego 2005 </span>
+          <span class="text-[18px] font-bold text-black leading-snug">{{ $t('profile.23Lutego2005') }}</span>
           <div class="flex items-center gap-1.5 text-gray-500 mt-0.5">
             <AccountMultiple :size="16" />
-            <span class="text-[14px]">Znajomi znajomych</span>
+            <span class="text-[14px]">{{ $t('profile.znajomiZnajomych') }}</span>
           </div>
         </div>
       </div>
@@ -32,7 +32,7 @@
     <div class="w-full border-t border-gray-200"></div>
 
     <div class="px-5 py-5">
-      <h3 class="text-[20px] font-bold text-black mb-5">Osoby obchodzące urodziny w lutym</h3>
+      <h3 class="text-[20px] font-bold text-black mb-5">{{ $t('profile.osobyObchodzaceUrodzinyW') }}</h3>
 
       <div class="flex flex-col space-y-4">
         <div

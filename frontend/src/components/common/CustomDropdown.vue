@@ -28,9 +28,7 @@
           >
             {{ selectedOption?.title }}
           </span>
-          <span v-else class="text-[15px] opacity-0 pointer-events-none leading-none">
-            Spacer
-          </span>
+          <span v-else class="text-[15px] opacity-0 pointer-events-none leading-none">{{ $t('common.spacer') }}</span>
         </div>
 
         <ChevronDownIcon class="text-[#1c1e21] shrink-0" :size="20" />

@@ -149,7 +149,7 @@ const selectTrack = (track: MusicTrack) => {
     >
       <div class="p-3 border-b border-theme-border">
         <div class="flex justify-between items-center mb-2">
-          <h2 class="text-lg font-bold text-theme-text">Muzyka</h2>
+          <h2 class="text-lg font-bold text-theme-text">{{ $t('create.muzyka') }}</h2>
           <button @click="emit('close')" class="text-theme-text-secondary hover:text-theme-text">
             <Close :size="20" />
           </button>
@@ -160,7 +160,7 @@ const selectTrack = (track: MusicTrack) => {
             v-model="musicQuery"
             @keydown.enter="searchMusic"
             type="text"
-            placeholder="Szukaj muzyki"
+            :placeholder="$t('media.szukajMuzyki')"
             class="w-full pl-10 pr-8 py-2 bg-theme-bg rounded-full text-sm placeholder:text-theme-text-secondary focus:outline-none focus:ring-1 focus:ring-blue-500 transition"
           />
           <button
@@ -184,8 +184,7 @@ const selectTrack = (track: MusicTrack) => {
                 : 'hover:bg-theme-hover text-theme-text-secondary'
             "
           >
-            <Bookmark :size="14" />Zapisane
-          </button>
+            <Bookmark :size="14" />{{ $t('media.zapisane') }}</button>
           <button
             @click="currentTab = 'browse'"
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition"
@@ -195,8 +194,7 @@ const selectTrack = (track: MusicTrack) => {
                 : 'hover:bg-theme-hover text-theme-text-secondary'
             "
           >
-            <FormatListBulleted :size="14" />Przeglądaj
-          </button>
+            <FormatListBulleted :size="14" />{{ $t('media.przegladaj') }}</button>
         </div>
       </div>
 
@@ -205,9 +203,7 @@ const selectTrack = (track: MusicTrack) => {
           <h3 class="text-xs font-bold text-theme-text-secondary mb-2 px-2 uppercase tracking-wide">
             {{ currentTab === 'saved' ? 'Twoje ulubione' : 'Dla Ciebie' }}
           </h3>
-          <div v-if="isSearching" class="text-center py-4 text-theme-text-secondary text-sm">
-            Szukam...
-          </div>
+          <div v-if="isSearching" class="text-center py-4 text-theme-text-secondary text-sm">{{ $t('media.szukam') }}</div>
 
           <div
             v-for="track in displayedMusic"

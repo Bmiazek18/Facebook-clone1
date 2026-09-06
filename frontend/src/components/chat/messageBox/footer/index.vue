@@ -513,16 +513,14 @@ onUnmounted(() => {
         class="bg-inherit border-t border-[var(--color-theme-border,rgba(150,150,150,0.2))] py-[5px] px-2 shadow-[0_-4px_15px_rgba(0,0,0,0.03)] flex items-center justify-between gap-3 z-10"
       >
         <div class="flex flex-col flex-1 min-w-0">
-          <div class="font-bold text-[14.5px] mb-[2px] truncate text-theme-text">
-            Odpowiadasz użytkownikowi: {{ replySenderName }}
-          </div>
+          <div class="font-bold text-[14.5px] mb-[2px] truncate text-theme-text">{{ $t('chat.odpowiadaszUzytkownikowiReplysendername') }}</div>
           <div class="text-[13.5px] opacity-75 truncate text-theme-text-secondary">
             <template v-if="props.reply.type === 'text'">{{ props.reply.content }}</template>
-            <template v-else-if="props.reply.type === 'image'">Obraz</template>
-            <template v-else-if="props.reply.type === 'gif'">GIF</template>
-            <template v-else-if="props.reply.type === 'audio'">Wiadomość głosowa</template>
-            <template v-else-if="props.reply.type === 'video'">Wideo</template>
-            <template v-else-if="props.reply.type === 'file'">Plik</template>
+            <template v-else-if="props.reply.type === 'image'">{{ $t('ui.image') }}</template>
+            <template v-else-if="props.reply.type === 'gif'">{{ $t('ui.gif') }}</template>
+            <template v-else-if="props.reply.type === 'audio'">{{ $t('ui.voiceMessage') }}</template>
+            <template v-else-if="props.reply.type === 'video'">{{ $t('login.video') }}</template>
+            <template v-else-if="props.reply.type === 'file'">{{ $t('chat.plik') }}</template>
           </div>
         </div>
 
@@ -598,8 +596,8 @@ onUnmounted(() => {
                   <poll-icon :size="20" />
                 </div>
                 <div class="flex flex-col">
-                  <span class="text-gray-900 dark:text-gray-100 font-semibold text-[14px]">Utwórz ankietę</span>
-                  <span class="text-gray-500 dark:text-gray-400 text-[12px]">Zbierz opinie członków grupy</span>
+                  <span class="text-gray-900 dark:text-gray-100 font-semibold text-[14px]">{{ $t('createLive.createPoll') }}</span>
+                  <span class="text-gray-500 dark:text-gray-400 text-[12px]">{{ $t('chat.zbierzOpinieCzlonkowGrupy') }}</span>
                 </div>
               </button>
 
@@ -611,8 +609,8 @@ onUnmounted(() => {
                   <file-icon :size="20" />
                 </div>
                 <div class="flex flex-col">
-                  <span class="text-gray-900 dark:text-gray-100 font-semibold text-[14px]">Załącz plik</span>
-                  <span class="text-gray-500 dark:text-gray-400 text-[12px]">Do 100 MB</span>
+                  <span class="text-gray-900 dark:text-gray-100 font-semibold text-[14px]">{{ $t('chat.zalaczPlik') }}</span>
+                  <span class="text-gray-500 dark:text-gray-400 text-[12px]">{{ $t('chat.do100Mb') }}</span>
                 </div>
               </button>
 
@@ -624,8 +622,8 @@ onUnmounted(() => {
                   <microphone-icon :size="20" />
                 </div>
                 <div class="flex flex-col">
-                  <span class="text-gray-900 dark:text-gray-100 font-semibold text-[14px]">Wiadomość głosowa</span>
-                  <span class="text-gray-500 dark:text-gray-400 text-[12px]">Nagraj i wyślij audio</span>
+                  <span class="text-gray-900 dark:text-gray-100 font-semibold text-[14px]">{{ $t('ui.voiceMessage') }}</span>
+                  <span class="text-gray-500 dark:text-gray-400 text-[12px]">{{ $t('chat.nagrajIWyslijAudio') }}</span>
                 </div>
               </button>
 
@@ -637,8 +635,8 @@ onUnmounted(() => {
                   <image-outline-icon :size="20" />
                 </div>
                 <div class="flex flex-col">
-                  <span class="text-gray-900 dark:text-gray-100 font-semibold text-[14px]">Zdjęcia i wideo</span>
-                  <span class="text-gray-500 dark:text-gray-400 text-[12px]">Udostępnij multimedia</span>
+                  <span class="text-gray-900 dark:text-gray-100 font-semibold text-[14px]">{{ $t('chat.zdjeciaIWideo') }}</span>
+                  <span class="text-gray-500 dark:text-gray-400 text-[12px]">{{ $t('chat.udostepnijMultimedia') }}</span>
                 </div>
               </button>
             </div>
@@ -688,9 +686,7 @@ onUnmounted(() => {
               v-tooltip.top="'GIF'"
               :style="{ backgroundColor: props.themes?.iconColor || '#3b82f6' }"
               class="text-white text-[10px] font-black p-1 rounded flex ml-1 items-center justify-center h-[19px] w-[23px] leading-none hover:opacity-90 cursor-pointer"
-            >
-              GIF
-            </div>
+            >{{ $t('ui.gif') }}</div>
 
             <template #popper>
               <div class="max-w-[320px] max-h-[420px] overflow-hidden">
@@ -749,7 +745,7 @@ onUnmounted(() => {
               class="absolute inset-0 px-4 pr-10 py-2 text-[15px] whitespace-pre flex items-center overflow-hidden pointer-events-none [&_.emoji-mart-emoji]:!inline-flex [&_.emoji-mart-emoji]:items-center [&_.emoji-mart-emoji]:justify-center [&_.emoji-mart-emoji]:align-text-bottom [&_.emoji-mart-emoji]:leading-none"
               :style="{ color: props.themes?.timestampColor }"
             >
-              <span v-if="!newMessage.length" class="opacity-60">Aa</span>
+              <span v-if="!newMessage.length" class="opacity-60">{{ $t('chat.aa') }}</span>
               <template v-else v-for="(token, index) in parsedTokens" :key="index">
                 <span
                   v-if="token.isEmoji"

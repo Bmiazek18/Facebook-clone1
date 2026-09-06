@@ -105,15 +105,11 @@ const toggleMenu = (ruleId: string) => {
 
         <!-- Nagłówek karty z przyciskiem Utwórz -->
         <div class="bg-white dark:bg-[#242526] rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200 dark:border-[#3e4042] flex items-center justify-between">
-          <h1 class="text-[20px] font-bold">
-            Reguły grupy
-          </h1>
+          <h1 class="text-[20px] font-bold">{{ $t('groups.regulyGrupy') }}</h1>
           <button
             @click="addRule"
             class="text-[#1877f2] dark:text-[#4599ff] hover:bg-gray-100 dark:hover:bg-[#3a3b3c] font-semibold text-[15px] px-3 py-1.5 rounded-md transition-colors cursor-pointer"
-          >
-            Utwórz
-          </button>
+          >{{ $t('feed.utworz') }}</button>
         </div>
 
         <!-- Lista kart z regułami -->
@@ -166,9 +162,7 @@ const toggleMenu = (ruleId: string) => {
               <button 
                 @click="handleDeleteRule(rule.id)"
                 class="w-full text-left px-4 py-2 text-[14px] text-red-600 hover:bg-gray-100 dark:hover:bg-[#3a3b3c] font-semibold transition-colors cursor-pointer"
-              >
-                Usuń
-              </button>
+              >{{ $t('notifications_page.delete') }}</button>
             </div>
           </div>
         </div>
@@ -201,22 +195,16 @@ const toggleMenu = (ruleId: string) => {
         </div>
 
         <!-- Tytuł stanu pustego -->
-        <h2 class="text-[22px] font-bold text-[#050505] dark:text-[#e4e6eb] mb-2">
-          Brak skonfigurowanych zasad
-        </h2>
+        <h2 class="text-[22px] font-bold text-[#050505] dark:text-[#e4e6eb] mb-2">{{ $t('groups.brakSkonfigurowanychZasad') }}</h2>
 
         <!-- Opis -->
-        <p class="text-[16px] text-[#65676b] dark:text-[#b0b3b8] max-w-md leading-relaxed mb-6">
-          Użyj reguł, aby nadać ton grupie i zapobiegać konfliktom między członkami. Napisz maksymalnie 10 reguł obowiązujących w grupie.
-        </p>
+        <p class="text-[16px] text-[#65676b] dark:text-[#b0b3b8] max-w-md leading-relaxed mb-6">{{ $t('groups.uzyjRegulAbyNadac') }}</p>
 
         <!-- Przycisk Rozpocznij -->
         <button
           @click="addRule"
           class="bg-[#1877f2] hover:bg-[#166fe5] text-white font-semibold text-[15px] px-8 py-2.5 rounded-lg shadow-sm transition-colors cursor-pointer"
-        >
-          Rozpocznij
-        </button>
+        >{{ $t('groups.rozpocznij') }}</button>
 
       </div>
 
@@ -226,7 +214,7 @@ const toggleMenu = (ruleId: string) => {
   <BaseModal
     v-if="isRuleModalOpen"
     @close="isRuleModalOpen = false"
-    title="Utwórz własną regułę"
+    :title="$t('groups.utworzWlasnaRegule')"
   >
     <CreateRuleModal @close="isRuleModalOpen = false" @create="handleCreateRule" />
   </BaseModal>

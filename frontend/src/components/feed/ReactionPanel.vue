@@ -17,9 +17,7 @@
       ? 'border-blue-600 text-blue-600'
       : 'border-transparent text-gray-600 hover:bg-gray-100 rounded-t-lg',
   ]"
->
-  Wszystkie
-</button>
+>{{ $t('postFilter.privacyAll') }}</button>
 
         <button
           v-for="(count, emoji) in reactionSummary"
@@ -37,7 +35,7 @@
         </button>
       </div>
 
-      <div v-else class="py-3 px-4 text-gray-500 font-medium">Brak reakcji</div>
+      <div v-else class="py-3 px-4 text-gray-500 font-medium">{{ $t('chat.brakReakcji') }}</div>
 
       <!-- Przycisk zamykania -->
       <button
@@ -100,7 +98,7 @@ comment
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-900" viewBox="0 0 20 20" fill="currentColor">
             <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
           </svg>
-          <span class="text-[15px] font-semibold text-gray-900">Dodaj znajomego</span>
+          <span class="text-[15px] font-semibold text-gray-900">{{ $t('feed.dodajZnajomego') }}</span>
         </button>
       </div>
     </HoverScrollbar>

@@ -10,7 +10,7 @@
       <button
         @click="isMenuOpen = !isMenuOpen"
         class="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-gray-50 focus:outline-none border border-gray-100 text-gray-700 hover:text-black cursor-pointer transform scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 hover:scale-110 transition-all duration-200 ease-out origin-center"
-        aria-label="Opcje czatów"
+        :aria-label="$t('profile.opcjeCzatow')"
       >
         <DotsHorizontalIcon :size="20" />
       </button>
@@ -36,7 +36,7 @@
               <div class="w-6 h-6 rounded-full border-2 border-black flex items-center justify-center shrink-0">
                 <CloseIcon :size="14" class="text-black stroke-[1]" />
               </div>
-              <span class="text-sm font-semibold text-black">Zamknij wszystkie czaty</span>
+              <span class="text-sm font-semibold text-black">{{ $t('profile.zamknijWszystkieCzaty') }}</span>
             </button>
 
             <button
@@ -46,7 +46,7 @@
               <div class="w-6 h-6 rounded-full border-2 border-black flex items-center justify-center shrink-0">
                 <MinusIcon :size="14" class="text-black stroke-[1]" />
               </div>
-              <span class="text-sm font-semibold text-black">Zminimalizuj otwarte czaty</span>
+              <span class="text-sm font-semibold text-black">{{ $t('profile.zminimalizujOtwarteCzaty') }}</span>
             </button>
           </div>
 
@@ -83,7 +83,7 @@
             :aria-label="'Restore Chat ' + boxId"
           >
             <div class="w-full h-full rounded-full overflow-hidden">
-              <img :src="getChatAvatar(boxId)" alt="avatar" class="w-full h-full object-cover" />
+              <img :src="getChatAvatar(boxId)" :alt="$t('chat.avatar2')" class="w-full h-full object-cover" />
             </div>
 
             <!-- Aktywny status -->
@@ -103,7 +103,7 @@
           <button
             @click.stop="closeMinimized(boxId)"
             class="absolute -top-1 cursor-pointer -right-1 w-5 h-5 bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-md text-gray-700 opacity-0 transition-all duration-300 group-hover/item:opacity-100 hover:bg-gray-100 hover:text-black focus:outline-none z-10"
-            aria-label="Zamknij"
+            :aria-label="$t('common.close')"
           >
             <CloseIcon :size="12" />
           </button>
@@ -113,7 +113,7 @@
 
     <button
       class="w-12 h-12 cursor-pointer rounded-full shadow-xl flex items-center bg-theme-bg-secondary justify-center transition duration-300 ease-in-out hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50"
-      aria-label="Add New Element"
+      :aria-label="$t('profile.addNewElement')"
     >
       <PencilIcon :size="26" class="text-theme-text" />
     </button>

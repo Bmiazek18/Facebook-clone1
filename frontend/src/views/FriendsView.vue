@@ -9,9 +9,7 @@
           <span
             class="text-sm text-theme-text-secondary font-medium"
             v-if="friendRequests.length > 0"
-          >
-            Liczba zaproszeń: {{ friendRequests.length }}
-          </span>
+          >{{ $t('friends.liczbaZaproszenFriendrequestsLength') }}</span>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
           <FriendCard
@@ -26,17 +24,13 @@
         <div
           v-if="!requestsLoading && friendRequests.length === 0"
           class="p-6 text-center text-theme-text-secondary bg-theme-bg-secondary rounded-xl border border-theme-border"
-        >
-          Brak oczekujących zaproszeń do grona znajomych
-        </div>
+        >{{ $t('friends.brakOczekujacychZaproszenDo') }}</div>
       </div>
 
       <!-- Sekcja propozycji -->
       <div class="max-w-[1400px] mx-auto">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-[20px] font-bold text-theme-text">
-            Propozycje znajomych (Ludzie, których możesz znać)
-          </h2>
+          <h2 class="text-[20px] font-bold text-theme-text">{{ $t('friends.propozycjeZnajomychLudzieKtorych') }}</h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
           <FriendCard
@@ -51,9 +45,7 @@
         <div
           v-if="!suggestionsLoading && friendSuggestions.length === 0"
           class="p-6 text-center text-theme-text-secondary bg-theme-bg-secondary rounded-xl border border-theme-border"
-        >
-          Brak nowych propozycji znajomych
-        </div>
+        >{{ $t('friends.brakNowychPropozycjiZnajomych') }}</div>
       </div>
     </div>
   </div>

@@ -1,9 +1,7 @@
 <template>
-  <BaseModal title="Dodaj uczestnika do grupy" @close="$emit('close')">
+  <BaseModal :title="$t('chat.dodajUczestnikaDoGrupy')" @close="$emit('close')">
     <div class="p-4 flex flex-col font-sans">
-      <p class="text-sm text-theme-text-muted mb-4">
-        Wybierz osobę, którą chcesz dodać do tego czatu grupowego. Po dodaniu automatycznie prześlemy jej klucz szyfrujący, aby mogła odczytać dotychczasowe wiadomości.
-      </p>
+      <p class="text-sm text-theme-text-muted mb-4">{{ $t('chat.wybierzOsobeKtoraChcesz') }}</p>
 
       <div class="max-h-[300px] overflow-y-auto custom-scrollbar">
         <ul class="space-y-1">
@@ -20,9 +18,7 @@
             <span class="text-sm font-medium text-theme-text">{{ user.name }}</span>
           </li>
         </ul>
-        <div v-if="availableContacts.length === 0" class="text-center py-6 text-theme-text-muted text-sm">
-          Brak dostępnych kontaktów do dodania.
-        </div>
+        <div v-if="availableContacts.length === 0" class="text-center py-6 text-theme-text-muted text-sm">{{ $t('call.brakDostepnychKontaktowDo') }}</div>
       </div>
     </div>
   </BaseModal>

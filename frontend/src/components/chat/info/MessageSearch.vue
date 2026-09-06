@@ -18,7 +18,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
-      <h1 class="text-xl font-semibold text-black dark:text-white tracking-tight">Szukaj</h1>
+      <h1 class="text-xl font-semibold text-black dark:text-white tracking-tight">{{ $t('common.search') }}</h1>
     </div>
 
     <!-- POLE WYSZUKIWANIA -->
@@ -45,7 +45,7 @@
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Szukaj w konwersacji"
+          :placeholder="$t('chat.szukajWKonwersacji')"
           class="bg-transparent border-none outline-none text-[15px] text-black dark:text-white w-full placeholder-gray-500 h-8 ml-2"
           @input="handleSearchInput"
           @keyup.enter="startSearch"
@@ -55,9 +55,7 @@
         <div
           v-if="searchResults.length > 0 && !isSearching"
           class="text-gray-500 text-[14px] whitespace-nowrap ml-2 mr-2"
-        >
-          Wyniki: {{ searchResults.length }}
-        </div>
+        >{{ $t('chat.wynikiSearchresultsLength') }}</div>
 
         <LoadingSpinner :color="'#64B5F6'" v-if="isSearching" class="mr-2 shrink-0" />
 
@@ -87,9 +85,7 @@
     <div class="flex-1 overflow-y-auto pt-2 pb-4 scrollbar-hide">
 
       <!-- STAN: WYSZUKIWANIE -->
-      <div v-if="isSearching" class="flex justify-center mt-6 text-gray-500 text-[15px]">
-        Szukanie wiadomości...
-      </div>
+      <div v-if="isSearching" class="flex justify-center mt-6 text-gray-500 text-[15px]">{{ $t('chat.szukanieWiadomosci') }}</div>
 
       <!-- STAN: WYNIKI WYSZUKIWANIA -->
       <div v-else-if="searchResults.length > 0">
@@ -102,7 +98,7 @@
           <div class="relative shrink-0">
             <img
               :src="chatAvatarUrl"
-              alt="avatar"
+              :alt="$t('chat.avatar2')"
               class="w-12 h-12 rounded-full object-cover"
             />
           </div>
@@ -124,9 +120,7 @@
       <div
         v-else-if="searchQuery && searchResults.length === 0"
         class="flex justify-center mt-6 text-gray-500 text-[15px]"
-      >
-        Naciśnij Enter, aby wyszukać.
-      </div>
+      >{{ $t('chat.nacisnijEnterAbyWyszukac') }}</div>
 
     </div>
   </div>

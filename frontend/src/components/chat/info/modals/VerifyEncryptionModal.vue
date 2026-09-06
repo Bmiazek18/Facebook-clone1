@@ -37,15 +37,13 @@
             :disabled="isVerifying || !keys"
             class="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition active:bg-gray-100 rounded-lg disabled:opacity-50"
           >
-            <span class="text-[17px] font-semibold">Porównaj klucze</span>
+            <span class="text-[17px] font-semibold">{{ $t('chat.porownajKlucze') }}</span>
             <svg class="w-6 h-6 text-black dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </button>
 
-          <p class="text-[14px] text-gray-500 dark:text-gray-400 text-center mt-6 px-2 pb-4">
-            Możesz porównać klucze, aby upewnić się, że wiadomości i połączenia są zabezpieczone za pomocą pełnego szyfrowania.
-            <a href="#" class="text-[#0064e0] dark:text-[#4599ff] font-medium hover:underline">Dowiedz się więcej</a>
+          <p class="text-[14px] text-gray-500 dark:text-gray-400 text-center mt-6 px-2 pb-4">{{ $t('chat.mozeszPorownacKluczeAby') }}<a href="#" class="text-[#0064e0] dark:text-[#4599ff] font-medium hover:underline">{{ $t('auth.register.learnMore') }}</a>
           </p>
         </div>
       </div>
@@ -53,14 +51,12 @@
       <!-- FAZA 2: LISTA CZŁONKÓW -->
       <div v-else-if="view === 'members'" class="flex flex-col">
         <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-          <p class="text-[15px] text-gray-600 dark:text-gray-300">
-            Uczestnicy czatu mają klucze, za pomocą których możesz weryfikować wiadomości, które są w pełni szyfrowane.
-            <a href="#" class="text-[#0064e0] dark:text-[#4599ff] font-medium hover:underline">Dowiedz się więcej</a>
+          <p class="text-[15px] text-gray-600 dark:text-gray-300">{{ $t('chat.uczestnicyCzatuMajaKlucze') }}<a href="#" class="text-[#0064e0] dark:text-[#4599ff] font-medium hover:underline">{{ $t('auth.register.learnMore') }}</a>
           </p>
         </div>
 
         <div class="p-4">
-          <h3 class="text-[17px] font-bold mb-4">Członkowie</h3>
+          <h3 class="text-[17px] font-bold mb-4">{{ $t('groups.members') }}</h3>
 
           <div class="space-y-1">
             <!-- Rozmówca -->
@@ -71,7 +67,7 @@
               <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex-shrink-0 overflow-hidden">
                 <svg class="w-full h-full text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               </div>
-              <span class="text-[17px] font-medium">Klucze rozmówcy</span>
+              <span class="text-[17px] font-medium">{{ $t('chat.kluczeRozmowcy') }}</span>
             </button>
 
             <!-- Ty -->
@@ -82,7 +78,7 @@
               <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex-shrink-0 overflow-hidden">
                  <svg class="w-full h-full text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               </div>
-              <span class="text-[17px] font-medium">Twoje klucze</span>
+              <span class="text-[17px] font-medium">{{ $t('chat.twojeKlucze') }}</span>
             </button>
           </div>
         </div>
@@ -92,7 +88,7 @@
       <div v-else-if="view === 'keys' && keys" class="p-4 h-full flex flex-col">
         <!-- Secure storage -->
         <div class="mb-6">
-          <h4 class="text-[16px] font-semibold mb-2">Secure storage</h4>
+          <h4 class="text-[16px] font-semibold mb-2">{{ $t('chat.secureStorage') }}</h4>
           <div class="bg-[#e4e6eb] dark:bg-[#303030] p-4 rounded-xl text-black dark:text-gray-200">
             <p class="font-mono text-[15px] leading-relaxed break-words">
               {{ formatToHexView(keys.conversationCode || 'B7 1F 65 C7 FF A8 80 2D 0B 67 D0 9D DD FE 35 65 A5 A1 AF E8 8D AD 69 03 38 BA 09 C1 13 13 E8 D4') }}
@@ -102,7 +98,7 @@
 
         <!-- Device -->
         <div class="mb-6">
-          <h4 class="text-[16px] font-semibold mb-2">Device</h4>
+          <h4 class="text-[16px] font-semibold mb-2">{{ $t('chat.device') }}</h4>
           <div class="bg-[#e4e6eb] dark:bg-[#303030] p-4 rounded-xl text-black dark:text-gray-200">
             <p class="font-mono text-[15px] leading-relaxed break-words">
               {{ formatToHexView(selectedMember === 'me' ? keys.myDeviceKey : keys.otherDeviceKey) }}

@@ -21,7 +21,7 @@ function handleAlternativeMethod() {
     <button
       @click="handleClose"
       class="absolute top-3 right-3 w-7 h-7 bg-[#E5E5EA] hover:bg-[#D1D1D6] rounded-full flex items-center justify-center text-black transition-colors"
-      aria-label="Zamknij"
+      :aria-label="$t('common.close')"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -37,12 +37,8 @@ function handleAlternativeMethod() {
 
       <!-- Tekst -->
       <div>
-        <h2 class="text-base font-bold text-black leading-tight mb-1">
-          Brak historii czatu
-        </h2>
-        <p class="text-[13px] text-[#1F1F1F] leading-snug">
-          Wprowadź kod PIN, aby przywrócić historię czatu.
-        </p>
+        <h2 class="text-base font-bold text-black leading-tight mb-1">{{ $t('chat.brakHistoriiCzatu') }}</h2>
+        <p class="text-[13px] text-[#1F1F1F] leading-snug">{{ $t('chat.wprowadzKodPinAby') }}</p>
       </div>
     </div>
 
@@ -80,9 +76,7 @@ function handleAlternativeMethod() {
       <button
         @click="handleAlternativeMethod"
         class="text-[#1A73E8] font-semibold text-[13px] hover:underline"
-      >
-        Zamiast tego użyj kodu jednorazowego
-      </button>
+      >{{ $t('chat.zamiastTegoUzyjKodu') }}</button>
     </div>
 
   </div>

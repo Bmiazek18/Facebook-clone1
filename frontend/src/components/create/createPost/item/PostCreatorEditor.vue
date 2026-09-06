@@ -167,7 +167,7 @@ const currentBackground = computed(
             v-if="initialView !== 'poll' && selectedImages.length === 0 && !selectedGif"
             class="w-8 h-8 rounded-xl bg-gradient-to-tr..."
           >
-            <span class="text-white font-bold text-md tracking-tighter select-none">Aa</span>
+            <span class="text-white font-bold text-md tracking-tighter select-none">{{ $t('chat.aa') }}</span>
           </div>
         </div>
       </div>

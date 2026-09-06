@@ -3,8 +3,8 @@
     class="w-full px-6 mx-auto bg-white rounded-2xl shadow-[0_1px_2px_rgba(0,0,0,0.1)] border border-theme-border p-4  "
   >
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-[17px] font-bold text-gray-900 m-0">Twoje wydarzenia</h2>
-      <a href="#" class="text-[#0064d1] no-underline text-[15px] hover:underline">See all</a>
+      <h2 class="text-[17px] font-bold text-gray-900 m-0">{{ $t('events.twojeWydarzenia') }}</h2>
+      <a href="#" class="text-[#0064d1] no-underline text-[15px] hover:underline">{{ $t('events.seeAll') }}</a>
     </div>
 
     <ul class="list-none m-0 border border-theme-border rounded-lg">
@@ -38,12 +38,12 @@
 
             <div class="flex items-center text-[12px] text-gray-500 gap-1.5 mt-1">
               <template v-if="event.invitedBy">
-                <img :src="event.inviterAvatar" alt="Avatar" class="w-4 h-4 rounded-full" />
-                <span class="text-gray-700">{{ event.invitedBy }} zaprosił Cię</span>
+                <img :src="event.inviterAvatar" :alt="$t('chat.avatar')" class="w-4 h-4 rounded-full" />
+                <span class="text-gray-700">{{ $t('events.eventInvitedbyZaprosilCie') }}</span>
               </template>
               <template v-else-if="event.friendAttending">
-                <img :src="event.friendAvatar" alt="Avatar" class="w-4 h-4 rounded-full" />
-                <span class="text-gray-700">{{ event.friendAttending }} weźmie udział</span>
+                <img :src="event.friendAvatar" :alt="$t('chat.avatar')" class="w-4 h-4 rounded-full" />
+                <span class="text-gray-700">{{ $t('events.eventFriendattendingWezmieUdzial') }}</span>
               </template>
               <template v-else>
                 <span>{{ event.stats }}</span>

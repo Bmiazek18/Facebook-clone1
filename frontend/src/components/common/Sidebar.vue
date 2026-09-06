@@ -46,7 +46,7 @@
               </button>
               <template #popper>
                 <slot name="settings-dropdown">
-                  <div class="p-4 text-sm text-theme-text">Brak dostępnych opcji settings.</div>
+                  <div class="p-4 text-sm text-theme-text">{{ $t('common.brakDostepnychOpcjiSettings') }}</div>
                 </slot>
               </template>
             </VDropdown>
@@ -75,9 +75,7 @@
                 class="absolute left-[-12px] w-[360px] top-[100%] bg-theme-bg-secondary shadow-[10px_20px_20px_-5px_rgba(0,0,0,0.15)] dark:shadow-[0_15px_15px_-5px_rgba(0,0,0,0.4)] rounded-b-xl pt-5 pb-6 flex items-center justify-center z-10"
               >
                 <slot name="search-dropdown">
-                  <span class="text-[15px] text-gray-500 dark:text-gray-400">
-                    Brak ostatnich wyszukiwań
-                  </span>
+                  <span class="text-[15px] text-gray-500 dark:text-gray-400">{{ $t('search.noRecent') }}</span>
                 </slot>
               </div>
 
