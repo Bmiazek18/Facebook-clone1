@@ -6,8 +6,8 @@ import com.facebook.UserService.service.PageService;
 import com.facebook.UserService.service.PageTokenService;
 import com.facebook.user.grpc.*;
 import io.grpc.stub.StreamObserver;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,13 +15,21 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class PageManagementGrpcHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(PageManagementGrpcHandler.class);
 
     private final PageService pageService;
     private final PageTokenService pageTokenService;
     private final GrpcUnaryHelper grpcUnaryHelper;
+
+    public PageManagementGrpcHandler(PageService pageService,
+                                     PageTokenService pageTokenService,
+                                     GrpcUnaryHelper grpcUnaryHelper) {
+        this.pageService = pageService;
+        this.pageTokenService = pageTokenService;
+        this.grpcUnaryHelper = grpcUnaryHelper;
+    }
 
     public void createPage(com.facebook.user.grpc.CreatePageRequest request, StreamObserver<CreatePageResponse> responseObserver) {
         log.info("gRPC: Creating page: {}", request.getName());

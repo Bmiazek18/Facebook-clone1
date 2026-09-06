@@ -11,19 +11,53 @@ import com.facebook.feed.grpc.GetUserMediaResponse;
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsQuery;
 import com.netflix.graphql.dgs.InputArgument;
-import lombok.extern.slf4j.Slf4j;
+import io.github.resilience4j.bulkhead.Bulkhead;
+import io.github.resilience4j.bulkhead.BulkheadRegistry;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryRegistry;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 @DgsComponent
-@Slf4j
 public class UserMediaDataFetcher {
+
+    private static final Logger log = LoggerFactory.getLogger(UserMediaDataFetcher.class);
 
     @GrpcClient("feed-service")
     private FeedGrpcServiceGrpc.FeedGrpcServiceBlockingStub feedGrpcStub;
+
+    private final CircuitBreakerRegistry circuitBreakerRegistry;
+    private final RetryRegistry retryRegistry;
+    private final BulkheadRegistry bulkheadRegistry;
+
+    public UserMediaDataFetcher(
+            CircuitBreakerRegistry circuitBreakerRegistry,
+            RetryRegistry retryRegistry,
+            BulkheadRegistry bulkheadRegistry) {
+        this.circuitBreakerRegistry = circuitBreakerRegistry;
+        this.retryRegistry = retryRegistry;
+        this.bulkheadRegistry = bulkheadRegistry;
+    }
+
+    private <T> T executeWithResilience(Supplier<T> supplier) {
+        CircuitBreaker cb = circuitBreakerRegistry.circuitBreaker("feedService");
+        Retry retry = retryRegistry.retry("feedService");
+        Bulkhead bulkhead = bulkheadRegistry.bulkhead("feedService");
+
+        Supplier<T> decorated = Bulkhead.decorateSupplier(bulkhead,
+                CircuitBreaker.decorateSupplier(cb,
+                        Retry.decorateSupplier(retry, supplier)));
+        return decorated.get();
+    }
 
     @DgsQuery
     public UserMediaResponse getUserMedia(
@@ -31,18 +65,28 @@ public class UserMediaDataFetcher {
             @InputArgument String filter,
             @InputArgument String albumName,
             @InputArgument Integer limit,
-            @InputArgument Integer offset) {
+            @InputArgument Integer offset,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+
+        String effectiveUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : userId;
+        if (effectiveUserId == null || effectiveUserId.isBlank()) {
+            UserMediaResponse empty = new UserMediaResponse();
+            empty.setItems(Collections.emptyList());
+            empty.setTotalCount(0);
+            empty.setHasMore(false);
+            return empty;
+        }
 
         try {
             GetUserMediaRequest req = GetUserMediaRequest.newBuilder()
-                    .setUserId(userId)
+                    .setUserId(effectiveUserId)
                     .setFilter(filter != null ? filter : "ALL")
                     .setAlbumName(albumName != null ? albumName : "")
                     .setLimit(limit != null ? limit : 20)
                     .setOffset(offset != null ? offset : 0)
                     .build();
 
-            GetUserMediaResponse res = feedGrpcStub.getUserMedia(req);
+            GetUserMediaResponse res = executeWithResilience(() -> feedGrpcStub.getUserMedia(req));
 
             List<UserMediaItem> items = new ArrayList<>();
             for (var it : res.getItemsList()) {
@@ -65,7 +109,7 @@ public class UserMediaDataFetcher {
             response.setHasMore(res.getHasMore());
             return response;
         } catch (Exception e) {
-            log.error("Failed to fetch user media via gRPC for user: {}", userId, e);
+            log.error("Failed to fetch user media via gRPC for user: {}", effectiveUserId, e);
             UserMediaResponse fallback = new UserMediaResponse();
             fallback.setItems(Collections.emptyList());
             fallback.setTotalCount(0);
@@ -75,13 +119,20 @@ public class UserMediaDataFetcher {
     }
 
     @DgsQuery
-    public List<UserAlbum> getUserAlbums(@InputArgument String userId) {
+    public List<UserAlbum> getUserAlbums(
+            @InputArgument String userId,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String effectiveUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : userId;
+        if (effectiveUserId == null || effectiveUserId.isBlank()) {
+            return Collections.emptyList();
+        }
+
         try {
             GetUserAlbumsRequest req = GetUserAlbumsRequest.newBuilder()
-                    .setUserId(userId)
+                    .setUserId(effectiveUserId)
                     .build();
 
-            GetUserAlbumsResponse res = feedGrpcStub.getUserAlbums(req);
+            GetUserAlbumsResponse res = executeWithResilience(() -> feedGrpcStub.getUserAlbums(req));
 
             List<UserAlbum> albums = new ArrayList<>();
             for (var a : res.getAlbumsList()) {
@@ -93,7 +144,7 @@ public class UserMediaDataFetcher {
             }
             return albums;
         } catch (Exception e) {
-            log.error("Failed to fetch user albums via gRPC for user: {}", userId, e);
+            log.error("Failed to fetch user albums via gRPC for user: {}", effectiveUserId, e);
             return Collections.emptyList();
         }
     }

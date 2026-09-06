@@ -47,15 +47,19 @@ class UserGrpcServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        userGrpcService = new UserGrpcServiceImpl(
-                userService,
-                userActiveService,
-                translationService,
-                downstreamGrpcService,
-                ticketService,
-                pageService,
-                pageTokenService
-        );
+        com.facebook.UserService.grpc.handler.GrpcUnaryHelper grpcUnaryHelper =
+                new com.facebook.UserService.grpc.handler.GrpcUnaryHelper();
+
+        com.facebook.UserService.grpc.handler.UserProfileAndSearchGrpcHandler userProfileHandler =
+                new com.facebook.UserService.grpc.handler.UserProfileAndSearchGrpcHandler(userService, userActiveService, grpcUnaryHelper);
+
+        com.facebook.UserService.grpc.handler.PageManagementGrpcHandler pageHandler =
+                new com.facebook.UserService.grpc.handler.PageManagementGrpcHandler(pageService, pageTokenService, grpcUnaryHelper);
+
+        com.facebook.UserService.grpc.handler.UserUtilityAndVaultGrpcHandler utilityHandler =
+                new com.facebook.UserService.grpc.handler.UserUtilityAndVaultGrpcHandler(userService, downstreamGrpcService, ticketService, translationService, grpcUnaryHelper);
+
+        userGrpcService = new UserGrpcServiceImpl(userProfileHandler, pageHandler, utilityHandler);
     }
 
     @Test

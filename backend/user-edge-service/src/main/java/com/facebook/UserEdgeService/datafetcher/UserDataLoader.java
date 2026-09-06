@@ -6,10 +6,10 @@ import com.facebook.user.grpc.GetUserByIdRequest;
 import com.facebook.user.grpc.GetUserByIdResponse;
 import com.facebook.user.grpc.UserGrpcServiceGrpc;
 import com.netflix.graphql.dgs.DgsDataLoader;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.dataloader.MappedBatchLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,15 +18,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ForkJoinPool;
 
-@Slf4j
 @DgsDataLoader(name = "userDataLoader")
-@RequiredArgsConstructor
 public class UserDataLoader implements MappedBatchLoader<String, UserSearchResponse> {
+
+    private static final Logger log = LoggerFactory.getLogger(UserDataLoader.class);
 
     @GrpcClient("user-service")
     private UserGrpcServiceGrpc.UserGrpcServiceBlockingStub userGrpcStub;
 
     private final EdgeMapper edgeMapper;
+
+    public UserDataLoader(EdgeMapper edgeMapper) {
+        this.edgeMapper = edgeMapper;
+    }
 
     @Override
     public CompletionStage<Map<String, UserSearchResponse>> load(Set<String> userIds) {

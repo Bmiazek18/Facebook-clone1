@@ -6,8 +6,8 @@ import com.facebook.UserService.service.UserActiveService;
 import com.facebook.UserService.service.UserService;
 import com.facebook.user.grpc.*;
 import io.grpc.stub.StreamObserver;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,13 +15,21 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class UserProfileAndSearchGrpcHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(UserProfileAndSearchGrpcHandler.class);
 
     private final UserService userService;
     private final UserActiveService userActiveService;
     private final GrpcUnaryHelper grpcUnaryHelper;
+
+    public UserProfileAndSearchGrpcHandler(UserService userService,
+                                           UserActiveService userActiveService,
+                                           GrpcUnaryHelper grpcUnaryHelper) {
+        this.userService = userService;
+        this.userActiveService = userActiveService;
+        this.grpcUnaryHelper = grpcUnaryHelper;
+    }
 
     public void getUserById(GetUserByIdRequest request, StreamObserver<GetUserByIdResponse> responseObserver) {
         log.info("gRPC: Fetching user profile by ID: {}", request.getUserId());

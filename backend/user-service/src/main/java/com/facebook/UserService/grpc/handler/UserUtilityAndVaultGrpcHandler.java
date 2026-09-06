@@ -6,23 +6,35 @@ import com.facebook.UserService.service.TranslationService;
 import com.facebook.UserService.service.UserService;
 import com.facebook.user.grpc.*;
 import io.grpc.stub.StreamObserver;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.UUID;
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class UserUtilityAndVaultGrpcHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(UserUtilityAndVaultGrpcHandler.class);
 
     private final UserService userService;
     private final DownstreamGrpcService downstreamGrpcService;
     private final TicketService ticketService;
     private final TranslationService translationService;
     private final GrpcUnaryHelper grpcUnaryHelper;
+
+    public UserUtilityAndVaultGrpcHandler(UserService userService,
+                                          DownstreamGrpcService downstreamGrpcService,
+                                          TicketService ticketService,
+                                          TranslationService translationService,
+                                          GrpcUnaryHelper grpcUnaryHelper) {
+        this.userService = userService;
+        this.downstreamGrpcService = downstreamGrpcService;
+        this.ticketService = ticketService;
+        this.translationService = translationService;
+        this.grpcUnaryHelper = grpcUnaryHelper;
+    }
 
     public void generateTicket(GenerateTicketRequest request, StreamObserver<GenerateTicketResponse> responseObserver) {
         log.info("gRPC: Generating one-time ticket for user: {}", request.getUserId());

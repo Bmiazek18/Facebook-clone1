@@ -5,18 +5,26 @@ import com.facebook.UserService.grpc.handler.UserProfileAndSearchGrpcHandler;
 import com.facebook.UserService.grpc.handler.UserUtilityAndVaultGrpcHandler;
 import com.facebook.user.grpc.*;
 import io.grpc.stub.StreamObserver;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @GrpcService
-@RequiredArgsConstructor
-@Slf4j
 public class UserGrpcServiceImpl extends UserGrpcServiceGrpc.UserGrpcServiceImplBase {
+
+    private static final Logger log = LoggerFactory.getLogger(UserGrpcServiceImpl.class);
 
     private final UserProfileAndSearchGrpcHandler userProfileAndSearchGrpcHandler;
     private final PageManagementGrpcHandler pageManagementGrpcHandler;
     private final UserUtilityAndVaultGrpcHandler userUtilityAndVaultGrpcHandler;
+
+    public UserGrpcServiceImpl(UserProfileAndSearchGrpcHandler userProfileAndSearchGrpcHandler,
+                               PageManagementGrpcHandler pageManagementGrpcHandler,
+                               UserUtilityAndVaultGrpcHandler userUtilityAndVaultGrpcHandler) {
+        this.userProfileAndSearchGrpcHandler = userProfileAndSearchGrpcHandler;
+        this.pageManagementGrpcHandler = pageManagementGrpcHandler;
+        this.userUtilityAndVaultGrpcHandler = userUtilityAndVaultGrpcHandler;
+    }
 
     // --- USER PROFILE & SEARCH ---
     @Override

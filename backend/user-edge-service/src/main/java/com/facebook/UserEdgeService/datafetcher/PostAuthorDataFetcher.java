@@ -14,10 +14,10 @@ import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
 import com.netflix.graphql.dgs.DgsEntityFetcher;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.dataloader.DataLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -26,10 +26,10 @@ import io.github.resilience4j.retry.RetryRegistry;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-@Slf4j
 @DgsComponent
-@RequiredArgsConstructor
 public class PostAuthorDataFetcher {
+
+    private static final Logger log = LoggerFactory.getLogger(PostAuthorDataFetcher.class);
 
     @GrpcClient("user-service")
     private UserGrpcServiceGrpc.UserGrpcServiceBlockingStub userGrpcStub;
@@ -38,6 +38,16 @@ public class PostAuthorDataFetcher {
     private final CircuitBreakerRegistry circuitBreakerRegistry;
     private final RetryRegistry retryRegistry;
     private final io.github.resilience4j.bulkhead.BulkheadRegistry bulkheadRegistry;
+
+    public PostAuthorDataFetcher(EdgeMapper edgeMapper,
+                                 CircuitBreakerRegistry circuitBreakerRegistry,
+                                 RetryRegistry retryRegistry,
+                                 io.github.resilience4j.bulkhead.BulkheadRegistry bulkheadRegistry) {
+        this.edgeMapper = edgeMapper;
+        this.circuitBreakerRegistry = circuitBreakerRegistry;
+        this.retryRegistry = retryRegistry;
+        this.bulkheadRegistry = bulkheadRegistry;
+    }
 
     @DgsEntityFetcher(name = DgsConstants.POST.TYPE_NAME)
     public Post resolvePost(Map<String, Object> representation) {

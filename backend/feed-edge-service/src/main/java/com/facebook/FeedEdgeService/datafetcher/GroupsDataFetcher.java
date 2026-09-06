@@ -5,16 +5,18 @@ import com.facebook.FeedEdgeService.codegen.types.Group;
 import com.facebook.FeedEdgeService.codegen.types.CreateGroupInput;
 import com.facebook.FeedEdgeService.codegen.types.GroupMember;
 import com.netflix.graphql.dgs.*;
-import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @DgsComponent
-@Slf4j
 public class GroupsDataFetcher {
+
+    private static final Logger log = LoggerFactory.getLogger(GroupsDataFetcher.class);
 
     @GrpcClient("groups-service")
     private GroupsGrpcServiceGrpc.GroupsGrpcServiceBlockingStub groupsGrpcStub;

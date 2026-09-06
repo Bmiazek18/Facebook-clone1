@@ -4,9 +4,9 @@ import com.facebook.UserEdgeService.mapper.EdgeMapper;
 import com.facebook.user.generated.types.*;
 import com.facebook.user.grpc.*;
 import com.netflix.graphql.dgs.*;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Slf4j
 @DgsComponent
-@RequiredArgsConstructor
 public class UserDataFetcher {
+
+    private static final Logger log = LoggerFactory.getLogger(UserDataFetcher.class);
 
     @GrpcClient("user-service")
     private UserGrpcServiceGrpc.UserGrpcServiceBlockingStub userGrpcStub;
@@ -30,6 +30,16 @@ public class UserDataFetcher {
     private final CircuitBreakerRegistry circuitBreakerRegistry;
     private final RetryRegistry retryRegistry;
     private final io.github.resilience4j.bulkhead.BulkheadRegistry bulkheadRegistry;
+
+    public UserDataFetcher(EdgeMapper edgeMapper,
+                           CircuitBreakerRegistry circuitBreakerRegistry,
+                           RetryRegistry retryRegistry,
+                           io.github.resilience4j.bulkhead.BulkheadRegistry bulkheadRegistry) {
+        this.edgeMapper = edgeMapper;
+        this.circuitBreakerRegistry = circuitBreakerRegistry;
+        this.retryRegistry = retryRegistry;
+        this.bulkheadRegistry = bulkheadRegistry;
+    }
 
     @DgsQuery
     public UserSearchResponse getUserById(@InputArgument String userId) {

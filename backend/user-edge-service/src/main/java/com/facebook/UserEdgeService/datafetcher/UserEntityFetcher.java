@@ -9,21 +9,25 @@ import com.facebook.user.grpc.GetUserByIdResponse;
 import com.facebook.user.grpc.UserGrpcServiceGrpc;
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsEntityFetcher;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-@Slf4j
 @DgsComponent
-@RequiredArgsConstructor
 public class UserEntityFetcher {
+
+    private static final Logger log = LoggerFactory.getLogger(UserEntityFetcher.class);
 
     @GrpcClient("user-service")
     private UserGrpcServiceGrpc.UserGrpcServiceBlockingStub userGrpcStub;
 
     private final EdgeMapper edgeMapper;
+
+    public UserEntityFetcher(EdgeMapper edgeMapper) {
+        this.edgeMapper = edgeMapper;
+    }
 
     @DgsEntityFetcher(name = DgsConstants.USERSEARCHRESPONSE.TYPE_NAME)
     @io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker(name = "userService", fallbackMethod = "resolveUserFallback")
