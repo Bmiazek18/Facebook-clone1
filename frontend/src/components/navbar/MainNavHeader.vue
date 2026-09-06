@@ -36,7 +36,7 @@ const recentSearches = ref<any[]>([])
 
 const fetchSearchHistory = async () => {
   try {
-    const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
+    const currentUserId = authStore.currentUserId ? String(authStore.currentUserId) : undefined
     const history = await usersApi.getSearchHistory(currentUserId)
 
     if (history) {
@@ -54,7 +54,7 @@ const fetchSearchHistory = async () => {
 
 const removeFromRecent = async (userId: string) => {
   try {
-    const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
+    const currentUserId = authStore.currentUserId ? String(authStore.currentUserId) : undefined
     
     // Update local state immediately for instant feedback
     recentSearches.value = recentSearches.value.filter(item => item.id !== userId)
@@ -70,7 +70,7 @@ const clearAllRecent = async () => {
     // Delete each locally stored item one by one on backend
     const itemsToDelete = [...recentSearches.value]
     recentSearches.value = []
-    const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
+    const currentUserId = authStore.currentUserId ? String(authStore.currentUserId) : undefined
     
     for (const item of itemsToDelete) {
       await usersApi.deleteSearchHistoryItem(item.id, currentUserId)
@@ -107,7 +107,7 @@ const performLiveSearch = async () => {
 
   isSearching.value = true
   try {
-    const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
+    const currentUserId = authStore.currentUserId ? String(authStore.currentUserId) : undefined
     const users = await usersApi.searchUsers(query, currentUserId)
 
     if (users) {
@@ -158,7 +158,7 @@ const handleSearchSubmit = () => {
 
 const goToProfile = (user: { id: string, name: string, avatar: string }) => {
   try {
-    const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce')
+    const currentUserId = authStore.currentUserId ? String(authStore.currentUserId) : undefined
     usersApi.recordSearch(user.id, currentUserId)
       .then(() => {
         fetchSearchHistory()
