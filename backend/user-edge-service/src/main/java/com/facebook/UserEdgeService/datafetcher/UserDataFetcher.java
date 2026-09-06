@@ -67,8 +67,11 @@ public class UserDataFetcher {
     public List<UserSearchResponse> getSearchHistory(
             @InputArgument String userId,
             @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
-        String finalUserId = (xUserId != null && !xUserId.isEmpty()) ? xUserId : userId;
-        return executeGrpc(() -> userGrpcStub.getSearchHistory(GetSearchHistoryRequest.newBuilder().setUserId(finalUserId != null ? finalUserId : "").build())
+        String finalUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : userId;
+        if (finalUserId == null || finalUserId.isBlank()) {
+            return java.util.List.of();
+        }
+        return executeGrpc(() -> userGrpcStub.getSearchHistory(GetSearchHistoryRequest.newBuilder().setUserId(finalUserId).build())
                 .getUsersList().stream().map(edgeMapper::grpcUserToDgsUser).toList(), "Failed to fetch search history");
     }
 
@@ -86,8 +89,12 @@ public class UserDataFetcher {
     }
 
     @DgsMutation
-    public Boolean setUserActive(@InputArgument String userId) {
-        try { userGrpcStub.setUserActive(SetUserActiveRequest.newBuilder().setUserId(userId).build()); return true; }
+    public Boolean setUserActive(@InputArgument String userId, @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String finalUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : userId;
+        if (finalUserId == null || finalUserId.isBlank()) {
+            return false;
+        }
+        try { userGrpcStub.setUserActive(SetUserActiveRequest.newBuilder().setUserId(finalUserId).build()); return true; }
         catch (Exception e) { log.error("Failed to set user active", e); return false; }
     }
 
@@ -97,10 +104,14 @@ public class UserDataFetcher {
             @InputArgument String searchingUserId,
             @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
         try {
-            String finalSearchingUserId = (xUserId != null && !xUserId.isEmpty()) ? xUserId : searchingUserId;
+            String finalSearchingUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : searchingUserId;
+            if (finalSearchingUserId == null || finalSearchingUserId.isBlank()) {
+                log.warn("Unauthenticated search record attempt rejected for searchedUserId: {}", searchedUserId);
+                return false;
+            }
             userGrpcStub.recordSearch(RecordSearchRequest.newBuilder()
                     .setSearchedUserId(searchedUserId)
-                    .setSearchingUserId(finalSearchingUserId != null ? finalSearchingUserId : "")
+                    .setSearchingUserId(finalSearchingUserId)
                     .build());
             return true;
         }
@@ -116,10 +127,14 @@ public class UserDataFetcher {
             @InputArgument String searchingUserId,
             @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
         try {
-            String finalSearchingUserId = (xUserId != null && !xUserId.isEmpty()) ? xUserId : searchingUserId;
+            String finalSearchingUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : searchingUserId;
+            if (finalSearchingUserId == null || finalSearchingUserId.isBlank()) {
+                log.warn("Unauthenticated delete search history attempt rejected for searchedUserId: {}", searchedUserId);
+                return false;
+            }
             userGrpcStub.deleteSearchHistoryItem(com.facebook.user.grpc.DeleteSearchHistoryRequest.newBuilder()
                     .setSearchedUserId(searchedUserId)
-                    .setSearchingUserId(finalSearchingUserId != null ? finalSearchingUserId : "")
+                    .setSearchingUserId(finalSearchingUserId)
                     .build());
             return true;
         }
@@ -133,16 +148,20 @@ public class UserDataFetcher {
     public String generateTicket(
             @InputArgument String userId,
             @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
-        String finalUserId = (xUserId != null && !xUserId.isEmpty()) ? xUserId : userId;
+        String finalUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : userId;
         return executeGrpc(() -> userGrpcStub.generateTicket(
                 GenerateTicketRequest.newBuilder().setUserId(finalUserId != null ? finalUserId : "").build()).getTicket(),
                 "Failed to generate ticket");
     }
 
     @DgsMutation
-    public UserSearchResponse updateProfile(@InputArgument String userId, @InputArgument UpdateProfileInput input) {
+    public UserSearchResponse updateProfile(
+            @InputArgument String userId,
+            @InputArgument UpdateProfileInput input,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String finalUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : userId;
         return executeGrpc(() -> edgeMapper.grpcUserToDgsUser(
-                userGrpcStub.updateProfile(edgeMapper.buildUpdateProfileRequest(userId, input)).getUser()
+                userGrpcStub.updateProfile(edgeMapper.buildUpdateProfileRequest(finalUserId, input)).getUser()
         ), "Failed to update profile");
     }
 
@@ -365,9 +384,15 @@ public class UserDataFetcher {
     // ==========================================
 
     @DgsQuery
-    public java.util.Map<String, Object> vault(@InputArgument String userId) {
+    public java.util.Map<String, Object> vault(
+            @InputArgument String userId,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String finalUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : userId;
+        if (finalUserId == null || finalUserId.isBlank()) {
+            return java.util.Map.of();
+        }
         return executeGrpc(() -> {
-            var vaultResp = userGrpcStub.getVault(GetVaultRequest.newBuilder().setUserId(userId).build());
+            var vaultResp = userGrpcStub.getVault(GetVaultRequest.newBuilder().setUserId(finalUserId).build());
             var v = vaultResp.getVault();
             return java.util.Map.of(
                     "userId", v.getUserId(),
@@ -382,10 +407,12 @@ public class UserDataFetcher {
     @DgsMutation
     public java.util.Map<String, Object> saveVault(
             @InputArgument String userId,
-            @InputArgument SaveVaultInput input) {
+            @InputArgument SaveVaultInput input,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String finalUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : userId;
         return executeGrpc(() -> {
             var vaultResp = userGrpcStub.saveVault(SaveVaultRequest.newBuilder()
-                    .setUserId(userId)
+                    .setUserId(finalUserId != null ? finalUserId : "")
                     .setOpaqueRecord(input.getOpaqueRecord())
                     .setEncryptedHistory(input.getEncryptedHistory())
                     .setFailedAttempts(input.getFailedAttempts() != null ? input.getFailedAttempts() : 0)
@@ -404,10 +431,12 @@ public class UserDataFetcher {
     @DgsMutation
     public java.util.Map<String, Object> updateVaultAttempts(
             @InputArgument String userId,
-            @InputArgument Integer attempts) {
+            @InputArgument Integer attempts,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String finalUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : userId;
         return executeGrpc(() -> {
             var vaultResp = userGrpcStub.updateVaultAttempts(UpdateVaultAttemptsRequest.newBuilder()
-                    .setUserId(userId)
+                    .setUserId(finalUserId != null ? finalUserId : "")
                     .setAttempts(attempts != null ? attempts : 0)
                     .build());
             var v = vaultResp.getVault();

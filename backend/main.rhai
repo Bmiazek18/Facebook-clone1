@@ -26,6 +26,20 @@ fn claim_string(claims, name) {
 }
 
 fn apply_kong_identity(request) {
+  // Strip any spoofed headers from untrusted clients
+  if request.subgraph.headers.contains("x-user-id") {
+    request.subgraph.headers.remove("x-user-id");
+  }
+  if request.subgraph.headers.contains("x-actor-id") {
+    request.subgraph.headers.remove("x-actor-id");
+  }
+  if request.subgraph.headers.contains("x-entity-type") {
+    request.subgraph.headers.remove("x-entity-type");
+  }
+  if request.subgraph.headers.contains("x-original-user-id") {
+    request.subgraph.headers.remove("x-original-user-id");
+  }
+
   let claims = request.context[Router.APOLLO_AUTHENTICATION_JWT_CLAIMS];
   if claims == () {
     return;

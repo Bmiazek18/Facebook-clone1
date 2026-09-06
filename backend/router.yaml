@@ -27,14 +27,6 @@ headers:
       - propagate:
           named: "Authorization"
       - propagate:
-          named: "X-User-Id"
-      - propagate:
-          named: "X-Actor-Id"
-      - propagate:
-          named: "X-Entity-Type"
-      - propagate:
-          named: "X-Original-User-Id"
-      - propagate:
           named: "traceparent"
       - propagate:
           named: "tracestate"
