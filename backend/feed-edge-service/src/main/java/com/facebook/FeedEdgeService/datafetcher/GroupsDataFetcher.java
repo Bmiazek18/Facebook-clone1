@@ -73,15 +73,18 @@ public class GroupsDataFetcher {
     }
 
     @DgsMutation
-    public Group createGroup(@InputArgument CreateGroupInput input) {
-        log.info("Edge: Creating group: {} for creator: {}", input.getName(), input.getCreatorId());
+    public Group createGroup(
+            @InputArgument CreateGroupInput input,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String effectiveCreatorId = (xUserId != null && !xUserId.isBlank()) ? xUserId : input.getCreatorId();
+        log.info("Edge: Creating group: {} for creator: {}", input.getName(), effectiveCreatorId);
         try {
             var response = groupsGrpcStub.createGroup(CreateGroupRequest.newBuilder()
                     .setName(input.getName())
                     .setDescription(input.getDescription() != null ? input.getDescription() : "")
                     .setPrivacy(input.getPrivacy())
                     .setImage(input.getImage() != null ? input.getImage() : "")
-                    .setCreatorId(input.getCreatorId())
+                    .setCreatorId(effectiveCreatorId)
                     .build());
             return mapToGroup(response.getGroup());
         } catch (Exception e) {
@@ -91,12 +94,16 @@ public class GroupsDataFetcher {
     }
 
     @DgsMutation
-    public Boolean joinGroup(@InputArgument String groupId, @InputArgument String userId) {
-        log.info("Edge: User {} joining group {}", userId, groupId);
+    public Boolean joinGroup(
+            @InputArgument String groupId,
+            @InputArgument String userId,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String effectiveUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : userId;
+        log.info("Edge: User {} joining group {}", effectiveUserId, groupId);
         try {
             var response = groupsGrpcStub.joinGroup(JoinGroupRequest.newBuilder()
                     .setGroupId(groupId)
-                    .setUserId(userId)
+                    .setUserId(effectiveUserId)
                     .build());
             return response.getSuccess();
         } catch (Exception e) {
@@ -106,12 +113,16 @@ public class GroupsDataFetcher {
     }
 
     @DgsMutation
-    public Boolean leaveGroup(@InputArgument String groupId, @InputArgument String userId) {
-        log.info("Edge: User {} leaving group {}", userId, groupId);
+    public Boolean leaveGroup(
+            @InputArgument String groupId,
+            @InputArgument String userId,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String effectiveUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : userId;
+        log.info("Edge: User {} leaving group {}", effectiveUserId, groupId);
         try {
             var response = groupsGrpcStub.leaveGroup(LeaveGroupRequest.newBuilder()
                     .setGroupId(groupId)
-                    .setUserId(userId)
+                    .setUserId(effectiveUserId)
                     .build());
             return response.getSuccess();
         } catch (Exception e) {
@@ -447,14 +458,16 @@ public class GroupsDataFetcher {
             @InputArgument String text,
             @InputArgument String note,
             @InputArgument String actorId,
-            @InputArgument String actorName) {
+            @InputArgument String actorName,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String effectiveActorId = (xUserId != null && !xUserId.isBlank()) ? xUserId : actorId;
         log.info("Edge: Logging group activity for group: {} by {}", groupId, actorName);
         try {
             var response = groupsGrpcStub.logGroupActivity(LogGroupActivityRequest.newBuilder()
                     .setGroupId(groupId)
                     .setText(text)
                     .setNote(note != null ? note : "")
-                    .setActorId(actorId)
+                    .setActorId(effectiveActorId)
                     .setActorName(actorName)
                     .build());
             return mapToGroupActivityLog(response.getLog());

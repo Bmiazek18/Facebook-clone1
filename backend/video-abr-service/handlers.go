@@ -20,9 +20,15 @@ import (
 )
 
 const (
-	ServerPort   = ":8085"
-	sharedSecret = "secret-media-key"
+	ServerPort = ":8085"
 )
+
+var sharedSecret = func() string {
+	if s := os.Getenv("MEDIA_SIGNING_SECRET"); s != "" {
+		return s
+	}
+	return "secret-media-key"
+}()
 
 type TusdHook struct {
 	Type  string `json:"Type"`

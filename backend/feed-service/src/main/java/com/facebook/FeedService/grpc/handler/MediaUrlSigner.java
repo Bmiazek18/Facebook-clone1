@@ -7,7 +7,7 @@ import javax.crypto.spec.SecretKeySpec;
 @Component
 public class MediaUrlSigner {
 
-    private static final String SHARED_SECRET = "secret-media-key";
+    private static final String SHARED_SECRET = System.getenv().getOrDefault("MEDIA_SIGNING_SECRET", "secret-media-key");
 
     public String extractFileId(String src) {
         if (src == null) return null;

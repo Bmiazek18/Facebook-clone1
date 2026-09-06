@@ -105,7 +105,7 @@
                   <div class="grow min-w-0 pr-8">
                     <p
                       class="text-[15px] leading-[1.3] text-theme-text"
-                      v-html="notification.message"
+                      v-html="sanitizeNotificationMessage(notification.message)"
                     ></p>
                     <span
                       class="text-[13px] block mt-0.5 transition-colors duration-200"
@@ -173,7 +173,7 @@
                   <p
                     class="text-[15px] leading-[1.3] transition-colors duration-200"
                     :class="notification.unread ? 'text-theme-text' : 'text-[#65676B]'"
-                    v-html="notification.message"
+                    v-html="sanitizeNotificationMessage(notification.message)"
                   ></p>
                   <span
                     class="text-[13px] block mt-0.5 transition-colors duration-200"
@@ -286,6 +286,14 @@ const activeTab: Ref<'all' | 'unread'> = ref('all')
 const openDropdowns = ref<Record<string, boolean>>({})
 const setDropdownOpen = (id: string, value: boolean) => {
   openDropdowns.value[id] = value
+}
+
+const sanitizeNotificationMessage = (msg: string): string => {
+  if (!msg) return ''
+  return String(msg)
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/&lt;(\/?(?:strong|b|span|i|em))&gt;/gi, '<$1>')
 }
 
 const formatTimeAgo = (createdAtStr: string) => {

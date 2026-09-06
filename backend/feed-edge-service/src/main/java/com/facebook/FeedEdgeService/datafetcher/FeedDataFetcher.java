@@ -20,6 +20,7 @@ import com.netflix.graphql.dgs.*;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -104,8 +105,11 @@ public class FeedDataFetcher {
     }
 
     @DgsMutation
-    public Post createPost(@InputArgument CreatePostInput input) {
-        log.info("Edge: Creating post via gRPC for user: {}", input.getAuthorId());
+    public Post createPost(
+            @InputArgument CreatePostInput input,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String effectiveAuthorId = (xUserId != null && !xUserId.isBlank()) ? xUserId : input.getAuthorId();
+        log.info("Edge: Creating post via gRPC for user: {}", effectiveAuthorId);
 
         List<com.facebook.feed.grpc.PostMedia> protoMediaList = new ArrayList<>();
         if (input.getMedia() != null) {
@@ -133,7 +137,7 @@ public class FeedDataFetcher {
         try {
             com.facebook.feed.grpc.CreatePostRequest.Builder reqBuilder = com.facebook.feed.grpc.CreatePostRequest.newBuilder()
                     .setContent(input.getContent())
-                    .setAuthorId(input.getAuthorId())
+                    .setAuthorId(effectiveAuthorId)
                     .addAllMedia(protoMediaList)
                     .setIsAnonymous(input.getIsAnonymous() != null ? input.getIsAnonymous() : false)
                     .setTargetId(input.getTargetId() != null ? input.getTargetId() : "")
@@ -171,13 +175,15 @@ public class FeedDataFetcher {
     public Post voteOnPoll(
             @InputArgument String postId,
             @InputArgument String optionId,
-            @InputArgument String userId) {
-        log.info("Edge: Voting on poll for post {} option {} by user {}", postId, optionId, userId);
+            @InputArgument String userId,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String effectiveUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : userId;
+        log.info("Edge: Voting on poll for post {} option {} by user {}", postId, optionId, effectiveUserId);
         try {
             var response = feedGrpcStub.voteOnPoll(com.facebook.feed.grpc.VoteOnPollRequest.newBuilder()
                     .setPostId(postId)
                     .setOptionId(optionId)
-                    .setUserId(userId)
+                    .setUserId(effectiveUserId)
                     .build());
             return enrichPost(response.getPost());
         } catch (Exception e) {
@@ -187,12 +193,16 @@ public class FeedDataFetcher {
     }
 
     @DgsMutation
-    public Boolean markStoryAsViewed(@InputArgument String storyId, @InputArgument String viewerId) {
-        log.info("Edge: Marking story {} as viewed by viewer {}", storyId, viewerId);
+    public Boolean markStoryAsViewed(
+            @InputArgument String storyId,
+            @InputArgument String viewerId,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String effectiveViewerId = (xUserId != null && !xUserId.isBlank()) ? xUserId : viewerId;
+        log.info("Edge: Marking story {} as viewed by viewer {}", storyId, effectiveViewerId);
         try {
             MarkStoryAsViewedResponse response = feedGrpcStub.markStoryAsViewed(MarkStoryAsViewedRequest.newBuilder()
                     .setStoryId(storyId)
-                    .setViewerId(viewerId)
+                    .setViewerId(effectiveViewerId)
                     .build());
             return response.getSuccess();
         } catch (Exception e) {
@@ -219,11 +229,14 @@ public class FeedDataFetcher {
     }
 
     @DgsMutation
-    public Story createStory(@InputArgument CreateStoryInput input) {
-        log.info("Edge: Creating story via gRPC for user: {}", input.getAuthorId());
+    public Story createStory(
+            @InputArgument CreateStoryInput input,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String effectiveAuthorId = (xUserId != null && !xUserId.isBlank()) ? xUserId : input.getAuthorId();
+        log.info("Edge: Creating story via gRPC for user: {}", effectiveAuthorId);
         try {
             CreateStoryResponse response = feedGrpcStub.createStory(CreateStoryRequest.newBuilder()
-                    .setAuthorId(input.getAuthorId())
+                    .setAuthorId(effectiveAuthorId)
                     .setMediaUrl(input.getMediaUrl())
                     .setMediaType(input.getMediaType())
                     .setText(input.getText() != null ? input.getText() : "")
@@ -255,7 +268,12 @@ public class FeedDataFetcher {
     }
 
     @DgsMutation
-    public Event createEvent(@InputArgument CreateEventInput input) {
+    public Event createEvent(
+            @InputArgument CreateEventInput input,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        if (xUserId != null && !xUserId.isBlank()) {
+            input.setUserId(xUserId);
+        }
         log.info("Edge: Creating event via gRPC for user: {}", input.getUserId());
         try {
             // Używamy gotowej metody z mappera, która bezpiecznie buduje obiekt gRPC

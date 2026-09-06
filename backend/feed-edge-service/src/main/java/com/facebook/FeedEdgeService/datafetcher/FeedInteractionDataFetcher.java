@@ -16,6 +16,8 @@ import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.web.bind.annotation.RequestHeader;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -131,12 +133,15 @@ public class FeedInteractionDataFetcher {
     }
 
     @DgsMutation
-    public Comment addComment(@InputArgument AddCommentInput input) {
-        log.info("Edge: Adding comment via gRPC for post: {} by user: {}", input.getPostId(), input.getUserId());
+    public Comment addComment(
+            @InputArgument AddCommentInput input,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String effectiveUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : input.getUserId();
+        log.info("Edge: Adding comment via gRPC for post: {} by user: {}", input.getPostId(), effectiveUserId);
         try {
             AddCommentRequest.Builder reqBuilder = AddCommentRequest.newBuilder()
                     .setPostId(input.getPostId())
-                    .setUserId(input.getUserId())
+                    .setUserId(effectiveUserId)
                     .setContent(input.getContent() != null ? input.getContent() : "");
 
             if (input.getMediaUrl() != null) {
@@ -155,12 +160,15 @@ public class FeedInteractionDataFetcher {
     }
 
     @DgsMutation
-    public boolean reactToPost(@InputArgument PostReactionInput input) {
-        log.info("Edge: Reacting to post via gRPC: {}, type: {}", input.getPostId(), input.getReactionType());
+    public boolean reactToPost(
+            @InputArgument PostReactionInput input,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String effectiveUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : input.getUserId();
+        log.info("Edge: Reacting to post via gRPC: {}, type: {}, user: {}", input.getPostId(), input.getReactionType(), effectiveUserId);
         try {
             ReactToPostRequest.Builder reqBuilder = ReactToPostRequest.newBuilder()
                     .setPostId(input.getPostId())
-                    .setUserId(input.getUserId());
+                    .setUserId(effectiveUserId);
 
             if (input.getReactionType() != null) {
                 reqBuilder.setReactionType(input.getReactionType().toUpperCase());
@@ -178,12 +186,15 @@ public class FeedInteractionDataFetcher {
     }
 
     @DgsMutation
-    public boolean reactToComment(@InputArgument CommentReactionInput input) {
-        log.info("Edge: Reacting to comment via gRPC: {}, type: {}", input.getCommentId(), input.getReactionType());
+    public boolean reactToComment(
+            @InputArgument CommentReactionInput input,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String effectiveUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : input.getUserId();
+        log.info("Edge: Reacting to comment via gRPC: {}, type: {}, user: {}", input.getCommentId(), input.getReactionType(), effectiveUserId);
         try {
             ReactToCommentRequest.Builder reqBuilder = ReactToCommentRequest.newBuilder()
                     .setCommentId(input.getCommentId())
-                    .setUserId(input.getUserId());
+                    .setUserId(effectiveUserId);
 
             if (input.getReactionType() != null) {
                 reqBuilder.setReactionType(input.getReactionType().toUpperCase());

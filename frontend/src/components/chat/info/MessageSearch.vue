@@ -273,10 +273,30 @@ function handleSearchInput() {
   }
 }
 
+function escapeHtml(str: string): string {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 function highlightText(text: string): string {
-  if (!searchQuery.value) return text
-  const regex = new RegExp(`(${searchQuery.value})`, 'gi')
-  return String(text).replace(regex, '<strong class="font-bold text-black dark:text-white">$1</strong>')
+  if (!text) return ''
+  const escaped = escapeHtml(text)
+  const query = searchQuery.value.trim()
+  if (!query) return escaped
+  try {
+    const regex = new RegExp(`(${escapeRegex(query)})`, 'gi')
+    return escaped.replace(regex, '<strong class="font-bold text-black dark:text-white">$1</strong>')
+  } catch {
+    return escaped
+  }
 }
 
 function clearSearch() {
