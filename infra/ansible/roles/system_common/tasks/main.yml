@@ -1,0 +1,29 @@
+---
+- name: Install essential OS packages
+  ansible.builtin.apt:
+    name: "{{ system_packages }}"
+    state: present
+    update_cache: yes
+
+- name: Enable IPv4 forwarding sysctl
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    state: present
+    reload: yes
+  ignore_errors: yes
+
+- name: Set iptables default FORWARD policy to ACCEPT
+  ansible.builtin.iptables:
+    chain: FORWARD
+    policy: ACCEPT
+
+- name: Setup LXC compatibility symlinks (/dev/kmsg & /sbin/modprobe)
+  ansible.builtin.file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: link
+    force: yes
+  loop:
+    - { src: '/dev/null', dest: '/dev/kmsg' }
+    - { src: '/bin/true', dest: '/sbin/modprobe' }

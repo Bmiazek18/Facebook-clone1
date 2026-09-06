@@ -1,0 +1,73 @@
+---
+- name: Ensure K3s config directory exists
+  ansible.builtin.file:
+    path: /etc/rancher/k3s
+    state: directory
+    mode: '0755'
+
+- name: Create K3s server configuration (/etc/rancher/k3s/config.yaml)
+  ansible.builtin.copy:
+    dest: /etc/rancher/k3s/config.yaml
+    mode: '0644'
+    content: |
+      disable:
+        - traefik
+      write-kubeconfig-mode: "0644"
+      flannel-backend: "{{ k3s_flannel_backend }}"
+      kubelet-arg:
+        - "protect-kernel-defaults=false"
+
+- name: Create systemd override directory for K3s LXC compatibility
+  ansible.builtin.file:
+    path: /etc/systemd/system/k3s.service.d
+    state: directory
+    mode: '0755'
+
+- name: Create K3s systemd drop-in (/etc/systemd/system/k3s.service.d/lxc-fix.conf)
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/k3s.service.d/lxc-fix.conf
+    mode: '0644'
+    content: |
+      [Service]
+      ExecStartPre=+/bin/mount -o remount,rw /proc/sys
+      ExecStartPre=+/bin/sh -c 'ln -sf /dev/null /dev/kmsg'
+  register: k3s_dropin
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: yes
+  when: k3s_dropin.changed
+
+- name: Install K3s server
+  ansible.builtin.shell:
+    cmd: "curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION={{ k3s_version }} sh -"
+    creates: /usr/local/bin/k3s
+
+- name: Create /usr/bin symlinks for k3s and kubectl
+  ansible.builtin.file:
+    src: /usr/local/bin/k3s
+    dest: "{{ item }}"
+    state: link
+    force: yes
+  loop:
+    - /usr/bin/k3s
+    - /usr/bin/kubectl
+
+- name: Disable eth0 checksum offload for flannel host-gw
+  ansible.builtin.command: ethtool -K eth0 tx off rx off
+  ignore_errors: yes
+
+- name: Configure KUBECONFIG environment variable in /root/.bashrc
+  ansible.builtin.lineinfile:
+    path: /root/.bashrc
+    line: "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
+    state: present
+
+- name: Wait for K3s node to become Ready
+  ansible.builtin.shell:
+    cmd: "/usr/local/bin/k3s kubectl get nodes --no-headers"
+  register: k3s_nodes
+  until: "'Ready' in k3s_nodes.stdout"
+  retries: 30
+  delay: 5
+  changed_when: false

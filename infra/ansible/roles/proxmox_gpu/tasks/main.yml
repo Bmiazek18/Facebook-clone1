@@ -1,0 +1,68 @@
+---
+- name: Verify NVIDIA GPU is detected on Proxmox host
+  ansible.builtin.command: nvidia-smi
+  register: host_nvidia_smi
+  changed_when: false
+
+- name: Extract host NVIDIA driver version
+  ansible.builtin.shell:
+    cmd: "nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -n1 | tr -d '[:space:]'"
+  register: host_driver_version
+  changed_when: false
+
+- name: Ensure udev rules directory exists on Proxmox host
+  ansible.builtin.file:
+    path: /etc/udev/rules.d
+    state: directory
+    mode: '0755'
+
+- name: Create NVIDIA udev rules on Proxmox host
+  ansible.builtin.copy:
+    dest: /etc/udev/rules.d/70-nvidia.rules
+    mode: '0644'
+    content: |
+      KERNEL=="nvidia*", MODE="0666"
+      KERNEL=="nvidia-uvm*", MODE="0666"
+  register: udev_rules
+
+- name: Reload udev rules on Proxmox host
+  ansible.builtin.command: "{{ item }}"
+  loop:
+    - udevadm control --reload-rules
+    - udevadm trigger
+  when: udev_rules.changed
+
+- name: Configure LXC container GPU cgroups and bind mounts
+  ansible.builtin.blockinfile:
+    path: "/etc/pve/lxc/{{ container_vm_id }}.conf"
+    marker: "# {mark} ANSIBLE MANAGED NVIDIA GPU PASSTHROUGH"
+    block: |
+      lxc.cgroup2.devices.allow: c 195:* rwm
+      lxc.cgroup2.devices.allow: c 234:* rwm
+      lxc.cgroup2.devices.allow: c 238:* rwm
+      lxc.cgroup2.devices.allow: c 239:* rwm
+      lxc.cgroup2.devices.allow: c 240:* rwm
+      lxc.cgroup2.devices.allow: c 241:* rwm
+      lxc.cgroup2.devices.allow: c 242:* rwm
+      lxc.cgroup2.devices.allow: c 508:* rwm
+      lxc.cgroup2.devices.allow: c 510:* rwm
+      lxc.cgroup2.devices.allow: c 511:* rwm
+      lxc.cgroup2.devices.allow: c 10:200 rwm
+      lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file
+      lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file
+      lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file
+      lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,optional,create=file
+      lxc.mount.entry: /dev/nvidia-modeset dev/nvidia-modeset none bind,optional,create=file
+  register: lxc_conf
+
+- name: Restart LXC container to apply GPU devices
+  ansible.builtin.shell:
+    cmd: "pct stop {{ container_vm_id }} || true; sleep 3; pct start {{ container_vm_id }}"
+  when: lxc_conf.changed
+
+- name: Wait for LXC container SSH to become reachable
+  ansible.builtin.wait_for:
+    host: "{{ hostvars['k8s_node']['ansible_host'] | default(container_ip) }}"
+    port: 22
+    timeout: 90
+    delay: 5

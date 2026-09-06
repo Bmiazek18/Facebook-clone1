@@ -1,0 +1,12 @@
+---
+k8s_namespaces:
+  - apps
+  - infra
+  - argocd
+argocd_manifest_url: "https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml"
+argocd_http_nodeport: 30080
+argocd_https_nodeport: 30443
+cloudflare_tunnel_token: ""
+github_repo_url: "https://github.com/Bmiazek18/Facebook-clone1.git"
+github_repo_username: ""
+github_repo_password: ""

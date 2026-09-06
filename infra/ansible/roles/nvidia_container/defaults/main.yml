@@ -1,0 +1,3 @@
+---
+enable_gpu_passthrough: true
+default_nvidia_driver_version: "550.120"

@@ -1,0 +1,5 @@
+---
+k3s_version: "v1.28.9+k3s1"
+k3s_flannel_backend: "host-gw"
+k3s_disable_components:
+  - traefik

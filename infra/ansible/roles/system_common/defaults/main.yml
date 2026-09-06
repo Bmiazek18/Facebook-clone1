@@ -1,0 +1,11 @@
+---
+system_packages:
+  - curl
+  - git
+  - iptables
+  - ethtool
+  - wget
+  - gpg
+  - gnupg
+  - htop
+  - iotop

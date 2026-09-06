@@ -1,6 +1,6 @@
 # Platform Ansible Automation
 
-Ten katalog odpowiada za idempotentną konfigurację systemów operacyjnych, passthrough GPU NVIDIA, klastra K3s oraz wdrożenie Argo CD i GitOps.
+Ten katalog odpowiada za idempotentną konfigurację systemów operacyjnych, passthrough GPU NVIDIA, klastra K3s oraz wdrożenie Argo CD i GitOps w oparciu o modułowe **Ansible Roles**.
 
 ## Struktura
 
@@ -8,10 +8,16 @@ Ten katalog odpowiada za idempotentną konfigurację systemów operacyjnych, pas
 infra/ansible/
 ├── ansible.cfg            # Konfiguracja Ansible (timeouty, pipelining)
 ├── group_vars/
-│   └── all.yml            # Domyślne zmienne (wersje, konfiguracja)
+│   └── all.yml            # Domyślne zmienne globalne
+├── roles/
+│   ├── proxmox_gpu/       # Konfiguracja udev i passthrough GPU na hoście Proxmox
+│   ├── system_common/     # Pakiety bazowe, sysctl, symlinki dla kontenera LXC
+│   ├── k3s_server/        # Instalacja K3s, drop-in systemd, flannel host-gw
+│   ├── nvidia_container/  # NVIDIA Container Toolkit, CDI specs, containerd runtime
+│   └── argocd_gitops/     # Namespaces, Argo CD, Cloudflare Tunnel, root app
 ├── inventory.ini          # Plik inwentarza hostów (generowany z Terraform lub ręczny)
 ├── inventory.ini.example  # Wzór pliku inwentarza
-├── playbook.yml           # Główny playbook (Play 1: Proxmox Host, Play 2: K3s Node)
+├── playbook.yml           # Główny playbook orkiestrujący role
 └── README.md
 ```
 
@@ -20,24 +26,27 @@ infra/ansible/
 1. **Uzupełnij inwentarz `inventory.ini`:**
    ```ini
    [proxmox_host]
-   pve_node ansible_host=192.168.0.100 ansible_user=root
+   pve_node ansible_host=192.168.0.200 ansible_user=root
 
    [k3s_node]
-   k8s_node ansible_host=192.168.0.200 ansible_user=root
+   k8s_node ansible_host=192.168.0.210 ansible_user=root
    ```
 
 2. **Uruchom pełny playbook:**
    ```bash
-   ansible-playbook playbook.yml
+   ansible-playbook -i inventory.ini playbook.yml
    ```
 
-3. **Uruchamianie z wybranymi tagami (np. tylko GPU lub tylko K3s):**
+3. **Uruchamianie z wybranymi tagami / rolami:**
    ```bash
-   # Tylko konfiguracja GPU na hoście Proxmox i w kontenerze:
-   ansible-playbook playbook.yml --tags "gpu_host,gpu_container"
+   # Tylko konfiguracja GPU (Proxmox host + LXC):
+   ansible-playbook -i inventory.ini playbook.yml --tags "gpu_host,gpu_container"
 
-   # Tylko konfiguracja węzła K3s i GitOps:
-   ansible-playbook playbook.yml --tags "k3s"
+   # Tylko instalacja K3s:
+   ansible-playbook -i inventory.ini playbook.yml --tags "k3s"
+
+   # Tylko konfiguracja GitOps i Argo CD:
+   ansible-playbook -i inventory.ini playbook.yml --tags "gitops,argocd"
    ```
 
 ## Przekazywanie sekretów
@@ -45,7 +54,7 @@ infra/ansible/
 Tokeny Cloudflare oraz dane dostępowe do prywatnego repozytorium GitHub możesz przekazać:
 - Przez flagę `-e`:
   ```bash
-  ansible-playbook playbook.yml \
+  ansible-playbook -i inventory.ini playbook.yml \
     -e "cloudflare_tunnel_token=TWOJ_TOKEN" \
     -e "github_repo_username=TWOJ_LOGIN" \
     -e "github_repo_password=TWOJ_PAT"
