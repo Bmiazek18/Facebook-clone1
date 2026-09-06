@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted, watch } from 'vue'
+import { ref, computed, toRef } from 'vue'
 import { useConversationsStore } from '@/stores/conversations'
 import { Emoji, EmojiIndex } from 'emoji-mart-vue-fast/src'
 import data from 'emoji-mart-vue-fast/data/all.json'
@@ -14,21 +14,21 @@ import MicrophoneIcon from 'vue-material-design-icons/Microphone.vue'
 import ImageMultipleIcon from 'vue-material-design-icons/ImageMultiple.vue'
 import FileIcon from 'vue-material-design-icons/File.vue'
 import PollIcon from 'vue-material-design-icons/Poll.vue'
-import { useFileSize } from '@/composables/shared/useFileSize'
 
 import GifBox from '@/components/common/GifBox.vue'
 import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue'
 import VoiceRecorder from './VoiceRecorder.vue'
 import LikeButton from './LikeButton.vue'
 import CreateChatPollModal from '../modals/CreateChatPollModal.vue'
+import ChatAttachmentTray from './ChatAttachmentTray.vue'
+import ChatMentionAutocomplete from './ChatMentionAutocomplete.vue'
+import { useChatTypingStatus } from '@/composables/chat/useChatTypingStatus'
+import { useChatMediaUpload } from '@/composables/chat/useChatMediaUpload'
 
 import type { Message } from '@/types/Message'
 import type { Theme } from '@/types/Theme'
 
 // --- TYPY I STAŁE ---
-const apiUrl = import.meta.env.VITE_BFF_API_URL || ''
-const API_UPLOAD_URL = `${apiUrl}/api/chat/upload`
-
 const EMOJI_REGEX_SPLIT = /(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|[\u2600-\u27bf])/g
 const EMOJI_REGEX_TEST = /(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|[\u2600-\u27bf])/
 
@@ -79,68 +79,9 @@ const isLink = (str: string) => {
   return pattern.test(str.trim());
 }
 
-let typingTimeout: any = null
-let isCurrentlyTyping = false
+// --- TYPING STATUS COMPOSABLE ---
+const { onFocus, onBlur } = useChatTypingStatus(toRef(props, 'boxId'), newMessage)
 
-const sendTypingStatus = (isTyping: boolean) => {
-  if (!props.boxId) return
-  const cleanId = String(props.boxId).replace(/^user_/, '')
-  const conversationId = convStore.getSymmetricConversationId(props.boxId)
-  const cleanSenderId = String(convStore.currentUserUuid).replace(/^user_/, '')
-  convStore.publishMqtt('chat/messages/user/' + cleanId, {
-    type: 'typing',
-    conversationId,
-    senderId: cleanSenderId,
-    isTyping,
-  }, { qos: 0 })
-}
-
-watch(newMessage, (newVal) => {
-  if (newVal.trim().length > 0) {
-    if (!isCurrentlyTyping) {
-      isCurrentlyTyping = true
-      sendTypingStatus(true)
-    }
-    if (typingTimeout) clearTimeout(typingTimeout)
-    typingTimeout = setTimeout(() => {
-      isCurrentlyTyping = false
-      sendTypingStatus(false)
-    }, 2500)
-  } else {
-    if (isCurrentlyTyping) {
-      isCurrentlyTyping = false
-      if (typingTimeout) clearTimeout(typingTimeout)
-      sendTypingStatus(false)
-    }
-  }
-})
-
-const onFocus = () => {
-  if (!isCurrentlyTyping) {
-    isCurrentlyTyping = true
-    sendTypingStatus(true)
-  }
-  if (typingTimeout) clearTimeout(typingTimeout)
-  typingTimeout = setTimeout(() => {
-    isCurrentlyTyping = false
-    sendTypingStatus(false)
-  }, 4000)
-}
-
-const onBlur = () => {
-  if (isCurrentlyTyping) {
-    isCurrentlyTyping = false
-    if (typingTimeout) clearTimeout(typingTimeout)
-    sendTypingStatus(false)
-  }
-}
-
-onUnmounted(() => {
-  if (typingTimeout) clearTimeout(typingTimeout)
-  if (isCurrentlyTyping) {
-    sendTypingStatus(false)
-  }
-})
 const selectedImageUrls = ref<string[]>([])
 const selectedImageFiles = ref<File[]>([])
 const selectedGifUrl = ref<string | null>(null)
@@ -185,39 +126,8 @@ const hasMedia = computed(
   () => selectedImageUrls.value.length > 0 || selectedDocumentFiles.value.length > 0 || newMessage.value.trim().length > 0 || !!selectedGifUrl.value
 )
 
-// --- POMOCNICZE FUNKCJE SIECIOWE (DRY) ---
-
-const uploadFile = async (file: File): Promise<string> => {
-  const formData = new FormData()
-  formData.append('file', file)
-
-  const data = await $fetch<{
-    url?: string
-    presignedUrl?: string
-    stableUrl?: string
-    objectKey?: string
-  }>(API_UPLOAD_URL, {
-    method: 'POST',
-    body: formData,
-  })
-
-  // Prefer stable server URL so messages keep working after presigned URLs expire
-  const resolvedUrl = data?.stableUrl || data?.url || data?.presignedUrl
-  if (!resolvedUrl) throw new Error('Błąd wgrywania pliku na serwer')
-  return resolvedUrl
-}
-
-const uploadGifFromUrl = async (gifUrl: string): Promise<string> => {
-  const response = await fetch(gifUrl)
-  if (!response.ok) {
-    throw new Error(`Nie udało się pobrać GIF-a (${response.status})`)
-  }
-  const blob = await response.blob()
-  const contentType = blob.type || 'image/gif'
-  const extension = contentType.includes('webp') ? 'webp' : 'gif'
-  const file = new File([blob], `gif-${Date.now()}.${extension}`, { type: contentType })
-  return uploadFile(file)
-}
+// --- MEDIA UPLOAD COMPOSABLE ---
+const { uploadFile, uploadGifFromUrl } = useChatMediaUpload()
 
 // --- METODY ---
 
@@ -813,152 +723,26 @@ onUnmounted(() => {
           class="relative flex flex-col grow rounded-[20px] overflow-hidden transition-all duration-200"
           :style="{ backgroundColor: props.themes?.textInputColor }"
         >
-          <div
-            v-if="selectedImageUrls.length > 0 || selectedDocumentFiles.length > 0"
-            class="flex items-center gap-2 pt-2 px-3 pb-0 overflow-x-auto"
-          >
-            <div
-              @click="selectImage"
-              class="w-12 h-12 shrink-0 rounded-[10px] flex items-center justify-center cursor-pointer hover:bg-black/10 transition-colors bg-black/5"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <rect
-                  x="3"
-                  y="5"
-                  width="14"
-                  height="14"
-                  rx="3"
-                  stroke="currentColor"
-                  stroke-width="2"
-                />
-                <path
-                  d="M7 12H13M10 9V15"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M21 7V17C21 18.1046 20.1046 19 19 19H9"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                />
-              </svg>
-            </div>
-
-            <div
-              v-for="(img, index) in selectedImageUrls"
-              :key="index"
-              class="relative w-12 h-12 shrink-0 mt-2 mb-1"
-            >
-              <img
-                :src="img"
-                class="w-full h-full object-cover rounded-[10px] border border-black/5"
-              />
-              <button
-                @click.stop="removeImage(index)"
-                class="absolute -top-2 -right-2 w-[22px] h-[22px] bg-white rounded-full flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.25)] hover:bg-gray-100 z-10"
-              >
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="black"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                >
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div
-              v-for="(file, index) in selectedDocumentFiles"
-              :key="'doc-' + index"
-              class="relative flex items-center gap-1.5 p-1.5 bg-black/5 rounded-[10px] border border-black/5 h-12 mt-2 mb-1 text-gray-800 dark:text-gray-200"
-            >
-              <FileIcon :size="18" class="shrink-0" />
-              <div class="min-w-0 flex flex-col justify-center leading-tight">
-                <p class="text-[10px] font-semibold truncate max-w-[80px]">{{ file.name }}</p>
-                <p class="text-[8px] opacity-70">{{ useFileSize(file.size) }}</p>
-              </div>
-              <button
-                @click.stop="removeDocumentFile(index)"
-                class="w-[18px] h-[18px] bg-white dark:bg-zinc-800 rounded-full flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.25)] hover:bg-gray-100 dark:hover:bg-zinc-700 ml-1 shrink-0"
-              >
-                <svg
-                  width="8"
-                  height="8"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                >
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div v-if="selectedGifUrl" class="relative w-12 h-12 shrink-0 mt-2 mb-1">
-              <img
-                :src="selectedGifUrl"
-                class="w-full h-full object-cover rounded-[10px] border border-black/5"
-              />
-              <button
-                @click.stop="clearMediaSelection"
-                class="absolute -top-2 -right-2 w-[22px] h-[22px] bg-white rounded-full flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.25)] hover:bg-gray-100 z-10"
-              >
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="black"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                >
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
+          <!-- Attachments tray (Images, Documents, GIFs) -->
+          <ChatAttachmentTray
+            :image-urls="selectedImageUrls"
+            :document-files="selectedDocumentFiles"
+            :gif-url="selectedGifUrl"
+            @select-more-images="selectImage"
+            @remove-image="removeImage"
+            @remove-document="removeDocumentFile"
+            @remove-gif="clearMediaSelection"
+          />
 
           <div class="flex items-center relative min-h-[40px] grow overflow-visible">
             <!-- Autocomplete wzmianek w grupie (@) -->
-            <div
+            <ChatMentionAutocomplete
               v-if="mentionQuery !== null && matchingMentionMembers.length > 0"
-              class="absolute bottom-full left-0 mb-2 z-50 bg-white dark:bg-[#242526] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden w-64 max-h-60 overflow-y-auto py-1 animate-in fade-in slide-in-from-bottom-2 duration-150"
-            >
-              <div class="px-3 py-1.5 text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                Oznacz w grupie
-              </div>
-              <div
-                v-for="(member, idx) in matchingMentionMembers"
-                :key="member.id"
-                @mousedown.prevent="selectMention(member)"
-                @mouseenter="selectedMentionIndex = idx"
-                class="flex items-center gap-2.5 px-3 py-2 cursor-pointer transition-colors"
-                :class="selectedMentionIndex === idx ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200'"
-              >
-                <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-200 shrink-0 flex items-center justify-center">
-                  <img
-                    v-if="member.id !== 'all'"
-                    :src="member.avatar"
-                    class="w-full h-full object-cover"
-                  />
-                  <span v-else class="text-xs font-bold text-gray-600">@</span>
-                </div>
-                <span class="text-sm font-semibold truncate">{{ member.name }}</span>
-              </div>
-            </div>
+              :members="matchingMentionMembers"
+              :selected-index="selectedMentionIndex"
+              @select="selectMention"
+              @hover="selectedMentionIndex = $event"
+            />
 
             <div
               ref="visualLayer"
