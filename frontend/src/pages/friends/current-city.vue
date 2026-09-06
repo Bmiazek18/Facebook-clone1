@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import FriendsView from '@/views/FriendsView.vue'
+import FriendsView from '@/components/friends/FriendsView.vue'
 
 definePageMeta({
   title: 'Aktualne miejsce zamieszkania | Facebook',

@@ -57,8 +57,8 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { usersApi } from '@/api/users'
 
-import FriendsSidebar from '../components/friends/FriendsSidebar.vue'
-import FriendCard from '../components/friends/PeopleYouMayKnowCard.vue'
+import FriendsSidebar from '@/components/friends/FriendsSidebar.vue'
+import FriendCard from '@/components/friends/PeopleYouMayKnowCard.vue'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
