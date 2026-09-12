@@ -1,17 +1,14 @@
 package com.facebook.clone.ui.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -28,19 +25,6 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
-
-    val pullRefreshState = rememberPullToRefreshState()
-    if (pullRefreshState.isRefreshing) {
-        LaunchedEffect(true) {
-            viewModel.refreshFeed()
-        }
-    }
-
-    LaunchedEffect(uiState.isRefreshing) {
-        if (!uiState.isRefreshing) {
-            pullRefreshState.endRefresh()
-        }
-    }
 
     // Pagination trigger when scrolling near the end
     val shouldLoadMore = remember {
@@ -67,11 +51,12 @@ fun HomeScreen(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        Box(
+        PullToRefreshBox(
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = { viewModel.refreshFeed() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .nestedScroll(pullRefreshState.nestedScrollConnection)
         ) {
             if (uiState.isLoading && uiState.posts.isEmpty()) {
                 // Skeleton loading state
@@ -91,8 +76,8 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // 1. Create Post Header Box
-                    item(key = "create_box") {
+                    // 1. Create Post Box ("Co słychać?")
+                    item(key = "create_post_box") {
                         CreatePostBox(
                             currentUser = uiState.currentUser,
                             onBoxClick = {
@@ -101,15 +86,17 @@ fun HomeScreen(
                         )
                     }
 
-                    // 2. Stories Section
+                    // 2. Stories Section (Add Story + Friends Stories)
                     item(key = "stories_section") {
                         StoriesSection(
                             currentUser = uiState.currentUser,
-                            stories = uiState.stories
+                            stories = uiState.stories,
+                            onAddStoryClick = { /* Dodaj relację */ },
+                            onStoryClick = { story -> /* Odtwórz relację */ }
                         )
                     }
 
-                    // 3. Posts Feed with inserted Widgets (People you may know & Reels)
+                    // 3. Main Feed Posts with injected widgets
                     itemsIndexed(
                         items = uiState.posts,
                         key = { _, post -> post.id }
@@ -130,32 +117,40 @@ fun HomeScreen(
                             }
                         )
 
-                        // Insert "People You May Know" after 2nd post
+                        // Inject "People You May Know" widget after 2nd post
                         if (index == 1 && uiState.friendSuggestions.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(8.dp))
                             PeopleYouMayKnowSection(
                                 suggestions = uiState.friendSuggestions,
-                                onRemoveClick = { viewModel.removeFriendSuggestion(it.id) }
+                                onAddFriendClick = { suggestion -> viewModel.removeFriendSuggestion(suggestion.id) },
+                                onRemoveClick = { suggestion -> viewModel.removeFriendSuggestion(suggestion.id) }
                             )
                         }
 
-                        // Insert "Reels Gallery" after 3rd post
-                        if (index == 2 && uiState.reels.isNotEmpty()) {
+                        // Inject "Reels Gallery" carousel after 5th post
+                        if (index == 4 && uiState.reels.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(8.dp))
-                            ReelsGallerySection(reels = uiState.reels)
+                            ReelsGallerySection(
+                                reels = uiState.reels,
+                                onReelClick = { reel -> /* Otwórz odtwarzacz rolek */ }
+                            )
                         }
                     }
 
-                    // 4. Loading More Footer Indicator
+                    // 4. Loading indicator at the bottom (Pagination)
                     if (uiState.isFetchingMore) {
-                        item(key = "fetching_more") {
+                        item(key = "fetching_more_indicator") {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 16.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(28.dp),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    strokeWidth = 2.5.dp
+                                )
                             }
                         }
                     }
@@ -179,12 +174,6 @@ fun HomeScreen(
                     }
                 }
             }
-
-            // Pull to Refresh indicator
-            PullToRefreshContainer(
-                state = pullRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
 
             // Comments Bottom Sheet Modal
             uiState.selectedPostForComments?.let { selectedPost ->
