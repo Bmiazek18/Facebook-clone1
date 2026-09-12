@@ -89,7 +89,18 @@ export function createApolloETagLink(options: ApolloETagLinkOptions = {}) {
       const subscription = forward(operation).subscribe({
         next: (result: FetchResult) => {
           const context = operation.getContext()
-          const responseHeaders = context.response?.headers
+          const response = context.response
+          const responseHeaders = response?.headers
+
+          // Check if response indicates 304 Not Modified
+          if (response?.status === 304 || (!result?.data && cached?.data)) {
+            const cachedEntry = memoryCache.get(queryKey)
+            if (cachedEntry && cachedEntry.data) {
+              observer.next({ data: cachedEntry.data })
+              observer.complete()
+              return
+            }
+          }
 
           // Extract ETag from server response headers
           const etag =
@@ -108,7 +119,8 @@ export function createApolloETagLink(options: ApolloETagLinkOptions = {}) {
             networkError?.statusCode ||
             networkError?.response?.status ||
             networkError?.result?.status ||
-            networkError?.networkError?.statusCode
+            networkError?.networkError?.statusCode ||
+            networkError?.networkError?.response?.status
 
           // Transparently handle HTTP 304 Not Modified
           if (status === 304) {
