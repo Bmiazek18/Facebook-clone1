@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { FFmpeg } from '@ffmpeg/ffmpeg'
-import { fetchFile, toBlobURL } from '@ffmpeg/util'
 import { useCreatePostStore } from '@/stores/createPost'
 import { storeToRefs } from 'pinia'
 
 type LogEvent = { type: string; message: string }
-
-
 
 // Ikony z paczki
 import Play from 'vue-material-design-icons/Play.vue'
@@ -38,7 +34,7 @@ const frames = ref<string[]>([])
 const isProcessing = ref(false)
 const message = ref('')
 
-const ffmpeg = new FFmpeg()
+let ffmpegInstance: any = null
 const range = reactive({ start: 0, end: 10 })
 const dragging = ref<'start' | 'end' | null>(null)
 
@@ -187,6 +183,14 @@ const transcode = async () => {
   message.value = 'Ładowanie silnika FFmpeg...'
 
   try {
+    const { FFmpeg } = await import('@ffmpeg/ffmpeg')
+    const { fetchFile, toBlobURL } = await import('@ffmpeg/util')
+
+    if (!ffmpegInstance) {
+      ffmpegInstance = new FFmpeg()
+    }
+    const ffmpeg = ffmpegInstance
+
     ffmpeg.on('log', ({ message: msg }: LogEvent) => {
       console.log(msg)
       message.value = msg

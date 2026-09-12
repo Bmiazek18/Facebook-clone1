@@ -101,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTimeoutFn } from '@vueuse/core'
 import type { ReactionType } from '@/types/Post'
@@ -110,7 +110,7 @@ import ThumbUpOutline from 'vue-material-design-icons/ThumbUpOutline.vue'
 import ThumbUpIcon from 'vue-material-design-icons/ThumbUp.vue'
 import HeartCircleIcon from 'vue-material-design-icons/HeartCircle.vue'
 
-import LottieIcon from './LottieIcon.vue'
+const LottieIcon = defineAsyncComponent(() => import('./LottieIcon.vue'))
 import LIKE_JSON from '@/assets/animations/like.json'
 import LOVE_JSON from '@/assets/animations/love.json'
 

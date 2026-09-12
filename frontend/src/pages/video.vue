@@ -1,8 +1,6 @@
 <script setup>
 import { onMounted, onBeforeUnmount, ref } from 'vue'
 import * as THREE from 'three'
-// Oficjalna i poprawna paczka npm
-import { FilesetResolver, FaceLandmarker } from '@mediapipe/tasks-vision'
 
 const videoRef = ref(null)
 const canvasRef = ref(null)
@@ -122,6 +120,7 @@ onMounted(async () => {
 
   // Inicjalizacja MediaPipe
   try {
+    const { FilesetResolver, FaceLandmarker } = await import('@mediapipe/tasks-vision')
     const filesetResolver = await FilesetResolver.forVisionTasks(
       'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm',
     )

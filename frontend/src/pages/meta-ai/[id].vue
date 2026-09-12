@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, nextTick, onMounted, onUnmounted, computed } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted, computed, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import LLMInput from '@/components/meta-ai/LLMInput.vue'
 import CodeBlock from '@/components/meta-ai/CodeBlock.vue'
-import PdfPreview from '@/components/meta-ai/PdfPreview.vue'
-import CustomLightbox from '@/components/meta-ai/CustomLightbox.vue'
+const PdfPreview = defineAsyncComponent(() => import('@/components/meta-ai/PdfPreview.vue'))
+const CustomLightbox = defineAsyncComponent(() => import('@/components/meta-ai/CustomLightbox.vue'))
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import katex from 'katex'

@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { computed, watch, onMounted, onBeforeUnmount, type Component, ref, nextTick } from 'vue'
+import { computed, watch, onMounted, onBeforeUnmount, type Component, ref, nextTick, defineAsyncComponent } from 'vue'
 import { useCreatePostStore } from '@/stores/createPost'
 import PostCreator from './tabs/PostCreator.vue'
 import PrivacySelector from '@/components/common/PrivacySelector.vue'
-import TagUsers from './tabs/TagUsers.vue'
-import LocationSelector from './tabs/LocationSelector.vue'
-import GifSelector from './tabs/GifSelector.vue'
-import ImageEditor from './tabs/ImageEditor.vue'
-import VideoEditor from './tabs/VideoEditor.vue'
 import FeelingModal from './tabs/FeelingModal.vue'
-import LifeEventCreator from './tabs/LifeEventCreator.vue'
+
+const TagUsers = defineAsyncComponent(() => import('./tabs/TagUsers.vue'))
+const LocationSelector = defineAsyncComponent(() => import('./tabs/LocationSelector.vue'))
+const GifSelector = defineAsyncComponent(() => import('./tabs/GifSelector.vue'))
+const ImageEditor = defineAsyncComponent(() => import('./tabs/ImageEditor.vue'))
+const VideoEditor = defineAsyncComponent(() => import('./tabs/VideoEditor.vue'))
+const LifeEventCreator = defineAsyncComponent(() => import('./tabs/LifeEventCreator.vue'))
+
 import '@/assets/animations/slideTransition.css'
 import { useI18n } from 'vue-i18n'
 import { useChatDrop } from '@/composables/chat/useChatDrop'

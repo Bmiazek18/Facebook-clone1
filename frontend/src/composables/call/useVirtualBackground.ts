@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import * as THREE from 'three'
-import { FilesetResolver, ImageSegmenter } from '@mediapipe/tasks-vision'
+import type { ImageSegmenter } from '@mediapipe/tasks-vision'
 
 export function useVirtualBackground() {
   const currentFilter = ref<'none' | 'blur' | 'image'>('none')
@@ -126,10 +126,13 @@ export function useVirtualBackground() {
     if (isAiLoading || aiLoaded || imageSegmenter) return
     isAiLoading = true
     try {
+      const { FilesetResolver, ImageSegmenter: MediaPipeImageSegmenter } = await import(
+        '@mediapipe/tasks-vision'
+      )
       const vision = await FilesetResolver.forVisionTasks(
         'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm',
       )
-      imageSegmenter = await ImageSegmenter.createFromOptions(vision, {
+      imageSegmenter = await MediaPipeImageSegmenter.createFromOptions(vision, {
         baseOptions: {
           modelAssetPath:
             'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite',

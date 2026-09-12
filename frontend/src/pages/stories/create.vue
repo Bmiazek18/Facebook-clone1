@@ -3,7 +3,7 @@ definePageMeta({
   showMainLayout: false,
 })
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, defineAsyncComponent } from 'vue'
 import { useStoryShareStore } from '@/stores/storyShare'
 import type { PostData, ReelData } from '@/types/StoryElement'
 import NavbarRight from '@/components/navbar/NavbarRight.vue'
@@ -12,8 +12,12 @@ import { onBeforeRouteLeave, useRouter } from 'vue-router'
 
 // Sub-views rendered conditionally
 import StoryPicker from '@/components/create/createStory/StoryPicker.vue'
-import StoryImageEditor from '@/components/create/createStory/StoryImageEditor.vue'
-import StoryTextEditor from '@/components/create/createStory/StoryTextEditor.vue'
+const StoryImageEditor = defineAsyncComponent(
+  () => import('@/components/create/createStory/StoryImageEditor.vue'),
+)
+const StoryTextEditor = defineAsyncComponent(
+  () => import('@/components/create/createStory/StoryTextEditor.vue'),
+)
 
 type StoryMode = 'picker' | 'image' | 'text'
 
