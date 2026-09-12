@@ -4,6 +4,7 @@ import {
 } from '@apollo/client'
 
 import { createApolloTracingLink } from '~/utils/observability/apolloTracingLink'
+import { createApolloETagLink } from './links/apolloETagLink'
 
 export default () => {
   const config = useRuntimeConfig()
@@ -13,10 +14,12 @@ export default () => {
   })
 
   const tracingLink = createApolloTracingLink()
+  const eTagLink = createApolloETagLink()
 
   return {
     link: ApolloLink.from([
       tracingLink,
+      eTagLink,
       httpLink,
     ]),
   }
