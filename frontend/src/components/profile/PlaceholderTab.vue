@@ -31,7 +31,7 @@ const albums = ref([
       <h1 class="text-xl font-bold">{{ $t('groups.media') }}</h1>
       <div class="flex space-x-6 text-sm">
         <NuxtLink
-          to="/addAlbum"
+          to="/add-album"
           class="text-theme-primary hover:text-theme-primary-hover transition flex items-center font-medium"
         >
           <span class="text-xl mr-1">+</span>{{ $t('profile.utworzAlbum') }}</NuxtLink>

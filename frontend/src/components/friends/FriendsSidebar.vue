@@ -105,6 +105,6 @@ const showNotificationDots = ref(true)
 
 const menuItems = [
   { label: 'friends.home', icon: AccountGroupIcon, path: '/friends' },
-  { label: 'friends.birthdays', icon: GiftIcon, path: '/friends/birthday' },
+  { label: 'friends.birthdays', icon: GiftIcon, path: '/friends/birthdays' },
 ]
 </script>

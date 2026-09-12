@@ -13,7 +13,7 @@ const props = defineProps<{
 const router = useRouter()
 
 const navigateToEvent = (eventId: string) => {
-  router.push(`/event/${eventId}`)
+  router.push(`/events/${eventId}`)
 }
 </script>
 

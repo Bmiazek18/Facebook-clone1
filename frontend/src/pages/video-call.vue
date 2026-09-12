@@ -13,7 +13,7 @@ import type {
   ILocalVideoTrack,
   IAgoraRTCRemoteUser,
 } from 'agora-rtc-sdk-ng'
-import CallSummary from '@/components/CallSummary.vue'
+import CallSummary from '@/components/call/modals/CallSummary.vue'
 import CallRingingScreen from '@/components/call/CallRingingScreen.vue'
 import CallControlBar from '@/components/call/CallControlBar.vue'
 import AddCallParticipantModal, { type ContactItem } from '@/components/call/modals/AddCallParticipantModal.vue'

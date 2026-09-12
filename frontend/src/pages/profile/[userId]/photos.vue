@@ -122,7 +122,7 @@ onMounted(() => {
         <div class="flex items-center gap-2">
           <NuxtLink
             v-if="isOwnProfile"
-            to="/addAlbum"
+            to="/add-album"
             class="text-[#1877F2] hover:bg-blue-50 px-3 py-2 rounded-md font-medium text-[15px] transition-colors flex items-center gap-1"
           >
             <Plus :size="18" />
@@ -201,7 +201,7 @@ onMounted(() => {
         v-else-if="activeTab === 'albums' && !selectedAlbum"
         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
       >
-        <NuxtLink v-if="isOwnProfile" to="/addAlbum" class="cursor-pointer group">
+        <NuxtLink v-if="isOwnProfile" to="/add-album" class="cursor-pointer group">
           <div
             class="aspect-square w-full bg-[#E4E6EB] hover:bg-[#D8DADF] transition rounded-xl flex items-center justify-center border border-gray-200"
           >

@@ -300,7 +300,7 @@ watch(
             <template v-if="targetEvent">
               <Play :size="15" class="fill-meta self-center" />
               <NuxtLink
-                :to="`/event/${targetEvent.id}`"
+                :to="`/events/${targetEvent.id}`"
                 class="font-bold hover:underline cursor-pointer"
               >
                 {{ targetEvent.name }}

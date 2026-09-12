@@ -55,7 +55,7 @@ const menuItems = computed(() =>
       label: 'profile.info.education',
       visible: isOwner.value || hasEducation.value,
     },
-    { id: 'directory_activites', label: 'profile.info.hobby', visible: true },
+    { id: 'directory_activities', label: 'profile.info.hobby', visible: true },
   ].filter((item) => item.visible),
 )
 

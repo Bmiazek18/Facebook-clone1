@@ -174,11 +174,11 @@ const nextImage = () => {
               >
                 <div class="flex gap-6 text-sm font-semibold text-theme-text-secondary">
                   <NuxtLink
-                    :to="`/event/${eventDetails.id}`"
+                    :to="`/events/${eventDetails.id}`"
                     class="pb-4 -mb-4 px-1 hover:bg-theme-hover rounded-t-sm transition-colors"
                   >{{ $t('groups.information') }}</NuxtLink>
                   <NuxtLink
-                    :to="`/event/${eventDetails.id}/discussion`"
+                    :to="`/events/${eventDetails.id}/discussion`"
                     class="pb-4 -mb-4 px-1 hover:bg-theme-hover rounded-t-sm transition-colors"
                   >{{ $t('groups.discussion') }}</NuxtLink>
                 </div>

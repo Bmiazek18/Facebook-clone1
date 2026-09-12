@@ -13,7 +13,7 @@ import type { Post } from '@/types/Post'
 import LazyEmojiPicker from '@/components/common/LazyEmojiPicker.vue'
 import { useCommentsStore } from '@/stores/comments'
 import { Dropdown as VDropdown } from 'floating-vue'
-import MentionInput from '@/components/MentionInput.vue'
+import MentionInput from '@/components/common/MentionInput.vue'
 import type { LinkPreviewData } from '@/types/Post'
 
 const props = defineProps<{

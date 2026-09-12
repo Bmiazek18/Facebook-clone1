@@ -82,7 +82,7 @@
   <div
     v-if="sharedEvent"
     class="mb-4 mt-2 overflow-hidden cursor-pointer bg-[#f0f2f5] border-b border-[#dadde1] transition-colors group"
-    @click="router.push(`/event/${sharedEvent.id}`)"
+    @click="router.push(`/events/${sharedEvent.id}`)"
   >
     <div class="relative w-full aspect-[1.91/1] bg-gray-100 dark:bg-[#3A3B3C]">
       <img

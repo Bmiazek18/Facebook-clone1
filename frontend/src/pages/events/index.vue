@@ -214,7 +214,7 @@ const router = useRouter()
 const events = computed(() => eventsStore.events)
 
 const navigateToEvent = (eventId: string) => {
-  router.push(`/event/${eventId}`)
+  router.push(`/events/${eventId}`)
 }
 </script>
 

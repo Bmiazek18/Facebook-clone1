@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TagList from '@/components/TagList.vue'
+import TagList from '@/components/common/TagList.vue'
 import AltTextEditor from '@/components/media/AltTextEditor.vue'
 import type { ImageTagType } from '@/types/Post'
 import type { DefineComponent } from 'vue'

@@ -2,7 +2,7 @@
 import { computed, ref, watch, nextTick } from 'vue'
 import type { StoryElement } from '@/types/StoryElement'
 import { getAllUsers } from '@/utils/users'
-import MentionInput from '@/components/MentionInput.vue'
+import MentionInput from '@/components/common/MentionInput.vue'
 
 const props = defineProps<{
   element: StoryElement
