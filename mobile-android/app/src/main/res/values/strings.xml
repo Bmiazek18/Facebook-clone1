@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Facebook</string>
+    <string name="whats_on_your_mind">Co słychać?</string>
+    <string name="photo_video">Zdjęcie/film</string>
+    <string name="live_video">Transmisja</string>
+    <string name="feeling_activity">Nastrój</string>
+    <string name="like">Lubię to!</string>
+    <string name="comment">Komentarz</string>
+    <string name="share">Udostępnij</string>
+    <string name="people_you_may_know">Osoby, które możesz znać</string>
+    <string name="add_friend">Dodaj znajomego</string>
+    <string name="remove">Usuń</string>
+    <string name="reels_title">Rolki i krótkie filmy</string>
+    <string name="create_story">Utwórz relację</string>
+    <string name="write_a_comment">Napisz komentarz…</string>
+    <string name="no_more_posts">To już wszystkie posty z Twojej tablicy</string>
+</resources>
