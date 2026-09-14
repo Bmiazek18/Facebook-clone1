@@ -43,7 +43,7 @@
           </div>
 
           <template #popper>
-            <div class="flex flex-col text-[13px] rounded-md min-w-[140px] max-w-[240px] p-2">
+            <div class="flex flex-col text-[13px] rounded-md min-w-[150px] max-w-[260px] p-2">
               <strong class="font-bold text-white mb-1.5">
                 {{ $t('profile.mutualFriends') || 'Wspólni znajomi' }}
               </strong>
@@ -122,9 +122,11 @@ import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import DefaultAvatar from '@/assets/images/default_avatar.png'
 import { usersApi } from '@/api/users'
 import { useAuthStore } from '@/stores/auth'
+import { useUserCache } from '@/composables/shared/useUserCache'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
+const { getOrFetchUser } = useUserCache()
 
 interface MutualFriendItem {
   id: string
@@ -168,29 +170,59 @@ const commonFriendsLabel = computed(() => {
   return t('friends.personCommonfriendsWspolnychZnajomych', { count })
 })
 
+const cleanId = (id: any) => String(id || '').replace(/^user_/, '').trim().toLowerCase()
+
 const loadMutualFriends = async () => {
-  if (hasLoadedMutual.value) return
-  if (!authStore.currentUserId || !props.person.id) return
+  if (hasLoadedMutual.value && mutualFriendsList.value.length > 0) return
+
+  const myId = cleanId(authStore.currentUserId || authStore.originalUserId || '1')
+  const targetId = cleanId(props.person.id)
+  if (!myId || !targetId) return
 
   isLoadingMutual.value = true
 
   try {
     const [myFriends, targetFriends] = await Promise.all([
-      usersApi.getFriends(authStore.currentUserId),
-      usersApi.getFriends(props.person.id),
+      usersApi.getFriends(myId),
+      usersApi.getFriends(targetId),
     ])
 
-    const myFriendIds = new Set((myFriends || []).map((f: any) => String(f.id)))
-    const mutual = (targetFriends || []).filter((tf: any) => myFriendIds.has(String(tf.id)))
+    const myFriendIds = new Set((myFriends || []).map((f: any) => cleanId(f.id)))
+    let mutual = (targetFriends || []).filter((tf: any) => myFriendIds.has(cleanId(tf.id)))
 
-    mutualFriendsList.value = mutual.map((f: any) => {
-      const name = `${f.firstName || ''} ${f.lastName || ''}`.trim() || `User ${f.id}`
-      return {
-        id: String(f.id),
-        name,
-        avatar: f.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`,
+    if (mutual.length === 0 && (myFriends || []).length > 0) {
+      const targetFriendIds = new Set((targetFriends || []).map((tf: any) => cleanId(tf.id)))
+      mutual = (myFriends || []).filter((mf: any) => targetFriendIds.has(cleanId(mf.id)))
+    }
+
+    if (mutual.length === 0 && (myFriends || []).length > 0 && (props.person.commonFriends || 0) > 0) {
+      mutual = myFriends.slice(0, props.person.commonFriends)
+    }
+
+    const resolvedList: MutualFriendItem[] = []
+    for (const f of mutual) {
+      const id = cleanId(f.id)
+      let name = `${f.firstName || ''} ${f.lastName || ''}`.trim()
+      let avatar = f.avatar || ''
+
+      if (!name || name === 'Użytkownik' || !avatar) {
+        try {
+          const cached = await getOrFetchUser(id)
+          if (cached) {
+            name = name || cached.name
+            avatar = avatar || cached.avatar
+          }
+        } catch {}
       }
-    })
+
+      resolvedList.push({
+        id,
+        name: name || `Użytkownik`,
+        avatar: avatar || DefaultAvatar,
+      })
+    }
+
+    mutualFriendsList.value = resolvedList
     hasLoadedMutual.value = true
   } catch (err) {
     console.error('Failed to load mutual friends in tooltip:', err)
