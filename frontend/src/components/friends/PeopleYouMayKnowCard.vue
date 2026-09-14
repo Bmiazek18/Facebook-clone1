@@ -26,17 +26,61 @@
       </h3>
 
       <div class="mb-2">
-        <div v-if="person.commonFriends > 0" class="flex items-center text-[13px] text-theme-text-secondary">
-          <div class="flex shrink-0 mr-2">
-            <div
-              class="w-5 h-5 rounded-full bg-theme-border flex items-center justify-center overflow-hidden"
-            >
-              <img :src="person.imageUrl || DefaultAvatar" class="w-full h-full object-cover" />
+        <VTooltip v-if="person.commonFriends > 0" @apply-show="loadMutualFriends">
+          <div
+            class="flex items-center text-[13px] text-theme-text-secondary cursor-pointer"
+            @mouseenter="loadMutualFriends"
+          >
+            <div class="flex shrink-0 mr-2">
+              <div
+                class="w-5 h-5 rounded-full bg-theme-border flex items-center justify-center overflow-hidden"
+              >
+                <img :src="person.imageUrl || DefaultAvatar" class="w-full h-full object-cover" />
+              </div>
             </div>
+
+            <span class="truncate hover:underline">{{ commonFriendsLabel }}</span>
           </div>
 
-          <span class="truncate">{{ commonFriendsLabel }}</span>
-        </div>
+          <template #popper>
+            <div class="flex flex-col text-[13px] rounded-md min-w-[140px] max-w-[240px] p-2">
+              <strong class="font-bold text-white mb-1.5">
+                {{ $t('profile.mutualFriends') || 'Wspólni znajomi' }}
+              </strong>
+
+              <div v-if="isLoadingMutual" class="flex items-center gap-2 py-2 text-[#B0B3B8] text-[12px] justify-center">
+                <LoadingSpinner size="16px" color="#1877F2" />
+                <span>{{ $t('common.loading') || 'Ładowanie...' }}</span>
+              </div>
+
+              <template v-else-if="mutualFriendsList.length > 0">
+                <div class="flex flex-col gap-1.5 max-h-[180px] overflow-y-auto">
+                  <div
+                    v-for="friend in mutualFriendsList"
+                    :key="friend.id"
+                    class="flex items-center gap-2 text-[#E4E6EB] py-0.5"
+                  >
+                    <img
+                      :src="friend.avatar || DefaultAvatar"
+                      class="w-5 h-5 rounded-full object-cover shrink-0"
+                    />
+                    <span class="truncate leading-tight text-[12px]">{{ friend.name }}</span>
+                  </div>
+                </div>
+                <span
+                  v-if="remainingMutualCount > 0"
+                  class="mt-1.5 text-[#B0B3B8] leading-tight text-[11px]"
+                >
+                  {{ `i ${remainingMutualCount} innych...` }}
+                </span>
+              </template>
+
+              <div v-else class="text-[#B0B3B8] text-[12px] py-1">
+                {{ $t('profile.noCommonFriends') || 'Brak wspólnych znajomych' }}
+              </div>
+            </div>
+          </template>
+        </VTooltip>
 
         <!-- Fallback, gdy brak wspólnych znajomych -->
         <div v-else class="flex items-center text-[13px] text-theme-text-secondary">
@@ -69,14 +113,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CloseIcon from 'vue-material-design-icons/Close.vue'
 import AccountPlusIcon from 'vue-material-design-icons/AccountPlus.vue'
 import type { Person } from '@/types/Person'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import DefaultAvatar from '@/assets/images/default_avatar.png'
+import { usersApi } from '@/api/users'
+import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
+const authStore = useAuthStore()
+
+interface MutualFriendItem {
+  id: string
+  name: string
+  avatar: string
+}
 
 const props = withDefaults(
   defineProps<{
@@ -97,6 +151,15 @@ defineEmits<{
   (e: 'add', id: string | number): void
 }>()
 
+const mutualFriendsList = ref<MutualFriendItem[]>([])
+const isLoadingMutual = ref(false)
+const hasLoadedMutual = ref(false)
+
+const remainingMutualCount = computed(() => {
+  const total = props.person.commonFriends || 0
+  return Math.max(0, total - mutualFriendsList.value.length)
+})
+
 const commonFriendsLabel = computed(() => {
   const count = props.person.commonFriends || 0
   if (count === 1) {
@@ -104,4 +167,35 @@ const commonFriendsLabel = computed(() => {
   }
   return t('friends.personCommonfriendsWspolnychZnajomych', { count })
 })
+
+const loadMutualFriends = async () => {
+  if (hasLoadedMutual.value) return
+  if (!authStore.currentUserId || !props.person.id) return
+
+  isLoadingMutual.value = true
+
+  try {
+    const [myFriends, targetFriends] = await Promise.all([
+      usersApi.getFriends(authStore.currentUserId),
+      usersApi.getFriends(props.person.id),
+    ])
+
+    const myFriendIds = new Set((myFriends || []).map((f: any) => String(f.id)))
+    const mutual = (targetFriends || []).filter((tf: any) => myFriendIds.has(String(tf.id)))
+
+    mutualFriendsList.value = mutual.map((f: any) => {
+      const name = `${f.firstName || ''} ${f.lastName || ''}`.trim() || `User ${f.id}`
+      return {
+        id: String(f.id),
+        name,
+        avatar: f.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`,
+      }
+    })
+    hasLoadedMutual.value = true
+  } catch (err) {
+    console.error('Failed to load mutual friends in tooltip:', err)
+  } finally {
+    isLoadingMutual.value = false
+  }
+}
 </script>
