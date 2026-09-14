@@ -15,7 +15,7 @@ function findComment(comments: Comment[], commentId: number | string): Comment |
 }
 
 function buildCommentTree(flatComments: any[], currentUserId: string): Comment[] {
-  const map: Record<number, Comment> = {}
+  const map: Record<string, Comment> = {}
   const roots: Comment[] = []
   const userId = currentUserId
 
@@ -53,15 +53,16 @@ function buildCommentTree(flatComments: any[], currentUserId: string): Comment[]
       }
     }
 
-    map[c.id] = {
-      id: Number(c.id),
+    const commentId = String(c.id)
+    map[commentId] = {
+      id: c.id,
       authorId: c.userId,
       author: c.author || null,
       content: c.content,
-      image: c.image || undefined,
+      image: c.mediaUrl || c.image || undefined,
       timestamp: c.createdAt ? new Date(c.createdAt).getTime() : Date.now(),
       date: c.createdAt || new Date().toISOString(),
-      parentId: c.parentId ? Number(c.parentId) : null,
+      parentId: c.parentId ? String(c.parentId) : null,
       replies: [],
       likesCount: 0,
       reactions: formattedReactions,
@@ -70,9 +71,11 @@ function buildCommentTree(flatComments: any[], currentUserId: string): Comment[]
   })
 
   flatComments.forEach((c: any) => {
-    const comment = map[c.id]
-    if (c.parentId) {
-      const parent = map[c.parentId]
+    const commentId = String(c.id)
+    const comment = map[commentId]
+    if (!comment) return
+    if (c.parentId && map[String(c.parentId)]) {
+      const parent = map[String(c.parentId)]
       if (parent) {
         if (!parent.replies) parent.replies = []
         parent.replies.push(comment)
@@ -100,7 +103,7 @@ export function useComments() {
     }
   }
 
-  async function addComment(post: any, commentInput: any, parentId: number | null) {
+  async function addComment(post: any, commentInput: any, parentId: string | number | null) {
     if (!post) return
     const userId = authStore.currentUserId
 
@@ -109,7 +112,7 @@ export function useComments() {
     const firstName = nameParts[0] || ''
     const lastName = nameParts.slice(1).join(' ') || ''
 
-    const tempId = commentInput.id || Date.now()
+    const tempId = commentInput.id || `temp_${Date.now()}`
     const optimisticComment: Comment = {
       id: tempId,
       authorId: userId,
@@ -124,7 +127,7 @@ export function useComments() {
       content: commentInput.content,
       timestamp: commentInput.timestamp || Date.now(),
       date: commentInput.date || new Date().toISOString(),
-      parentId: parentId,
+      parentId: parentId ? String(parentId) : null,
       replies: [],
       likesCount: 0,
       reactions: {},
@@ -163,9 +166,9 @@ export function useComments() {
           : post.comments
 
         if (targetList) {
-          const optIndex = targetList.findIndex(c => c.id === tempId)
+          const optIndex = targetList.findIndex(c => String(c.id) === String(tempId))
           if (optIndex !== -1) {
-            targetList[optIndex].id = Number(savedComment.id)
+            targetList[optIndex].id = savedComment.id
             targetList[optIndex].date = savedComment.createdAt
             targetList[optIndex].timestamp = new Date(savedComment.createdAt).getTime()
             if (savedComment.mediaUrl) {

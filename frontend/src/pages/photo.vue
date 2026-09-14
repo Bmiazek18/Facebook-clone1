@@ -206,6 +206,7 @@ import EmptyState from '~/components/feed/comment/EmptyState.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useComments } from '@/composables/feed/useComments'
 import { useProfilePhotoPost } from '@/composables/feed/useProfilePhotoPost'
+import { feedApi } from '@/api/feed'
 
 const GET_POST_BY_ID_QUERY = gql`
   query GetPostById($postId: ID!) {
@@ -257,6 +258,8 @@ const GET_POST_BY_ID_QUERY = gql`
           id
           firstName
           lastName
+          avatarId
+          avatar
         }
       }
     }
@@ -324,17 +327,29 @@ const { fetchCommentsForPost } = useComments()
 const { resolveProfilePhotoPost } = useProfilePhotoPost()
 const resolvingStandalone = ref(false)
 
+const fetchCurrentPost = async () => {
+  if (isStandalone.value || !postId.value) return
+  try {
+    const post = await feedApi.getPost(postId.value)
+    if (post) {
+      const cloned = JSON.parse(JSON.stringify(post))
+      await fetchCommentsForPost(cloned)
+      localPost.value = cloned
+    }
+  } catch (err) {
+    console.warn('Failed to fetch post via feedApi in photo.vue:', err)
+  }
+}
+
 watch(
   () => postResult.value?.getPostById,
   async (newPost) => {
     if (newPost) {
       const cloned = JSON.parse(JSON.stringify(newPost))
+      await fetchCommentsForPost(cloned)
       localPost.value = cloned
-      if (!cloned.comments) {
-        await fetchCommentsForPost(localPost.value)
-      }
-    } else if (!isStandalone.value) {
-      localPost.value = null
+    } else if (!isStandalone.value && !localPost.value) {
+      fetchCurrentPost()
     }
   },
   { immediate: true },
@@ -373,8 +388,20 @@ const hydrateStandalonePost = async () => {
 }
 
 onMounted(() => {
+  if (!isStandalone.value && postId.value) {
+    fetchCurrentPost()
+  }
   hydrateStandalonePost()
 })
+
+watch(
+  () => postId.value,
+  (newVal) => {
+    if (newVal && !isStandalone.value) {
+      fetchCurrentPost()
+    }
+  },
+)
 
 watch(
   () => [standaloneSrc.value, standaloneType.value, standaloneUserId.value],

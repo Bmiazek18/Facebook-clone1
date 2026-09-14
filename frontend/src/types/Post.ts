@@ -30,19 +30,20 @@ export interface LinkPreview {
 }
 
 export interface Comment {
-  id: number
+  id: number | string
   authorId: string | number
   author?: PostAuthor | null
   content: string
   date?: string
   timestamp?: number
   likesCount: number
+  parentId?: string | number | null
   // Nested replies structure remains specific to comments
   replies?: Comment[]
   image?: string
   gif?: string
   userReaction?: string
-  reactions?: Partial<Record<ReactionType, number[]>>
+  reactions?: Partial<Record<ReactionType, string[] | number[]>>
   linkPreview?: LinkPreview
 }
 
