@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
@@ -42,11 +43,13 @@ public class StoryGrpcHandler {
 
             try {
                 if (socialGraphGrpcStub != null) {
-                    var friendsResponse = socialGraphGrpcStub.getFriends(
-                            com.facebook.socialgraph.grpc.GetFriendsRequest.newBuilder()
-                                    .setUserId(currentUserId)
-                                    .build()
-                    );
+                    var friendsResponse = socialGraphGrpcStub
+                            .withDeadlineAfter(2, TimeUnit.SECONDS)
+                            .getFriends(
+                                    com.facebook.socialgraph.grpc.GetFriendsRequest.newBuilder()
+                                            .setUserId(currentUserId)
+                                            .build()
+                            );
                     if (friendsResponse != null && friendsResponse.getFriendIdsList() != null) {
                         allowedAuthors.addAll(friendsResponse.getFriendIdsList());
                     }
@@ -97,8 +100,10 @@ public class StoryGrpcHandler {
 
             if ("IMAGE".equalsIgnoreCase(request.getMediaType()) && abrGrpcStub != null) {
                 try {
-                    var abrResponse = abrGrpcStub.processStoryImage(
-                            ProcessStoryImageRequest.newBuilder().setFileId(fileId).build());
+                    var abrResponse = abrGrpcStub
+                            .withDeadlineAfter(2, TimeUnit.SECONDS)
+                            .processStoryImage(
+                                    ProcessStoryImageRequest.newBuilder().setFileId(fileId).build());
                     if (abrResponse.getSuccess()) {
                         for (var variant : abrResponse.getVariantsList()) {
                             if (variant.getWidth() == 1080 && variant.getHeight() == 1920) {

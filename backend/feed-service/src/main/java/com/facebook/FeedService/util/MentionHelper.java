@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,9 +45,11 @@ public class MentionHelper {
         String authorName = "Ktoś";
         try {
             if (userGrpcStub != null) {
-                com.facebook.user.grpc.GetUserByIdResponse userRes = userGrpcStub.getUserById(
-                        com.facebook.user.grpc.GetUserByIdRequest.newBuilder().setUserId(authorId).build()
-                );
+                com.facebook.user.grpc.GetUserByIdResponse userRes = userGrpcStub
+                        .withDeadlineAfter(2, TimeUnit.SECONDS)
+                        .getUserById(
+                                com.facebook.user.grpc.GetUserByIdRequest.newBuilder().setUserId(authorId).build()
+                        );
                 var u = userRes.getUser();
                 authorName = u.getFirstName() + " " + u.getLastName();
             }
@@ -59,11 +62,13 @@ public class MentionHelper {
                 continue;
             }
             try {
-                notificationGrpcStub.sendNotification(SendNotificationRequest.newBuilder()
-                        .setUserId(targetId)
-                        .setTitle("Mention")
-                        .setMessage(authorId)
-                        .build());
+                notificationGrpcStub
+                        .withDeadlineAfter(2, TimeUnit.SECONDS)
+                        .sendNotification(SendNotificationRequest.newBuilder()
+                                .setUserId(targetId)
+                                .setTitle("Mention")
+                                .setMessage(authorId)
+                                .build());
                 log.info("Sent mention notification to user {} from {}", targetId, authorName);
             } catch (Exception e) {
                 log.error("Failed to send mention notification to user {}", targetId, e);

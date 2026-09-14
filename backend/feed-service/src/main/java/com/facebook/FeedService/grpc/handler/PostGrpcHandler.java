@@ -27,6 +27,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
@@ -65,11 +66,13 @@ public class PostGrpcHandler {
 
             try {
                 if (socialGraphGrpcStub != null) {
-                    var friendsResponse = socialGraphGrpcStub.getFriends(
-                            com.facebook.socialgraph.grpc.GetFriendsRequest.newBuilder()
-                                    .setUserId(currentUserId)
-                                    .build()
-                    );
+                    var friendsResponse = socialGraphGrpcStub
+                            .withDeadlineAfter(2, TimeUnit.SECONDS)
+                            .getFriends(
+                                    com.facebook.socialgraph.grpc.GetFriendsRequest.newBuilder()
+                                            .setUserId(currentUserId)
+                                            .build()
+                            );
                     if (friendsResponse != null && friendsResponse.getFriendIdsList() != null) {
                         allowedAuthors.addAll(friendsResponse.getFriendIdsList());
                     }
@@ -223,10 +226,18 @@ public class PostGrpcHandler {
             boolean containsVideo = false;
             for (PostMedia m : processedMedia) {
                 String fileId = m.getSrc();
+                if (fileId == null || fileId.isBlank()) continue;
+                String lower = fileId.toLowerCase();
+                if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png")
+                        || lower.endsWith(".gif") || lower.endsWith(".webp") || lower.endsWith(".svg")) {
+                    continue;
+                }
                 try {
                     if (abrGrpcStub != null) {
-                        var info = abrGrpcStub.getVideoInfo(
-                                GetVideoInfoRequest.newBuilder().setFileId(fileId).build());
+                        var info = abrGrpcStub
+                                .withDeadlineAfter(1500, TimeUnit.MILLISECONDS)
+                                .getVideoInfo(
+                                        GetVideoInfoRequest.newBuilder().setFileId(fileId).build());
                         if (info.getIsVideo()) {
                             containsVideo = true;
                             break;
