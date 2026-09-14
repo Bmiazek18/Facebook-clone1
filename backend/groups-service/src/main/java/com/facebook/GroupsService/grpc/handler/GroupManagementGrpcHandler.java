@@ -13,8 +13,6 @@ import com.facebook.GroupsService.repository.GroupRepository;
 import com.facebook.GroupsService.repository.GroupRuleRepository;
 import com.facebook.groups.grpc.*;
 import io.grpc.stub.StreamObserver;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
@@ -42,9 +40,6 @@ public class GroupManagementGrpcHandler {
 
     @GrpcClient("feed-service")
     private com.facebook.feed.grpc.FeedGrpcServiceGrpc.FeedGrpcServiceBlockingStub feedGrpcStub;
-
-    @PersistenceContext
-    private EntityManager entityManager;
 
     @Transactional
     public void createGroup(CreateGroupRequest request, StreamObserver<CreateGroupResponse> responseObserver) {
