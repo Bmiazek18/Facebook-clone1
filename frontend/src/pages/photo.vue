@@ -501,9 +501,18 @@ const getMediaUrl = (src: string) => {
     src = src.replace('http://localhost/', config.public.apiUrl + '/')
   }
   if (/^(http:\/\/|https:\/\/|blob:|data:)/.test(src)) return src
+  if (src.startsWith('/default') || src.startsWith('/_nuxt') || src.startsWith('/assets') || src.startsWith('/images') || src.startsWith('/icons')) {
+    return src
+  }
 
   const baseUrl = config.public.apiUrl
-  return src.startsWith('/') ? `${baseUrl}${src}` : `${baseUrl}/${src}`
+  if (src.startsWith('/files/') || src.startsWith('/media/') || src.startsWith('/videos/') || src.startsWith('/api/')) {
+    return `${baseUrl}${src}`
+  }
+  if (src.startsWith('/')) {
+    return src
+  }
+  return `${baseUrl}/${src}`
 }
 
 const resolvedMedia = computed(() => {

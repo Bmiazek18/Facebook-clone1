@@ -193,8 +193,15 @@ const likesCount = computed(() => {
 const config = useRuntimeConfig()
 const getMediaUrl = (src: string) => {
   if (!src) return ''
+  if (/^(http:\/\/|https:\/\/|blob:|data:)/.test(src)) return src
+  if (src.startsWith('/default') || src.startsWith('/_nuxt') || src.startsWith('/assets') || src.startsWith('/images') || src.startsWith('/icons')) {
+    return src
+  }
   const baseUrl = config.public?.apiUrl || (typeof window !== 'undefined' ? '' : 'http://localhost:8080')
-  return src.startsWith('/') ? `${baseUrl}${src}` : src
+  if (src.startsWith('/files/') || src.startsWith('/media/') || src.startsWith('/videos/') || src.startsWith('/api/')) {
+    return `${baseUrl}${src}`
+  }
+  return src
 }
 
 const resolvedMedia = computed(() => {

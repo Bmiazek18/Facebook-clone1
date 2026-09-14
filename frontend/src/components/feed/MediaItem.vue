@@ -156,9 +156,15 @@ const getMediaUrl = (src: string) => {
   ) {
     return src
   }
+  if (src.startsWith('/default') || src.startsWith('/_nuxt') || src.startsWith('/assets') || src.startsWith('/images') || src.startsWith('/icons')) {
+    return src
+  }
   const baseUrl = config.public.apiUrl
-  if (src.startsWith('/')) {
+  if (src.startsWith('/files/') || src.startsWith('/media/') || src.startsWith('/videos/') || src.startsWith('/api/')) {
     return `${baseUrl}${src}`
+  }
+  if (src.startsWith('/')) {
+    return src
   }
   return `${baseUrl}/${src}`
 }
@@ -177,6 +183,21 @@ const checkIsVideo = async () => {
     return
   }
 
+  // Known images or static assets
+  if (
+    src.endsWith('.png') ||
+    src.endsWith('.jpg') ||
+    src.endsWith('.jpeg') ||
+    src.endsWith('.gif') ||
+    src.endsWith('.webp') ||
+    src.endsWith('.svg') ||
+    src.startsWith('/default')
+  ) {
+    resolvedIsVideo.value = false
+    transcodingFinished.value = false
+    return
+  }
+
   if (src.includes('/files/') || src.includes('/media/')) {
     const marker = src.includes('/media/') ? '/media/' : '/files/'
     let fileId = src.substring(src.lastIndexOf(marker) + marker.length)
@@ -188,6 +209,11 @@ const checkIsVideo = async () => {
     const plusIdx = fileId.indexOf('+')
     if (plusIdx !== -1) {
       fileId = fileId.substring(0, plusIdx)
+    }
+    if (!fileId || fileId.includes('/') || fileId.includes('.')) {
+      resolvedIsVideo.value = false
+      transcodingFinished.value = false
+      return
     }
     const baseUrl = config.public?.apiUrl || (typeof window !== 'undefined' ? '' : 'http://localhost:8080')
 

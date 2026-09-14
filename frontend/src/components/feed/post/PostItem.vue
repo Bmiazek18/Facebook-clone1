@@ -69,9 +69,15 @@ const getMediaUrl = (src: string) => {
   ) {
     return src
   }
+  if (src.startsWith('/default') || src.startsWith('/_nuxt') || src.startsWith('/assets') || src.startsWith('/images') || src.startsWith('/icons')) {
+    return src
+  }
   const baseUrl = config.public.apiUrl
-  if (src.startsWith('/')) {
+  if (src.startsWith('/files/') || src.startsWith('/media/') || src.startsWith('/videos/') || src.startsWith('/api/')) {
     return `${baseUrl}${src}`
+  }
+  if (src.startsWith('/')) {
+    return src
   }
   return `${baseUrl}/${src}`
 }

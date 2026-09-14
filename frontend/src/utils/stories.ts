@@ -9,7 +9,16 @@ export function getMediaUrl(src: string) {
     src = src.replace('http://localhost/', `${API_URL}/`)
   }
   if (/^(https?|blob|data):/.test(src)) return src
-  return src.startsWith('/') ? `${API_URL}${src}` : `${API_URL}/${src}`
+  if (src.startsWith('/default') || src.startsWith('/_nuxt') || src.startsWith('/assets') || src.startsWith('/images') || src.startsWith('/icons')) {
+    return src
+  }
+  if (src.startsWith('/files/') || src.startsWith('/media/') || src.startsWith('/videos/') || src.startsWith('/api/')) {
+    return `${API_URL}${src}`
+  }
+  if (src.startsWith('/')) {
+    return src
+  }
+  return `${API_URL}/${src}`
 }
 
 export function getLocalViewedStories(): string[] {

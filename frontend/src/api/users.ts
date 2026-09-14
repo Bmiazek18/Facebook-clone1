@@ -71,6 +71,148 @@ export const CREATE_PROFILE_PHOTO_POST_MUTATION = gql`
   }
 `
 
+export const GET_USER_BY_ID_SIMPLE_QUERY = gql`
+  query GetUserByIdSimple($userId: ID!) {
+    getUserById(userId: $userId) {
+      id
+      firstName
+      lastName
+      avatar
+      note
+    }
+  }
+`
+
+export const GET_USER_FULL_PROFILE_QUERY = gql`
+  query GetUserProfileFull($userId: ID!) {
+    getUserById(userId: $userId) {
+      id
+      firstName
+      lastName
+      avatarId
+      avatar
+      coverId
+      cover
+      city
+      location
+      hometown
+      education
+      school
+      bio
+      gender
+      birthDate
+      languages
+      pronouns
+      highSchool
+      job
+      company
+      work
+      phone
+      website
+      relationshipStatus
+      relationshipSince
+      partnerName
+      partnerAvatar
+      bioDetails
+      namePronunciation
+      otherNames
+      favoriteQuotes
+      createdAt
+      updatedAt
+      note
+    }
+  }
+`
+
+export const GET_PROFILE_FRIENDS_QUERY = gql`
+  query ProfileFriends($userId: ID!, $currentUserId: ID!) {
+    getFriends(userId: $userId) {
+      id
+      firstName
+      lastName
+      avatar
+      avatarId
+      mutualFriendsCount(currentUserId: $currentUserId)
+    }
+  }
+`
+
+export const SEND_FRIEND_REQUEST_MUTATION = gql`
+  mutation SendFriendRequest($senderId: ID!, $receiverId: ID!) {
+    sendFriendRequest(senderId: $senderId, receiverId: $receiverId) {
+      success
+      message
+    }
+  }
+`
+
+export const GET_ACTIVE_STATUSES_QUERY = gql`
+  query GetActiveStatuses($userIds: [ID!]!) {
+    getActiveStatuses(userIds: $userIds) {
+      userId
+      active
+      lastActiveText
+    }
+  }
+`
+
+export const UPDATE_PROFILE_MUTATION = gql`
+  mutation UpdateProfile($userId: ID!, $input: UpdateProfileInput!) {
+    updateProfile(userId: $userId, input: $input) {
+      id
+      firstName
+      lastName
+      avatar
+      cover
+      city
+      location
+      hometown
+      education
+      school
+      bio
+      gender
+      birthDate
+      languages
+      pronouns
+      highSchool
+      job
+      company
+      work
+      phone
+      website
+      relationshipStatus
+      relationshipSince
+      partnerName
+      note
+    }
+  }
+`
+
+export const GET_FRIEND_REQUESTS_QUERY = gql`
+  query GetFriendRequests($currentUserId: ID!) {
+    getFriendRequests(currentUserId: $currentUserId) {
+      userId
+      mutualFriendsCount
+      user {
+        id
+        firstName
+        lastName
+        avatarId
+        avatar
+      }
+    }
+  }
+`
+
+export const ACCEPT_FRIEND_REQUEST_MUTATION = gql`
+  mutation AcceptFriendRequest($senderId: ID!, $receiverId: ID!) {
+    acceptFriendRequest(senderId: $senderId, receiverId: $receiverId) {
+      success
+      message
+    }
+  }
+`
+
 export const usersApi = {
   async searchUsers(query: string, currentUserId: string | number) {
     const data = await apiClient.query<{ searchUsers: any[] }>(
@@ -158,7 +300,7 @@ export const usersApi = {
       {
         userId: String(userId),
         filter,
-        albumName: albumName || null,
+        albumName,
         limit,
         offset
       },
@@ -176,7 +318,11 @@ export const usersApi = {
     return data?.getUserAlbums || []
   },
 
-  async createProfilePhotoPost(input: any) {
+  async createProfilePhotoPost(input: {
+    authorId: string | number
+    content?: string
+    media?: Array<{ src: string; altText?: string; backgroundColor?: string }>
+  }) {
     const data = await apiClient.mutate<{ createPost: any }>(
       CREATE_PROFILE_PHOTO_POST_MUTATION,
       { input }
@@ -187,17 +333,7 @@ export const usersApi = {
   async getUserById(userId: string | number) {
     const cleanId = String(userId).replace('user_', '')
     const data = await apiClient.query<{ getUserById: any }>(
-      gql`
-        query GetUserById($userId: ID!) {
-          getUserById(userId: $userId) {
-            id
-            firstName
-            lastName
-            avatar
-            note
-          }
-        }
-      `,
+      GET_USER_BY_ID_SIMPLE_QUERY,
       { userId: cleanId },
       { errorPolicy: 'ignore' }
     )
@@ -207,46 +343,7 @@ export const usersApi = {
   async getUserProfile(userId: string | number) {
     const cleanId = String(userId).replace('user_', '')
     const data = await apiClient.query<{ getUserById: any }>(
-      gql`
-        query GetUserProfile($userId: ID!) {
-          getUserById(userId: $userId) {
-            id
-            firstName
-            lastName
-            avatarId
-            avatar
-            coverId
-            cover
-            city
-            location
-            hometown
-            education
-            school
-            bio
-            gender
-            birthDate
-            languages
-            pronouns
-            highSchool
-            job
-            company
-            work
-            phone
-            website
-            relationshipStatus
-            relationshipSince
-            partnerName
-            partnerAvatar
-            bioDetails
-            namePronunciation
-            otherNames
-            favoriteQuotes
-            createdAt
-            updatedAt
-            note
-          }
-        }
-      `,
+      GET_USER_FULL_PROFILE_QUERY,
       { userId: cleanId },
       { fetchPolicy: 'cache-first' }
     )
@@ -255,18 +352,7 @@ export const usersApi = {
 
   async getProfileFriends(userId: string | number, currentUserId?: string | number) {
     const data = await apiClient.query<{ getFriends: any[] }>(
-      gql`
-        query ProfileFriends($userId: ID!, $currentUserId: ID!) {
-          getFriends(userId: $userId) {
-            id
-            firstName
-            lastName
-            avatar
-            avatarId
-            mutualFriendsCount(currentUserId: $currentUserId)
-          }
-        }
-      `,
+      GET_PROFILE_FRIENDS_QUERY,
       {
         userId: String(userId),
         currentUserId: currentUserId ? String(currentUserId) : '1'
@@ -278,14 +364,7 @@ export const usersApi = {
 
   async sendFriendRequest(senderId: string | number, receiverId: string | number) {
     const data = await apiClient.mutate<{ sendFriendRequest: { success: boolean; message?: string } }>(
-      gql`
-        mutation SendFriendRequest($senderId: ID!, $receiverId: ID!) {
-          sendFriendRequest(senderId: $senderId, receiverId: $receiverId) {
-            success
-            message
-          }
-        }
-      `,
+      SEND_FRIEND_REQUEST_MUTATION,
       {
         senderId: String(senderId),
         receiverId: String(receiverId)
@@ -295,17 +374,11 @@ export const usersApi = {
   },
 
   async getActiveStatuses(userIds: (string | number)[]) {
+    const validIds = (userIds || []).map((id) => String(id).trim()).filter((id) => id.length > 0)
+    if (validIds.length === 0) return []
     const data = await apiClient.query<{ getActiveStatuses: any[] }>(
-      gql`
-        query GetActiveStatuses($userIds: [ID!]!) {
-          getActiveStatuses(userIds: $userIds) {
-            userId
-            active
-            lastActiveText
-          }
-        }
-      `,
-      { userIds: userIds.map((id) => String(id)) },
+      GET_ACTIVE_STATUSES_QUERY,
+      { userIds: validIds },
       { fetchPolicy: 'network-only' }
     )
     return data?.getActiveStatuses || []
@@ -313,37 +386,7 @@ export const usersApi = {
 
   async updateProfile(userId: string | number, input: any) {
     const data = await apiClient.mutate<{ updateProfile: any }>(
-      gql`
-        mutation UpdateProfile($userId: ID!, $input: UpdateProfileInput!) {
-          updateProfile(userId: $userId, input: $input) {
-            id
-            firstName
-            lastName
-            avatar
-            cover
-            city
-            location
-            hometown
-            education
-            school
-            bio
-            gender
-            birthDate
-            languages
-            pronouns
-            highSchool
-            job
-            company
-            work
-            phone
-            website
-            relationshipStatus
-            relationshipSince
-            partnerName
-            note
-          }
-        }
-      `,
+      UPDATE_PROFILE_MUTATION,
       {
         userId: String(userId),
         input
@@ -354,21 +397,7 @@ export const usersApi = {
 
   async getFriendRequests(currentUserId: string | number) {
     const data = await apiClient.query<{ getFriendRequests: any[] }>(
-      gql`
-        query GetFriendRequests($currentUserId: ID!) {
-          getFriendRequests(currentUserId: $currentUserId) {
-            userId
-            mutualFriendsCount
-            user {
-              id
-              firstName
-              lastName
-              avatarId
-              avatar
-            }
-          }
-        }
-      `,
+      GET_FRIEND_REQUESTS_QUERY,
       { currentUserId: String(currentUserId) },
       { fetchPolicy: 'network-only' }
     )
@@ -377,14 +406,7 @@ export const usersApi = {
 
   async acceptFriendRequest(senderId: string | number, receiverId: string | number) {
     const data = await apiClient.mutate<{ acceptFriendRequest: { success: boolean; message?: string } }>(
-      gql`
-        mutation AcceptFriendRequest($senderId: ID!, $receiverId: ID!) {
-          acceptFriendRequest(senderId: $senderId, receiverId: $receiverId) {
-            success
-            message
-          }
-        }
-      `,
+      ACCEPT_FRIEND_REQUEST_MUTATION,
       {
         senderId: String(senderId),
         receiverId: String(receiverId)
