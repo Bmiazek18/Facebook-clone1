@@ -77,8 +77,12 @@
               <strong class="font-bold text-white mb-1">
                 {{ $t('post.shares') || 'Udostępnienia' }}
               </strong>
-              <div v-if="isLoadingSharers" class="py-1 text-gray-400 text-[12px]">
-                {{ $t('common.loading') || 'Ładowanie...' }}
+              <div v-if="isLoadingSharers" class="flex items-center gap-2 py-1.5 text-[#B0B3B8] text-[12px]">
+                <svg class="animate-spin h-3.5 w-3.5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                <span>{{ $t('common.loading') || 'Ładowanie...' }}</span>
               </div>
               <template v-else-if="sharerNames.length > 0">
                 <span
