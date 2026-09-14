@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, onUnmounted, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import * as fabric from 'fabric' // Fabric.js v6
 import { useStoriesStore } from '@/composables/feed/useAppState'
 import { useAuthStore } from '@/stores/auth'
@@ -606,7 +607,8 @@ const handleExportStory = async () => {
       userTags: userTagsForExport,
     })
 
-    window.location.href = '/'
+    const router = useRouter()
+    await router.push('/')
   } catch (error) {
     console.error('Błąd podczas eksportowania story:', error)
     alert('Błąd podczas eksportowania story')

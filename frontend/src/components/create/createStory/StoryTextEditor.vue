@@ -196,7 +196,7 @@ const exportStory = async () => {
       imageUrl: dataUrl,
       userTags,
     })
-    window.location.href = '/'
+    await router.push('/')
   } catch (error) {
     console.error('Failed to export story:', error)
     alert('Błąd podczas eksportowania story')
