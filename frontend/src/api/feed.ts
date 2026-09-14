@@ -414,6 +414,13 @@ export const feedApi = {
             reactions {
               reactionType
               userIds
+              users {
+                id
+                firstName
+                lastName
+                avatarId
+                avatar
+              }
             }
           }
         }
@@ -454,6 +461,13 @@ export const feedApi = {
             reactions {
               reactionType
               userIds
+              users {
+                id
+                firstName
+                lastName
+                avatarId
+                avatar
+              }
             }
           }
         }

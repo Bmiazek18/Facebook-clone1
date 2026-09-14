@@ -80,6 +80,13 @@ export const GET_FEED_POSTS = gql`
       reactions {
         reactionType
         userIds
+        users {
+          id
+          firstName
+          lastName
+          avatarId
+          avatar
+        }
       }
       context {
         feeling {
@@ -200,6 +207,13 @@ export const GET_HOME_DATA = gql`
       reactions {
         reactionType
         userIds
+        users {
+          id
+          firstName
+          lastName
+          avatarId
+          avatar
+        }
       }
       context {
         feeling {
