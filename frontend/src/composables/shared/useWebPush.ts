@@ -7,14 +7,6 @@ export function useWebPush() {
 
     if (typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator) {
       try {
-        if (Notification.permission === 'default') {
-          const permission = await Notification.requestPermission()
-          if (permission !== 'granted') {
-            console.log('[Web Push] User denied desktop notifications permission.')
-            return
-          }
-        }
-
         if (Notification.permission === 'granted') {
           const registration = await navigator.serviceWorker.ready
           const applicationServerKey = 'BEl4A8Fv3w4T2lT4zG-8V4p33rY2G3JtG3_G4P3jY2P4x2D3x4F3e4D3x4E3e4D3x4F3e4D3x4E3e4D3x4F3e4A=='
@@ -46,7 +38,27 @@ export function useWebPush() {
     }
   }
 
+  const requestPermissionAndRegister = async (userId: string | number) => {
+    if (!userId || !import.meta.client) return
+
+    if (typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator) {
+      try {
+        if (Notification.permission === 'default') {
+          const permission = await Notification.requestPermission()
+          if (permission === 'granted') {
+            await registerWebPush(userId)
+          }
+        } else if (Notification.permission === 'granted') {
+          await registerWebPush(userId)
+        }
+      } catch (err) {
+        console.warn('[Web Push] Failed to request notification permission:', err)
+      }
+    }
+  }
+
   return {
-    registerWebPush
+    registerWebPush,
+    requestPermissionAndRegister
   }
 }
