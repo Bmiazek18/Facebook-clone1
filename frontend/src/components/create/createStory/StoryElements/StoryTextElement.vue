@@ -43,8 +43,12 @@ watch(
     if (editing) {
       localText.value = props.element.content
       nextTick(() => {
-        mentionInputRef.value?.focus()
-        mentionInputRef.value?.moveCursorToEnd()
+        if (typeof mentionInputRef.value?.focus === 'function') {
+          mentionInputRef.value.focus()
+        }
+        if (typeof mentionInputRef.value?.moveCursorToEnd === 'function') {
+          mentionInputRef.value.moveCursorToEnd()
+        }
       })
     } else {
       emit('update-content', props.element.id, localText.value)

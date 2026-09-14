@@ -53,9 +53,13 @@ defineEmits<{
   (e: 'update:modelValue', value: string): void
 }>()
 
-// Eksponujemy referencję do inputa, aby główny komponent mógł wywołać na nim .focus()
+// Eksponujemy referencję do inputa oraz metody focus/select
 const inputRef = ref<HTMLInputElement | null>(null)
-defineExpose({ inputRef })
+defineExpose({
+  inputRef,
+  focus: () => inputRef.value?.focus(),
+  select: () => inputRef.value?.select(),
+})
 
 // Dynamiczne klasy dla Inputa
 const inputClasses = computed(() => {

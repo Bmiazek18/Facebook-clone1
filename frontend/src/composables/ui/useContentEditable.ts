@@ -95,14 +95,19 @@ export function useContentEditable(
 
   function moveCursorToEnd() {
     nextTick(() => {
-      if (contentEditableDiv.value) {
-        contentEditableDiv.value.focus()
-        const selection = window.getSelection()
-        const range = document.createRange()
-        range.selectNodeContents(contentEditableDiv.value)
-        range.collapse(false)
-        selection?.removeAllRanges()
-        selection?.addRange(range)
+      const el = (contentEditableDiv.value as any)?.$el || contentEditableDiv.value
+      if (el && typeof el.focus === 'function') {
+        el.focus()
+        try {
+          const selection = window.getSelection()
+          const range = document.createRange()
+          range.selectNodeContents(el)
+          range.collapse(false)
+          selection?.removeAllRanges()
+          selection?.addRange(range)
+        } catch (e) {
+          // ignore selection errors if element is detached
+        }
       }
     })
   }

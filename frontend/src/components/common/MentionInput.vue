@@ -67,7 +67,12 @@ onMounted(() => {
 
 defineExpose({
   addEmoji,
-  focus: () => contentEditableDiv.value?.focus(),
+  focus: () => {
+    const el = (contentEditableDiv.value as any)?.$el || contentEditableDiv.value
+    if (el && typeof el.focus === 'function') {
+      el.focus()
+    }
+  },
   moveCursorToEnd,
 })
 </script>

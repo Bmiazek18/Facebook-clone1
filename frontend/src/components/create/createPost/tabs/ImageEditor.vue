@@ -352,7 +352,10 @@ const handleImageClickForTagging = async (event: MouseEvent) => {
   await loadSuggestions()
 
   await nextTick()
-  if (newTagInputRef.value) newTagInputRef.value.focus()
+  const inputEl = (newTagInputRef.value as any)?.$el || newTagInputRef.value
+  if (inputEl && typeof inputEl.focus === 'function') {
+    inputEl.focus()
+  }
 }
 
 const createTag = () => {

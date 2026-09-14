@@ -144,8 +144,13 @@ const startEditing = (user: Participant) => {
   // Auto focus na pole input
   nextTick(() => {
     if (inputRef.value && inputRef.value.length > 0) {
-      inputRef.value[0].focus()
-      inputRef.value[0].select()
+      const el = (inputRef.value[0] as any)?.$el || inputRef.value[0]
+      if (el && typeof el.focus === 'function') {
+        el.focus()
+      }
+      if (el && typeof el.select === 'function') {
+        el.select()
+      }
     }
   })
 }
