@@ -350,7 +350,13 @@ watch(
             <DotsHorizontal :size="20" />
           </button>
           <template #popper>
-            <PostSettingPopper v-if="post?.id" :post-id="post.id" :author-id="post.authorId || post.author?.id" />
+            <PostSettingPopper
+              v-if="post?.id"
+              :post-id="post.id"
+              :author-id="post.authorId || post.author?.id"
+              :author-name="post?.isAnonymous || isAnonymous ? anonymousUser.name : authorName"
+              :is-anonymous="post?.isAnonymous || isAnonymous"
+            />
           </template>
         </VDropdown>
         <button v-if="!isShared && !hideCloseButton" @click="emit('close')" class="post-header-btn">

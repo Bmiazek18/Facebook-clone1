@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type Component } from 'vue'
+import { computed, type Component } from 'vue'
 
 // Najbardziej zbliżone odpowiedniki z vue-material-design-icons
 import PlusCircleOutline from 'vue-material-design-icons/PlusCircleOutline.vue'
@@ -21,7 +21,27 @@ interface MenuItem {
   hasSeparator?: boolean
 }
 
-const menuItems: MenuItem[] = [
+const props = withDefaults(
+  defineProps<{
+    postId?: string | number
+    authorId?: string | number
+    authorName?: string
+    isAnonymous?: boolean
+  }>(),
+  {
+    postId: '',
+    authorId: '',
+    authorName: 'Użytkownik',
+    isAnonymous: false,
+  }
+)
+
+const displayName = computed(() => {
+  if (props.isAnonymous) return 'Użytkownik anonimowy'
+  return props.authorName || 'Użytkownik'
+})
+
+const menuItems = computed<MenuItem[]>(() => [
   {
     id: 1,
     label: 'Wyświetl więcej',
@@ -37,7 +57,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 3,
-    label: 'Włącz powiadomienia',
+    label: 'Włącz powiadomienia o tym poście',
     icon: BellOutline,
   },
   {
@@ -59,30 +79,30 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 7,
-    label: 'Wstrzymaj relacje MKP Pogoń Siedlce na 30 dni',
+    label: `Wstrzymaj relacje użytkownika ${displayName.value} na 30 dni`,
     description: 'Tymczasowo zatrzymaj wyświetlanie postów.',
     icon: ClockOutline,
   },
   {
     id: 8,
-    label: 'Przestań obserwować użytkownika MKP Pogoń Siedlce',
+    label: `Przestań obserwować użytkownika ${displayName.value}`,
     description:
-      'Przestań wyświetlać posty z tej strony. Strona nie otrzyma powiadomienia o Twojej rezygnacji z obserwowania.',
+      'Przestań wyświetlać posty od tego profilu. Użytkownik nie otrzyma powiadomienia o Twojej rezygnacji z obserwowania.',
     icon: AccountMinusOutline,
   },
   {
     id: 9,
     label: 'Zgłoś post',
-    description: 'Nie poinformujemy MKP Pogoń Siedlce, kto to zgłosił.',
+    description: `Nie poinformujemy ${displayName.value}, kto to zgłosił.`,
     icon: AlertCircleOutline,
   },
   {
     id: 10,
-    label: 'Zablokuj profil MKP Pogoń Siedlce',
+    label: `Zablokuj profil ${displayName.value}`,
     description: 'Nie będziecie mogli się widzieć ani skontaktować się ze sobą.',
     icon: AccountCancelOutline,
   },
-]
+])
 
 const handleClick = (item: MenuItem) => {
   console.log(`Kliknięto: ${item.label}`)
