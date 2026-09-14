@@ -67,20 +67,54 @@
         <span v-if="commentsCount > 0" @click="emit('show-comments')" class="hover:underline cursor-pointer">{{
           t('post.commentsCount', { count: commentsCount })
         }}</span>
-        <span v-if="sharesCount > 0" class="hover:underline cursor-pointer">{{
-          t(props.hasPoll ? 'poll.totalVotes' : 'post.sharesCount', { count: sharesCount })
-        }}</span>
+        <VTooltip v-if="sharesCount > 0" @apply-show="loadShareUsers">
+          <span class="hover:underline cursor-pointer" @mouseenter="loadShareUsers">{{
+            t(props.hasPoll ? 'poll.totalVotes' : 'post.sharesCount', { count: sharesCount })
+          }}</span>
+
+          <template #popper>
+            <div class="flex flex-col text-[13px] rounded-md min-w-[120px] p-1">
+              <strong class="font-bold text-white mb-1">
+                {{ $t('post.shares') || 'Udostępnienia' }}
+              </strong>
+              <div v-if="isLoadingSharers" class="py-1 text-gray-400 text-[12px]">
+                {{ $t('common.loading') || 'Ładowanie...' }}
+              </div>
+              <template v-else-if="sharerNames.length > 0">
+                <span
+                  v-for="name in sharerNames"
+                  :key="name"
+                  class="text-[#E4E6EB] leading-tight py-[1.5px]"
+                >
+                  {{ name }}
+                </span>
+                <span
+                  v-if="remainingSharersCount > 0"
+                  class="mt-1 text-[#B0B3B8] leading-tight text-[12px]"
+                >
+                  {{ `i ${remainingSharersCount} innych...` }}
+                </span>
+              </template>
+              <div v-else class="text-[#B0B3B8] text-[12px] py-[1px]">
+                {{ $t('post.unknownUser') || 'Użytkownicy' }}
+              </div>
+            </div>
+          </template>
+        </VTooltip>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import type { ReactionType } from '@/types/Post'
 import { getUserById } from '@/utils/users'
 import { useReactionConfig } from '@/composables/feed/useReactionConfig'
+import { usePostsStore } from '@/stores/posts'
+import { useUserCache } from '@/composables/shared/useUserCache'
 
 const props = defineProps<{
   postId: string | number
@@ -96,11 +130,73 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const { getReactionConfig } = useReactionConfig()
+const postsStore = usePostsStore()
+const { getOrFetchUser, preloadUsers } = useUserCache()
 
 const emit = defineEmits<{
   (e: 'show-reaction-details'): void
   (e: 'show-comments'): void
 }>()
+
+const sharerNames = ref<string[]>([])
+const isLoadingSharers = ref(false)
+const hasLoadedSharers = ref(false)
+
+const remainingSharersCount = computed(() => {
+  const total = props.sharesCount
+  return Math.max(0, total - sharerNames.value.length)
+})
+
+const loadShareUsers = async () => {
+  if (hasLoadedSharers.value && sharerNames.value.length > 0) return
+  isLoadingSharers.value = true
+
+  try {
+    const pid = String(props.postId)
+    const sharingPosts = postsStore.posts.filter((p: any) => 
+      (p.targetType === 'post' && String(p.targetId) === pid) ||
+      (p.sharedContent?.type === 'post' && String(p.sharedContent.originalId) === pid) ||
+      (p.sharedPost?.id && String(p.sharedPost.id) === pid)
+    )
+
+    const names: string[] = []
+    const authorIdsToFetch: string[] = []
+
+    for (const sp of sharingPosts) {
+      if (sp.isAnonymous) {
+        names.push(t('post.anonymousUser') || 'Anonim')
+        continue
+      }
+      if (sp.author?.name) {
+        names.push(sp.author.name)
+      } else if (sp.author?.firstName || sp.author?.lastName) {
+        names.push([sp.author.firstName, sp.author.lastName].filter(Boolean).join(' '))
+      } else if (sp.authorId) {
+        authorIdsToFetch.push(String(sp.authorId))
+      }
+    }
+
+    if (authorIdsToFetch.length > 0) {
+      await preloadUsers(authorIdsToFetch)
+      for (const aid of authorIdsToFetch) {
+        const u = await getOrFetchUser(aid)
+        if (u?.name) {
+          names.push(u.name)
+        }
+      }
+    }
+
+    const uniqueNames = Array.from(new Set(names))
+    if (uniqueNames.length > 0) {
+      sharerNames.value = uniqueNames
+    }
+    hasLoadedSharers.value = true
+  } catch (err) {
+    console.error('Failed to load share users:', err)
+  } finally {
+    isLoadingSharers.value = false
+  }
+}
 
 const getReactionTooltipData = (reactionType: ReactionType) => {
   const resolvedNames = props.reactionUserNames?.[reactionType]
