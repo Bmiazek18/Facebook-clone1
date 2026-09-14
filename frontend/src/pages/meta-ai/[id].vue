@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, nextTick, onMounted, onUnmounted, computed, defineAsyncComponent } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted, computed, watch, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useMetaAi } from '@/composables/useMetaAi'
 import LLMInput from '@/components/meta-ai/LLMInput.vue'
 import CodeBlock from '@/components/meta-ai/CodeBlock.vue'
 const PdfPreview = defineAsyncComponent(() => import('@/components/meta-ai/PdfPreview.vue'))
@@ -59,6 +60,7 @@ const initNewChat = () => {
 }
 
 const authStore = useAuthStore()
+const { triggerRefreshHistory } = useMetaAi()
 
 const loadExistingChat = async (threadId: string) => {
   if (!threadId) return
@@ -206,6 +208,12 @@ onMounted(() => {
   }
 })
 
+watch(() => route.params.id, (newId) => {
+  if (newId && newId !== currentThreadId.value) {
+    loadExistingChat(newId as string)
+  }
+})
+
 onUnmounted(() => { 
   delete (window as any).goToPdfPage 
 })
@@ -245,6 +253,7 @@ const handleStopGeneration = () => {
     abortController.abort()
     const currentMsg = messages.value.find(m => m.role === 'assistant' && m.isStreaming)
     if (currentMsg) currentMsg.isStreaming = false
+    triggerRefreshHistory()
   }
 }
 
@@ -311,6 +320,8 @@ const startChat = async (text: string, model: string = 'Flash', images: string[]
     if (e.name !== 'AbortError') {
       console.error("Błąd strumienia:", e) 
     }
+  } finally {
+    triggerRefreshHistory()
   }
 }
 </script>

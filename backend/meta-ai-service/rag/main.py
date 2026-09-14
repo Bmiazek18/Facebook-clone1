@@ -77,7 +77,7 @@ except Exception:
 
 # --- GLOBALNA ZMIENNA DLA AGENTA ---
 agent_executor = None
-DB_PATH = "chat_history.db"
+DB_PATH = os.getenv("DB_PATH", "/app/data/chat_history.db" if os.path.isdir("/app/data") else "chat_history.db")
 CHARTS_DIR = "generated_charts"  # Zmienna pomocnicza dla czytelności
 
 # --- CONFIG INTERFEJSÓW KLIENTÓW ---
@@ -223,6 +223,9 @@ def should_continue(state: AgentState) -> Literal["tools", "generate_title"]:
 
 def init_db():
     try:
+        db_dir = os.path.dirname(DB_PATH)
+        if db_dir and not os.path.exists(db_dir):
+            os.makedirs(db_dir, exist_ok=True)
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute("""
@@ -306,31 +309,30 @@ async def get_generated_chart(filename: str):
 @app.get("/chat-threads")
 async def get_chat_threads(request: Request):
     user_id = request.headers.get("x-user-id") or request.query_params.get("user_id")
-    if not os.path.exists(DB_PATH):
-        return {"threads": []}
+    init_db()
 
     try:
-        init_db()
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         
         rows = []
-        if user_id:
-            cursor.execute("SELECT thread_id, title FROM user_threads WHERE user_id = ? ORDER BY updated_at DESC", (user_id,))
+        if user_id and user_id != "anonymous":
+            cursor.execute("SELECT thread_id, title FROM user_threads WHERE user_id = ? OR user_id = 'anonymous' ORDER BY updated_at DESC", (user_id,))
             rows = cursor.fetchall()
             if not rows:
-                cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='checkpoints'")
-                if cursor.fetchone():
-                    cursor.execute("SELECT thread_id FROM checkpoints WHERE thread_id LIKE ? GROUP BY thread_id ORDER BY max(checkpoint_id) DESC", (f"%{user_id}%",))
-                    rows = cursor.fetchall()
+                cursor.execute("SELECT thread_id, title FROM user_threads ORDER BY updated_at DESC")
+                rows = cursor.fetchall()
         else:
             cursor.execute("SELECT thread_id, title FROM user_threads ORDER BY updated_at DESC")
             rows = cursor.fetchall()
-            if not rows:
-                cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='checkpoints'")
-                if cursor.fetchone():
-                    cursor.execute("SELECT thread_id FROM checkpoints GROUP BY thread_id ORDER BY max(checkpoint_id) DESC")
-                    rows = cursor.fetchall()
+
+        # Fallback do tabeli checkpoints jeśli user_threads jest pusta
+        if not rows:
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='checkpoints'")
+            if cursor.fetchone():
+                cursor.execute("SELECT thread_id FROM checkpoints GROUP BY thread_id ORDER BY max(checkpoint_id) DESC")
+                chk_rows = cursor.fetchall()
+                rows = [(r[0], "Nowa rozmowa") for r in chk_rows]
         conn.close()
 
         threads_list = []
@@ -339,8 +341,14 @@ async def get_chat_threads(request: Request):
             existing_title = row[1] if len(row) > 1 and row[1] else None
 
             if not existing_title or existing_title == "Nowa rozmowa":
-                state = await agent_executor.aget_state({"configurable": {"thread_id": thread_id}})
-                title = state.values.get("chat_title", "Nowa rozmowa") if state and state.values else "Nowa rozmowa"
+                if agent_executor is not None:
+                    try:
+                        state = await agent_executor.aget_state({"configurable": {"thread_id": thread_id}})
+                        title = state.values.get("chat_title", "Nowa rozmowa") if state and state.values else "Nowa rozmowa"
+                    except Exception:
+                        title = "Nowa rozmowa"
+                else:
+                    title = "Nowa rozmowa"
             else:
                 title = existing_title
 
@@ -352,7 +360,7 @@ async def get_chat_threads(request: Request):
         return {"threads": threads_list}
     except Exception as e:
         print(f"Błąd podczas pobierania listy wątków: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"threads": []}
 
 
 # --- ENDPOINT: HISTORIA CZATU ---
@@ -518,6 +526,27 @@ async def process_chat(request: Request):
                         print(f"[SEMANTIC CACHE SAVED] Zapisano odpowiedź w Redis dla '{normalized_query[:30]}...' (TTL: {REDIS_CACHE_TTL}s)")
                 except Exception as save_err:
                     print(f"[SEMANTIC CACHE SAVE ERROR]: {save_err}")
+
+            # Aktualizacja tytułu wątku w bazie SQLite
+            try:
+                state = await agent_executor.aget_state(config)
+                final_title = state.values.get("chat_title") if state and state.values else None
+                if not final_title or final_title == "Nowa rozmowa":
+                    final_title = user_query[:40].strip()
+                    if len(user_query) > 40:
+                        final_title += "..."
+                
+                conn = sqlite3.connect(DB_PATH)
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE user_threads 
+                    SET title = ?, updated_at = datetime('now')
+                    WHERE thread_id = ?
+                """, (final_title, thread_id))
+                conn.commit()
+                conn.close()
+            except Exception as title_err:
+                print(f"[THREAD TITLE UPDATE ERROR]: {title_err}")
 
             # Rejestracja całkowitego czasu generowania w Prometheus
             total_duration = time.time() - start_time

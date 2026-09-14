@@ -2,12 +2,14 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useSidebar } from '@/composables/useSidebar'
+import { useMetaAi } from '@/composables/useMetaAi'
 import { useAuthStore } from '@/stores/auth'
 import { usersApi } from '@/api/users'
 
 const router = useRouter()
 const route = useRoute()
 const { isExpanded, toggleSidebar } = useSidebar()
+const { refreshHistoryTrigger } = useMetaAi()
 const authStore = useAuthStore()
 
 interface ChatThread {
@@ -68,7 +70,11 @@ const fetchChats = async () => {
   try {
     const uid = currentUserId.value
     const url = uid ? `/api/chat-threads?user_id=${encodeURIComponent(uid)}` : '/api/chat-threads'
-    const response = await fetch(url)
+    const headers: Record<string, string> = {}
+    if (uid) {
+      headers['x-user-id'] = uid
+    }
+    const response = await fetch(url, { headers })
     if (response.ok) {
       const data = await response.json()
       recentChats.value = data.threads || []
@@ -101,12 +107,17 @@ watch(currentUserId, () => {
   fetchChats()
 })
 
+watch(refreshHistoryTrigger, () => {
+  fetchChats()
+})
+
 watch(() => route.params.id, (newId) => {
   if (newId) {
     activeThreadId.value = newId as string
   } else {
     activeThreadId.value = null
   }
+  fetchChats()
 })
 
 defineExpose({ fetchChats })
