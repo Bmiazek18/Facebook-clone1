@@ -3,6 +3,7 @@ import { ref, computed, nextTick, onMounted, watch, provide } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useVirtualizer } from '@tanstack/vue-virtual'
 import { usersApi } from '@/api/users'
+import { chatApi } from '@/api/chat'
 
 import MultiMediaLightbox from './MediaLightbox.vue'
 import MessageBoxHeader from '@/components/chat/messageBox/MessageBoxHeader.vue'
@@ -12,6 +13,7 @@ import ChatStartHeader from '@/components/chat/messageBox/ChatStartHeader.vue'
 import TypingIndicator from './TypingIndicator.vue'
 
 import { useConversationsStore } from '@/stores/conversations'
+import { useChatStore } from '@/stores/chat'
 import { useMessageGrouper } from '@/composables/chat/useMessageGrouper'
 import { useLightbox } from '@/composables/ui/useLightbox'
 import { useFlipAnimation } from '@/composables/ui/useFlipAnimation'
@@ -34,6 +36,7 @@ const props = withDefaults(
   },
 )
 
+const chatStore = useChatStore()
 const convStore = useConversationsStore()
 const config = useRuntimeConfig()
 const { themes, selectedTheme, currentUserUuid } = storeToRefs(convStore)
@@ -487,6 +490,54 @@ const lastMessageId = computed(() => {
   return allMsgs.length > 0 ? allMsgs[allMsgs.length - 1].id : null
 })
 
+const isUnread = computed(() => {
+  if (!props.boxId || props.mode === 'full') return false
+  const cleanId = String(props.boxId).replace(/^user_/, '')
+  const storeUnread = chatStore.isUnread(props.boxId)
+  const convChat = convStore.chats.find(
+    (c) => String(c.id).replace(/^user_/, '') === cleanId,
+  )
+  return storeUnread || Boolean(convChat?.unread)
+})
+
+const handleMarkAsRead = () => {
+  if (!props.boxId) return
+  if (isUnread.value) {
+    chatStore.markBoxAsRead(props.boxId)
+    const cleanId = String(props.boxId).replace(/^user_/, '')
+    const convChat = convStore.chats.find(
+      (c) => String(c.id).replace(/^user_/, '') === cleanId,
+    )
+    if (convChat) {
+      convChat.unread = false
+    }
+
+    const cleanUserId = String(convStore.currentUserUuid).replace(/^user_/, '')
+    const conversationId = convStore.getSymmetricConversationId(props.boxId)
+
+    // Call markInboxAsRead via GraphQL API
+    chatApi.markInboxAsRead(cleanUserId, String(conversationId)).catch(() => {})
+
+    const msgs = messagesList.value
+    if (msgs.length > 0) {
+      const lastMsg = msgs[msgs.length - 1]
+      if (lastMsg) {
+        if (!convStore.lastReadMaps[props.boxId]) {
+          convStore.lastReadMaps[props.boxId] = {}
+        }
+        convStore.lastReadMaps[props.boxId][`user_${cleanUserId}`] = String(lastMsg.id)
+
+        convStore.publishMqtt('chat/messages/user/' + cleanId, {
+          type: 'read',
+          conversationId: String(conversationId),
+          senderId: cleanUserId,
+          lastReadMessageId: String(lastMsg.id),
+        })
+      }
+    }
+  }
+}
+
 defineExpose({ scrollToMessage })
 </script>
 
@@ -497,6 +548,8 @@ defineExpose({ scrollToMessage })
         ? 'relative flex-1 flex flex-col h-full w-full'
         : 'flex items-center w-[328px] box-content relative justify-center ',
     ]"
+    @click="handleMarkAsRead"
+    @focusin="handleMarkAsRead"
   >
     <div
       :class="[
@@ -517,6 +570,8 @@ defineExpose({ scrollToMessage })
         :themes="boxTheme"
         :isHasPinned="isHasPinned"
         :pinnedMessage="lastPinnedMessage"
+        :is-unread="isUnread"
+        @mark-as-read="handleMarkAsRead"
         @back="emit('back-to-list')"
         @show-info="emit('show-info')"
       />

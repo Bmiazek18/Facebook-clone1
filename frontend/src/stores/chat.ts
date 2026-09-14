@@ -8,43 +8,90 @@ export const useChatStore = defineStore(
   () => {
     const activeBoxIds = ref<ChatId[]>([])
     const minimizedBoxCache = ref<ChatId[]>([])
+    const unreadBoxIds = ref<ChatId[]>([])
 
     const getBoxIds = computed(() => activeBoxIds.value)
 
     const isMinimized = computed(() => (id: ChatId) => {
-      return minimizedBoxCache.value.includes(id)
+      const cleanId = String(id).replace(/^user_/, '')
+      return minimizedBoxCache.value.some((b) => String(b).replace(/^user_/, '') === cleanId)
     })
 
-    function addMessageBox(id: ChatId) {
-      if (!activeBoxIds.value.includes(id)) {
+    const isUnread = computed(() => (id: ChatId) => {
+      const cleanId = String(id).replace(/^user_/, '')
+      return unreadBoxIds.value.some((b) => String(b).replace(/^user_/, '') === cleanId)
+    })
+
+    function markBoxAsUnread(id: ChatId) {
+      const cleanId = String(id).replace(/^user_/, '')
+      if (!unreadBoxIds.value.some((b) => String(b).replace(/^user_/, '') === cleanId)) {
+        unreadBoxIds.value.push(id)
+      }
+    }
+
+    function markBoxAsRead(id: ChatId) {
+      const cleanId = String(id).replace(/^user_/, '')
+      unreadBoxIds.value = unreadBoxIds.value.filter(
+        (b) => String(b).replace(/^user_/, '') !== cleanId,
+      )
+    }
+
+    function addMessageBox(id: ChatId, isUnreadFlag = false) {
+      const cleanId = String(id).replace(/^user_/, '')
+      if (!activeBoxIds.value.some((b) => String(b).replace(/^user_/, '') === cleanId)) {
         if (activeBoxIds.value.length >= 5) {
           activeBoxIds.value.shift()
         }
         activeBoxIds.value.push(id)
       }
 
-      const cacheIndex = minimizedBoxCache.value.indexOf(id)
+      const cacheIndex = minimizedBoxCache.value.findIndex(
+        (b) => String(b).replace(/^user_/, '') === cleanId,
+      )
       if (cacheIndex > -1) {
         minimizedBoxCache.value.splice(cacheIndex, 1)
+      }
+
+      if (isUnreadFlag) {
+        markBoxAsUnread(id)
+      } else {
+        markBoxAsRead(id)
       }
     }
 
     function removeMessageBox(id: ChatId) {
-      activeBoxIds.value = activeBoxIds.value.filter((boxId) => boxId !== id)
-      minimizedBoxCache.value = minimizedBoxCache.value.filter((boxId) => boxId !== id)
+      const cleanId = String(id).replace(/^user_/, '')
+      activeBoxIds.value = activeBoxIds.value.filter(
+        (boxId) => String(boxId).replace(/^user_/, '') !== cleanId,
+      )
+      minimizedBoxCache.value = minimizedBoxCache.value.filter(
+        (boxId) => String(boxId).replace(/^user_/, '') !== cleanId,
+      )
+      markBoxAsRead(id)
+    }
+
+    function removeAllBoxes() {
+      activeBoxIds.value = []
+      minimizedBoxCache.value = []
+      unreadBoxIds.value = []
     }
 
     function toggleMinimize(id: ChatId) {
-      const index = activeBoxIds.value.indexOf(id)
+      const cleanId = String(id).replace(/^user_/, '')
+      const index = activeBoxIds.value.findIndex(
+        (b) => String(b).replace(/^user_/, '') === cleanId,
+      )
 
       if (index > -1) {
         activeBoxIds.value.splice(index, 1)
-        if (!minimizedBoxCache.value.includes(id)) {
+        if (!minimizedBoxCache.value.some((b) => String(b).replace(/^user_/, '') === cleanId)) {
           minimizedBoxCache.value.push(id)
         }
       } else {
         activeBoxIds.value.push(id)
-        const cacheIndex = minimizedBoxCache.value.indexOf(id)
+        const cacheIndex = minimizedBoxCache.value.findIndex(
+          (b) => String(b).replace(/^user_/, '') === cleanId,
+        )
         if (cacheIndex > -1) {
           minimizedBoxCache.value.splice(cacheIndex, 1)
         }
@@ -54,10 +101,15 @@ export const useChatStore = defineStore(
     return {
       activeBoxIds,
       minimizedBoxCache,
+      unreadBoxIds,
       getBoxIds,
       isMinimized,
+      isUnread,
+      markBoxAsUnread,
+      markBoxAsRead,
       addMessageBox,
       removeMessageBox,
+      removeAllBoxes,
       toggleMinimize,
     }
   },
@@ -72,7 +124,7 @@ export const useChatStore = defineStore(
         },
       },
       key: 'chat-boxes-state',
-      pick: ['activeBoxIds', 'minimizedBoxCache'],
+      pick: ['activeBoxIds', 'minimizedBoxCache', 'unreadBoxIds'],
     },
   },
 )

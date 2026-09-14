@@ -533,10 +533,12 @@ export function useChatMqttDispatcher(ctx: ChatMqttDispatcherContext) {
           }
 
           const isInChatView =
-            typeof window !== 'undefined' && window.location.pathname.startsWith('/chat')
+            typeof window !== 'undefined' &&
+            (window.location.pathname.startsWith('/chat') ||
+              window.location.pathname.startsWith('/messages'))
           if (!isInChatView) {
             const chatStore = useChatStore()
-            chatStore.addMessageBox(logicalChatId)
+            chatStore.addMessageBox(logicalChatId, true)
 
             try {
               const notify = useNotify()
@@ -609,10 +611,12 @@ export function useChatMqttDispatcher(ctx: ChatMqttDispatcherContext) {
               chatStore.removeMessageBox(logicalChatId)
             } else {
               const isInChatView =
-                typeof window !== 'undefined' && window.location.pathname.startsWith('/chat')
+                typeof window !== 'undefined' &&
+                (window.location.pathname.startsWith('/chat') ||
+                  window.location.pathname.startsWith('/messages'))
               if (!isInChatView) {
                 const chatStore = useChatStore()
-                chatStore.addMessageBox(logicalChatId)
+                chatStore.addMessageBox(logicalChatId, true)
 
                 try {
                   const notify = useNotify()

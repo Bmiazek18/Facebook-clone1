@@ -213,5 +213,8 @@ onUnmounted(() => {
 // ==========================================
 const isPopupRoute = computed(() => route?.meta?.isPopup === true)
 const showMainLayout = computed(() => route?.meta?.showMainLayout !== false)
-const isInChatView = computed(() => (route?.path || '').startsWith('/chat'))
+const isInChatView = computed(() => {
+  const p = route?.path || ''
+  return p.startsWith('/chat') || p.startsWith('/messages')
+})
 </script>

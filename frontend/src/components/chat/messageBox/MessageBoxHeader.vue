@@ -30,12 +30,14 @@ const props = defineProps<{
   isHasPinned?: boolean
   pinnedMessage?: { sender: string; content: string }
   isOnline?: boolean
+  isUnread?: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'back'): void
   (e: 'show-info'): void
   (e: 'click-pinned'): void // <--- Opcjonalny emit do obsługi kliknięcia w przypiętą wiadomość
+  (e: 'mark-as-read'): void
 }>()
 
 const { selectedTheme } = storeToRefs(useChatThemeStore())
@@ -57,6 +59,7 @@ const isCallIncoming = ref(false)
 const isChatSettingModalOpen = ref(false)
 
 const otworzOknoRozmowy = async (typPolaczenia: 'audio' | 'video') => {
+  emit('mark-as-read')
   try {
     await $fetch(`${config.public.apiUrl}/api/chat/calls/start`, {
       method: 'POST',
@@ -106,20 +109,32 @@ const otworzOknoRozmowy = async (typPolaczenia: 'audio' | 'video') => {
 </script>
 
 <template>
-  <div class="flex flex-col rounded-t-xl overflow-hidden border-b border-black/5">
+  <div
+    class="flex flex-col rounded-t-xl overflow-hidden border-b border-black/5 cursor-pointer"
+    @click="emit('mark-as-read')"
+  >
     <!-- GŁÓWNY NAGŁÓWEK -->
     <header
-      class="flex items-center justify-between px-3 py-2.5"
-      :class="{ 'h-[48px]': !hideIcons, 'h-[64px]': hideIcons }"
-      :style="{ backgroundColor: activeTheme.headerColor || 'transparent' }"
+      class="flex items-center justify-between px-3 py-2.5 transition-colors duration-300 select-none"
+      :class="[
+        hideIcons ? 'h-[64px]' : 'h-[48px]',
+        isUnread
+          ? 'bg-[#0866ff] dark:bg-[#0055d4] text-white shadow-sm'
+          : 'bg-theme-bg-secondary'
+      ]"
+      :style="isUnread ? {} : { backgroundColor: activeTheme.headerColor || 'transparent' }"
     >
       <div class="flex items-center gap-2 min-w-0">
         <button
           v-tooltip.top="'Wróć do listy'"
-          @click="emit('back')"
-          class="md:hidden shrink-0 hover:bg-black/5 rounded-full p-1 transition-colors"
+          @click.stop="emit('back')"
+          class="md:hidden shrink-0 rounded-full p-1 transition-colors"
+          :class="isUnread ? 'hover:bg-white/20' : 'hover:bg-black/5'"
         >
-          <ArrowLeftIcon :size="hideIcons ? 32 : 24" :fillColor="activeTheme.iconColor" />
+          <ArrowLeftIcon
+            :size="hideIcons ? 32 : 24"
+            :fillColor="isUnread ? '#ffffff' : activeTheme.iconColor"
+          />
         </button>
 
         <div
@@ -140,23 +155,35 @@ const otworzOknoRozmowy = async (typPolaczenia: 'audio' | 'video') => {
           :chatId="boxId"
         >
           <div
-            @click="isChatSettingModalOpen = true"
-            class="flex items-center min-w-0 hover:bg-black/5 py-1 cursor-pointer rounded-lg"
-            :class="{ 'gap-1.5': !hideIcons, 'gap-2': hideIcons }"
+            @click.stop="isChatSettingModalOpen = true; emit('mark-as-read')"
+            class="flex items-center min-w-0 py-1 cursor-pointer rounded-lg transition-colors"
+            :class="[
+              hideIcons ? 'gap-2' : 'gap-1.5',
+              isUnread ? 'hover:bg-white/10 px-1' : 'hover:bg-black/5'
+            ]"
           >
             <div class="flex flex-col min-w-0 leading-tight">
-              <span
-                class="font-semibold truncate"
-                :class="{ 'text-[15px]': !hideIcons, 'text-[16px]': hideIcons }"
-                :style="{ color: activeTheme.headerTextColor || '#111827' }"
-              >
-                {{ title }}
-              </span>
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span
+                  class="truncate transition-colors"
+                  :class="[
+                    hideIcons ? 'text-[16px]' : 'text-[15px]',
+                    isUnread ? 'font-bold text-white' : 'font-semibold'
+                  ]"
+                  :style="isUnread ? { color: '#ffffff' } : { color: activeTheme.headerTextColor || '#111827' }"
+                >
+                  {{ title }}
+                </span>
+                <span
+                  v-if="isUnread"
+                  class="w-2 h-2 rounded-full bg-white shrink-0 animate-pulse"
+                ></span>
+              </div>
               <span
                 v-if="subtitle"
-                class="truncate"
-                :class="{ 'text-[12px]': !hideIcons, 'text-[13px]': hideIcons }"
-                :style="{ color: activeTheme.headerTextColor, opacity: 0.6 }"
+                class="truncate transition-colors"
+                :class="hideIcons ? 'text-[13px]' : 'text-[12px]'"
+                :style="isUnread ? { color: 'rgba(255, 255, 255, 0.85)' } : { color: activeTheme.headerTextColor, opacity: 0.6 }"
               >
                 {{ subtitle }}
               </span>
@@ -164,11 +191,12 @@ const otworzOknoRozmowy = async (typPolaczenia: 'audio' | 'video') => {
 
             <button
               v-if="!hideIcons"
-              class="shrink-0 p-1 rounded-full hover:bg-black/5 transition-colors flex items-center justify-center"
+              class="shrink-0 p-1 rounded-full transition-colors flex items-center justify-center"
+              :class="isUnread ? 'hover:bg-white/20' : 'hover:bg-black/5'"
             >
               <ChevronDownIcon
                 :size="20"
-                :fillColor="activeTheme.primaryColor || activeTheme.iconColor"
+                :fillColor="isUnread ? '#ffffff' : (activeTheme.primaryColor || activeTheme.iconColor)"
               />
             </button>
           </div>
@@ -181,54 +209,65 @@ const otworzOknoRozmowy = async (typPolaczenia: 'audio' | 'video') => {
       >
         <button
           v-tooltip.top="'Rozpocznij połączenie głosowe'"
-          @click="otworzOknoRozmowy('audio')"
-          class="opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center"
+          @click.stop="otworzOknoRozmowy('audio')"
+          class="transition-opacity flex items-center justify-center rounded-full p-1"
+          :class="isUnread ? 'text-white hover:bg-white/20 opacity-90 hover:opacity-100' : 'opacity-50 hover:opacity-100 hover:bg-black/5'"
         >
           <PhoneIcon
             :size="hideIcons ? 24 : 18"
-            :fillColor="activeTheme.headerTextColor || activeTheme.iconColor"
+            :fillColor="isUnread ? '#ffffff' : (activeTheme.headerTextColor || activeTheme.iconColor)"
           />
         </button>
 
         <button
           v-tooltip.top="'Rozpocznij połączenie wideo'"
-          @click="otworzOknoRozmowy('video')"
-          class="opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center"
+          @click.stop="otworzOknoRozmowy('video')"
+          class="transition-opacity flex items-center justify-center rounded-full p-1"
+          :class="isUnread ? 'text-white hover:bg-white/20 opacity-90 hover:opacity-100' : 'opacity-50 hover:opacity-100 hover:bg-black/5'"
         >
           <VideoOutlineIcon
             :size="hideIcons ? 24 : 18"
-            :fillColor="activeTheme.headerTextColor || activeTheme.iconColor"
+            :fillColor="isUnread ? '#ffffff' : (activeTheme.headerTextColor || activeTheme.iconColor)"
           />
         </button>
 
         <button
           v-tooltip.top="'Informacje o czacie'"
           v-if="hideIcons"
-          @click="emit('show-info')"
-          class="hover:opacity-80 transition-opacity flex items-center justify-center"
+          @click.stop="emit('show-info')"
+          class="hover:opacity-80 transition-opacity flex items-center justify-center rounded-full p-1"
+          :class="isUnread ? 'hover:bg-white/20' : 'hover:bg-black/5'"
         >
           <Information
             :size="hideIcons ? 24 : 20"
-            :fillColor="activeTheme.primaryColor || activeTheme.iconColor"
+            :fillColor="isUnread ? '#ffffff' : (activeTheme.primaryColor || activeTheme.iconColor)"
           />
         </button>
 
         <button
           v-tooltip.top="'Minimalizuj'"
           v-if="!hideIcons"
-          @click="minimize(boxId)"
-          class="hidden md:flex items-center justify-center hover:opacity-80 transition-opacity rounded-full hover:bg-black/5 p-0.5"
+          @click.stop="minimize(boxId)"
+          class="hidden md:flex items-center justify-center transition-all rounded-full p-1"
+          :class="isUnread ? 'text-white hover:bg-white/20' : 'hover:opacity-80 hover:bg-black/5'"
         >
-          <MinusIcon :size="22" :fillColor="activeTheme.primaryColor || activeTheme.iconColor" />
+          <MinusIcon
+            :size="22"
+            :fillColor="isUnread ? '#ffffff' : (activeTheme.primaryColor || activeTheme.iconColor)"
+          />
         </button>
 
         <button
           v-tooltip.top="'Zamknij czat'"
           v-if="!hideIcons"
-          @click="close(boxId)"
-          class="hidden md:flex items-center justify-center hover:opacity-80 transition-opacity rounded-full hover:bg-black/5 p-0.5"
+          @click.stop="close(boxId)"
+          class="hidden md:flex items-center justify-center transition-all rounded-full p-1"
+          :class="isUnread ? 'text-white hover:bg-white/20' : 'hover:opacity-80 hover:bg-black/5'"
         >
-          <CloseIcon :size="22" :fillColor="activeTheme.primaryColor || activeTheme.iconColor" />
+          <CloseIcon
+            :size="22"
+            :fillColor="isUnread ? '#ffffff' : (activeTheme.primaryColor || activeTheme.iconColor)"
+          />
         </button>
       </div>
     </header>
