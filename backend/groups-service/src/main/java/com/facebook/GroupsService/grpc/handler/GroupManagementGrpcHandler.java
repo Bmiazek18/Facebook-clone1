@@ -344,15 +344,8 @@ public class GroupManagementGrpcHandler {
     }
 
     public GroupDto mapToDto(GroupEntity entity) {
-        int postsToday = getNewPostsCount(entity.getId(), 0);
-        int postsMonth = getNewPostsCount(entity.getId(), 30);
-
-        if (postsToday == 0 && entity.getNewPostsToday() != null && entity.getNewPostsToday() > 0) {
-            postsToday = entity.getNewPostsToday();
-        }
-        if (postsMonth == 0 && entity.getNewPostsMonth() != null && entity.getNewPostsMonth() > 0) {
-            postsMonth = entity.getNewPostsMonth();
-        }
+        int postsToday = entity.getNewPostsToday() != null ? entity.getNewPostsToday() : 0;
+        int postsMonth = entity.getNewPostsMonth() != null ? entity.getNewPostsMonth() : 0;
 
         return GroupDto.newBuilder()
                 .setId(entity.getId())
@@ -367,29 +360,6 @@ public class GroupManagementGrpcHandler {
                 .setNewMembersWeek(entity.getNewMembersWeek() != null ? entity.getNewMembersWeek() : "")
                 .setCreatedAge(entity.getCreatedAge() != null ? entity.getCreatedAge() : "")
                 .build();
-    }
-
-    private int getNewPostsCount(String groupId, int daysAgo) {
-        if (entityManager == null) {
-            return 0;
-        }
-        try {
-            long sinceMillis = LocalDate.now()
-                    .minusDays(daysAgo)
-                    .atStartOfDay(ZoneId.systemDefault())
-                    .toInstant()
-                    .toEpochMilli();
-
-            String sql = "SELECT COUNT(*) FROM posts WHERE target_type = 'Group' AND target_id = :groupId AND timestamp >= :sinceMillis";
-            Number count = (Number) entityManager.createNativeQuery(sql)
-                    .setParameter("groupId", groupId)
-                    .setParameter("sinceMillis", sinceMillis)
-                    .getSingleResult();
-            return count != null ? count.intValue() : 0;
-        } catch (Exception e) {
-            log.error("Failed to query posts count for group {}", groupId, e);
-            return 0;
-        }
     }
 
     private void publishGroupIndex(GroupEntity group) {
