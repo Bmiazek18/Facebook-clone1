@@ -895,7 +895,12 @@
       "submit": "Zarejestruj się"
     },
     "facebook": "facebook",
-    "meta2025": "Meta © 2025"
+    "meta2025": "Meta © 2025",
+    "rememberPasswordTitle": "Zapamiętaj hasło",
+    "rememberPasswordDesc": "Kiedy następnym razem zalogujesz się w tej przeglądarce, kliknij zdjęcie profilowe, zamiast wpisywać hasło.",
+    "rememberPasswordOk": "OK",
+    "rememberPasswordNotNow": "Nie teraz",
+    "savedLoginSuccess": "Zapisano dane logowania w tej przeglądarce."
   },
   "createLive": {
     "createLiveVideo": "Utwórz transmisję wideo na żywo",

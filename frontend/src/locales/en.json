@@ -895,7 +895,12 @@
       "submit": "Sign Up"
     },
     "facebook": "facebook",
-    "meta2025": "Meta © 2025"
+    "meta2025": "Meta © 2025",
+    "rememberPasswordTitle": "Remember password",
+    "rememberPasswordDesc": "Next time you log in to this browser, click your profile picture instead of typing your password.",
+    "rememberPasswordOk": "OK",
+    "rememberPasswordNotNow": "Not now",
+    "savedLoginSuccess": "Login info saved for this browser."
   },
   "createLive": {
     "createLiveVideo": "Create live video",

@@ -15,6 +15,7 @@ import StoriesList from '@/components/feed/stories/list/StoriesList.vue'
 import LeftSidebar from '@/components/home/LeftSidebar.vue'
 import RightSidebar from '@/components/home/RightSidebar.vue'
 import ReelsGallery from '@/components/feed/reel/ReelsGallery.vue'
+import RememberPasswordBanner from '@/components/home/RememberPasswordBanner.vue'
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import { useCreatePostStore } from '~/stores/createPost'
 import { useAuthStore } from '@/stores/auth'
@@ -275,6 +276,7 @@ const handleCancelLeave = () => {
 
         <div id="MiddleSection" class="w-full min-w-0 flex justify-center lg:justify-start xl:justify-center">
           <div id="PostsSection" class="w-full lg:max-w-[700px] xl:max-w-[680px] px-2 sm:px-4 lg:px-0">
+            <RememberPasswordBanner />
             <CreateBox />
             <StoriesList :stories="allStories" />
 
