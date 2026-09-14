@@ -381,23 +381,7 @@ const fetchUserActiveStatus = async () => {
     }
 
     try {
-      const res = await fetch(config.public.apiUrl + '/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: `
-            query GetActiveStatuses($userIds: [ID!]!) {
-              getActiveStatuses(userIds: $userIds) {
-                userId
-                active
-              }
-            }
-          `,
-          variables: { userIds: otherMembers.map((m) => m.id) },
-        }),
-      })
-      const json = await res.json()
-      const statuses = json.data?.getActiveStatuses || []
+      const statuses = await usersApi.getActiveStatuses(otherMembers.map((m) => m.id))
       const activeIds = new Set(statuses.filter((s: any) => s.active).map((s: any) => String(s.userId)))
       groupActiveMembers.value = otherMembers
         .filter((m) => activeIds.has(m.id))
@@ -410,25 +394,8 @@ const fetchUserActiveStatus = async () => {
 
   const cleanId = String(props.boxId).replace(/^user_/, '')
   try {
-    const res = await fetch(config.public.apiUrl + '/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        query: `
-          query GetActiveStatuses($userIds: [ID!]!) {
-            getActiveStatuses(userIds: $userIds) {
-              userId
-              active
-              lastActiveText
-            }
-          }
-        `,
-        variables: { userIds: [cleanId] },
-      }),
-    })
-    const json = await res.json()
-    const statuses = json.data?.getActiveStatuses || []
-    if (statuses.length > 0) {
+    const statuses = await usersApi.getActiveStatuses([cleanId])
+    if (statuses && statuses.length > 0) {
       userActiveStatus.value = statuses[0]
     }
   } catch {}

@@ -196,6 +196,7 @@
 import { ref, reactive, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useProfilePhotoPost } from '@/composables/feed/useProfilePhotoPost'
+import { usersApi } from '@/api/users'
 
 import MinusIcon from 'vue-material-design-icons/Minus.vue'
 import PlusIcon from 'vue-material-design-icons/Plus.vue'
@@ -436,19 +437,12 @@ const savePhoto = async () => {
 
         // Fallback: odśwież profil GraphQL i weź aktualny URL
         if (!mediaSrc) {
-          const profileRes = await fetch(config.public.apiUrl + '/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              query: `query($userId: ID!) { getUserById(userId: $userId) { avatar cover avatarId coverId } }`,
-              variables: { userId: String(auth.currentUserId) },
-            }),
-          })
-          const profileJson = await profileRes.json()
-          const u = profileJson.data?.getUserById
-          mediaSrc = props.isCover
-            ? u?.cover || (u?.coverId ? `${config.public.apiUrl}/api/users/avatar/${u.coverId}` : null)
-            : u?.avatar || (u?.avatarId ? `${config.public.apiUrl}/api/users/avatar/${u.avatarId}` : null)
+          try {
+            const u = await usersApi.getUserById(String(auth.currentUserId))
+            mediaSrc = props.isCover
+              ? u?.cover || (u?.coverId ? `${config.public.apiUrl}/api/users/avatar/${u.coverId}` : null)
+              : u?.avatar || (u?.avatarId ? `${config.public.apiUrl}/api/users/avatar/${u.avatarId}` : null)
+          } catch {}
         }
 
         if (mediaSrc) {

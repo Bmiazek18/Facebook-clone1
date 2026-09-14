@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { usersApi } from '@/api/users'
 import type { User } from '@/types/User'
 
 export function useFriendSearch() {
@@ -8,12 +9,12 @@ export function useFriendSearch() {
   const users = ref<User[]>([])
   const isLoading = ref(false)
 
-  function mapUser(u: { id?: string; userId?: string; firstName?: string; lastName?: string; avatarId?: string }): User {
+  function mapUser(u: { id?: string; userId?: string; firstName?: string; lastName?: string; avatar?: string; avatarId?: string }): User {
     const id = String(u.id || u.userId || '')
     const fullName = `${u.firstName || ''} ${u.lastName || ''}`.trim() || `User ${id}`
-    const avatarUrl = u.avatarId
+    const avatarUrl = u.avatar || (u.avatarId
       ? `${config.public.storageUrl}/avatars/${u.avatarId}`
-      : `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=random&color=fff`
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=random&color=fff`)
 
     return {
       id,
@@ -33,33 +34,16 @@ export function useFriendSearch() {
   }
 
   const loadSuggestions = async () => {
+    if (!authStore.currentUserId) return
     isLoading.value = true
     try {
-      const response = await fetch(config.public.apiUrl + '/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: `
-            query GetFriendSuggestions($currentUserId: ID!) {
-              getFriendSuggestions(currentUserId: $currentUserId) {
-                userId
-                user {
-                  id
-                  firstName
-                  lastName
-                  avatarId
-                }
-              }
-            }
-          `,
-          variables: { currentUserId: String(authStore.currentUserId) },
-        }),
-      })
-      const resJson = await response.json()
-      if (resJson.data?.getFriendSuggestions) {
-        users.value = resJson.data.getFriendSuggestions.map((s: any) =>
+      const suggestions = await usersApi.getFriendSuggestions(String(authStore.currentUserId))
+      if (suggestions && suggestions.length > 0) {
+        users.value = suggestions.map((s: any) =>
           mapUser({ ...s.user, id: s.user?.id || s.userId }),
         )
+      } else {
+        users.value = []
       }
     } catch (e) {
       console.warn('Failed to load friend suggestions:', e)
@@ -75,29 +59,11 @@ export function useFriendSearch() {
     }
     isLoading.value = true
     try {
-      const response = await fetch(config.public.apiUrl + '/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: `
-            query SearchUsers($query: String!, $currentUserId: ID) {
-              searchUsers(query: $query, currentUserId: $currentUserId) {
-                id
-                firstName
-                lastName
-                avatarId
-              }
-            }
-          `,
-          variables: {
-            query: queryText,
-            currentUserId: String(authStore.currentUserId),
-          },
-        }),
-      })
-      const resJson = await response.json()
-      if (resJson.data?.searchUsers) {
-        users.value = resJson.data.searchUsers.map((u: any) => mapUser(u))
+      const results = await usersApi.searchUsers(queryText, String(authStore.currentUserId))
+      if (results && results.length > 0) {
+        users.value = results.map((u: any) => mapUser(u))
+      } else {
+        users.value = []
       }
     } catch (e) {
       console.warn('Failed to search users:', e)
@@ -108,3 +74,4 @@ export function useFriendSearch() {
 
   return { users, isLoading, loadSuggestions, searchUsers }
 }
+
