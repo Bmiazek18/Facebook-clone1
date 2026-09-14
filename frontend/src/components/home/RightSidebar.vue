@@ -111,12 +111,12 @@ watch(
 
 <template>
   <div
-    class="max-w-[360px] min-w-[280px] ml-auto fixed top-[56px] overflow-hidden"
+    class="flex flex-col h-[calc(100vh-56px)] py-2 w-full max-w-[360px] min-w-[280px] sticky top-[56px] bg-theme-bg"
   >
-    <HoverScrollbar maxHeight="100%">
+    <HoverScrollbar class="flex-1">
       <div class="pr-2 pl-2 mt-2 pb-4 select-none flex flex-col gap-3">
         <SponsoredAds />
-<FriendRequestsWidget/>
+        <FriendRequestsWidget />
         <!-- Sekcja urodzin (pokazywana tylko, jeśli ktoś ma dzisiaj urodziny) -->
         <div v-if="birthdayText" class="pt-2 pb-4 border-b border-theme-border">
           <div class="text-[17px] font-semibold text-theme-text-secondary">

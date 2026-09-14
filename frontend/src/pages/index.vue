@@ -327,7 +327,7 @@ const handleCancelLeave = () => {
           </div>
         </div>
 
-        <div id="RightSection" class="hidden lg:block sticky top-0 overflow-y-auto no-scrollbar">
+        <div id="RightSection" class="hidden lg:block">
           <RightSidebar :friends="friends" :birthday-users="birthdayUsers" />
         </div>
       </div>
