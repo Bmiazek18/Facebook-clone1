@@ -184,7 +184,8 @@ async function startSearch() {
 
   try {
     const conversationId = getSymmetricConversationId(props.boxId)
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+    const config = useRuntimeConfig()
+    const apiUrl = config.public?.apiUrl || (typeof window !== 'undefined' ? '' : 'http://localhost:8080')
 
     const token = localStorage.getItem('keycloak-token')
     const headers: Record<string, string> = {}

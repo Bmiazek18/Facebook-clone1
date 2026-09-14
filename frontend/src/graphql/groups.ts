@@ -252,6 +252,13 @@ export const GET_GROUP_FEED = gql`
       reactions {
         reactionType
         userIds
+        users {
+          id
+          firstName
+          lastName
+          avatarId
+          avatar
+        }
       }
       context {
         feeling {

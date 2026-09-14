@@ -1,10 +1,44 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import gql from 'graphql-tag'
+import { apiClient } from '@/api/client'
 import type { User } from '@/utils/users'
 import { getUserById } from '@/utils/users'
 import { useConversationsStore } from '@/stores/conversations'
 import { usersCache } from '@/composables/shared/useUserCache'
 import type { Page } from '@/types/Page'
+
+const GET_USER_PAGES_QUERY = gql`
+  query GetUserPages($userId: ID!) {
+    userPages(userId: $userId) {
+      id
+      ownerId
+      name
+      pageName
+      category
+      bio
+      website
+      phoneCode
+      phone
+      email
+      address
+      city
+      zip
+      hours
+      profileImage
+      coverImage
+      pageNotifications
+      promotionalEmails
+      followersCount
+      likesCount
+      rating
+      ratingCount
+      verified
+      createdAt
+      updatedAt
+    }
+  }
+`
 
 const DEFAULT_USER_ID = '1e4332f6-5a7a-3210-b5fb-fb92c7c60cce' // Jan Wiśniewski
 
@@ -228,31 +262,19 @@ export const useAuthStore = defineStore('auth', () => {
   const fetchUserPages = async () => {
     if (!originalUserId.value || originalUserId.value === '0') return
     try {
-      const res = await fetch(`/api/users/${originalUserId.value}/pages`, {
-        headers: {
-          'X-User-Id': originalUserId.value,
-        }
-      })
-      if (res.ok) {
-        const pages: Page[] = await res.json()
-        if (Array.isArray(pages)) {
-          pages.forEach((p) => addPage(p))
-
-          // If acting as page, ensure token is loaded from Redis if missing
-          if (isActingAsPage.value && activePageId.value && !activePageToken.value) {
-            try {
-              const activeRes: any = await fetch(`/api/pages/active-token`, {
-                headers: { 'X-User-Id': originalUserId.value }
-              }).then(r => r.json())
-              if (activeRes?.active && activeRes.accessToken) {
-                activePageToken.value = activeRes.accessToken
-                if (typeof window !== 'undefined') {
-                  localStorage.setItem('auth-page-token', activeRes.accessToken)
-                }
-              }
-            } catch {}
-          }
-        }
+      const data = await apiClient.query<{ userPages: any[] }>(
+        GET_USER_PAGES_QUERY,
+        { userId: originalUserId.value },
+        { fetchPolicy: 'network-only', errorPolicy: 'all' }
+      )
+      if (data?.userPages && Array.isArray(data.userPages)) {
+        data.userPages.forEach((p) => {
+          addPage({
+            ...p,
+            avatar: p.profileImage || p.avatar || '/default-avatar.png',
+            cover: p.coverImage || p.cover || '',
+          })
+        })
       }
     } catch (err) {
       console.warn('Could not fetch user pages from backend:', err)

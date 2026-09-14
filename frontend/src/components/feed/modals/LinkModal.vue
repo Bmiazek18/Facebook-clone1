@@ -110,8 +110,10 @@ const displayData = ref({
 const fetchSiteInfo = async () => {
   loading.value = true
   try {
+    const config = useRuntimeConfig()
+    const apiUrl = config.public?.apiUrl || (typeof window !== 'undefined' ? '' : 'http://localhost:8080')
     const response = await fetch(
-      `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/linkguard/graphql`,
+      `${apiUrl}/linkguard/graphql`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

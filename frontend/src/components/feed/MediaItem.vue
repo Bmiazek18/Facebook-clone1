@@ -189,7 +189,7 @@ const checkIsVideo = async () => {
     if (plusIdx !== -1) {
       fileId = fileId.substring(0, plusIdx)
     }
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+    const baseUrl = config.public?.apiUrl || (typeof window !== 'undefined' ? '' : 'http://localhost:8080')
 
     try {
       const typeResp = await fetch(`${baseUrl}/videos/info/${fileId}`)

@@ -190,9 +190,10 @@ const likesCount = computed(() => {
 })
 
 // Rozwiązanie adresu URL multimediów
+const config = useRuntimeConfig()
 const getMediaUrl = (src: string) => {
   if (!src) return ''
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+  const baseUrl = config.public?.apiUrl || (typeof window !== 'undefined' ? '' : 'http://localhost:8080')
   return src.startsWith('/') ? `${baseUrl}${src}` : src
 }
 

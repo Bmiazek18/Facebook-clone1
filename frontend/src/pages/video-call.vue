@@ -22,6 +22,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useConversationsStore } from '@/stores/conversations'
 
 const route = useRoute()
+const config = useRuntimeConfig()
 
 const connectionType = ref(route.query.type || 'video')
 const rawBoxId = route.query.boxId || 'domyslny-kanal'
@@ -193,7 +194,7 @@ const inviteUserToCall = async (user: ContactItem) => {
       existingChat.name = groupMembers.filter(m => m.id !== currentUserId).map(m => m.name).join(', ') || existingChat.name
     }
 
-    const apiBase = (import.meta.env?.VITE_BFF_API_URL as string) || 'http://localhost:8080'
+    const apiBase = config.public?.apiUrl || (import.meta.env?.VITE_BFF_API_URL as string) || ''
     await $fetch(`${apiBase}/api/chat/calls/invite`, {
       method: 'POST',
       query: {
@@ -249,7 +250,7 @@ const initializeAgoraAndAI = async () => {
 
   const callerId = String(route.query.callerId || '').replace(/^user_/, '')
   const currentUserId = String(authStore.currentUser?.id || authStore.currentUserId || '').replace(/^user_/, '')
-  const apiBase = (import.meta.env?.VITE_BFF_API_URL as string) || 'http://localhost:8080'
+  const apiBase = config.public?.apiUrl || (import.meta.env?.VITE_BFF_API_URL as string) || ''
   
   if (callerId && callerId !== currentUserId) {
     callState.value = 'connected'
@@ -512,7 +513,7 @@ const handleDisconnect = async () => {
 
   const cleanConvId = conversationId.value.toString().replace(/^user_/, '')
   const cleanBoxId = boxId.value.toString().replace(/^user_/, '')
-  const apiBase = (import.meta.env?.VITE_BFF_API_URL as string) || 'http://localhost:8080'
+  const apiBase = config.public?.apiUrl || (import.meta.env?.VITE_BFF_API_URL as string) || ''
 
   try {
     await $fetch(`${apiBase}/api/chat/calls/end`, {

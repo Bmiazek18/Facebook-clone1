@@ -120,7 +120,9 @@ export const useLiveStore = defineStore('live', () => {
       await agoraClient.value.setClientRole('host')
 
       const numericUid = getNumericUid(userId)
-      const tokenResponse = await fetch(`http://localhost:8080/api/chat/calls/token?channelName=${channelName}&uid=${numericUid}`)
+      const config = useRuntimeConfig()
+      const baseUrl = config.public?.apiUrl || (typeof window !== 'undefined' ? '' : 'http://localhost:8080')
+      const tokenResponse = await fetch(`${baseUrl}/api/chat/calls/token?channelName=${channelName}&uid=${numericUid}`)
       const tokenData = await tokenResponse.json()
 
       if (!tokenData.token) {

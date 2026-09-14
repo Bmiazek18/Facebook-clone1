@@ -51,7 +51,8 @@ const finishPage = async () => {
   if (isSubmitting.value) return
   isSubmitting.value = true
   try {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+    const config = useRuntimeConfig()
+    const apiUrl = config.public?.apiUrl || (typeof window !== 'undefined' ? '' : 'http://localhost:8080')
     const ownerId = String(authStore.originalUserId || authStore.currentUserId)
     const payload = {
       ownerId,

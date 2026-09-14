@@ -12,6 +12,7 @@ import { useUserCache } from '@/composables/shared/useUserCache'
 import { useChatCalls } from '@/composables/chat/useChatCalls'
 import { useChatSettings } from '@/composables/chat/useChatSettings'
 import { useChatApi } from '@/composables/chat/useChatApi'
+import { chatApi } from '@/api/chat'
 import { useChatMqttDispatcher } from '@/composables/chat/useChatMqttDispatcher'
 import { useChatPolls } from '@/composables/chat/useChatPolls'
 import { encryptMessage } from '@/utils/e2ee'
@@ -50,22 +51,24 @@ export const useConversationsStore = defineStore('conversations', () => {
     String(authStore.currentUser?.id || authStore.currentUserId || '1'),
   )
 
-  const chatApi = useChatApi(currentUserUuid, chats, messages, lastReadMaps)
+  const config = useRuntimeConfig()
 
-  const fetchInbox = chatApi.fetchInbox
+  const chatApiComposable = useChatApi(currentUserUuid, chats, messages, lastReadMaps)
+
+  const fetchInbox = chatApiComposable.fetchInbox
   const fetchMessages = async (chatId: string) => {
     const settingsPromise = fetchChatSettings(chatId)
-    await chatApi.fetchMessages(chatId, activeChatId)
+    await chatApiComposable.fetchMessages(chatId, activeChatId)
     await settingsPromise
   }
   const fetchMessagesForBox = async (chatId: string) => {
     const settingsPromise = fetchChatSettings(chatId)
-    await chatApi.fetchMessages(chatId, activeChatId, false)
+    await chatApiComposable.fetchMessages(chatId, activeChatId, false)
     await settingsPromise
   }
-  const addMessage = chatApi.addMessage
-  const addReaction = chatApi.addReaction
-  const getSymmetricConversationId = chatApi.getSymmetricConversationId
+  const addMessage = chatApiComposable.addMessage
+  const addReaction = chatApiComposable.addReaction
+  const getSymmetricConversationId = chatApiComposable.getSymmetricConversationId
 
   function publishMqtt(topic: string, payload: any, options?: any) {
     return chatMqtt.publishMqtt(topic, payload, options)
@@ -195,7 +198,7 @@ export const useConversationsStore = defineStore('conversations', () => {
 
     const conversationId = getSymmetricConversationId(chatId)
     const headers = getAuthHeaders()
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+    const apiUrl = config.public?.apiUrl || (typeof window !== 'undefined' ? '' : 'http://localhost:8080')
     const chat = chats.value.find((c) => String(c.id) === String(chatId))
     const participantIds =
       chat && chat.type === 'group' && chat.groupMembers
@@ -233,7 +236,7 @@ export const useConversationsStore = defineStore('conversations', () => {
 
     const conversationId = getSymmetricConversationId(chatId)
     const headers = getAuthHeaders()
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+    const apiUrl = config.public?.apiUrl || (typeof window !== 'undefined' ? '' : 'http://localhost:8080')
     const chat = chats.value.find((c) => String(c.id) === String(chatId))
     const participantIds =
       chat && chat.type === 'group' && chat.groupMembers
@@ -268,7 +271,7 @@ export const useConversationsStore = defineStore('conversations', () => {
 
       const conversationId = getSymmetricConversationId(chatId)
       const headers = getAuthHeaders()
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+      const apiUrl = config.public?.apiUrl || (typeof window !== 'undefined' ? '' : 'http://localhost:8080')
       const participantIds = [String(currentUserUuid.value), String(chatId).replace('user_', '')]
       chatSettings.saveNickname(
         apiUrl,
@@ -297,7 +300,7 @@ export const useConversationsStore = defineStore('conversations', () => {
 
       const conversationId = getSymmetricConversationId(chatId)
       const headers = getAuthHeaders()
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+      const apiUrl = config.public?.apiUrl || (typeof window !== 'undefined' ? '' : 'http://localhost:8080')
       const participantIds = chat.groupMembers.map((m: any) => String(m.id))
       chatSettings.saveGroupNicknames(apiUrl, headers, conversationId, nicknames, participantIds)
     }

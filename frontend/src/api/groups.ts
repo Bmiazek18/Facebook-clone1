@@ -20,7 +20,8 @@ import {
   UPDATE_GROUP_RULES_ORDER,
   DELETE_GROUP_RULE,
   GET_GROUP_ACTIVITY_LOGS,
-  LOG_GROUP_ACTIVITY
+  LOG_GROUP_ACTIVITY,
+  GET_GROUP_FEED
 } from '@/graphql/groups'
 
 export const mapGraphQLGroupToGroup = (g: any): Group => ({
@@ -212,5 +213,14 @@ export const groupsApi = {
       }
     )
     return data?.logGroupActivity || null
+  },
+
+  async getGroupFeed(groupId: string, limit = 20, offset = 0): Promise<any[]> {
+    const data = await apiClient.query<{ getGroupFeed: any[] }>(
+      GET_GROUP_FEED,
+      { groupId: String(groupId), limit, offset },
+      { fetchPolicy: 'network-only' }
+    )
+    return data?.getGroupFeed || []
   }
 }
