@@ -25,6 +25,7 @@ export const GET_FRIEND_SUGGESTIONS = gql`
   query GetFriendSuggestions($currentUserId: ID!) {
     getFriendSuggestions(currentUserId: $currentUserId) {
       userId
+      mutualFriendsCount
       user {
         id
         firstName

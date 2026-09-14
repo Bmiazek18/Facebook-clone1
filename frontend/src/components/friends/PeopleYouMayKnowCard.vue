@@ -4,9 +4,9 @@
   >
     <div class="relative w-full aspect-square shrink-0">
       <img
-        :src="DefaultAvatar"
+        :src="person.imageUrl || DefaultAvatar"
         :alt="person.name"
-        class="w-full h-full cursor-pointer"
+        class="w-full h-full object-cover cursor-pointer"
       />
 
       <button
@@ -25,37 +25,20 @@
         {{ person.name }}
       </h3>
 
-      <!-- Używamy działającego u Ciebie VTooltip -->
       <div class="mb-2">
-        <VTooltip v-if="person.commonFriends > 0" @show="fetchFriends">
-          <!-- Element, na który najeżdżamy -->
-          <div class="flex items-center text-[13px] text-theme-text-secondary cursor-pointer">
-            <div class="flex shrink-0 mr-2">
-              <div
-                class="w-5 h-5 rounded-full bg-theme-border flex items-center justify-center overflow-hidden"
-              >
-                <img :src="person.imageUrl || DefaultAvatar" class="w-full h-full" />
-              </div>
+        <div v-if="person.commonFriends > 0" class="flex items-center text-[13px] text-theme-text-secondary">
+          <div class="flex shrink-0 mr-2">
+            <div
+              class="w-5 h-5 rounded-full bg-theme-border flex items-center justify-center overflow-hidden"
+            >
+              <img :src="person.imageUrl || DefaultAvatar" class="w-full h-full object-cover" />
             </div>
-
-            <span class="truncate hover:underline">{{ $t('friends.personCommonfriendsWspolnychZnajomych') }}</span>
           </div>
 
-          <!-- Zawartość Tooltipa (Popper) -->
-          <template #popper>
-            <div class="flex flex-col   ">
+          <span class="truncate">{{ commonFriendsLabel }}</span>
+        </div>
 
-
-              <LoadingSpinner v-if="loading" :size="25" />
-
-
-
-
-            </div>
-          </template>
-        </VTooltip>
-
-        <!-- Fallback, gdy brak wspólnych znajomych (bez tooltipa) -->
+        <!-- Fallback, gdy brak wspólnych znajomych -->
         <div v-else class="flex items-center text-[13px] text-theme-text-secondary">
           <span>{{ $t('profile.noCommonFriends') }}</span>
         </div>
@@ -86,12 +69,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import CloseIcon from 'vue-material-design-icons/Close.vue'
 import AccountPlusIcon from 'vue-material-design-icons/AccountPlus.vue'
 import type { Person } from '@/types/Person'
-import LoadingSpinner from '../common/LoadingSpinner.vue'
 import DefaultAvatar from '@/assets/images/default_avatar.png'
+
+const { t } = useI18n()
 
 const props = withDefaults(
   defineProps<{
@@ -112,22 +97,11 @@ defineEmits<{
   (e: 'add', id: string | number): void
 }>()
 
-const hasRequested = ref(false)
-const loading = ref(true)
-
-// Funkcja odpalana eventem @show z komponentu VTooltip
-const fetchFriends = () => {
-  // Jeśli już wysłano żądanie, nic nie rób
-  if (hasRequested.value) return
-
-  // Oznaczamy, że żądanie zostało rozpoczęte
-  hasRequested.value = true
-  loading.value = true
-
-  setTimeout(() => {
-    loading.value = false
-  }, 5000)
-}
-
-
+const commonFriendsLabel = computed(() => {
+  const count = props.person.commonFriends || 0
+  if (count === 1) {
+    return t('friends.oneCommonFriend')
+  }
+  return t('friends.personCommonfriendsWspolnychZnajomych', { count })
+})
 </script>

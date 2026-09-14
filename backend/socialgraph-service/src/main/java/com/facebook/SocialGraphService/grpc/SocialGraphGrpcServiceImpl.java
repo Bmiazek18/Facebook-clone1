@@ -116,6 +116,7 @@ public class SocialGraphGrpcServiceImpl extends SocialGraphGrpcServiceGrpc.Socia
                     "OPTIONAL MATCH (other:User {userId: targetId}) " +
                     "OPTIONAL MATCH (me)-[r:FRIEND]-(other) " +
                     "OPTIONAL MATCH (me)-[:FRIEND]-(mutual:User)-[:FRIEND]-(other) " +
+                    "WHERE mutual.userId <> $currentUserId AND mutual.userId <> targetId " +
                     "RETURN targetId, " +
                     "       CASE WHEN r IS NOT NULL THEN true ELSE false END AS isFriend, " +
                     "       count(distinct mutual) AS mutualFriendsCount",
@@ -189,14 +190,16 @@ public class SocialGraphGrpcServiceImpl extends SocialGraphGrpcServiceGrpc.Socia
                 com.facebook.socialgraph.grpc.GetFriendSuggestionsResponse.newBuilder();
 
         try (Session session = neo4jDriver.session()) {
-            session.executeRead(tx -> {
+            session.executeWrite(tx -> {
                 var result = tx.run(
-                        "MATCH (me:User {userId: $currentUserId}) " +
+                        "MERGE (me:User {userId: $currentUserId}) " +
+                        "WITH me " +
                         "MATCH (other:User) " +
                         "WHERE other.userId <> $currentUserId " +
                         "  AND NOT (me)-[:FRIEND]-(other) " +
                         "  AND NOT (me)-[:FRIEND_REQUEST]-(other) " +
                         "OPTIONAL MATCH (me)-[:FRIEND]-(mutual:User)-[:FRIEND]-(other) " +
+                        "WHERE mutual.userId <> $currentUserId AND mutual.userId <> other.userId " +
                         "RETURN other.userId AS userId, count(distinct mutual) AS mutualFriendsCount " +
                         "ORDER BY mutualFriendsCount DESC, other.userId ASC",
                         Values.parameters("currentUserId", currentUserIdStr)
@@ -298,6 +301,7 @@ public class SocialGraphGrpcServiceImpl extends SocialGraphGrpcServiceGrpc.Socia
                 var result = tx.run(
                         "MATCH (other:User)-[:FRIEND_REQUEST]->(me:User {userId: $currentUserId}) " +
                         "OPTIONAL MATCH (me)-[:FRIEND]-(mutual:User)-[:FRIEND]-(other) " +
+                        "WHERE mutual.userId <> $currentUserId AND mutual.userId <> other.userId " +
                         "RETURN other.userId AS userId, count(distinct mutual) AS mutualFriendsCount",
                         Values.parameters("currentUserId", currentUserIdStr)
                 );
