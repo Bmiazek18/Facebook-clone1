@@ -429,8 +429,13 @@ export const useCreatePostStore = defineStore('createPost', () => {
 
         if (isSharing && originalPost) {
           const origInStore = postsStore.getPostById(originalPost.id)
-          if (origInStore && origInStore.stats) {
-            origInStore.stats.shares = (origInStore.stats.shares || 0) + 1
+          if (origInStore) {
+            const currentShares = (origInStore.shareCount || origInStore.stats?.shares || 0) + 1
+            origInStore.shareCount = currentShares
+            if (!origInStore.stats) {
+              origInStore.stats = {}
+            }
+            origInStore.stats.shares = currentShares
           }
         }
 
