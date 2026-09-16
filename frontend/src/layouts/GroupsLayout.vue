@@ -57,12 +57,49 @@ const route = useRoute()
 const groupsStore = useGroupsStore()
 const authStore = useAuthStore()
 
-const membershipRole = ref('')
+const isStandaloneAdminRoute = computed(() => {
+  const paths = [
+    '/admin_assistant',
+    '/member-requests',
+    '/admin_activities',
+    '/edit',
+    '/overview',
+    '/manage_rules',
+    '/community_roles',
+    '/insights',
+    '/requests',
+    '/alerted',
+    '/engagement'
+  ]
+  return paths.some(path => route.path.includes(path))
+})
+
+const getInitialRole = () => {
+  const groupId = route.params.id as string
+  if (isStandaloneAdminRoute.value) return 'ADMIN'
+  if (groupId && authStore.currentUserId) {
+    return groupsStore.getCachedMembership(groupId, String(authStore.currentUserId)) || ''
+  }
+  return ''
+}
+
+const membershipRole = ref(getInitialRole())
+
+const isUserAdmin = computed(() => {
+  if (isStandaloneAdminRoute.value) return true
+  if (membershipRole.value === 'ADMIN') return true
+  const groupId = route.params.id as string
+  if (groupId && authStore.currentUserId) {
+    return groupsStore.getCachedMembership(groupId, String(authStore.currentUserId)) === 'ADMIN'
+  }
+  return false
+})
 
 const fetchMembership = async () => {
   const groupId = route.params.id as string
   if (groupId && authStore.currentUserId) {
-    membershipRole.value = await groupsStore.getGroupMembership(groupId, authStore.currentUserId)
+    const role = await groupsStore.getGroupMembership(groupId, String(authStore.currentUserId))
+    membershipRole.value = role
   } else {
     membershipRole.value = ''
   }
@@ -72,7 +109,13 @@ watch(
   () => route.params.id,
   async (newId) => {
     if (newId) {
-      await groupsStore.loadGroupDetails(newId as string)
+      const cached = groupsStore.getCachedMembership(newId as string, String(authStore.currentUserId))
+      if (cached) {
+        membershipRole.value = cached
+      } else if (isStandaloneAdminRoute.value) {
+        membershipRole.value = 'ADMIN'
+      }
+      groupsStore.loadGroupDetails(newId as string)
       await fetchMembership()
     }
   },
@@ -90,7 +133,7 @@ useHead({
 
 const isPrivateAndNotMember = computed(() => {
   const isPrivate = groupDetails.value?.privacy === 'private'
-  const isMember = membershipRole.value === 'MEMBER' || membershipRole.value === 'ADMIN'
+  const isMember = isUserAdmin.value || membershipRole.value === 'MEMBER'
   return isPrivate && !isMember
 })
 
@@ -107,7 +150,7 @@ const handleJoin = async () => {
 const handleLeave = async () => {
   const groupId = route.params.id as string
   if (groupId) {
-    if (membershipRole.value === 'ADMIN' && (groupDetails.value?.members || 0) > 1) {
+    if (isUserAdmin.value && (groupDetails.value?.members || 0) > 1) {
       const allMembers = await groupsStore.fetchGroupMembers(groupId)
       const adminCount = allMembers.filter(m => m.role.toUpperCase() === 'ADMIN').length
       if (adminCount <= 1) {
@@ -145,16 +188,11 @@ const navLinks = [
 const displayLinks = computed(() => {
   return navLinks
 })
-
-const isStandaloneAdminRoute = computed(() => {
-  const paths = ['/admin_assistant', '/member-requests', '/admin_activities', '/edit']
-  return paths.some(path => route.path.includes(path))
-})
 </script>
 
 <template>
   <div class="flex h-screen overflow-hidden bg-[#f0f2f5] dark:bg-theme-bg text-theme-text">
-    <GroupAdminSidebar v-if="membershipRole === 'ADMIN'" />
+    <GroupAdminSidebar v-if="isUserAdmin" />
     <GroupsSidebar v-else />
 
     <main class="flex-1 h-full mt-[56px] overflow-y-auto relative pb-10">

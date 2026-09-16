@@ -9,6 +9,37 @@ export const useGroupsStore = defineStore('groups', () => {
   const userGroups = ref<Group[]>([])
   const authStore = useAuthStore()
 
+  const memberships = ref<Record<string, string>>({})
+
+  const getCachedMembership = (groupId: string, userId?: string): string => {
+    if (!groupId) return ''
+    if (memberships.value[groupId]) {
+      return memberships.value[groupId]
+    }
+    if (typeof window !== 'undefined') {
+      const effectiveUserId = userId || String(authStore.currentUserId)
+      const stored = localStorage.getItem(`group_role_${groupId}_${effectiveUserId}`)
+      if (stored) {
+        memberships.value[groupId] = stored
+        return stored
+      }
+    }
+    return ''
+  }
+
+  const setCachedMembership = (groupId: string, role: string, userId?: string) => {
+    if (!groupId) return
+    memberships.value[groupId] = role
+    if (typeof window !== 'undefined') {
+      const effectiveUserId = userId || String(authStore.currentUserId)
+      if (role) {
+        localStorage.setItem(`group_role_${groupId}_${effectiveUserId}`, role)
+      } else {
+        localStorage.removeItem(`group_role_${groupId}_${effectiveUserId}`)
+      }
+    }
+  }
+
   const fetchGroups = async () => {
     try {
       groups.value = await groupsApi.getGroups(100, 0)
@@ -64,6 +95,7 @@ export const useGroupsStore = defineStore('groups', () => {
       })
       if (newGroup) {
         groups.value.push(newGroup)
+        setCachedMembership(newGroup.id, 'ADMIN')
         return newGroup
       }
     } catch (e) {
@@ -79,6 +111,9 @@ export const useGroupsStore = defineStore('groups', () => {
         const grp = groups.value.find((g) => g.id === groupId)
         if (grp && grp.privacy !== 'private') {
           grp.members++
+          setCachedMembership(groupId, 'MEMBER')
+        } else {
+          setCachedMembership(groupId, 'PENDING')
         }
         return true
       }
@@ -94,6 +129,7 @@ export const useGroupsStore = defineStore('groups', () => {
       if (success) {
         const grp = groups.value.find((g) => g.id === groupId)
         if (grp) grp.members = Math.max(0, grp.members - 1)
+        setCachedMembership(groupId, '')
         return true
       }
     } catch (e) {
@@ -104,10 +140,12 @@ export const useGroupsStore = defineStore('groups', () => {
 
   const getGroupMembership = async (groupId: string, userId: string) => {
     try {
-      return await groupsApi.getMembership(groupId, userId)
+      const role = await groupsApi.getMembership(groupId, userId)
+      setCachedMembership(groupId, role, userId)
+      return role
     } catch (e) {
       console.error('Failed to get group membership:', e)
-      return ''
+      return getCachedMembership(groupId, userId)
     }
   }
 
