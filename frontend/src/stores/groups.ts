@@ -305,6 +305,9 @@ export const useGroupsStore = defineStore('groups', () => {
   return {
     groups,
     userGroups,
+    memberships,
+    getCachedMembership,
+    setCachedMembership,
     fetchGroups,
     fetchUserGroups,
     getGroupById,
