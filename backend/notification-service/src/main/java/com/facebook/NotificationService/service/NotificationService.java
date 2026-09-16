@@ -222,6 +222,22 @@ public class NotificationService {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
+    public boolean hasActiveSubscription(String userId) {
+        List<WebPushSubscription> subs = webPushSubscriptionRepository.findByUserId(userId);
+        return subs != null && !subs.isEmpty();
+    }
+
+    public void dismissPushPrompt(String userId) {
+        String key = "push_prompt_dismissed:" + userId;
+        redisTemplate.opsForValue().set(key, "true", java.time.Duration.ofDays(365));
+        log.info("Persisted push prompt dismissal on server for user {}", userId);
+    }
+
+    public boolean isPushPromptDismissed(String userId) {
+        String key = "push_prompt_dismissed:" + userId;
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+    }
+
     public Notification markAsRead(Long notificationId) {
         return notificationRepository.findById(notificationId)
                 .map(notification -> {

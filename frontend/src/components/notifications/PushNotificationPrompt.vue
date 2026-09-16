@@ -67,10 +67,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useWebPush } from '@/composables/shared/useWebPush'
 import { useAuthStore } from '@/stores/auth'
+
+import CloseIcon from 'vue-material-design-icons/Close.vue'
+import BellRingOutlineIcon from 'vue-material-design-icons/BellRingOutline.vue'
 import CheckIcon from 'vue-material-design-icons/Check.vue'
 
 const emit = defineEmits<{
@@ -80,7 +83,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const authStore = useAuthStore()
-const { isSupported, getPermission, requestPermissionAndRegister } = useWebPush()
+const { isSupported, getPermission, requestPermissionAndRegister, fetchPushPromptStatus, dismissPushPrompt } = useWebPush()
 
 const isVisible = ref(false)
 const isLoading = ref(false)
@@ -90,7 +93,7 @@ const currentUserId = computed(() => {
   return String(authStore.currentUserId || '').replace(/^user_/, '')
 })
 
-const checkStatus = () => {
+const checkStatus = async () => {
   if (!isSupported()) {
     isVisible.value = false
     return
@@ -102,10 +105,23 @@ const checkStatus = () => {
     return
   }
 
-  const isDismissed = sessionStorage.getItem('dismissed_push_prompt') === 'true'
-  if (isDismissed) {
-    isVisible.value = false
-    return
+  // Sprawdź w localStorage lub na serwerze czy użytkownik odrzucił prompt
+  if (currentUserId.value) {
+    const localDismissed = localStorage.getItem(`push_prompt_dismissed_${currentUserId.value}`) === 'true'
+    if (localDismissed) {
+      isVisible.value = false
+      return
+    }
+
+    try {
+      const status = await fetchPushPromptStatus(currentUserId.value)
+      if (status.dismissed || status.enabled) {
+        isVisible.value = false
+        return
+      }
+    } catch {
+      // Fallback
+    }
   }
 
   isVisible.value = true
@@ -134,11 +150,20 @@ const handleEnablePush = async () => {
   }
 }
 
-const handleDismiss = () => {
-  sessionStorage.setItem('dismissed_push_prompt', 'true')
+const handleDismiss = async () => {
   isVisible.value = false
   emit('dismiss')
+  if (currentUserId.value) {
+    await dismissPushPrompt(currentUserId.value)
+  }
 }
+
+watch(
+  () => currentUserId.value,
+  () => {
+    checkStatus()
+  }
+)
 
 onMounted(() => {
   checkStatus()

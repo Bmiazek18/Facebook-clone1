@@ -72,10 +72,43 @@ export function useWebPush() {
     return false
   }
 
+  const fetchPushPromptStatus = async (userId: string | number): Promise<{ dismissed: boolean; enabled: boolean }> => {
+    if (!userId || !import.meta.client) return { dismissed: false, enabled: false }
+    try {
+      const resp = await $fetch<{ dismissed: boolean; enabled: boolean }>(`${apiUrl}/api/notifications/push-prompt/status`, {
+        headers: { 'X-User-Id': String(userId) },
+        params: { userId: String(userId) }
+      })
+      if (resp?.dismissed) {
+        localStorage.setItem(`push_prompt_dismissed_${userId}`, 'true')
+      }
+      return resp || { dismissed: false, enabled: false }
+    } catch {
+      const local = localStorage.getItem(`push_prompt_dismissed_${userId}`) === 'true'
+      return { dismissed: local, enabled: false }
+    }
+  }
+
+  const dismissPushPrompt = async (userId: string | number): Promise<void> => {
+    if (!userId || !import.meta.client) return
+    localStorage.setItem(`push_prompt_dismissed_${userId}`, 'true')
+    try {
+      await $fetch(`${apiUrl}/api/notifications/push-prompt/dismiss`, {
+        method: 'POST',
+        headers: { 'X-User-Id': String(userId) },
+        params: { userId: String(userId) }
+      })
+    } catch (e) {
+      console.warn('[Web Push] Failed to sync push prompt dismissal to server:', e)
+    }
+  }
+
   return {
     isSupported,
     getPermission,
     registerWebPush,
-    requestPermissionAndRegister
+    requestPermissionAndRegister,
+    fetchPushPromptStatus,
+    dismissPushPrompt
   }
 }

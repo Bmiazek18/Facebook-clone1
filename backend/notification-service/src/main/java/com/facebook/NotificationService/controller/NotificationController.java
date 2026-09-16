@@ -45,6 +45,30 @@ public class NotificationController {
           return ResponseEntity.noContent().build();
       }
 
+      @PostMapping("/push-prompt/dismiss")
+      public ResponseEntity<Void> dismissPushPrompt(
+              @RequestHeader(value = "X-User-Id", required = false) String headerUserId,
+              @RequestParam(value = "userId", required = false) String paramUserId) {
+          String userId = (headerUserId != null) ? headerUserId : paramUserId;
+          if (userId != null && !userId.trim().isEmpty()) {
+              notificationService.dismissPushPrompt(userId);
+          }
+          return ResponseEntity.ok().build();
+      }
+
+      @GetMapping("/push-prompt/status")
+      public ResponseEntity<java.util.Map<String, Boolean>> getPushPromptStatus(
+              @RequestHeader(value = "X-User-Id", required = false) String headerUserId,
+              @RequestParam(value = "userId", required = false) String paramUserId) {
+          String userId = (headerUserId != null) ? headerUserId : paramUserId;
+          boolean dismissed = (userId != null) && notificationService.isPushPromptDismissed(userId);
+          boolean hasActiveSubscription = (userId != null) && notificationService.hasActiveSubscription(userId);
+          return ResponseEntity.ok(java.util.Map.of(
+                  "dismissed", dismissed,
+                  "enabled", hasActiveSubscription
+          ));
+      }
+
       @GetMapping("/health")
       public String health() {
           return "OK";
