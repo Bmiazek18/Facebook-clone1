@@ -305,42 +305,20 @@ import AlertLoginModal from './modals/AlertLoginModal.vue'
 import { useConversationsStore } from '@/stores/conversations'
 import { useChatStore } from '@/stores/chat'
 import { useAuthStore } from '@/stores/auth'
-import { hasVaultOnServer } from '@/utils/e2ee'
+import { useE2eePin } from '@/composables/chat/useE2eePin'
 import type { Chat } from '@/types/Chat'
 
 const authStore = useAuthStore()
 const convStore = useConversationsStore()
 const chatStore = useChatStore()
 
-// PIN E2EE State
-const currentUserId = computed(() => String(authStore.currentUserId || convStore.currentUserUuid || '').replace(/^user_/, ''))
-const hasPin = ref(true)
+// PIN E2EE State (natychmiastowy stan ze współdzielonego composable)
+const { hasPin, setHasPin } = useE2eePin()
 const showPinBanner = ref(true)
 const isPinModalOpen = ref(false)
 
-const checkUserPin = async () => {
-  if (!currentUserId.value || currentUserId.value === '0' || currentUserId.value === '1') {
-    hasPin.value = true
-    return
-  }
-  try {
-    const vaultExists = await hasVaultOnServer(currentUserId.value)
-    hasPin.value = Boolean(vaultExists)
-  } catch (e) {
-    console.error('Failed to check PIN in MessageMenu:', e)
-  }
-}
-
-watch(
-  () => currentUserId.value,
-  () => {
-    checkUserPin()
-  },
-  { immediate: true }
-)
-
 const handlePinSaved = () => {
-  hasPin.value = true
+  setHasPin(true)
   isPinModalOpen.value = false
   showPinBanner.value = false
 }

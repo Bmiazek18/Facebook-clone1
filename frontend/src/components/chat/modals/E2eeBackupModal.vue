@@ -10,6 +10,9 @@ import {
   unlockVaultAndRestoreHistory,
   hasVaultOnServer
 } from '@/utils/e2ee'
+import { useE2eePin } from '@/composables/chat/useE2eePin'
+
+const { setHasPin } = useE2eePin()
 
 const props = withDefaults(
   defineProps<{
@@ -119,6 +122,7 @@ async function handleSetup() {
     const history = await exportLocalChatHistory()
     await setupVaultPin(pin.value, currentUserId.value, history)
 
+    setHasPin(true)
     successMsg.value = 'Bezpieczna pamięć PIN została skonfigurowana!'
     setTimeout(() => {
       closeModal()
@@ -147,6 +151,7 @@ async function handleRestore() {
     void historyJson // Wykorzystaj przywróconą historię
 
     await initIdentityKeys()
+    setHasPin(true)
     successMsg.value = 'Urządzenie zweryfikowane! Odzyskano sejf.'
     setTimeout(() => {
       closeModal()

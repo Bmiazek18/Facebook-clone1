@@ -14,6 +14,7 @@ import TypingIndicator from './TypingIndicator.vue'
 import ChatHistoryPinBanner from '@/components/chat/ChatHistoryPinBanner.vue'
 import E2eeBackupModal from '@/components/chat/modals/E2eeBackupModal.vue'
 import { hasVaultOnServer } from '@/utils/e2ee'
+import { useE2eePin } from '@/composables/chat/useE2eePin'
 
 import { useConversationsStore } from '@/stores/conversations'
 import { useChatStore } from '@/stores/chat'
@@ -59,35 +60,13 @@ const msgIndex = (virtualIndex: number) => showStartHeader.value ? virtualIndex 
 
 const footerRef = ref<any>(null)
 
-// PIN / E2EE Backup status
-const hasPin = ref(true)
+// PIN / E2EE Backup status (natychmiastowy stan z cache)
+const { hasPin, setHasPin } = useE2eePin()
 const showPinBanner = ref(true)
 const isPinModalOpen = ref(false)
 
-const checkUserPin = async () => {
-  const userId = String(currentUserUuid.value || '').replace(/^user_/, '')
-  if (!userId || userId === '0' || userId === '1') {
-    hasPin.value = true
-    return
-  }
-  try {
-    const vaultExists = await hasVaultOnServer(userId)
-    hasPin.value = Boolean(vaultExists)
-  } catch (e) {
-    console.error('Failed checking E2EE PIN backup state:', e)
-  }
-}
-
-watch(
-  () => currentUserUuid.value,
-  () => {
-    checkUserPin()
-  },
-  { immediate: true }
-)
-
 const handlePinSaved = () => {
-  hasPin.value = true
+  setHasPin(true)
   isPinModalOpen.value = false
   showPinBanner.value = false
 }

@@ -47,6 +47,8 @@ async function stretchPin(pin: string, userId: string): Promise<string> {
   return window.btoa(binary)
 }
 
+const vaultCache = new Map<string, boolean>()
+
 export async function setupVaultPin(pin: string, userId: string, chatHistory: string) {
   await ready
   const stretched = await stretchPin(pin, userId)
@@ -87,6 +89,11 @@ export async function setupVaultPin(pin: string, userId: string, chatHistory: st
 
   if (!finishResp.ok) {
     throw new Error('Nie udało się zakończyć rejestracji.')
+  }
+
+  vaultCache.set(userId, true)
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(`e2ee_has_vault_${userId}`, 'true')
   }
 }
 
@@ -134,6 +141,11 @@ export async function unlockVaultAndRestoreHistory(pin: string, userId: string) 
 
   const _: LoginFinishResponse = await finishResp.json()
 
+  vaultCache.set(userId, true)
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(`e2ee_has_vault_${userId}`, 'true')
+  }
+
   if (!encryptedHistory) {
     return ''
   }
@@ -141,7 +153,23 @@ export async function unlockVaultAndRestoreHistory(pin: string, userId: string) 
   return restoreChatHistoryFromVault(exportKey, encryptedHistory)
 }
 
-export async function hasVaultOnServer(userId: string): Promise<boolean> {
+export async function hasVaultOnServer(userId: string, force = false): Promise<boolean> {
+  if (!userId) return false
+
+  if (!force) {
+    if (vaultCache.has(userId)) {
+      return vaultCache.get(userId)!
+    }
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(`e2ee_has_vault_${userId}`)
+      if (stored !== null) {
+        const hasVault = stored === 'true'
+        vaultCache.set(userId, hasVault)
+        return hasVault
+      }
+    }
+  }
+
   try {
     const resp = await fetch('/graphql', {
       method: 'POST',
@@ -162,7 +190,12 @@ export async function hasVaultOnServer(userId: string): Promise<boolean> {
 
     if (!resp.ok) return false
     const json = await resp.json()
-    return !!json.data?.vault?.opaqueRecord
+    const hasVault = !!json.data?.vault?.opaqueRecord
+    vaultCache.set(userId, hasVault)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`e2ee_has_vault_${userId}`, hasVault ? 'true' : 'false')
+    }
+    return hasVault
   } catch {
     return false
   }
