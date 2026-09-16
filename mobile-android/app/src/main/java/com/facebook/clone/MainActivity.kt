@@ -13,9 +13,13 @@ import com.facebook.clone.bubble.FloatingBubbleService
 import com.facebook.clone.theme.FacebookTheme
 import com.facebook.clone.ui.home.HomeScreen
 
+import androidx.activity.compose.BackHandler
+import com.facebook.clone.ui.messenger.MessengerView
+
 class MainActivity : ComponentActivity() {
 
     private var showPermissionDialog by mutableStateOf(false)
+    private var isMessengerOpen by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,16 +32,22 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             FacebookTheme {
-                HomeScreen(
-                    onNavigateToMessenger = {
-                        if (BubblePermissionHelper.hasOverlayPermission(this@MainActivity)) {
-                            FloatingBubbleService.start(this@MainActivity)
-                            moveTaskToBack(true)
-                        } else {
-                            showPermissionDialog = true
-                        }
+                if (isMessengerOpen) {
+                    BackHandler {
+                        isMessengerOpen = false
                     }
-                )
+                    MessengerView(
+                        onNavigateBack = {
+                            isMessengerOpen = false
+                        }
+                    )
+                } else {
+                    HomeScreen(
+                        onNavigateToMessenger = {
+                            isMessengerOpen = true
+                        }
+                    )
+                }
 
                 if (showPermissionDialog) {
                     BubblePermissionDialog(
