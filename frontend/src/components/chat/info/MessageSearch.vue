@@ -131,7 +131,7 @@ import { ref, computed, onUnmounted } from 'vue'
 import { useConversationsStore } from '@/stores/conversations'
 import { decryptMessage } from '@/utils/e2ee'
 import type { ChatMessage } from '@/types/Message'
-import LoadingSpinner from '~/components/common/Loading.vue';
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 
 const emit = defineEmits<{
   (e: 'close'): void
