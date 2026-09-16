@@ -66,28 +66,7 @@
               {{ currentPost.content }}
             </div>
 
-            <!-- Statystyki -->
-            <div class="mx-4 flex items-center justify-between py-2.5 text-theme-text-secondary text-[14px] border-b border-theme-border">
-              <div class="flex items-center cursor-pointer hover:underline">
-                <div class="bg-[#1877F2] rounded-full w-[18px] h-[18px] flex items-center justify-center mr-1.5">
-                  <ThumbUp class="text-white" :size="10" />
-                </div>
-                <span>{{ likesCount }}</span>
-              </div>
-
-              <div class="flex items-center gap-3 text-theme-text-secondary">
-                <div v-if="currentPost.commentCount > 0" class="flex items-center gap-1">
-                  <span>{{ currentPost.commentCount }}</span>
-                  <CommentTextMultiple :size="16" class="text-theme-text-secondary" />
-                </div>
-                <div v-if="currentPost.shareCount > 0" class="flex items-center gap-1">
-                  <span>{{ currentPost.shareCount }}</span>
-                  <Share :size="16" class="text-theme-text-secondary transform scale-x-[-1]" />
-                </div>
-              </div>
-            </div>
-
-            <PostActions :post="currentPost" />
+            <PostFooter :post="currentPost" />
 
             <div class="flex justify-between items-center px-4 pt-2.5 pb-1">
               <CommentFilter />
@@ -135,7 +114,7 @@ import CommentReplyInput from '@/components/feed/comment/CommentReplyInput.vue'
 import NavbarRight from '@/components/navbar/NavbarRight.vue'
 import CommentFilter from '@/components/profile/CommentFilter.vue'
 import FormattedDate from '@/components/common/FormattedDate.vue'
-import PostActions from '~/components/feed/post/PostActions.vue'
+import PostFooter from '~/components/feed/post/PostFooter.vue'
 import EmptyState from '~/components/feed/comment/EmptyState.vue'
 import { useComments } from '@/composables/feed/useComments'
 definePageMeta({ showMainLayout: false, isPopup: true })

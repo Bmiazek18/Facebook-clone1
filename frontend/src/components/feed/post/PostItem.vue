@@ -9,17 +9,15 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import PostModal from './PostModal.vue'
 import ShareAsPostModal from '@/components/feed/modals/ShareAsPostModal.vue'
 import PostHeader from './PostHeader.vue'
-import PostActions from './PostActions.vue'
+import PostFooter from './PostFooter.vue'
 import PostContent from './PostContent.vue'
 import PostLinkPreview from './PostLinkPreview.vue'
-import PostReactions from './PostReactions.vue'
 import PostSharedContent from './PostSharedContent.vue'
 import PostMarketplaceCard from './PostMarketplaceCard.vue'
 import PostMediaDisplay from './PostMediaDisplay.vue'
 import MapPreview from '@/components/common/MapPreview.vue'
 import { useStoryShareStore } from '@/stores/storyShare'
 import { useComments } from '@/composables/feed/useComments'
-import { usePostReactions } from '@/composables/feed/usePostReactions'
 import { useAuthStore } from '@/stores/auth'
 import { useGroupsStore } from '@/stores/groups'
 import { useImpressionTracker } from '@/composables/analytics/useImpressionTracker'
@@ -124,8 +122,6 @@ const storyShareStore = useStoryShareStore()
 const { fetchCommentsForPost } = useComments()
 const allPosts = inject<Ref<Post[]>>('allPosts', ref([]))
 const authStore = useAuthStore()
-
-const { userReaction, likesCount, topReactions } = usePostReactions(toRef(props, 'post'))
 
 const isModalOpen = ref(false)
 const isShareAsPostModalOpen = ref(false)
@@ -449,25 +445,14 @@ onMounted(() => {
     </template>
 
     <template v-if="post">
-      <PostReactions
+      <PostFooter
         v-if="!isShared"
-        :post-id="post.id"
-        :user-reaction="userReaction"
-        :likes-count="likesCount"
-        :top-reactions="topReactions"
-        :reactions="post.reactions"
-        :reaction-user-names="post.reactionUserNames"
-        :comments-count="post.commentCount ?? post.stats?.comments ?? 0"
-        :shares-count="activePoll ? totalPollVotes : (post.shareCount || post.stats?.shares || 0)"
-        :has-poll="!!activePoll"
-        @show-reaction-details="toggleReactionModal"
-        @show-comments="toggleModal"
-      />
-
-      <PostActions
-        v-if="!isShared && props.shouldPostActionVisible"
         :post="post"
+        :should-post-action-visible="props.shouldPostActionVisible"
+        :has-poll="!!activePoll"
         @comment="toggleModal"
+        @show-comments="toggleModal"
+        @show-reaction-details="toggleReactionModal"
         @share-as-post="shareAsMyPost"
         @share-to-story="shareToStory"
         @share-to-message="shareToMessage"

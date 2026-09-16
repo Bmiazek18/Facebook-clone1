@@ -104,37 +104,7 @@
                 {{ currentPost.content }}
               </div>
 
-              <div
-                class="mx-4 flex items-center justify-between py-2.5 text-theme-text-secondary text-[14px] border-b border-theme-border"
-              >
-                <div class="flex items-center cursor-pointer hover:underline select-none">
-                  <div
-                    class="bg-[#1877F2] rounded-full w-[18px] h-[18px] flex items-center justify-center mr-1.5 shadow-sm"
-                  >
-                    <ThumbUp class="text-white" :size="10" />
-                  </div>
-                  <span class="text-theme-text-secondary font-normal">{{ likesCount || 0 }}</span>
-                </div>
-
-                <div class="flex items-center gap-3 text-[14px] text-theme-text-secondary select-none">
-                  <div
-                    v-if="commentsCount > 0"
-                    class="flex items-center gap-1 cursor-pointer hover:underline"
-                  >
-                    <span>{{ commentsCount }}</span>
-                    <CommentTextMultiple :size="16" class="text-theme-text-secondary" />
-                  </div>
-                  <div
-                    v-if="sharesCount > 0"
-                    class="flex items-center gap-1 cursor-pointer hover:underline"
-                  >
-                    <span>{{ sharesCount }}</span>
-                    <Share :size="16" class="text-theme-text-secondary transform scale-x-[-1]" />
-                  </div>
-                </div>
-              </div>
-
-              <PostActions :post="currentPost" @comment="focusCommentInput" />
+              <PostFooter :post="currentPost" @comment="focusCommentInput" />
 
               <div class="flex justify-between items-center px-4 pt-2.5 pb-1">
                 <CommentFilter />
@@ -200,7 +170,7 @@ const config = useRuntimeConfig()
 
 import CommentFilter from '@/components/profile/CommentFilter.vue'
 import FormattedDate from '@/components/common/FormattedDate.vue'
-import PostActions from '~/components/feed/post/PostActions.vue'
+import PostFooter from '~/components/feed/post/PostFooter.vue'
 import EmptyState from '~/components/feed/comment/EmptyState.vue'
 
 import { useAuthStore } from '@/stores/auth'
