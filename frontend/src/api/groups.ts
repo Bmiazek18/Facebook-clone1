@@ -36,7 +36,8 @@ export const mapGraphQLGroupToGroup = (g: any): Group => ({
   newPostsToday: g.newPostsToday || 0,
   newPostsMonth: g.newPostsMonth || 0,
   newMembersWeek: g.newMembersWeek || '',
-  createdAge: g.createdAge || ''
+  createdAge: g.createdAge || '',
+  role: g.role || ''
 })
 
 export const groupsApi = {

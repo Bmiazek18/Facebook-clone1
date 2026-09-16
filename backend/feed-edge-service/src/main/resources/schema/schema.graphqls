@@ -313,6 +313,7 @@ type Group @key(fields: "id") {
     newPostsMonth: Int
     newMembersWeek: String
     createdAge: String
+    role: String
     rules: [GroupRule!]
 }
 

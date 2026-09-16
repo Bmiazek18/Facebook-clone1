@@ -539,6 +539,7 @@ type Group
   newPostsMonth: Int
   newPostsToday: Int
   privacy: String!
+  role: String
   rules: [GroupRule!]
 }
 

@@ -77,8 +77,8 @@ const isStandaloneAdminRoute = computed(() => {
 const getInitialRole = () => {
   const groupId = route.params.id as string
   if (isStandaloneAdminRoute.value) return 'ADMIN'
-  if (groupId && authStore.currentUserId) {
-    return groupsStore.getCachedMembership(groupId, String(authStore.currentUserId)) || ''
+  if (groupId) {
+    return groupsStore.getCachedMembership(groupId) || ''
   }
   return ''
 }
@@ -89,8 +89,8 @@ const isUserAdmin = computed(() => {
   if (isStandaloneAdminRoute.value) return true
   if (membershipRole.value === 'ADMIN') return true
   const groupId = route.params.id as string
-  if (groupId && authStore.currentUserId) {
-    return groupsStore.getCachedMembership(groupId, String(authStore.currentUserId)) === 'ADMIN'
+  if (groupId) {
+    return groupsStore.getCachedMembership(groupId) === 'ADMIN'
   }
   return false
 })
@@ -109,14 +109,18 @@ watch(
   () => route.params.id,
   async (newId) => {
     if (newId) {
-      const cached = groupsStore.getCachedMembership(newId as string, String(authStore.currentUserId))
+      const cached = groupsStore.getCachedMembership(newId as string)
       if (cached) {
         membershipRole.value = cached
       } else if (isStandaloneAdminRoute.value) {
         membershipRole.value = 'ADMIN'
       }
-      groupsStore.loadGroupDetails(newId as string)
-      await fetchMembership()
+      const loadedGroup = await groupsStore.loadGroupDetails(newId as string)
+      if (loadedGroup?.role) {
+        membershipRole.value = String(loadedGroup.role)
+      } else {
+        await fetchMembership()
+      }
     }
   },
   { immediate: true }

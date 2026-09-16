@@ -43,6 +43,7 @@ message GroupDto {
   int32 newPostsMonth = 9;
   string newMembersWeek = 10;
   string createdAge = 11;
+  string role = 12;
 }
 
 message CreateGroupRequest {

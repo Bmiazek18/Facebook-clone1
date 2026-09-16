@@ -13,8 +13,8 @@ import com.facebook.GroupsService.repository.GroupRepository;
 import com.facebook.GroupsService.repository.GroupRuleRepository;
 import com.facebook.groups.grpc.*;
 import io.grpc.stub.StreamObserver;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
@@ -28,15 +28,28 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class GroupManagementGrpcHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GroupManagementGrpcHandler.class);
 
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final GroupRuleRepository groupRuleRepository;
     private final GroupActivityLogRepository groupActivityLogRepository;
     private final RabbitTemplate rabbitTemplate;
+
+    public GroupManagementGrpcHandler(
+            GroupRepository groupRepository,
+            GroupMemberRepository groupMemberRepository,
+            GroupRuleRepository groupRuleRepository,
+            GroupActivityLogRepository groupActivityLogRepository,
+            RabbitTemplate rabbitTemplate) {
+        this.groupRepository = groupRepository;
+        this.groupMemberRepository = groupMemberRepository;
+        this.groupRuleRepository = groupRuleRepository;
+        this.groupActivityLogRepository = groupActivityLogRepository;
+        this.rabbitTemplate = rabbitTemplate;
+    }
 
     @GrpcClient("feed-service")
     private com.facebook.feed.grpc.FeedGrpcServiceGrpc.FeedGrpcServiceBlockingStub feedGrpcStub;
@@ -86,7 +99,7 @@ public class GroupManagementGrpcHandler {
                 log.error("Failed to automatically create post in feed-service for group: {}", saved.getName(), e);
             }
 
-            GroupDto dto = mapToDto(saved);
+            GroupDto dto = mapToDto(saved, "ADMIN");
             responseObserver.onNext(CreateGroupResponse.newBuilder().setGroup(dto).build());
             responseObserver.onCompleted();
         } catch (Exception e) {
@@ -138,12 +151,18 @@ public class GroupManagementGrpcHandler {
         log.info("gRPC: Fetching groups for user {}", request.getUserId());
         try {
             List<GroupMemberEntity> memberships = groupMemberRepository.findAllByUserId(request.getUserId());
-            List<String> groupIds = memberships.stream()
+            Map<String, String> roleMap = memberships.stream()
                     .filter(m -> m.getRole() != GroupRole.PENDING)
-                    .map(GroupMemberEntity::getGroupId)
+                    .collect(Collectors.toMap(
+                            GroupMemberEntity::getGroupId,
+                            m -> m.getRole() != null ? m.getRole().name() : "",
+                            (r1, r2) -> r1
+                    ));
+
+            List<GroupEntity> groups = groupRepository.findAllById(roleMap.keySet());
+            List<GroupDto> dtos = groups.stream()
+                    .map(g -> mapToDto(g, roleMap.getOrDefault(g.getId(), "")))
                     .collect(Collectors.toList());
-            List<GroupEntity> groups = groupRepository.findAllById(groupIds);
-            List<GroupDto> dtos = groups.stream().map(this::mapToDto).collect(Collectors.toList());
             responseObserver.onNext(GetUserGroupsResponse.newBuilder().addAllGroups(dtos).build());
             responseObserver.onCompleted();
         } catch (Exception e) {
@@ -339,6 +358,10 @@ public class GroupManagementGrpcHandler {
     }
 
     public GroupDto mapToDto(GroupEntity entity) {
+        return mapToDto(entity, "");
+    }
+
+    public GroupDto mapToDto(GroupEntity entity, String role) {
         int postsToday = entity.getNewPostsToday() != null ? entity.getNewPostsToday() : 0;
         int postsMonth = entity.getNewPostsMonth() != null ? entity.getNewPostsMonth() : 0;
 
@@ -354,6 +377,7 @@ public class GroupManagementGrpcHandler {
                 .setNewPostsMonth(postsMonth)
                 .setNewMembersWeek(entity.getNewMembersWeek() != null ? entity.getNewMembersWeek() : "")
                 .setCreatedAge(entity.getCreatedAge() != null ? entity.getCreatedAge() : "")
+                .setRole(role != null ? role : "")
                 .build();
     }
 

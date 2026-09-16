@@ -390,6 +390,20 @@ public class GroupsDataFetcher {
         return getGroupRules(group.getId());
     }
 
+    @DgsData(parentType = "Group", field = "role")
+    public String getRoleForGroup(
+            DgsDataFetchingEnvironment dfe,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        Group group = dfe.getSource();
+        if (group.getRole() != null && !group.getRole().isEmpty()) {
+            return group.getRole();
+        }
+        if (xUserId != null && !xUserId.isEmpty()) {
+            return getGroupMembership(group.getId(), xUserId);
+        }
+        return "";
+    }
+
     @DgsMutation
     public com.facebook.FeedEdgeService.codegen.types.GroupRule createGroupRule(
             @InputArgument String groupId, 
@@ -514,6 +528,7 @@ public class GroupsDataFetcher {
         group.setNewPostsMonth(dto.getNewPostsMonth());
         group.setNewMembersWeek(dto.getNewMembersWeek());
         group.setCreatedAge(dto.getCreatedAge());
+        group.setRole(dto.getRole());
         return group;
     }
 }

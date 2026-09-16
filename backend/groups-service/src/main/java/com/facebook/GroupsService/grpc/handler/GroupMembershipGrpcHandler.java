@@ -8,8 +8,8 @@ import com.facebook.GroupsService.repository.GroupMemberRepository;
 import com.facebook.GroupsService.repository.GroupRepository;
 import com.facebook.groups.grpc.*;
 import io.grpc.stub.StreamObserver;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,13 +19,22 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class GroupMembershipGrpcHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GroupMembershipGrpcHandler.class);
 
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final ApplicationEventPublisher eventPublisher;
+
+    public GroupMembershipGrpcHandler(
+            GroupRepository groupRepository,
+            GroupMemberRepository groupMemberRepository,
+            ApplicationEventPublisher eventPublisher) {
+        this.groupRepository = groupRepository;
+        this.groupMemberRepository = groupMemberRepository;
+        this.eventPublisher = eventPublisher;
+    }
 
     @Transactional
     public void joinGroup(JoinGroupRequest request, StreamObserver<JoinGroupResponse> responseObserver) {

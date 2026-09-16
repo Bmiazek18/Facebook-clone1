@@ -11,6 +11,7 @@ export interface Group {
   newPostsMonth?: number
   newMembersWeek?: string
   createdAge?: string
+  role?: GroupRole | string
 }
 
 export enum GroupRole {

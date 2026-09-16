@@ -14,6 +14,7 @@ export const GET_GROUPS = gql`
       newPostsMonth
       newMembersWeek
       createdAge
+      role
     }
   }
 `
@@ -32,6 +33,7 @@ export const GET_USER_GROUPS = gql`
       newPostsMonth
       newMembersWeek
       createdAge
+      role
     }
   }
 `
@@ -50,6 +52,7 @@ export const GET_GROUP_BY_ID = gql`
       newPostsMonth
       newMembersWeek
       createdAge
+      role
     }
   }
 `
@@ -89,6 +92,7 @@ export const CREATE_GROUP = gql`
       newPostsMonth
       newMembersWeek
       createdAge
+      role
     }
   }
 `

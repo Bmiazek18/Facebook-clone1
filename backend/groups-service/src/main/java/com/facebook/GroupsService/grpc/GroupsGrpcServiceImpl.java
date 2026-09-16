@@ -4,17 +4,24 @@ import com.facebook.GroupsService.grpc.handler.GroupManagementGrpcHandler;
 import com.facebook.GroupsService.grpc.handler.GroupMembershipGrpcHandler;
 import com.facebook.groups.grpc.*;
 import io.grpc.stub.StreamObserver;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.devh.boot.grpc.server.service.GrpcService;
 
 @GrpcService
-@RequiredArgsConstructor
-@Slf4j
 public class GroupsGrpcServiceImpl extends GroupsGrpcServiceGrpc.GroupsGrpcServiceImplBase {
+
+    private static final Logger log = LoggerFactory.getLogger(GroupsGrpcServiceImpl.class);
 
     private final GroupManagementGrpcHandler groupManagementGrpcHandler;
     private final GroupMembershipGrpcHandler groupMembershipGrpcHandler;
+
+    public GroupsGrpcServiceImpl(
+            GroupManagementGrpcHandler groupManagementGrpcHandler,
+            GroupMembershipGrpcHandler groupMembershipGrpcHandler) {
+        this.groupManagementGrpcHandler = groupManagementGrpcHandler;
+        this.groupMembershipGrpcHandler = groupMembershipGrpcHandler;
+    }
 
     // --- GROUP MANAGEMENT ---
     @Override
