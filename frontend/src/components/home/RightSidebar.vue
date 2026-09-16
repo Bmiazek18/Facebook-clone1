@@ -150,6 +150,39 @@ watch(
           </div>
 
           <div class="flex flex-col gap-0.5 mt-1">
+            <!-- Meta AI Contact Item -->
+            <div
+              @click="openChatBox('meta_ai')"
+              class="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer transition-colors group relative"
+            >
+              <div class="relative shrink-0 flex items-center justify-center">
+                <div class="w-[38px] h-[38px] rounded-full p-[2px] bg-gradient-to-tr from-[#0866FF] via-[#A855F7] to-[#EC4899] shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <div class="w-full h-full bg-[#18191A] rounded-full flex items-center justify-center text-white">
+                    <span class="text-sm font-bold bg-gradient-to-tr from-[#00c6ff] via-[#0072ff] to-[#fbc2eb] bg-clip-text text-transparent">✦</span>
+                  </div>
+                </div>
+                <div
+                  class="absolute bottom-0 right-0 w-3 h-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full border-2 border-white dark:border-[#18191A] flex items-center justify-center"
+                >
+                  <div class="w-1 h-1 bg-white rounded-full animate-pulse"></div>
+                </div>
+              </div>
+
+              <div class="flex flex-col ml-3 overflow-hidden min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[15px] text-[#050505] dark:text-[#E4E6EB] font-semibold truncate">
+                    Meta AI
+                  </span>
+                  <span class="px-1.5 py-0.2 text-[9px] font-bold uppercase rounded bg-gradient-to-r from-blue-600 to-indigo-600 text-white tracking-wider">
+                    AI
+                  </span>
+                </div>
+                <span class="text-xs text-theme-text-secondary truncate">
+                  Zapytaj o cokolwiek...
+                </span>
+              </div>
+            </div>
+
             <div
               v-for="contact in activeContacts"
               :key="contact.id"

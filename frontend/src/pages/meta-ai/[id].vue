@@ -3,8 +3,10 @@ import { ref, nextTick, onMounted, onUnmounted, computed, watch, defineAsyncComp
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useMetaAi } from '@/composables/useMetaAi'
+import { useMetaAiActions, type ActionProposal } from '@/composables/useMetaAiActions'
 import LLMInput from '@/components/meta-ai/LLMInput.vue'
 import CodeBlock from '@/components/meta-ai/CodeBlock.vue'
+import MetaAiActionCard from '@/components/meta-ai/MetaAiActionCard.vue'
 const PdfPreview = defineAsyncComponent(() => import('@/components/meta-ai/PdfPreview.vue'))
 const CustomLightbox = defineAsyncComponent(() => import('@/components/meta-ai/CustomLightbox.vue'))
 import { marked } from 'marked'
@@ -20,6 +22,7 @@ definePageMeta({
 })
 
 const sanitizeHTML = DOMPurify.sanitize || (DOMPurify as any).default?.sanitize
+const { extractActionProposals, executeAction, rejectAction } = useMetaAiActions()
 
 // --- INTERFEJSY ---
 interface FileAttachment {
@@ -33,6 +36,7 @@ interface Message {
   role: 'user' | 'assistant'
   content: string
   parsedTokens?: any[]
+  proposals?: ActionProposal[]
   images?: string[]
   files?: FileAttachment[]
   isStreaming?: boolean
@@ -311,10 +315,17 @@ const startChat = async (text: string, model: string = 'Flash', images: string[]
       const chunk = decoder.decode(value, { stream: true })
       if (currentMsg) {
         currentMsg.content += chunk
-        currentMsg.parsedTokens = marked.lexer(currentMsg.content)
+        const { cleanContent, proposals } = extractActionProposals(currentMsg.content)
+        currentMsg.parsedTokens = marked.lexer(cleanContent)
+        currentMsg.proposals = proposals
       }
     }
-    if (currentMsg) currentMsg.isStreaming = false
+    if (currentMsg) {
+      currentMsg.isStreaming = false
+      const { cleanContent, proposals } = extractActionProposals(currentMsg.content)
+      currentMsg.parsedTokens = marked.lexer(cleanContent)
+      currentMsg.proposals = proposals
+    }
 
   } catch (e: any) { 
     if (e.name !== 'AbortError') {
@@ -323,6 +334,14 @@ const startChat = async (text: string, model: string = 'Flash', images: string[]
   } finally {
     triggerRefreshHistory()
   }
+}
+
+const handleApproveAction = async (proposal: ActionProposal) => {
+  await executeAction(proposal)
+}
+
+const handleRejectAction = (proposal: ActionProposal) => {
+  rejectAction(proposal)
 }
 </script>
 
@@ -420,6 +439,17 @@ const startChat = async (text: string, model: string = 'Flash', images: string[]
                       <CodeBlock v-if="token.type === 'code'" :code="token.text" :lang="token.lang" />
                       <div v-else v-html="renderSimpleToken(token)" class="inline-render"></div>
                     </template>
+                  </div>
+
+                  <!-- Human In The Loop Action Cards in full-page Meta AI -->
+                  <div v-if="msg.proposals && msg.proposals.length > 0" class="mt-4 max-w-xl">
+                    <MetaAiActionCard
+                      v-for="prop in msg.proposals"
+                      :key="prop.id"
+                      :proposal="prop"
+                      @approve="handleApproveAction"
+                      @reject="handleRejectAction"
+                    />
                   </div>
 
                   <div v-if="!msg.isStreaming" class="flex items-center gap-1 mt-3 text-white opacity-0 group-hover/row:opacity-100 focus-within:opacity-100 transition-opacity duration-200">

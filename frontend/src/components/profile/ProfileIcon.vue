@@ -82,7 +82,15 @@
             class="w-12 h-12 shadow-md rounded-full bg-blue-600 text-white flex items-center justify-center transition duration-300 ease-in-out hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 relative cursor-pointer"
             :aria-label="'Restore Chat ' + boxId"
           >
-            <div class="w-full h-full rounded-full overflow-hidden">
+            <div
+              v-if="String(boxId) === 'meta_ai' || String(boxId) === 'meta-ai'"
+              class="w-full h-full p-[2px] bg-gradient-to-tr from-[#0866FF] via-[#A855F7] to-[#EC4899] rounded-full flex items-center justify-center"
+            >
+              <div class="w-full h-full bg-[#18191A] rounded-full flex items-center justify-center text-white">
+                <span class="text-sm font-bold bg-gradient-to-tr from-[#00c6ff] via-[#0072ff] to-[#fbc2eb] bg-clip-text text-transparent">✦</span>
+              </div>
+            </div>
+            <div v-else class="w-full h-full rounded-full overflow-hidden">
               <img :src="getChatAvatar(boxId)" :alt="$t('chat.avatar2')" class="w-full h-full object-cover" />
             </div>
 
@@ -144,21 +152,25 @@ const getChatAvatar = (boxId: string | number) => {
 }
 
 const getChatName = (boxId: string | number) => {
+  if (String(boxId) === 'meta_ai' || String(boxId) === 'meta-ai') return 'Meta AI'
   const c = getChat(boxId)
   return c?.name || 'Użytkownik'
 }
 
 const getChatLastMessage = (boxId: string | number) => {
+  if (String(boxId) === 'meta_ai' || String(boxId) === 'meta-ai') return 'Asystent AI'
   const c = getChat(boxId)
   return c?.lastMessage || 'Brak wiadomości'
 }
 
 const isChatUnread = (boxId: string | number) => {
+  if (String(boxId) === 'meta_ai' || String(boxId) === 'meta-ai') return false
   const c = getChat(boxId)
   return c?.unread || false
 }
 
 const isChatActive = (boxId: string | number) => {
+  if (String(boxId) === 'meta_ai' || String(boxId) === 'meta-ai') return true
   const c = getChat(boxId)
   return c?.isActive || false
 }

@@ -173,18 +173,32 @@ async def call_model(state: AgentState):
 
     if mode == "Thinking":
         system_content = (
-            "Jesteś zaawansowanym asystentem AI. Przed sformułowaniem finalnej odpowiedzi "
-            "zawsze dokładnie przemyśl i przeanalizuj problem krok po kroku w sekcji <think>...</think>. "
+            "Jesteś zaawansowanym asystentem AI w aplikacji społecznościowej Meta. "
+            "Przed sformułowaniem finalnej odpowiedzi zawsze dokładnie przemyśl i przeanalizuj problem krok po kroku w sekcji <think>...</think>. "
             "Po zamknięciu tagu </think> przedstaw ostateczną, czytelną odpowiedź w języku polskim. "
+            "Potrafisz pomagać użytkownikowi w obsłudze aplikacji. "
+            "Gdy użytkownik chce utworzyć/dodać post na tablicy -> wywołaj `propose_create_post`. "
+            "Gdy użytkownik chce zmienić motyw (ciemny/jasny) -> wywołaj `propose_switch_theme`. "
+            "Gdy użytkownik chce przejść do Marketplace, Grup, Wydarzeń, Znajomych itp. -> wywołaj `propose_navigation`. "
+            "Gdy użytkownik chce otworzyć czat / napisać do kogoś -> wywołaj `propose_open_chat`. "
+            "Gdy użytkownik chce zaplanować wydarzenie -> wywołaj `propose_create_event`. "
+            "Wszystkie akcje w aplikacji wymagają zatwierdzenia przez człowieka (Human-in-the-loop) i wyświetlą interaktywną kartę z pytaniem o potwierdzenie. "
             "Jeśli użytkownik prosi o wykres lub dane, użyj narzędzia `generate_and_save_chart`. "
             "Jeśli użytkownik pyta o wgrane dokumenty lub PDF, użyj narzędzia `search_pdf_knowledge_base`."
         )
     else:
         system_content = (
-            "Jesteś pomocnym asystentem, który odpowiada wyłącznie w języku polskim. "
+            "Jesteś pomocnym asystentem AI w aplikacji społecznościowej Meta, który odpowiada w języku polskim. "
             "Odpowiadaj bezpośrednio, precyzyjnie i zwięźle. "
-            "Jeśli użytkownik prosi o wykres, diagram lub zestawienie danych, użyj narzędzia `generate_and_save_chart`. "
-            "Jeśli użytkownik pyta o wgrane dokumenty lub PDF, użyj narzędzia `search_pdf_knowledge_base`."
+            "Potrafisz obsługiwać aplikację za pomocą dedykowanych narzędzi (zabezpieczonych przez Human-in-the-loop): "
+            "- Publikowanie posta na tablicy: `propose_create_post` "
+            "- Zmiana motywu (ciemny/jasny): `propose_switch_theme` "
+            "- Nawigacja (Marketplace, Grupy, Wydarzenia, Znajomi): `propose_navigation` "
+            "- Otwarcie czatu ze znajomym: `propose_open_chat` "
+            "- Tworzenie wydarzenia: `propose_create_event` "
+            "- Wykresy i diagramy: `generate_and_save_chart` "
+            "- Wyszukiwanie w dokumentach/PDF: `search_pdf_knowledge_base` "
+            "Pamiętaj, że każda akcja w aplikacji wyświetli użytkownikowi interaktywny panel z prośbą o akceptację przed jej wykonaniem."
         )
 
     system_msg = {"role": "system", "content": system_content}

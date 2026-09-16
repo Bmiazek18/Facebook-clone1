@@ -28,12 +28,19 @@
             v-if="!isInChatView && !isPopupRoute"
             class="fixed flex flex-row-reverse items-end bottom-0 right-[80px] gap-2.5 z-40 pointer-events-none"
           >
-            <MessageBox
-              v-for="boxId in chatStore.getBoxIds"
-              :key="boxId"
-              :boxId="boxId"
-              class="pointer-events-auto"
-            />
+            <template v-for="boxId in chatStore.getBoxIds" :key="boxId">
+              <MetaAiMessageBox
+                v-if="String(boxId) === 'meta_ai' || String(boxId) === 'meta-ai'"
+                :boxId="boxId"
+                class="pointer-events-auto"
+                @close="chatStore.removeMessageBox(boxId)"
+              />
+              <MessageBox
+                v-else
+                :boxId="boxId"
+                class="pointer-events-auto"
+              />
+            </template>
 
             <NewChatBox
               v-if="isNewChatBoxOpen"
@@ -72,6 +79,7 @@ import MainNavHeader from '@/components/navbar/MainNavHeader.vue'
 import ProfileIcon from '@/components/profile/ProfileIcon.vue'
 import FingerprintLoader from '@/components/common/FingerprintLoader.vue'
 import MessageBox from '@/components/chat/messageBox/index.vue'
+import MetaAiMessageBox from '@/components/chat/messageBox/MetaAiMessageBox.vue'
 import NewChatBox from '@/components/chat/NewChatBox.vue'
 import IncomingCallModal from '@/components/chat/modals/IncomingCallModal.vue'
 import FacebookSplash from '@/components/common/FacebookSplash.vue'
