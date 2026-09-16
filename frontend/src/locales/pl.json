@@ -69,7 +69,9 @@
     "taGrupaJestPrywatna": "Ta grupa jest prywatna",
     "dolaczDoTejGrupy": "Dołącz do tej grupy, aby zobaczyć jej zawartość, publikować posty i brać udział w dyskusjach.",
     "oczekiwanieNaZatwierdzeniePrzez": "Oczekiwanie na zatwierdzenie przez administratora",
-    "wybierzLokalizacje": "Wybierz lokalizację"
+    "wybierzLokalizacje": "Wybierz lokalizację",
+    "noResults": "Brak wyników",
+    "noResultsDesc": "Nie znaleziono kontaktów pasujących do wyszukiwania."
   },
   "header": {
     "title": "Czaty",
@@ -263,7 +265,21 @@
     "wiadomosciPrzesylaneDoInnych": "Wiadomości przesyłane do innych osób będą oznaczane tym kolorem.",
     "wiadomosciOdZnajomychBeda": "Wiadomości od znajomych będą tak wyglądać.",
     "kliknijPrzyciskWybierzAby": "Kliknij przycisk Wybierz, aby wybrać ten motyw.",
-    "wybierz": "Wybierz"
+    "wybierz": "Wybierz",
+    "preventHistoryLossInline": "Zapobiegnij utracie historii czatów.",
+    "createPin": "Utwórz kod PIN",
+    "preventHistoryLossTitle": "Uniknij utraty historii czatu",
+    "preventHistoryLossDesc": "Aby zabezpieczyć historię wiadomości szyfrowanych metodą end-to-end na wypadek zmiany lub utraty urządzenia, skonfiguruj 6-cyfrowy kod PIN.",
+    "markAsUnread": "Oznacz jako nieprzeczytane",
+    "viewProfile": "Wyświetl profil",
+    "voiceCall": "Połączenie głosowe",
+    "videoCall": "Połączenie wideo",
+    "block": "Zablokuj",
+    "deleteChat": "Usuń czat",
+    "noUnreadMessages": "Brak nieprzeczytanych wiadomości",
+    "noMessages": "Brak wiadomości",
+    "noUnreadMessagesDesc": "Gdy ktoś wyśle nową wiadomość, pojawi się ona w tej sekcji.",
+    "noMessagesDesc": "Rozpocznij nową konwersację ze znajomymi lub grupami."
   },
   "home": {
     "whatsOnYourMind": "O czym myślisz?",
@@ -373,7 +389,12 @@
     "likedByYouAndOneOther": "Ty i 1 inna osoba",
     "writeComment": "Napisz komentarz...",
     "writeSomethingTo": "Napisz coś do użytkownika {name}...",
-    "writeText": "Wpisz tekst"
+    "writeText": "Wpisz tekst",
+    "shareToStory": "Udostępnij w swojej relacji",
+    "moreOptions": "Więcej opcji",
+    "copyLink": "Kopiuj link",
+    "embed": "Osadź",
+    "shareVia": "Udostępnij przez:"
   },
   "poll": {
     "totalVotes": "{count} głosów"
@@ -611,7 +632,9 @@
     "edytujZdjecieWTle": "Edytuj zdjęcie w tle",
     "abyZapewnicBezpieczenstwoFacebooka": "Aby zapewnić bezpieczeństwo Facebooka, wyświetlamy informacje o użytkownikach i ich\n        profilach.",
     "dolaczenieDoFacebookaFormatdate": "Dołączenie do Facebooka: {date}",
-    "zaktualizowanoProfilFormatrelativeorabsolutetimeProfileuser": "Zaktualizowano profil: {date}"
+    "zaktualizowanoProfilFormatrelativeorabsolutetimeProfileuser": "Zaktualizowano profil: {date}",
+    "addLifeEvent": "Dodaj ważne wydarzenie",
+    "mutualFriends": "Wspólni znajomi"
   },
   "createEvent": {
     "liveVideoEvent": "Wydarzenie z transmisją wideo na żywo",
@@ -652,7 +675,13 @@
     "commentNotification": "Ktoś skomentował Twój post",
     "taggedNotification": "Zostałeś oznaczony",
     "acceptFriendRequest": "Zaakceptuj zaproszenie",
-    "denyFriendRequest": "Odrzuć zaproszenie"
+    "denyFriendRequest": "Odrzuć zaproszenie",
+    "pushEnabledTitle": "Powiadomienia włączone!",
+    "pushEnabledDesc": "Będziesz otrzymywać powiadomienia w czasie rzeczywistym.",
+    "pushDisabledTitle": "Powiadomienia push są wyłączone",
+    "pushDisabledDesc": "Włącz powiadomienia, aby być na bieżąco",
+    "enable": "Włącz",
+    "notNow": "Nie teraz"
   },
   "actions": {
     "reply": "Odpowiedz",
@@ -726,7 +755,10 @@
       "reactionLiked": "<strong>{name}</strong> polubił(a) Twój post.",
       "groupPost": "Teraz w grupie <strong>{groupName}</strong>: „{snippet}”",
       "comment": "<strong>{name}</strong> skomentował(a) Twój post: „{snippet}”."
-    }
+    },
+    "noUnread": "Brak nieprzeczytanych powiadomień",
+    "noUnreadDesc": "Wszystkie powiadomienia zostały przeczytane.",
+    "noNotificationsDesc": "Gdy otrzymasz nowe powiadomienie, pojawi się ono tutaj."
   },
   "profile_menu": {
     "myProfile": "Mój profil",
@@ -2051,5 +2083,13 @@
     "odwiedzinyIZaangazowanieProfilu": "Odwiedziny i zaangażowanie profilu",
     "odwiedzinyProfilu": "Odwiedziny profilu",
     "laczneInterakcje": "Łączne interakcje"
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "language": "Język",
+    "privacyCheckup": "Kontrola prywatności",
+    "privacyCenter": "Centrum prywatności",
+    "activityLog": "Dziennik aktywności",
+    "feedPreferences": "Preferencje Aktualności"
   }
 }

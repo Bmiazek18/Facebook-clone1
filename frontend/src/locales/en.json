@@ -69,7 +69,9 @@
     "taGrupaJestPrywatna": "Ta grupa jest prywatna",
     "dolaczDoTejGrupy": "Dołącz do tej Groups aby zobaczyć jej zawartość, publikować Posts i brać udział w dyskusjach.",
     "oczekiwanieNaZatwierdzeniePrzez": "Oczekiwanie na zatwierdzenie przez administratora",
-    "wybierzLokalizacje": "Select lokalizację"
+    "wybierzLokalizacje": "Select lokalizację",
+    "noResults": "No results",
+    "noResultsDesc": "No contacts found matching your search."
   },
   "header": {
     "title": "Messages",
@@ -263,7 +265,21 @@
     "wiadomosciPrzesylaneDoInnych": "Messages przesyłane do innych osób będą oznaczane tym kolorem.",
     "wiadomosciOdZnajomychBeda": "Messages od znajomych będą tak wyglądać.",
     "kliknijPrzyciskWybierzAby": "Kliknij Button Select aby wybrać ten motyw.",
-    "wybierz": "Select"
+    "wybierz": "Select",
+    "preventHistoryLossInline": "Prevent chat history loss.",
+    "createPin": "Create PIN",
+    "preventHistoryLossTitle": "Avoid losing your chat history",
+    "preventHistoryLossDesc": "To protect your end-to-end encrypted chat history in case of device change or loss, set up a 6-digit PIN.",
+    "markAsUnread": "Mark as unread",
+    "viewProfile": "View profile",
+    "voiceCall": "Voice call",
+    "videoCall": "Video call",
+    "block": "Block",
+    "deleteChat": "Delete chat",
+    "noUnreadMessages": "No unread messages",
+    "noMessages": "No messages",
+    "noUnreadMessagesDesc": "When someone sends a new message, it will appear here.",
+    "noMessagesDesc": "Start a new conversation with friends or groups."
   },
   "home": {
     "whatsOnYourMind": "What's on your mind?",
@@ -373,7 +389,12 @@
     "likedByYouAndOneOther": "You and 1 other",
     "writeComment": "Write a comment...",
     "writeSomethingTo": "Write something to {name}...",
-    "writeText": "Enter text"
+    "writeText": "Enter text",
+    "shareToStory": "Share to your story",
+    "moreOptions": "More options",
+    "copyLink": "Copy link",
+    "embed": "Embed",
+    "shareVia": "Share via:"
   },
   "poll": {
     "totalVotes": "1 vote | {count} votes"
@@ -611,7 +632,9 @@
     "edytujZdjecieWTle": "Edit zdjęcie w tle",
     "abyZapewnicBezpieczenstwoFacebooka": "Aby zapewnić bezpieczeństwo Facebooka, wyświetlamy About o użytkownikach i ich profilach.",
     "dolaczenieDoFacebookaFormatdate": "Dołączenie do Facebooka: {date}",
-    "zaktualizowanoProfilFormatrelativeorabsolutetimeProfileuser": "Zaktualizowano profil: {date}"
+    "zaktualizowanoProfilFormatrelativeorabsolutetimeProfileuser": "Zaktualizowano profil: {date}",
+    "addLifeEvent": "Add life event",
+    "mutualFriends": "Mutual friends"
   },
   "createEvent": {
     "liveVideoEvent": "Live video event",
@@ -652,7 +675,13 @@
     "commentNotification": "Someone commented on your post",
     "taggedNotification": "You were tagged",
     "acceptFriendRequest": "Accept friend request",
-    "denyFriendRequest": "Deny friend request"
+    "denyFriendRequest": "Deny friend request",
+    "pushEnabledTitle": "Notifications enabled!",
+    "pushEnabledDesc": "You will receive real-time notifications.",
+    "pushDisabledTitle": "Push notifications are disabled",
+    "pushDisabledDesc": "Enable notifications to stay up to date",
+    "enable": "Enable",
+    "notNow": "Not now"
   },
   "actions": {
     "reply": "Reply",
@@ -726,7 +755,10 @@
       "reactionLiked": "<strong>{name}</strong> liked your post.",
       "groupPost": "New in group <strong>{groupName}</strong>: \"{snippet}\"",
       "comment": "<strong>{name}</strong> commented on your post: \"{snippet}\""
-    }
+    },
+    "noUnread": "No unread notifications",
+    "noUnreadDesc": "All notifications have been read.",
+    "noNotificationsDesc": "When you receive a new notification, it will appear here."
   },
   "profile_menu": {
     "myProfile": "My Profile",
@@ -2051,5 +2083,13 @@
     "odwiedzinyIZaangazowanieProfilu": "Odwiedziny i zaangażowanie profilu",
     "odwiedzinyProfilu": "Odwiedziny profilu",
     "laczneInterakcje": "Łączne interakcje"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "privacyCheckup": "Privacy Checkup",
+    "privacyCenter": "Privacy Center",
+    "activityLog": "Activity log",
+    "feedPreferences": "Feed preferences"
   }
 }
