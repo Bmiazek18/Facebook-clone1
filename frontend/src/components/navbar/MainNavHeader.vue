@@ -340,15 +340,15 @@ const goToProfile = (user: { id: string, name: string, avatar: string }) => {
 
       <!-- Event / Saved -->
       <NuxtLink
-        to="/event"
+        to="/events"
         v-tooltip="'Wydarzenia'"
         class="flex items-center justify-center w-full px-1 h-full border-b-[3px] transition-colors"
-        :class="route.path === '/event' ? 'border-blue-500' : 'border-transparent'"
+        :class="route.path.startsWith('/events') ? 'border-blue-500' : 'border-transparent'"
       >
         <div class="flex items-center justify-center w-full h-[calc(100%-3px)] hover:bg-theme-hover rounded-lg">
           <StarBoxOutlineIcon
             :size="30"
-            :fillColor="route.path === '/event' ? '#1A73E3' : '#64676B'"
+            :fillColor="route.path.startsWith('/events') ? '#1A73E3' : '#64676B'"
           />
         </div>
       </NuxtLink>

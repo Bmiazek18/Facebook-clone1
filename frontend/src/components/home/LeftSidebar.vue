@@ -22,9 +22,9 @@ const showMoreShortcuts = ref(false)
 
 // Główne Menu
 const menuItems = [
-  { icon: Robot, label: 'Meta AI', color: '#2ABBA7', isGradient: true, path: '/' },
+  { icon: Robot, label: 'Meta AI', color: '#2ABBA7', isGradient: true, path: '/meta-ai' },
   { icon: AccountMultiple, label: 'Znajomi', color: '#1B74E4', path: '/friends' },
-  { icon: CalendarStar, label: 'Wydarzenia', color: '#F3425F', path: '/event' },
+  { icon: CalendarStar, label: 'Wydarzenia', color: '#F3425F', path: '/events' },
   { icon: Bookmark, label: 'Zapisane', color: '#A033FF', path: '/' },
   { icon: StorefrontOutline, label: 'Marketplace', color: '#1B74E4', path: '/marketplace' },
   { icon: ClockTimeTwoOutline, label: 'Wspomnienia', color: '#2ABBA7', path: '/' },

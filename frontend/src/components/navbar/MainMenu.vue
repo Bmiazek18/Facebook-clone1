@@ -113,7 +113,7 @@ const fullMenuData = [
         description: 'Organizuj oraz wyszukuj wydarzenia i inne aktywności online i w pobliżu.',
         icon: markRaw(CalendarStarIcon),
         iconColor: 'text-red-500',
-        to: '/event',
+        to: '/events',
       },
       {
         name: 'Znajomi',

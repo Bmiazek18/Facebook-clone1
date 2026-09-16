@@ -129,7 +129,7 @@ const sidebarItems = ref([
   {
     icon: HomeIcon,
     text: 'Strona główna',
-    route: '/event',
+    route: '/events',
   },
   {
     icon: AccountGroupIcon,
