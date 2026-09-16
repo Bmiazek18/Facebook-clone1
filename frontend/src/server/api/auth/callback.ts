@@ -22,7 +22,8 @@ export default defineEventHandler(async (event) => {
 
   try {
     const config = useRuntimeConfig(event)
-    const tokenUrl = `${config.public.keycloakUrl}/realms/facebook-clone/protocol/openid-connect/token`
+    const keycloakBaseUrl = config.keycloakInternalUrl || config.public.keycloakUrl
+    const tokenUrl = `${keycloakBaseUrl}/realms/facebook-clone/protocol/openid-connect/token`
     const body = new URLSearchParams()
     body.append('grant_type', 'authorization_code')
     body.append('code', code)

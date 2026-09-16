@@ -9,6 +9,7 @@ export default defineNuxtConfig({
   ssr: false,
 
   runtimeConfig: {
+    keycloakInternalUrl: process.env.NUXT_KEYCLOAK_INTERNAL_URL || process.env.KEYCLOAK_INTERNAL_URL || process.env.NUXT_KEYCLOAK_SERVER_URL || process.env.KEYCLOAK_SERVER_URL || '',
     public: {
       keycloakUrl: process.env.NUXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8089',
       frontendUrl: process.env.NUXT_PUBLIC_FRONTEND_URL || 'http://localhost:3000',

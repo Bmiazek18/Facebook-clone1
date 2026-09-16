@@ -36,8 +36,9 @@ export default defineEventHandler(async (event) => {
 
   try {
     const config = useRuntimeConfig(event)
+    const keycloakBaseUrl = config.keycloakInternalUrl || config.public.keycloakUrl
     // Call Keycloak's Account REST API to fetch active user sessions
-    const response = await fetch(`${config.public.keycloakUrl}/realms/facebook-clone/account/sessions`, {
+    const response = await fetch(`${keycloakBaseUrl}/realms/facebook-clone/account/sessions`, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Accept': 'application/json'
