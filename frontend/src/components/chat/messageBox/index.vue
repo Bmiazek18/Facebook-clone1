@@ -11,6 +11,9 @@ import MessageBoxFooter from '@/components/chat/messageBox/footer/index.vue'
 import MessageItem from '@/components/chat/messageItem/MessageItem.vue'
 import ChatStartHeader from '@/components/chat/messageBox/ChatStartHeader.vue'
 import TypingIndicator from './TypingIndicator.vue'
+import ChatHistoryPinBanner from '@/components/chat/ChatHistoryPinBanner.vue'
+import E2eeBackupModal from '@/components/chat/modals/E2eeBackupModal.vue'
+import { hasVaultOnServer } from '@/utils/e2ee'
 
 import { useConversationsStore } from '@/stores/conversations'
 import { useChatStore } from '@/stores/chat'
@@ -55,6 +58,39 @@ const showStartHeader = computed(() => messagesList.value.length > 0)
 const msgIndex = (virtualIndex: number) => showStartHeader.value ? virtualIndex - 1 : virtualIndex
 
 const footerRef = ref<any>(null)
+
+// PIN / E2EE Backup status
+const hasPin = ref(true)
+const showPinBanner = ref(true)
+const isPinModalOpen = ref(false)
+
+const checkUserPin = async () => {
+  const userId = String(currentUserUuid.value || '').replace(/^user_/, '')
+  if (!userId || userId === '0' || userId === '1') {
+    hasPin.value = true
+    return
+  }
+  try {
+    const vaultExists = await hasVaultOnServer(userId)
+    hasPin.value = Boolean(vaultExists)
+  } catch (e) {
+    console.error('Failed checking E2EE PIN backup state:', e)
+  }
+}
+
+watch(
+  () => currentUserUuid.value,
+  () => {
+    checkUserPin()
+  },
+  { immediate: true }
+)
+
+const handlePinSaved = () => {
+  hasPin.value = true
+  isPinModalOpen.value = false
+  showPinBanner.value = false
+}
 
 // ==========================================
 // DRAG & DROP COMPOSABLE (GLOBAL + TARGET)
@@ -545,6 +581,18 @@ defineExpose({ scrollToMessage })
 
       <!-- Kontener główny obejmujący listę wiadomości ORAZ stopkę -->
       <div class="relative flex-1 flex flex-col min-h-0">
+        <!-- Banner z przypomnieniem o kodzie PIN do historii E2EE (przyklejony do góry) -->
+        <div
+          v-if="!hasPin && showPinBanner"
+          class="sticky top-0 z-30 w-full px-2.5 pt-1.5 pb-1 bg-theme-bg-secondary/95 backdrop-blur-sm border-b border-theme-border/40 shrink-0"
+        >
+          <ChatHistoryPinBanner
+            variant="card"
+            @create-pin="isPinModalOpen = true"
+            @close="showPinBanner = false"
+          />
+        </div>
+
         <main
           ref="chatContainer"
           @scroll="handleScroll"
@@ -693,6 +741,14 @@ defineExpose({ scrollToMessage })
         v-model="isLightboxOpen"
         :media="filteredMedia"
         :startIndex="currentMediaIndex"
+      />
+
+      <E2eeBackupModal
+        v-if="isPinModalOpen"
+        :force-open="true"
+        initial-mode="setup"
+        @close="isPinModalOpen = false"
+        @pin-saved="handlePinSaved"
       />
     </div>
   </div>

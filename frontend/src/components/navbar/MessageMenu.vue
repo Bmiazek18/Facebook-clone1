@@ -81,9 +81,16 @@
           <DotsHorizontalIcon class="h-5 w-5" />
         </div>
       </div>
-      <E2eeBackup/>
+      <div v-if="!hasPin && showPinBanner" class="px-4 pb-2.5 shrink-0">
+        <ChatHistoryPinBanner
+          variant="compact"
+          @create-pin="isPinModalOpen = true"
+          @close="showPinBanner = false"
+        />
+      </div>
+
       <div class="flex-1 overflow-y-auto min-h-0 overscroll-y-contain">
-        <ul class="px-4 space-y-1">
+        <ul v-if="filteredChats.length > 0" class="px-4 space-y-1">
           <li v-for="chat in filteredChats" :key="chat.id">
             <button
               @click="handleClick(chat.id)"
@@ -165,6 +172,23 @@
             </button>
           </li>
         </ul>
+
+        <!-- Empty State View -->
+        <div v-else class="flex flex-col items-center justify-center text-center p-6 my-auto h-full min-h-[220px]">
+          <div class="w-16 h-16 rounded-full bg-theme-hover flex items-center justify-center text-theme-text-secondary mb-3">
+            <ChatOutlineIcon v-if="activeTab === 'all'" :size="32" />
+            <MessageTextOutlineIcon v-else :size="32" />
+          </div>
+          <h3 class="text-[16px] font-bold text-theme-text mb-1">
+            {{ activeTab === 'unread' ? ($t('chat.noUnreadMessages') || 'Brak nieprzeczytanych wiadomości') : ($t('chat.noMessages') || 'Brak wiadomości') }}
+          </h3>
+          <p class="text-[13px] text-theme-text-secondary max-w-[240px] leading-relaxed">
+            {{ activeTab === 'unread'
+              ? ($t('chat.noUnreadMessagesDesc') || 'Gdy ktoś wyśle nową wiadomość, pojawi się ona w tej sekcji.')
+              : ($t('chat.noMessagesDesc') || 'Rozpocznij nową konwersację ze znajomymi lub grupami.')
+            }}
+          </p>
+        </div>
       </div>
     </template>
 
@@ -190,7 +214,7 @@
 
       <div>
         <h3 class="text-sm font-semibold text-theme-text-secondary mb-2">{{ $t('header.twojeKontakty') }}</h3>
-        <ul>
+        <ul v-if="filteredContacts.length > 0">
           <li
             v-for="contact in filteredContacts"
             :key="contact.id"
@@ -213,6 +237,14 @@
             <span class="text-sm font-medium text-theme-text truncate">{{ contact.name }}</span>
           </li>
         </ul>
+
+        <div v-else class="flex flex-col items-center justify-center text-center py-8">
+          <div class="w-12 h-12 rounded-full bg-theme-hover flex items-center justify-center text-theme-text-secondary mb-2">
+            <MagnifyIcon class="h-6 w-6" />
+          </div>
+          <p class="text-sm font-semibold text-theme-text">{{ $t('common.noResults') || 'Brak wyników' }}</p>
+          <p class="text-xs text-theme-text-secondary mt-0.5">{{ $t('common.noResultsDesc') || 'Nie znaleziono kontaktów pasujących do wyszukiwania.' }}</p>
+        </div>
       </div>
     </div>
 
@@ -226,11 +258,20 @@
     <BaseModal v-if="isAlertModalOpen" no-header @close="isAlertModalOpen = false">
       <AlertLoginModal @close="isAlertModalOpen = false"/>
     </BaseModal>
+
+    <!-- Modal konfiguracji PIN E2EE -->
+    <E2eeBackupModal
+      v-if="isPinModalOpen"
+      :force-open="true"
+      initial-mode="setup"
+      @close="isPinModalOpen = false"
+      @pin-saved="handlePinSaved"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref, computed } from 'vue'
+import { ref, type Ref, computed, watch } from 'vue'
 
 defineProps({
   isEmbedded: {
@@ -248,19 +289,61 @@ import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue'
 import CloseIcon from 'vue-material-design-icons/Close.vue'
 import AccountIcon from 'vue-material-design-icons/Account.vue'
 import HandRightIcon from 'vue-material-design-icons/HandPointingRight.vue'
+import ChatOutlineIcon from 'vue-material-design-icons/ChatOutline.vue'
+import MessageTextOutlineIcon from 'vue-material-design-icons/MessageTextOutline.vue'
 
 // IMPORTY KOMPONENTÓW I MODALI
 import ContexMenu from '@/components/chat/ContextMenu.vue'
 import ChatMuteModal from '@/components/chat/info/modals/ChatMuteModal.vue'
 import SettingsMenu from './SettingsMenu.vue'
-import E2eeBackup from '~/components/chat/E2eeBackup.vue'
+import ChatHistoryPinBanner from '@/components/chat/ChatHistoryPinBanner.vue'
+import E2eeBackupModal from '@/components/chat/modals/E2eeBackupModal.vue'
 import BaseModal from '~/components/common/BaseModal.vue'
 import AlertLoginModal from './modals/AlertLoginModal.vue'
 
-// STORE & TYPES
+// STORE & UTILS
 import { useConversationsStore } from '@/stores/conversations'
 import { useChatStore } from '@/stores/chat'
+import { useAuthStore } from '@/stores/auth'
+import { hasVaultOnServer } from '@/utils/e2ee'
 import type { Chat } from '@/types/Chat'
+
+const authStore = useAuthStore()
+const convStore = useConversationsStore()
+const chatStore = useChatStore()
+
+// PIN E2EE State
+const currentUserId = computed(() => String(authStore.currentUserId || convStore.currentUserUuid || '').replace(/^user_/, ''))
+const hasPin = ref(true)
+const showPinBanner = ref(true)
+const isPinModalOpen = ref(false)
+
+const checkUserPin = async () => {
+  if (!currentUserId.value || currentUserId.value === '0' || currentUserId.value === '1') {
+    hasPin.value = true
+    return
+  }
+  try {
+    const vaultExists = await hasVaultOnServer(currentUserId.value)
+    hasPin.value = Boolean(vaultExists)
+  } catch (e) {
+    console.error('Failed to check PIN in MessageMenu:', e)
+  }
+}
+
+watch(
+  () => currentUserId.value,
+  () => {
+    checkUserPin()
+  },
+  { immediate: true }
+)
+
+const handlePinSaved = () => {
+  hasPin.value = true
+  isPinModalOpen.value = false
+  showPinBanner.value = false
+}
 
 const activeTab: Ref<'all' | 'unread'> = ref('all')
 const activeMuteChatId = ref<string | number | null>(null)
@@ -304,8 +387,6 @@ const handleMuteChat = (chatId: string | number, duration: string) => {
   activeMuteChatId.value = null
 }
 
-const convStore = useConversationsStore()
-const chatStore = useChatStore()
 const chats = computed(() => convStore.chats as Chat[])
 
 const openDropdowns = ref<Record<number, boolean>>({})

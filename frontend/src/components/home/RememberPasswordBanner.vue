@@ -1,64 +1,81 @@
 <template>
   <div
     v-if="isVisible"
-    class="w-full bg-theme-bg-secondary border border-theme-border rounded-lg shadow-sm p-4 mt-4 relative mx-auto max-w-[calc(100%-8px)] sm:max-w-full transition-all duration-200"
+    class="w-full max-w-[500px] bg-theme-bg-secondary border border-theme-border rounded-xl shadow-md p-5 relative mx-auto my-4 transition-all duration-200"
   >
-    <!-- Close Button -->
-    <button
-      @click="handleDismiss"
-      class="absolute top-3 right-3 p-1.5 rounded-full hover:bg-theme-hover text-theme-text-secondary transition-colors"
-      :title="t('common.close') || 'Zamknij'"
-    >
-      <CloseIcon :size="20" />
-    </button>
-
-    <div class="flex items-start gap-3.5 pr-6">
-      <!-- Profile Picture with Key Badge -->
-      <div class="relative shrink-0 mt-0.5">
-        <img
-          :src="userAvatar"
-          :alt="userName"
-          class="w-12 h-12 rounded-full object-cover border border-theme-border"
+    <!-- Top Bar: Facebook Icon, Center Screen & Close Button -->
+    <div class="flex items-start justify-between mb-1">
+      <!-- FB Logo -->
+      <svg class="w-8 h-8 text-[#1877F2] shrink-0" viewBox="0 0 24 24" fill="currentColor">
+        <path
+          d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
         />
-        <div
-          class="absolute -bottom-1 -right-1 w-5 h-5 bg-[#1877F2] rounded-full flex items-center justify-center text-white ring-2 ring-white dark:ring-[#242526]"
-        >
-          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-            <path
-              d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"
-            />
-          </svg>
+      </svg>
+
+      <!-- Center Monitor Illustration -->
+      <div class="flex justify-center -mt-1">
+        <div class="flex flex-col items-center">
+          <!-- Monitor Frame -->
+          <div class="w-24 h-16 bg-[#3a3b3c] rounded-[4px] p-1 shadow-sm flex flex-col justify-between">
+            <!-- Screen Area -->
+            <div class="w-full h-full bg-white dark:bg-[#18191a] rounded-[2px] p-1 flex gap-1 items-center">
+              <!-- Left Profile Box -->
+              <div class="w-6 h-8 border border-gray-200 dark:border-gray-600 rounded flex flex-col items-center justify-end pb-0.5">
+                <div class="w-2.5 h-2.5 rounded-full bg-gray-300 dark:bg-gray-500 mb-0.5"></div>
+                <div class="w-4 h-2 rounded-t-full bg-gray-300 dark:bg-gray-500"></div>
+              </div>
+              <!-- Right Mock Inputs -->
+              <div class="flex-1 flex flex-col gap-1 pr-0.5">
+                <span class="text-[6px] font-bold text-[#1877F2] leading-none">facebook</span>
+                <div class="w-full h-1.5 border border-gray-300 dark:border-gray-600 rounded-[1px]"></div>
+                <div class="w-full h-1.5 bg-[#1877F2] rounded-[1px]"></div>
+                <div class="w-3/4 h-1.5 bg-[#42b72a] rounded-[1px]"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Monitor Stand -->
+          <div class="w-2.5 h-2 bg-[#3a3b3c]"></div>
+          <div class="w-10 h-1 bg-[#3a3b3c] rounded-t-sm"></div>
         </div>
       </div>
 
-      <!-- Text Content -->
-      <div class="flex-1">
-        <h3 class="text-[17px] font-bold text-theme-text leading-tight mb-1">
-          {{ t('auth.rememberPasswordTitle') || 'Zapamiętaj hasło' }}
-        </h3>
-        <p class="text-[14px] text-theme-text-secondary leading-snug mb-3">
-          {{
-            t('auth.rememberPasswordDesc') ||
-            'Kiedy następnym razem zalogujesz się w tej przeglądarce, kliknij zdjęcie profilowe, zamiast wpisywać hasło.'
-          }}
-        </p>
+      <!-- Close Button -->
+      <button
+        @click="handleDismiss"
+        class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors p-1"
+        :title="t('common.close') || 'Zamknij'"
+      >
+        <CloseIcon :size="24" />
+      </button>
+    </div>
 
-        <!-- Actions -->
-        <div class="flex items-center gap-2">
-          <button
-            @click="handleSave"
-            class="bg-[#1877F2] hover:bg-[#166FE5] text-white font-semibold text-[14px] px-5 py-1.5 rounded-md transition-colors"
-          >
-            {{ t('auth.rememberPasswordOk') || 'OK' }}
-          </button>
-          <button
-            @click="handleDismiss"
-            class="bg-theme-bg-tertiary hover:bg-theme-hover text-theme-text font-semibold text-[14px] px-4 py-1.5 rounded-md transition-colors border border-theme-border"
-          >
-            {{ t('auth.rememberPasswordNotNow') || 'Nie teraz' }}
-          </button>
-        </div>
-      </div>
+    <!-- Text Content -->
+    <div class="mt-3 mb-4">
+      <h3 class="text-[17px] font-bold text-theme-text leading-tight mb-1.5">
+        {{ t('auth.rememberPasswordTitle') || 'Zapamiętaj hasło' }}
+      </h3>
+      <p class="text-[14px] text-theme-text-secondary leading-normal">
+        {{
+          t('auth.rememberPasswordDesc') ||
+          'Kiedy następnym razem zalogujesz się w tej przeglądarce, kliknij zdjęcie profilowe, zamiast wpisywać hasło.'
+        }}
+      </p>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-3">
+      <button
+        @click="handleSave"
+        class="flex-1 bg-[#E7F3FF] hover:bg-[#DBEAFA] dark:bg-[#263951] dark:hover:bg-[#2d4361] text-[#1877F2] dark:text-[#4599FF] font-semibold text-[15px] py-2 rounded-md transition-colors"
+      >
+        {{ t('auth.rememberPasswordOk') || 'OK' }}
+      </button>
+      <button
+        @click="handleDismiss"
+        class="flex-1 bg-[#E4E6EB] hover:bg-[#D8DADF] dark:bg-[#3A3B3C] dark:hover:bg-[#4E4F50] text-[#050505] dark:text-[#E4E6EB] font-semibold text-[15px] py-2 rounded-md transition-colors"
+      >
+        {{ t('auth.rememberPasswordNotNow') || 'Nie teraz' }}
+      </button>
     </div>
   </div>
 </template>
