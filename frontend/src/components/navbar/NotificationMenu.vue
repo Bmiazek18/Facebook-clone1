@@ -55,6 +55,9 @@
       </button>
     </div>
 
+    <!-- Push Notification Prompt (na samej górze menu powiadomień) -->
+    <PushNotificationPrompt class="shrink-0" />
+
     <!-- Lista powiadomień -->
     <div class="flex-1 overflow-y-auto px-2 pb-2">
       <!-- Skeleton Loading -->
@@ -243,10 +246,26 @@
             </li>
           </ul>
         </div>
+
+        <!-- Empty State View -->
+        <div v-if="friendRequests.length === 0 && otherNotifications.length === 0" class="flex flex-col items-center justify-center text-center p-6 my-auto min-h-[220px]">
+          <div class="w-16 h-16 rounded-full bg-theme-hover flex items-center justify-center text-theme-text-secondary mb-3">
+            <BellIcon :size="32" />
+          </div>
+          <h3 class="text-[16px] font-bold text-theme-text mb-1">
+            {{ activeTab === 'unread' ? ($t('notifications_page.noUnread') || 'Brak nieprzeczytanych powiadomień') : ($t('notifications_page.noNotifications') || 'Brak powiadomień') }}
+          </h3>
+          <p class="text-[13px] text-theme-text-secondary max-w-[240px] leading-relaxed">
+            {{ activeTab === 'unread'
+              ? ($t('notifications_page.noUnreadDesc') || 'Wszystkie powiadomienia zostały przeczytane.')
+              : ($t('notifications_page.noNotificationsDesc') || 'Gdy otrzymasz nowe powiadomienie, pojawi się ono tutaj.')
+            }}
+          </p>
+        </div>
       </template>
 
       <!-- Przycisk Zobacz więcej -->
-      <div class="pt-2 px-2 mt-1 mb-1">
+      <div v-if="friendRequests.length > 0 || otherNotifications.length > 0" class="pt-2 px-2 mt-1 mb-1">
         <button
           class="w-full py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg text-[15px] font-semibold text-theme-text transition duration-150"
         >
@@ -261,6 +280,7 @@
 import { ref, type Ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useNotificationsStore } from '@/stores/notifications'
+import PushNotificationPrompt from '@/components/notifications/PushNotificationPrompt.vue'
 
 // Ikony powiadomień
 import DotsHorizontalIcon from 'vue-material-design-icons/DotsHorizontal.vue'

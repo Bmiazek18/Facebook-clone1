@@ -2,10 +2,19 @@ export function useWebPush() {
   const config = useRuntimeConfig()
   const apiUrl = config.public.apiUrl
 
-  const registerWebPush = async (userId: string | number) => {
-    if (!userId || !import.meta.client) return
+  const isSupported = () => {
+    return import.meta.client && typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator
+  }
 
-    if (typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator) {
+  const getPermission = (): NotificationPermission | 'unsupported' => {
+    if (!isSupported()) return 'unsupported'
+    return Notification.permission
+  }
+
+  const registerWebPush = async (userId: string | number): Promise<boolean> => {
+    if (!userId || !import.meta.client) return false
+
+    if (isSupported()) {
       try {
         if (Notification.permission === 'granted') {
           const registration = await navigator.serviceWorker.ready
@@ -31,33 +40,41 @@ export function useWebPush() {
             body: payload
           })
           console.log('[Web Push] Web Push subscription successfully registered on backend.')
+          return true
         }
       } catch (err) {
         console.warn('[Web Push] Failed to register desktop notifications:', err)
+        return false
       }
     }
+    return false
   }
 
-  const requestPermissionAndRegister = async (userId: string | number) => {
-    if (!userId || !import.meta.client) return
+  const requestPermissionAndRegister = async (userId: string | number): Promise<boolean> => {
+    if (!userId || !import.meta.client) return false
 
-    if (typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator) {
+    if (isSupported()) {
       try {
-        if (Notification.permission === 'default') {
-          const permission = await Notification.requestPermission()
-          if (permission === 'granted') {
-            await registerWebPush(userId)
-          }
-        } else if (Notification.permission === 'granted') {
-          await registerWebPush(userId)
+        let perm = Notification.permission
+        if (perm === 'default') {
+          perm = await Notification.requestPermission()
         }
+        if (perm === 'granted') {
+          await registerWebPush(userId)
+          return true
+        }
+        return false
       } catch (err) {
         console.warn('[Web Push] Failed to request notification permission:', err)
+        return false
       }
     }
+    return false
   }
 
   return {
+    isSupported,
+    getPermission,
     registerWebPush,
     requestPermissionAndRegister
   }
