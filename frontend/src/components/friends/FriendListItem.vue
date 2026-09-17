@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
 import { Dropdown as VDropdown } from 'floating-vue'
 import 'floating-vue/dist/style.css'
 import ProfilePopper from '@/components/profile/ProfilePopper.vue'
+import BaseModal from '@/components/common/BaseModal.vue'
+import { useFriendListsStore } from '@/stores/friendLists'
 
-defineProps<{
+const props = defineProps<{
   friend: {
     id?: string | number
     name: string
@@ -20,6 +23,14 @@ defineProps<{
     highSchool?: string
   }
 }>()
+
+const friendListsStore = useFriendListsStore()
+const showListModal = ref(false)
+
+const openListModal = () => {
+  friendListsStore.loadLists()
+  showListModal.value = true
+}
 </script>
 
 <template>
@@ -91,7 +102,7 @@ defineProps<{
 
               <!-- Opcja: Edytuj listę znajomych -->
               <button
-                @click="hide()"
+                @click="hide(); openListModal()"
                 class="w-full flex items-center gap-3 px-3 py-2.5 text-left text-[15px] font-semibold text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
               >
                 <svg
@@ -161,6 +172,47 @@ defineProps<{
         >{{ $t('feed.dodajZnajomego') }}</button>
       </div>
     </div>
+
+    <!-- MODAL EDYCJI PRZYNALEŻNOŚCI DO LIST ZNAJOMYCH -->
+    <BaseModal
+      v-if="showListModal && friend.id"
+      :title="`Listy znajomego: ${friend.name}`"
+      @close="showListModal = false"
+    >
+      <div class="p-6 max-w-md mx-auto">
+        <p class="text-[13px] text-theme-text-secondary mb-4">
+          Wybierz listy, do których ma należeć <strong>{{ friend.name }}</strong>:
+        </p>
+
+        <div class="space-y-2 mb-6">
+          <div
+            v-for="list in friendListsStore.lists"
+            :key="list.id"
+            @click="friendListsStore.toggleMemberInList(list.id, friend.id!)"
+            class="flex items-center justify-between p-3 rounded-xl border border-theme-border hover:bg-theme-bg-tertiary cursor-pointer transition-colors"
+          >
+            <div>
+              <span class="font-bold text-[15px] text-theme-text block">{{ list.name }}</span>
+              <span class="text-[12px] text-theme-text-secondary block">{{ list.description || 'Lista niestandardowa' }}</span>
+            </div>
+            <input
+              type="checkbox"
+              :checked="friendListsStore.isMemberOf(list.id, friend.id!)"
+              class="w-5 h-5 rounded text-[#1877f2] focus:ring-0 cursor-pointer pointer-events-none"
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button
+            @click="showListModal = false"
+            class="bg-[#1877f2] hover:bg-[#166fe5] text-white px-5 py-2 rounded-xl font-bold text-[15px] shadow-sm cursor-pointer"
+          >
+            Zapisz
+          </button>
+        </div>
+      </div>
+    </BaseModal>
   </div>
 </template>
 

@@ -113,6 +113,7 @@ import GiftIcon from 'vue-material-design-icons/Gift.vue'
 import SchoolIcon from 'vue-material-design-icons/School.vue'
 import HomeCityIcon from 'vue-material-design-icons/HomeCity.vue'
 import AccountEyeIcon from 'vue-material-design-icons/AccountEye.vue'
+import FormatListBulletedIcon from 'vue-material-design-icons/FormatListBulleted.vue'
 import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue'
 import BellOutlineIcon from 'vue-material-design-icons/BellOutline.vue'
 
@@ -126,6 +127,7 @@ const menuItems = [
   { label: 'friends.home', icon: AccountGroupIcon, path: '/friends' },
   { label: 'friends.suggestions', icon: AccountMultiplePlusIcon, path: '/friends/suggestions' },
   { label: 'friends.allFriends', icon: AccountCheckIcon, path: '/friends/all' },
+  { label: 'friends.customLists', icon: FormatListBulletedIcon, path: '/friends/friendlist' },
   { label: 'friends.niedawnoDodani', icon: ClockOutlineIcon, path: '/friends/recent' },
   { label: 'friends.birthdays', icon: GiftIcon, path: '/friends/birthdays' },
   { label: 'friends.highSchool', icon: SchoolIcon, path: '/friends/high-school' },
