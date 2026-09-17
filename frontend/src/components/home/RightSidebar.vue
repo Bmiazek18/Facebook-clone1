@@ -23,7 +23,24 @@ const props = defineProps<{
 }>()
 
 const birthdayText = ref('')
-const activeContacts = ref<any[]>([])
+const statusMap = ref<Map<string, boolean>>(new Map())
+
+const activeContacts = computed(() => {
+  const list = props.friends || []
+  return list.map((u: any) => {
+    const idStr = String(u.id)
+    const isActive = statusMap.value.get(idStr) ?? false
+    const avatarUrl = u.avatar || '/default-avatar.png'
+    const name = `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.name || 'Użytkownik'
+
+    return {
+      id: isNaN(Number(u.id)) ? String(u.id) : Number(u.id),
+      name,
+      avatarUrl,
+      status: isActive,
+    }
+  })
+})
 
 const updateBirthdayText = () => {
   const users = props.birthdayUsers || []
@@ -46,40 +63,20 @@ const updateBirthdayText = () => {
 
 const fetchActiveStatuses = async () => {
   const list = props.friends || []
-  if (list.length === 0) {
-    activeContacts.value = []
-    return
-  }
+  if (list.length === 0) return
 
   const contactUserIds = list.map((friend: any) => String(friend.id))
 
   try {
-    const statuses = await usersApi.getActiveStatuses(contactUserIds)
+    const statuses = await usersApi.getActiveStatuses(contactUserIds, 'cache-first')
 
-    const activeStatusMap = new Map<string, boolean>()
+    const newMap = new Map(statusMap.value)
     statuses.forEach((s: any) => {
-      activeStatusMap.set(String(s.userId), s.active)
+      newMap.set(String(s.userId), !!s.active)
     })
-
-    activeContacts.value = list.map((u: any) => {
-      const isActive = activeStatusMap.get(String(u.id)) === true
-      const avatarUrl = u.avatar || '/default-avatar.png'
-
-      return {
-        id: isNaN(Number(u.id)) ? String(u.id) : Number(u.id),
-        name: `${u.firstName} ${u.lastName}`,
-        avatarUrl: avatarUrl,
-        status: isActive,
-      }
-    })
+    statusMap.value = newMap
   } catch (err) {
-    console.error('Failed to fetch active statuses:', err)
-    activeContacts.value = list.map((u: any) => ({
-      id: isNaN(Number(u.id)) ? String(u.id) : Number(u.id),
-      name: `${u.firstName} ${u.lastName}`,
-      avatarUrl: u.avatar || '/default-avatar.png',
-      status: false,
-    }))
+    console.warn('Failed to fetch active statuses:', err)
   }
 }
 

@@ -375,13 +375,13 @@ export const usersApi = {
     return data?.sendFriendRequest
   },
 
-  async getActiveStatuses(userIds: (string | number)[]) {
+  async getActiveStatuses(userIds: (string | number)[], fetchPolicy: 'cache-first' | 'network-only' | 'no-cache' = 'cache-first') {
     const validIds = (userIds || []).map((id) => String(id).trim()).filter((id) => id.length > 0)
     if (validIds.length === 0) return []
     const data = await apiClient.query<{ getActiveStatuses: any[] }>(
       GET_ACTIVE_STATUSES_QUERY,
       { userIds: validIds },
-      { fetchPolicy: 'network-only' }
+      { fetchPolicy }
     )
     return data?.getActiveStatuses || []
   },
