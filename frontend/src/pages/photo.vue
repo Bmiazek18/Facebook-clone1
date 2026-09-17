@@ -2,7 +2,7 @@
   <Teleport to="body">
     <!-- GŁÓWNY WIDOK GALERII -->
     <div
-      class="fixed inset-0 z-[500] flex bg-black overflow-hidden select-none text-theme-text"
+      class="fixed inset-0 z-[500] flex flex-col bg-black overflow-hidden select-none text-theme-text"
     >
       <div
         class="absolute top-0 left-0 right-0 h-14 z-[510] flex items-center justify-between px-4 pointer-events-none"
@@ -24,8 +24,9 @@
         <NavbarRight class="text-white pointer-events-auto" />
       </div>
 
-      <div class="flex flex-1 w-full h-full relative">
-        <div class="flex-1 h-full bg-black flex items-center justify-center relative">
+      <div class="flex flex-col md:flex-row flex-1 w-full h-full relative overflow-y-auto md:overflow-hidden">
+        <!-- Obszar mediów -->
+        <div class="w-full h-[55vh] md:h-full md:flex-1 bg-black flex items-center justify-center relative shrink-0">
           <GalleryMediaViewer
             v-if="resolvedMedia"
             v-model:is-full-screen="isFullScreen"
@@ -38,12 +39,13 @@
           />
         </div>
 
+        <!-- Prawa sekcja (na dole na urządzeniach mobilnych) -->
         <div
           v-if="!isFullScreen && (currentPost || isStandalone)"
-          class="w-[360px] h-full bg-theme-bg-secondary text-theme-text border-l border-theme-border shrink-0 flex flex-col z-10 shadow-xl"
+          class="w-full md:w-[360px] min-h-[45vh] md:h-full bg-theme-bg-secondary text-theme-text border-t md:border-t-0 md:border-l border-theme-border shrink-0 flex flex-col z-10 shadow-xl"
         >
           <HoverScrollbar maxHeight="100%" class="flex-1 overflow-y-auto">
-            <div class="pt-16">
+            <div class="pt-2 md:pt-16">
               <div class="flex items-start justify-between p-4 border-t border-theme-border">
                 <div class="flex items-center gap-2.5">
                   <UserAvatar
