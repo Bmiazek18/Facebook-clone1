@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="isVisible"
-    class="w-full max-w-[420px] bg-white dark:bg-[#242526] rounded-2xl shadow-sm border border-[#E4E6EB] dark:border-[#393A3B] p-4 relative select-none mx-auto my-2 transition-all duration-200"
+    class="w-[calc(100%-1.5rem)] mx-auto my-2 bg-[#f8f9fb] dark:bg-theme-bg-tertiary rounded-2xl shadow-sm border border-theme-border p-4 relative select-none transition-all duration-200"
   >
     <!-- Przycisk zamknięcia (X) -->
     <button
@@ -34,7 +34,7 @@
     <!-- Główna zawartość -->
     <div v-else>
       <div class="pr-6 mb-4">
-        <h3 class="text-[17px] font-bold text-[#050505] dark:text-[#E4E6EB] leading-tight mb-1">
+        <h3 class="text-[17px] font-semibold text-theme-text leading-tight mb-1">
           {{ t('notifications.pushDisabledTitle') || 'Powiadomienia push są wyłączone' }}
         </h3>
         <p class="text-[15px] text-[#65676B] dark:text-[#B0B3B8] leading-snug">
@@ -85,62 +85,70 @@ const { t } = useI18n()
 const authStore = useAuthStore()
 const { isSupported, getPermission, requestPermissionAndRegister, fetchPushPromptStatus, dismissPushPrompt } = useWebPush()
 
-const isVisible = ref(false)
+const currentUserId = computed(() => {
+  return String(authStore.currentUserId || authStore.originalUserId || '').replace(/^user_/, '').trim()
+})
+
+const getIsSynchronouslyVisible = (): boolean => {
+  if (!import.meta.client || typeof window === 'undefined') return false
+  if (!isSupported()) return false
+
+  const perm = getPermission()
+  if (perm !== 'default') return false
+
+  const uid = currentUserId.value
+  if (uid) {
+    const localDismissed = localStorage.getItem(`push_prompt_dismissed_${uid}`) === 'true'
+    if (localDismissed) return false
+  } else {
+    const globalDismissed = localStorage.getItem('push_prompt_dismissed_global') === 'true'
+    if (globalDismissed) return false
+  }
+
+  return true
+}
+
+// Stan początkowy ustalany natychmiast synchronicznie od początku bez mignięć
+const isVisible = ref(getIsSynchronouslyVisible())
 const isLoading = ref(false)
 const isSuccess = ref(false)
 
-const currentUserId = computed(() => {
-  return String(authStore.currentUserId || '').replace(/^user_/, '')
-})
-
 const checkStatus = async () => {
-  if (!isSupported()) {
-    isVisible.value = false
-    return
-  }
+  const syncVal = getIsSynchronouslyVisible()
+  isVisible.value = syncVal
+  if (!syncVal) return
 
-  const perm = getPermission()
-  if (perm === 'granted' || perm === 'denied') {
-    isVisible.value = false
-    return
-  }
-
-  // Sprawdź w localStorage lub na serwerze czy użytkownik odrzucił prompt
+  // Weryfikacja w tle z serwerem (cicha, bez mignięć i opóźnień w UI)
   if (currentUserId.value) {
-    const localDismissed = localStorage.getItem(`push_prompt_dismissed_${currentUserId.value}`) === 'true'
-    if (localDismissed) {
-      isVisible.value = false
-      return
-    }
-
     try {
       const status = await fetchPushPromptStatus(currentUserId.value)
       if (status.dismissed || status.enabled) {
         isVisible.value = false
-        return
+        localStorage.setItem(`push_prompt_dismissed_${currentUserId.value}`, 'true')
       }
     } catch {
-      // Fallback
+      // Ignorujemy ewentualny błąd sieci, zostajemy przy stanie lokalnym
     }
   }
-
-  isVisible.value = true
 }
 
 const handleEnablePush = async () => {
-  if (!currentUserId.value) return
+  const uid = currentUserId.value
+  if (!uid) return
   isLoading.value = true
 
   try {
-    const granted = await requestPermissionAndRegister(currentUserId.value)
+    const granted = await requestPermissionAndRegister(uid)
     if (granted) {
       isSuccess.value = true
+      localStorage.setItem(`push_prompt_dismissed_${uid}`, 'true')
       emit('enabled')
       setTimeout(() => {
         isVisible.value = false
       }, 1500)
     } else {
       isVisible.value = false
+      localStorage.setItem(`push_prompt_dismissed_${uid}`, 'true')
     }
   } catch (err) {
     console.error('Failed to enable desktop push notifications:', err)
@@ -153,8 +161,12 @@ const handleEnablePush = async () => {
 const handleDismiss = async () => {
   isVisible.value = false
   emit('dismiss')
-  if (currentUserId.value) {
-    await dismissPushPrompt(currentUserId.value)
+  const uid = currentUserId.value
+  if (uid) {
+    localStorage.setItem(`push_prompt_dismissed_${uid}`, 'true')
+    await dismissPushPrompt(uid)
+  } else {
+    localStorage.setItem('push_prompt_dismissed_global', 'true')
   }
 }
 
