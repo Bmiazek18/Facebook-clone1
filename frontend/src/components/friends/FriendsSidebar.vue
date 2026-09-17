@@ -106,7 +106,13 @@ import { useFriendsStore } from '@/stores/friends'
 // Icons
 import CogIcon from 'vue-material-design-icons/Cog.vue'
 import AccountGroupIcon from 'vue-material-design-icons/AccountGroup.vue'
+import AccountMultiplePlusIcon from 'vue-material-design-icons/AccountMultiplePlus.vue'
+import AccountCheckIcon from 'vue-material-design-icons/AccountCheck.vue'
+import ClockOutlineIcon from 'vue-material-design-icons/ClockOutline.vue'
 import GiftIcon from 'vue-material-design-icons/Gift.vue'
+import SchoolIcon from 'vue-material-design-icons/School.vue'
+import HomeCityIcon from 'vue-material-design-icons/HomeCity.vue'
+import AccountEyeIcon from 'vue-material-design-icons/AccountEye.vue'
 import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue'
 import BellOutlineIcon from 'vue-material-design-icons/BellOutline.vue'
 
@@ -118,6 +124,12 @@ const showNotificationDots = ref(true)
 
 const menuItems = [
   { label: 'friends.home', icon: AccountGroupIcon, path: '/friends' },
+  { label: 'friends.suggestions', icon: AccountMultiplePlusIcon, path: '/friends/suggestions' },
+  { label: 'friends.allFriends', icon: AccountCheckIcon, path: '/friends/all' },
+  { label: 'friends.niedawnoDodani', icon: ClockOutlineIcon, path: '/friends/recent' },
   { label: 'friends.birthdays', icon: GiftIcon, path: '/friends/birthdays' },
+  { label: 'friends.highSchool', icon: SchoolIcon, path: '/friends/high-school' },
+  { label: 'friends.aktualneMiejsceZamieszkania', icon: HomeCityIcon, path: '/friends/current-city' },
+  { label: 'friends.following', icon: AccountEyeIcon, path: '/friends/following' },
 ]
 </script>

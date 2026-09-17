@@ -93,28 +93,51 @@ const apiFilterType = computed(() => {
   if (currentPageType.value === 'friends_high_school') return 'HIGH_SCHOOL'
   if (currentPageType.value === 'friends_current_city') return 'CURRENT_CITY'
   if (currentPageType.value === 'friends_birthdays') return 'BIRTHDAYS'
+  if (currentPageType.value === 'friends_recent') return 'RECENT'
+  if (currentPageType.value === 'following') return 'FOLLOWING'
   return 'ALL'
 })
 
 const filteredFriendsList = computed(() => {
-  let list = effectiveFriendsList.value
+  let list = [...effectiveFriendsList.value]
 
-  // Add subtitle formatting based on tab when in full view
+  // Filter based on tab when in full view
   if (props.isFullView) {
     if (currentPageType.value === 'friends_birthdays') {
-      list = list.map((f) => ({
+      const withBirthdays = list.filter((f) => f.birthDate && f.birthDate.trim().length > 0)
+      list = (withBirthdays.length > 0 ? withBirthdays : list).map((f) => ({
         ...f,
-        subtitle: f.birthDate ? `Urodziny: ${f.birthDate}` : '',
+        subtitle: f.birthDate ? `Urodziny: ${f.birthDate}` : 'Urodziny',
       }))
     } else if (currentPageType.value === 'friends_high_school') {
-      list = list.map((f) => ({
+      const schoolTarget = myHighSchool.value
+      const matchSchool = list.filter((f) => {
+        const hs = (f.highSchool || f.school || '').toLowerCase()
+        return schoolTarget ? hs.includes(schoolTarget) : hs.length > 0
+      })
+      list = (matchSchool.length > 0 ? matchSchool : list.filter(f => (f.highSchool || f.school))).map((f) => ({
         ...f,
         subtitle: `Szkoła: ${f.highSchool || f.school || 'Szkoła średnia'}`,
       }))
     } else if (currentPageType.value === 'friends_current_city') {
-      list = list.map((f) => ({
+      const cityTarget = myCity.value
+      const matchCity = list.filter((f) => {
+        const c = (f.city || f.location || f.hometown || '').toLowerCase()
+        return cityTarget ? c.includes(cityTarget) : c.length > 0
+      })
+      list = (matchCity.length > 0 ? matchCity : list.filter(f => (f.city || f.location || f.hometown))).map((f) => ({
         ...f,
         subtitle: `Mieszka w: ${f.city || f.location || f.hometown || ''}`,
+      }))
+    } else if (currentPageType.value === 'friends_recent') {
+      list = list.slice().reverse().map((f) => ({
+        ...f,
+        subtitle: 'Dodano niedawno',
+      }))
+    } else if (currentPageType.value === 'following') {
+      list = list.map((f) => ({
+        ...f,
+        subtitle: 'Obserwowany',
       }))
     }
   }

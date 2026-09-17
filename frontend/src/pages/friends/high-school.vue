@@ -1,5 +1,5 @@
 <template>
-  <FriendsView :title="$t('profile.info.highSchool')" />
+  <FriendsView :title="$t('friends.highSchool')" filterType="HIGH_SCHOOL" />
 </template>
 
 <script setup lang="ts">

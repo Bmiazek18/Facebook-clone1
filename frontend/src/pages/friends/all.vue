@@ -1,11 +1,11 @@
 <template>
-  <FriendsView :title="$t('friends.niedawnoDodani')" filterType="RECENT" />
+  <FriendsView :title="$t('friends.allFriends')" filterType="ALL" />
 </template>
 
 <script setup lang="ts">
 import FriendsView from '@/components/friends/FriendsView.vue'
 
 definePageMeta({
-  title: 'Niedawno dodani | Facebook',
+  title: 'Wszyscy znajomi | Facebook',
 })
 </script>

@@ -636,9 +636,13 @@
     "opis": "Opis:",
     "przejdzDoPosta": "Przejdź do posta",
     "edytujZdjecieWTle": "Edytuj zdjęcie w tle",
-    "abyZapewnicBezpieczenstwoFacebooka": "Aby zapewnić bezpieczeństwo Facebooka, wyświetlamy informacje o użytkownikach i ich\n        profilach.",
+    "abyZapewnicBezpieczenstwoFacebooka": "Aby zapewnić bezpieczeństwo Facebooka, wyświetlamy informacje o użytkownikach i ich profilach.",
     "dolaczenieDoFacebookaFormatdate": "Dołączenie do Facebooka: {date}",
     "zaktualizowanoProfilFormatrelativeorabsolutetimeProfileuser": "Zaktualizowano profil: {date}",
+    "aboutAccountSafetyNotice": "Aby zapewnić bezpieczeństwo Facebooka, wyświetlamy informacje o użytkownikach i ich profilach.",
+    "joinedDate": "Dołączenie do Facebooka: {date}",
+    "updatedProfileDate": "Zaktualizowano profil: {date}",
+    "aboutProfile": "Informacje o: {name}",
     "addLifeEvent": "Dodaj ważne wydarzenie",
     "mutualFriends": "Wspólni znajomi"
   },
@@ -1074,7 +1078,10 @@
     "zmienIdPonizejAby": "Zmień ID poniżej, aby załadować propozycje znajomych dla wybranego profilu.",
     "twojeId": "Twoje ID:",
     "brakPropozycjiNowychZnajomych": "Brak propozycji nowych znajomych.",
-    "wszyscyUzytkownicySaJuz": "Wszyscy użytkownicy są już Twoimi znajomymi lub mają oczekujące zaproszenia."
+    "wszyscyUzytkownicySaJuz": "Wszyscy użytkownicy są już Twoimi znajomymi lub mają oczekujące zaproszenia.",
+    "highSchool": "Szkoła średnia",
+    "following": "Obserwowani",
+    "liczbaZnajomych": "Liczba znajomych: {count}"
   },
   "story": {
     "endOfStory": "Koniec relacji",

@@ -29,7 +29,7 @@ import { useProfilePhotoPost } from '@/composables/feed/useProfilePhotoPost'
 
 const route = useRoute()
 const router = useRouter()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const auth = useAuthStore()
 const { resolveProfilePhotoPost } = useProfilePhotoPost()
 
@@ -155,18 +155,19 @@ const isInfoModalOpen = ref(false) // Stan kontrolujący modal bezpieczeństwa p
 const autoTriggerCover = ref(false)
 
 const formatDate = (dateStr?: string) => {
-  if (!dateStr) return 'Brak danych'
+  if (!dateStr) return locale.value === 'en' ? 'No data' : 'Brak danych'
   try {
     const d = new Date(dateStr)
     if (isNaN(d.getTime())) return dateStr
-    return d.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' })
+    const currentLocale = locale.value === 'en' ? 'en-US' : 'pl-PL'
+    return d.toLocaleDateString(currentLocale, { day: 'numeric', month: 'long', year: 'numeric' })
   } catch (e) {
     return dateStr
   }
 }
 
 const formatRelativeOrAbsoluteTime = (dateStr?: string) => {
-  if (!dateStr) return 'Brak danych'
+  if (!dateStr) return locale.value === 'en' ? 'No data' : 'Brak danych'
   try {
     const d = new Date(dateStr)
     if (isNaN(d.getTime())) return dateStr
@@ -177,23 +178,29 @@ const formatRelativeOrAbsoluteTime = (dateStr?: string) => {
     const diffHr = Math.floor(diffMin / 60)
     const diffDays = Math.floor(diffHr / 24)
 
-    if (diffSec < 60) return 'przed chwilą'
+    const isEn = locale.value === 'en'
+
+    if (diffSec < 60) return isEn ? 'just now' : 'przed chwilą'
     if (diffMin < 60) {
+      if (isEn) return `${diffMin}m ago`
       if (diffMin === 1) return '1 minutę temu'
       if (diffMin >= 2 && diffMin <= 4) return `${diffMin} minuty temu`
       return `${diffMin} minut temu`
     }
     if (diffHr < 24) {
+      if (isEn) return `${diffHr}h ago`
       if (diffHr === 1) return '1 godzinę temu'
       if (diffHr >= 2 && diffHr <= 4) return `${diffHr} godziny temu`
       return `${diffHr} godzin temu`
     }
     if (diffDays < 7) {
+      if (isEn) return diffDays === 1 ? 'yesterday' : `${diffDays} days ago`
       if (diffDays === 1) return 'wczoraj'
       if (diffDays >= 2 && diffDays <= 4) return `${diffDays} dni temu`
       return `${diffDays} dni temu`
     }
-    return d.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' })
+    const currentLocale = isEn ? 'en-US' : 'pl-PL'
+    return d.toLocaleDateString(currentLocale, { day: 'numeric', month: 'long', year: 'numeric' })
   } catch (e) {
     return dateStr
   }
@@ -518,28 +525,38 @@ const fetchProfileFriends = async () => {
     />
   </BaseModal>
 
-  <!-- MODAL 2: Informacje o bezpieczeństwie profilu (Aktywowany kliknięciem w H1) -->
-  <BaseModal v-if="isInfoModalOpen" @close="isInfoModalOpen = false" :title="profileUser?.name || ''">
-    <div class="p-3 w-[550px]  text-left">
+  <!-- MODAL 2: Informacje o profilu / bezpieczeństwie (Aktywowany kliknięciem w H1) -->
+  <BaseModal
+    v-if="isInfoModalOpen"
+    @close="isInfoModalOpen = false"
+    :title="$t('profile.aboutProfile', { name: profileUser?.name || '' }) || profileUser?.name || ''"
+  >
+    <div class="p-4 w-full max-w-[550px] text-left">
       <!-- Główny opis informacyjny -->
-      <p class="text-[#65676b] text-[15px] leading-[1.4] mb-5 tracking-normal">{{ $t('profile.abyZapewnicBezpieczenstwoFacebooka') }}</p>
+      <p class="text-theme-text-secondary text-[15px] leading-[1.4] mb-5 tracking-normal">
+        {{ $t('profile.aboutAccountSafetyNotice') }}
+      </p>
 
       <!-- Lista z informacjami -->
       <div class="flex flex-col gap-4">
         <!-- Pozycja 1: Data dołączenia -->
         <div class="flex items-center gap-3.5 py-1">
-          <div class="flex items-center justify-center text-[#050505] shrink-0">
+          <div class="flex items-center justify-center text-theme-text shrink-0">
             <CalendarMonthOutline :size="24" />
           </div>
-          <span class="text-[#050505] text-[15px] font-normal leading-tight">{{ $t('profile.dolaczenieDoFacebookaFormatdate') }}</span>
+          <span class="text-theme-text text-[15px] font-normal leading-tight">
+            {{ $t('profile.joinedDate', { date: formatDate(profileUser?.createdAt) }) }}
+          </span>
         </div>
 
         <!-- Pozycja 2: Ostatnia aktualizacja -->
         <div class="flex items-center gap-3.5 py-1 mb-1">
-          <div class="flex items-center justify-center text-[#050505] shrink-0">
+          <div class="flex items-center justify-center text-theme-text shrink-0">
             <AccountCircleOutline :size="24" />
           </div>
-          <span class="text-[#050505] text-[15px] font-normal leading-tight">{{ $t('profile.zaktualizowanoProfilFormatrelativeorabsolutetimeProfileuser') }}</span>
+          <span class="text-theme-text text-[15px] font-normal leading-tight">
+            {{ $t('profile.updatedProfileDate', { date: formatRelativeOrAbsoluteTime(profileUser?.updatedAt || profileUser?.createdAt) }) }}
+          </span>
         </div>
       </div>
     </div>

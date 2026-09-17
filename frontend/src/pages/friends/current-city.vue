@@ -1,5 +1,5 @@
 <template>
-  <FriendsView :title="$t('friends.aktualneMiejsceZamieszkania')" />
+  <FriendsView :title="$t('friends.aktualneMiejsceZamieszkania')" filterType="CURRENT_CITY" />
 </template>
 
 <script setup lang="ts">
