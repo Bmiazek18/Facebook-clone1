@@ -65,10 +65,14 @@ public class UserDataFetcher {
     }
 
     @DgsQuery
-    public List<UserSearchResponse> searchUsers(@InputArgument String query, @InputArgument String currentUserId) {
+    public List<UserSearchResponse> searchUsers(
+            @InputArgument String query,
+            @InputArgument String currentUserId,
+            @RequestHeader(name = "X-User-Id", required = false) String xUserId) {
+        String finalUserId = (xUserId != null && !xUserId.isBlank()) ? xUserId : (currentUserId != null ? currentUserId : "");
         return executeGrpc(() -> userGrpcStub.searchUsers(SearchUsersRequest.newBuilder()
                         .setQuery(query != null ? query : "")
-                        .setCurrentUserId(currentUserId != null ? currentUserId : "")
+                        .setCurrentUserId(finalUserId)
                         .build())
                 .getUsersList().stream().map(edgeMapper::grpcUserToDgsUser).toList(), "Failed to search users");
     }

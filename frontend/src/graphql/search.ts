@@ -15,7 +15,7 @@ export const GET_SEARCH_HISTORY = gql`
 `
 
 export const SEARCH_USERS = gql`
-  query SearchUsers($query: String!, $currentUserId: ID!) {
+  query SearchUsers($query: String!, $currentUserId: ID) {
     searchUsers(query: $query, currentUserId: $currentUserId) {
       id
       firstName

@@ -19,7 +19,7 @@ export function useUserSearch(searchTerm: Ref<string>) {
 
       isLoading.value = true
       try {
-        const users = await usersApi.searchUsers(newSearchTerm, authStore.currentUserId || undefined)
+        const users = await usersApi.searchUsers(newSearchTerm)
         if (users) {
           matchingUsers.value = users.map((u: any) => ({
             id: u.id,
