@@ -221,7 +221,7 @@ const shareMenuItems = [
   <div class="post-footer w-full">
     <div
       v-if="shouldPostActionVisible"
-      class="px-4 py-2 flex items-center justify-between border-t border-theme-border/50 select-none text-theme-text-secondary"
+      class="px-4 py-2 flex items-center justify-between select-none text-theme-text-secondary"
     >
       <!-- LEWA STRONA: Przyciski akcji (Like z licznikiem, Komentarz, Udostępnienie) -->
       <div class="flex items-center gap-5">

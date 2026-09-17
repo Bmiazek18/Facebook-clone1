@@ -153,6 +153,8 @@ const cleanSignedUrl = (url: string) => {
   return url
 }
 
+const config = useRuntimeConfig()
+
 const getMediaUrl = (src: string) => {
   if (!src) return ''
   src = cleanSignedUrl(src)
