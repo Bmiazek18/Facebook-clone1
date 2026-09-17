@@ -12,6 +12,7 @@ import TelevisionPlay from 'vue-material-design-icons/TelevisionPlay.vue'
 import StorefrontOutline from 'vue-material-design-icons/StorefrontOutline.vue'
 import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue'
+import MagnifyIcon from 'vue-material-design-icons/Magnify.vue'
 import StarBoxOutlineIcon from 'vue-material-design-icons/StarBoxOutline.vue'
 import NavbarRight from '@/components/navbar/NavbarRight.vue'
 
@@ -31,35 +32,82 @@ const menuTarget = ref(null)
 const searchResults = ref<any[]>([])
 const isSearching = ref(false)
 
-// History searches loaded from backend
+// History searches loaded from backend & local storage
 const recentSearches = ref<any[]>([])
 
+const getStorageKey = () => {
+  const userId = authStore.currentUserId ? String(authStore.currentUserId) : 'default'
+  return `facebook_search_history_${userId}`
+}
+
+const loadLocalHistory = (): any[] => {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(getStorageKey())
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+const saveLocalHistory = (items: any[]) => {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(getStorageKey(), JSON.stringify(items.slice(0, 15)))
+  } catch (e) {
+    console.error('Failed to save search history locally:', e)
+  }
+}
+
 const fetchSearchHistory = async () => {
+  const localItems = loadLocalHistory()
+  if (localItems.length > 0 && recentSearches.value.length === 0) {
+    recentSearches.value = localItems.slice(0, 10)
+  }
+
   try {
     const currentUserId = authStore.currentUserId ? String(authStore.currentUserId) : undefined
     const history = await usersApi.getSearchHistory(currentUserId)
 
-    if (history) {
-      recentSearches.value = history.map((user: any) => ({
-        id: user.id,
-        name: `${user.firstName} ${user.lastName}`.trim(),
+    if (history && history.length > 0) {
+      const backendItems = history.map((user: any) => ({
+        id: String(user.id),
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || `User ${user.id}`,
         avatar: user.avatar || '/default-avatar.png',
         newPostsCount: user.newPostsCount || 0,
-      })).slice(0, 8)
+        type: 'user',
+      }))
+
+      const queryItems = localItems.filter(item => item.type === 'query')
+      const mergedMap = new Map<string, any>()
+      
+      for (const item of [...backendItems, ...queryItems]) {
+        if (!mergedMap.has(item.id)) {
+          mergedMap.set(item.id, item)
+        }
+      }
+      recentSearches.value = Array.from(mergedMap.values()).slice(0, 10)
+      saveLocalHistory(recentSearches.value)
+    } else if (localItems.length > 0) {
+      recentSearches.value = localItems.slice(0, 10)
     }
   } catch (error) {
-    console.error('Failed to fetch search history:', error)
+    console.error('Failed to fetch search history from backend, using local:', error)
+    if (localItems.length > 0) {
+      recentSearches.value = localItems.slice(0, 10)
+    }
   }
 }
 
-const removeFromRecent = async (userId: string) => {
+const removeFromRecent = async (id: string) => {
   try {
     const currentUserId = authStore.currentUserId ? String(authStore.currentUserId) : undefined
-    
-    // Update local state immediately for instant feedback
-    recentSearches.value = recentSearches.value.filter(item => item.id !== userId)
+    recentSearches.value = recentSearches.value.filter(item => item.id !== id)
+    saveLocalHistory(recentSearches.value)
 
-    await usersApi.deleteSearchHistoryItem(userId, currentUserId)
+    if (!id.startsWith('query_')) {
+      await usersApi.deleteSearchHistoryItem(id, currentUserId)
+    }
   } catch (error) {
     console.error('Failed to delete search history item:', error)
   }
@@ -67,13 +115,15 @@ const removeFromRecent = async (userId: string) => {
 
 const clearAllRecent = async () => {
   try {
-    // Delete each locally stored item one by one on backend
     const itemsToDelete = [...recentSearches.value]
     recentSearches.value = []
+    saveLocalHistory([])
     const currentUserId = authStore.currentUserId ? String(authStore.currentUserId) : undefined
     
     for (const item of itemsToDelete) {
-      await usersApi.deleteSearchHistoryItem(item.id, currentUserId)
+      if (!item.id.startsWith('query_')) {
+        await usersApi.deleteSearchHistoryItem(item.id, currentUserId).catch(() => {})
+      }
     }
   } catch (error) {
     console.error('Failed to clear search history:', error)
@@ -85,9 +135,13 @@ onMounted(() => {
 })
 
 watch(isSearchFocused, (focused) => {
-  if (focused && !searchInput.value.trim()) {
+  if (focused) {
     fetchSearchHistory()
   }
+})
+
+watch(() => authStore.currentUserId, () => {
+  fetchSearchHistory()
 })
 
 onClickOutside(navLeft, () => {
@@ -112,10 +166,11 @@ const performLiveSearch = async () => {
 
     if (users) {
       searchResults.value = users.map((user: any) => ({
-        id: user.id,
-        name: `${user.firstName} ${user.lastName}`.trim(),
+        id: String(user.id),
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || `User ${user.id}`,
         avatar: user.avatar || '/default-avatar.png',
         newPostsCount: user.newPostsCount || 0,
+        type: 'user',
       }))
     } else {
       searchResults.value = []
@@ -141,7 +196,6 @@ watch(searchInput, (newValue) => {
     return
   }
 
-  // Set isSearching to true immediately so the UI shows a loading spinner
   isSearching.value = true
 
   searchDebounceTimeout = setTimeout(() => {
@@ -149,14 +203,41 @@ watch(searchInput, (newValue) => {
   }, 300)
 })
 
+const saveQueryToHistory = (query: string) => {
+  const cleanQ = query.trim()
+  if (!cleanQ) return
+  const queryItem = {
+    id: `query_${cleanQ.toLowerCase()}`,
+    query: cleanQ,
+    name: cleanQ,
+    type: 'query'
+  }
+  recentSearches.value = [queryItem, ...recentSearches.value.filter(item => item.id !== queryItem.id)].slice(0, 10)
+  saveLocalHistory(recentSearches.value)
+}
+
 const handleSearchSubmit = () => {
-  if (searchInput.value.trim()) {
-    router.push({ path: '/search', query: { q: searchInput.value.trim() } })
+  const query = searchInput.value.trim()
+  if (query) {
+    saveQueryToHistory(query)
+    router.push({ path: '/search', query: { q: query } })
     isSearchFocused.value = false
+    searchInput.value = ''
   }
 }
 
-const goToProfile = (user: { id: string, name: string, avatar: string }) => {
+const goToProfile = (user: { id: string, name: string, avatar: string, newPostsCount?: number }) => {
+  const userItem = {
+    id: String(user.id),
+    name: user.name,
+    avatar: user.avatar || '/default-avatar.png',
+    newPostsCount: user.newPostsCount || 0,
+    type: 'user'
+  }
+  
+  recentSearches.value = [userItem, ...recentSearches.value.filter(item => item.id !== String(user.id))].slice(0, 10)
+  saveLocalHistory(recentSearches.value)
+
   try {
     const currentUserId = authStore.currentUserId ? String(authStore.currentUserId) : undefined
     usersApi.recordSearch(user.id, currentUserId)
@@ -171,6 +252,18 @@ const goToProfile = (user: { id: string, name: string, avatar: string }) => {
   router.push('/profile/' + user.id)
   isSearchFocused.value = false
   searchInput.value = ''
+}
+
+const goToRecentItem = (item: any) => {
+  if (item.type === 'query' || item.query) {
+    const query = item.query || item.name
+    saveQueryToHistory(query)
+    router.push({ path: '/search', query: { q: query } })
+    isSearchFocused.value = false
+    searchInput.value = ''
+  } else {
+    goToProfile(item)
+  }
 }
 </script>
 
@@ -187,14 +280,16 @@ const goToProfile = (user: { id: string, name: string, avatar: string }) => {
       <!-- Dropdown wyszukiwania -->
       <div
         v-if="isSearchFocused"
-        class="absolute -top-2 -left-4 w-[330px] bg-theme-bg-secondary rounded-b-xl shadow-[0_12px_28px_0_rgba(0,0,0,0.2),0_2px_4px_0_rgba(0,0,0,0.1)] z-10 pt-[65px] pb-3 border-t-0 max-h-[450px] overflow-y-auto"
+        class="absolute -top-2 -left-4 w-[330px] bg-theme-bg-secondary rounded-b-xl shadow-[0_12px_28px_0_rgba(0,0,0,0.2),0_2px_4px_0_rgba(0,0,0,0.1)] z-10 pt-[65px] pb-3 border-t-0 max-h-[500px] overflow-y-auto"
       >
         <!-- Stan z wpisaną frazą wyszukiwania -->
         <div v-if="searchInput.trim()">
           <div v-if="isSearching" class="px-4 py-3 text-center text-[15px] text-[#65676B] dark:text-[#B0B3B8] flex items-center justify-center gap-2">
-            <div class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>{{ $t('header.wyszukiwanie') }}</div>
-          <div v-else-if="searchResults.length === 0" class="px-4 py-3 text-center text-[15px] text-[#65676B] dark:text-[#B0B3B8]">{{ $t('header.nieZnalezionoPasujacychOsob') }}</div>
-          <div v-else class="flex flex-col">
+            <div class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <span>{{ $t('header.wyszukiwanie') }}</span>
+          </div>
+          
+          <div v-if="searchResults.length > 0" class="flex flex-col">
             <div
               v-for="user in searchResults"
               :key="user.id"
@@ -207,6 +302,64 @@ const goToProfile = (user: { id: string, name: string, avatar: string }) => {
               <span class="text-[15px] font-semibold text-gray-900 dark:text-gray-200 truncate">{{ user.name }}</span>
               <!-- Blue dot if user posted since last search -->
               <span v-if="user.newPostsCount > 0" class="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0 ml-auto" :title="$t('header.nowePostyOdOstatniego')"></span>
+            </div>
+          </div>
+
+          <div v-else-if="!isSearching" class="px-4 py-2 text-center text-[14px] text-[#65676B] dark:text-[#B0B3B8]">
+            {{ $t('header.nieZnalezionoPasujacychOsob') }}
+          </div>
+
+          <!-- Przycisk "Szukaj [fraza]" na dole -->
+          <div
+            @click="handleSearchSubmit"
+            class="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-[#3A3B3C] cursor-pointer transition-colors border-t border-gray-100 dark:border-zinc-700/60 my-1"
+          >
+            <div class="w-9 h-9 rounded-full bg-[#1877f2] text-white flex items-center justify-center shrink-0">
+              <MagnifyIcon :size="20" />
+            </div>
+            <div class="flex flex-col min-w-0">
+              <span class="text-[15px] font-medium text-[#1877f2] dark:text-blue-400 truncate">
+                {{ $t('header.szukaj') || 'Szukaj' }}: <strong class="font-semibold">{{ searchInput.trim() }}</strong>
+              </span>
+            </div>
+          </div>
+
+          <!-- Historia wyszukiwania na dole sekcji wyszukiwania -->
+          <div v-if="recentSearches.length > 0" class="mt-2 pt-2 border-t border-gray-200 dark:border-zinc-700">
+            <div class="flex justify-between items-center px-4 py-1.5">
+              <span class="text-[14px] font-bold text-gray-700 dark:text-gray-300">{{ $t('search.recent') }}</span>
+              <button
+                @click="clearAllRecent"
+                class="text-[12px] font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 px-2 py-0.5 rounded transition"
+              >{{ $t('header.wyczyscWszystko') }}</button>
+            </div>
+            <div class="flex flex-col">
+              <div
+                v-for="item in recentSearches.slice(0, 5)"
+                :key="item.id"
+                class="flex items-center justify-between px-4 py-2 hover:bg-gray-100 dark:hover:bg-[#3A3B3C] group cursor-pointer transition-colors"
+                @click="goToRecentItem(item)"
+              >
+                <div class="flex items-center gap-3 min-w-0">
+                  <div v-if="item.type === 'query'" class="w-9 h-9 rounded-full bg-gray-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 text-gray-600 dark:text-gray-300">
+                    <MagnifyIcon :size="20" />
+                  </div>
+                  <div v-else class="w-9 h-9 rounded-full overflow-hidden bg-zinc-800 shrink-0">
+                    <img :src="item.avatar" class="w-full h-full object-cover" />
+                  </div>
+                  <span class="text-[14px] font-medium text-gray-950 dark:text-gray-200 truncate">{{ item.name }}</span>
+                  <span v-if="item.newPostsCount > 0" class="w-2 h-2 rounded-full bg-blue-500 shrink-0" :title="$t('header.nowePostyOdOstatniego')"></span>
+                </div>
+                <button
+                  @click.stop="removeFromRecent(item.id)"
+                  class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-200 transition opacity-0 group-hover:opacity-100"
+                  :title="$t('header.usunZHistorii')"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -223,21 +376,24 @@ const goToProfile = (user: { id: string, name: string, avatar: string }) => {
             </div>
             <div class="flex flex-col mt-1">
               <div
-                v-for="user in recentSearches"
-                :key="user.id"
+                v-for="item in recentSearches"
+                :key="item.id"
                 class="flex items-center justify-between px-4 py-2 hover:bg-gray-100 dark:hover:bg-[#3A3B3C] group cursor-pointer transition-colors"
-                @click="goToProfile(user)"
+                @click="goToRecentItem(item)"
               >
                 <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-9 h-9 rounded-full overflow-hidden bg-zinc-800 shrink-0">
-                    <img :src="user.avatar" class="w-full h-full object-cover" />
+                  <div v-if="item.type === 'query'" class="w-9 h-9 rounded-full bg-gray-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 text-gray-600 dark:text-gray-300">
+                    <MagnifyIcon :size="20" />
                   </div>
-                  <span class="text-[15px] font-medium text-gray-950 dark:text-gray-200 truncate">{{ user.name }}</span>
+                  <div v-else class="w-9 h-9 rounded-full overflow-hidden bg-zinc-800 shrink-0">
+                    <img :src="item.avatar" class="w-full h-full object-cover" />
+                  </div>
+                  <span class="text-[15px] font-medium text-gray-950 dark:text-gray-200 truncate">{{ item.name }}</span>
                   <!-- Blue dot if user posted since last search -->
-                  <span v-if="user.newPostsCount > 0" class="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" :title="$t('header.nowePostyOdOstatniego')"></span>
+                  <span v-if="item.newPostsCount > 0" class="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" :title="$t('header.nowePostyOdOstatniego')"></span>
                 </div>
                 <button
-                  @click.stop="removeFromRecent(user.id)"
+                  @click.stop="removeFromRecent(item.id)"
                   class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-200 transition opacity-0 group-hover:opacity-100"
                   :title="$t('header.usunZHistorii')"
                 >
