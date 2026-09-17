@@ -129,9 +129,15 @@ export function usePostReactions(postInput: any) {
           if (typeLower) {
             const uIds = (item.userIds || []).map(String)
             currentReactions[typeLower] = uIds
-            currentReactionUserNames[typeLower] = (item.users || []).map((u: any) =>
-              [u.firstName, u.lastName].filter(Boolean).join(' ') || 'Użytkownik'
-            )
+            currentReactionUserNames[typeLower] = (item.users || []).map((u: any) => {
+              const rawName = [u.firstName, u.lastName].filter(Boolean).join(' ').trim()
+              if (rawName && rawName !== 'Użytkownik') return rawName
+              if (u.name) return u.name
+              if (String(u.id) === userId) {
+                return authStore.currentUser?.name || 'Użytkownik'
+              }
+              return 'Użytkownik'
+            })
             if (uIds.includes(userId)) {
               previousReactionType = typeLower
             }
@@ -168,13 +174,17 @@ export function usePostReactions(postInput: any) {
       }
     })
 
-    const currentUserName = [authStore.currentUser?.firstName, authStore.currentUser?.lastName]
-      .filter(Boolean)
-      .join(' ') || 'Użytkownik'
+    const currentUserName =
+      authStore.currentUser?.name ||
+      [authStore.currentUser?.firstName, authStore.currentUser?.lastName].filter(Boolean).join(' ') ||
+      authStore.originalUser?.name ||
+      [authStore.originalUser?.firstName, authStore.originalUser?.lastName].filter(Boolean).join(' ') ||
+      (authStore.activePage ? authStore.activePage.name : '') ||
+      'Użytkownik'
 
     Object.keys(currentReactionUserNames).forEach((rType) => {
       const filteredNames = (currentReactionUserNames[rType] || []).filter(
-        (name: string) => name !== currentUserName,
+        (name: string) => name !== currentUserName && name !== 'Użytkownik',
       )
       if (filteredNames.length > 0) {
         nextReactionUserNames[rType] = filteredNames
@@ -199,7 +209,8 @@ export function usePostReactions(postInput: any) {
       const names = nextReactionUserNames[rType] || []
       
       const usersList = uIds.map((id, index) => {
-        const namePart = names[index] || 'Użytkownik'
+        const isSelf = String(id) === userId
+        const namePart = isSelf ? currentUserName : (names[index] || 'Użytkownik')
         const split = namePart.split(' ')
         return {
           __typename: 'User',
@@ -207,7 +218,7 @@ export function usePostReactions(postInput: any) {
           firstName: split[0] || 'Użytkownik',
           lastName: split.slice(1).join(' ') || '',
           avatarId: null,
-          avatar: String(id) === userId ? (authStore.currentUser?.avatar || null) : null,
+          avatar: isSelf ? (authStore.currentUser?.avatar || null) : null,
         }
       })
       

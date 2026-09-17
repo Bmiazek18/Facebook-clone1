@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { Dropdown as VDropdown, vTooltip } from 'floating-vue'
 import { reactionIcons } from '@/composables/feed/usePostReactions'
 import { getUserById } from '@/utils/users'
+import { useAuthStore } from '@/stores/auth'
 import type { Comment } from '@/types/Post'
 import { useReactionConfig } from '@/composables/feed/useReactionConfig'
 
@@ -12,7 +13,20 @@ const props = defineProps<{
   userReaction: string | null
 }>()
 
+const authStore = useAuthStore()
 const { getReactionConfig } = useReactionConfig()
+
+const resolveReactionUserName = (userId: string | number) => {
+  if (String(userId) === String(authStore.currentUserId)) {
+    return (
+      authStore.currentUser?.name ||
+      [authStore.currentUser?.firstName, authStore.currentUser?.lastName].filter(Boolean).join(' ') ||
+      authStore.originalUser?.name ||
+      'Użytkownik'
+    )
+  }
+  return getUserById(userId)?.name || 'Użytkownik'
+}
 </script>
 
 <template>
@@ -53,7 +67,7 @@ const { getReactionConfig } = useReactionConfig()
               </div>
               <div class="text-sm">
                 <div v-for="userId in userIds" :key="userId">
-                  {{ getUserById(userId)?.name }}
+                  {{ resolveReactionUserName(userId) }}
                 </div>
               </div>
             </div>

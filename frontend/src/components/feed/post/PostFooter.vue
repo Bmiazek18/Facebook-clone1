@@ -17,6 +17,7 @@ import { usePostReactions } from '@/composables/feed/usePostReactions'
 import { useImpressionTracker } from '@/composables/analytics/useImpressionTracker'
 import { useReactionConfig } from '@/composables/feed/useReactionConfig'
 import { usePostsStore } from '@/stores/posts'
+import { useAuthStore } from '@/stores/auth'
 import { useUserCache } from '@/composables/shared/useUserCache'
 import { getUserById } from '@/utils/users'
 import type { ReactionType, Post } from '@/types/Post'
@@ -52,6 +53,7 @@ const { getReactionConfig } = useReactionConfig()
 const { userReaction, likesCount, topReactions, handleReaction } = usePostReactions(toRef(props, 'post'))
 const { trackCopyLink } = useImpressionTracker()
 const postsStore = usePostsStore()
+const authStore = useAuthStore()
 const { getOrFetchUser, preloadUsers } = useUserCache()
 
 // Stats
@@ -126,21 +128,45 @@ const loadShareUsers = async () => {
 }
 
 const getReactionTooltipData = (reactionType: ReactionType) => {
+  const currentUserId = String(authStore.currentUserId)
+  const currentUserName =
+    authStore.currentUser?.name ||
+    [authStore.currentUser?.firstName, authStore.currentUser?.lastName].filter(Boolean).join(' ') ||
+    authStore.originalUser?.name ||
+    'Użytkownik'
+
   const resolvedNames = props.post?.reactionUserNames?.[reactionType]
   if (resolvedNames && resolvedNames.length > 0) {
-    if (resolvedNames.length <= 19) {
-      return { names: resolvedNames, moreCount: 0 }
+    const userIds = props.post?.reactions?.[reactionType] || []
+    const hasSelf = Array.isArray(userIds) && userIds.some((id: any) => String(id) === currentUserId)
+
+    const cleanNames = resolvedNames.map((n: string) => {
+      if ((n === 'Użytkownik' || !n) && hasSelf) {
+        return currentUserName
+      }
+      return n
+    })
+
+    if (cleanNames.length <= 19) {
+      return { names: cleanNames, moreCount: 0 }
     }
     return {
-      names: resolvedNames.slice(0, 19),
-      moreCount: resolvedNames.length - 19,
+      names: cleanNames.slice(0, 19),
+      moreCount: cleanNames.length - 19,
     }
   }
 
   const userIds = props.post?.reactions?.[reactionType]
   if (!userIds) return { names: [], moreCount: 0 }
 
-  const names = userIds.map((id: any) => getUserById(id)?.name).filter(Boolean) as string[]
+  const names = userIds
+    .map((id: any) => {
+      if (String(id) === currentUserId) {
+        return currentUserName
+      }
+      return getUserById(id)?.name
+    })
+    .filter(Boolean) as string[]
 
   if (names.length <= 19) {
     return { names, moreCount: 0 }

@@ -107,6 +107,7 @@ import { ref, computed } from 'vue'
 import HoverScrollbar from '@/components/common/HoverScrollbar.vue'
 import ProfilePopper from '@/components/profile/ProfilePopper.vue'
 import { getUserById } from '@/utils/users'
+import { useAuthStore } from '@/stores/auth'
 import { usePostReactions } from '@/composables/feed/usePostReactions'
 
 defineEmits(['close'])
@@ -125,10 +126,18 @@ const props = defineProps<{
   reactionDetails?: any[]
 }>()
 
+const authStore = useAuthStore()
 const { reactionIcons } = usePostReactions()
 
 const reactionsList = computed<ReactionUser[]>(() => {
   const list: ReactionUser[] = []
+  const currentUserId = String(authStore.currentUserId)
+  const currentUserName =
+    authStore.currentUser?.name ||
+    [authStore.currentUser?.firstName, authStore.currentUser?.lastName].filter(Boolean).join(' ') ||
+    authStore.originalUser?.name ||
+    'Użytkownik'
+  const currentUserAvatar = authStore.currentUser?.avatar || '/default-avatar.png'
 
   if (Array.isArray(props.reactionDetails) && props.reactionDetails.length > 0) {
     props.reactionDetails.forEach((r: any) => {
@@ -138,35 +147,40 @@ const reactionsList = computed<ReactionUser[]>(() => {
       if (Array.isArray(r.users) && r.users.length > 0) {
         r.users.forEach((u: any) => {
           if (u) {
+            const isSelf = String(u.id) === currentUserId
+            const rawName = [u.firstName, u.lastName].filter(Boolean).join(' ').trim()
+            const resolvedName = isSelf
+              ? currentUserName
+              : (rawName && rawName !== 'Użytkownik'
+                ? rawName
+                : (u.name || getUserById(String(u.id))?.name || 'Użytkownik'))
+
+            const avatarUrl = isSelf
+              ? currentUserAvatar
+              : (u.avatar || getUserById(String(u.id))?.avatar || '/default-avatar.png')
+
             list.push({
               userId: String(u.id),
-              userName: [u.firstName, u.lastName].filter(Boolean).join(' ') || 'Użytkownik',
+              userName: resolvedName,
               emoji,
-              avatarUrl: u.avatar || '/default-avatar.png',
-              mutualFriends: u.mutualFriendsCount || 0
+              avatarUrl,
+              mutualFriends: isSelf ? 0 : (u.mutualFriendsCount || 0)
             })
           }
         })
       } else if (Array.isArray(r.userIds)) {
         r.userIds.forEach((id: any) => {
+          const isSelf = String(id) === currentUserId
           const user = getUserById(String(id))
-          if (user) {
-            list.push({
-              userId: String(user.id),
-              userName: user.name,
-              emoji,
-              avatarUrl: user.avatar || '/default-avatar.png',
-              mutualFriends: user.mutualFriendsCount || 0
-            })
-          } else {
-            list.push({
-              userId: String(id),
-              userName: 'Użytkownik',
-              emoji,
-              avatarUrl: '/default-avatar.png',
-              mutualFriends: 0
-            })
-          }
+          const userName = isSelf ? currentUserName : (user?.name || 'Użytkownik')
+          const avatarUrl = isSelf ? currentUserAvatar : (user?.avatar || '/default-avatar.png')
+          list.push({
+            userId: String(id),
+            userName,
+            emoji,
+            avatarUrl,
+            mutualFriends: isSelf ? 0 : (user?.mutualFriendsCount || 0)
+          })
         })
       }
     })
@@ -178,24 +192,17 @@ const reactionsList = computed<ReactionUser[]>(() => {
   for (const [type, userIds] of Object.entries(props.reactions)) {
     if (userIds && Array.isArray(userIds)) {
       userIds.forEach((userId) => {
+        const isSelf = String(userId) === currentUserId
         const user = getUserById(String(userId))
-        if (user) {
-          list.push({
-            userId: String(user.id),
-            userName: user.name,
-            emoji: reactionIcons[type?.toLowerCase()]?.emoji || '👍',
-            avatarUrl: user.avatar || '/default-avatar.png',
-            mutualFriends: user.mutualFriendsCount || 0
-          })
-        } else {
-          list.push({
-            userId: String(userId),
-            userName: 'Użytkownik',
-            emoji: reactionIcons[type?.toLowerCase()]?.emoji || '👍',
-            avatarUrl: '/default-avatar.png',
-            mutualFriends: 0
-          })
-        }
+        const userName = isSelf ? currentUserName : (user?.name || 'Użytkownik')
+        const avatarUrl = isSelf ? currentUserAvatar : (user?.avatar || '/default-avatar.png')
+        list.push({
+          userId: String(userId),
+          userName,
+          emoji: reactionIcons[type?.toLowerCase()]?.emoji || '👍',
+          avatarUrl,
+          mutualFriends: isSelf ? 0 : (user?.mutualFriendsCount || 0)
+        })
       })
     }
   }

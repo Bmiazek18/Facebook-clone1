@@ -65,9 +65,16 @@ const formatPost = (post: any) => {
       const type = r.reactionType.toLowerCase()
       formattedReactions[type] = (r.userIds ?? []).map(String)
       if (Array.isArray(r.users)) {
-        reactionUserNames[type] = r.users.map((u: any) =>
-          [u.firstName, u.lastName].filter(Boolean).join(' ') || 'Użytkownik'
-        )
+        reactionUserNames[type] = r.users.map((u: any) => {
+          const rawName = [u.firstName, u.lastName].filter(Boolean).join(' ').trim()
+          if (rawName && rawName !== 'Użytkownik') return rawName
+          if (u.name) return u.name
+          if (String(u.id) === String(authStore.currentUserId) && authStore.currentUser?.name) {
+            return authStore.currentUser.name
+          }
+          const cached = getUserById(String(u.id))
+          return cached?.name || 'Użytkownik'
+        })
       }
     })
   } else if (post.reactions) {
