@@ -3,6 +3,8 @@ import gql from 'graphql-tag'
 import { GET_FRIENDS, GET_FRIEND_SUGGESTIONS } from '@/graphql/friends'
 import { GET_SEARCH_HISTORY, SEARCH_USERS, RECORD_SEARCH, DELETE_SEARCH_HISTORY_ITEM } from '@/graphql/search'
 
+export { GET_FRIENDS, GET_FRIEND_SUGGESTIONS }
+
 export const GENERATE_TICKET_MUTATION = gql`
   mutation GenerateTicket($userId: ID!) {
     generateTicket(userId: $userId)
@@ -268,11 +270,11 @@ export const usersApi = {
     return data?.getFriends || []
   },
 
-  async getFriendSuggestions(currentUserId: string | number) {
+  async getFriendSuggestions(currentUserId: string | number, fetchPolicy: 'cache-first' | 'network-only' | 'no-cache' = 'cache-first') {
     const data = await apiClient.query<{ getFriendSuggestions: any[] }>(
       GET_FRIEND_SUGGESTIONS,
       { currentUserId: String(currentUserId) },
-      { fetchPolicy: 'network-only' }
+      { fetchPolicy }
     )
     return data?.getFriendSuggestions || []
   },
@@ -395,11 +397,11 @@ export const usersApi = {
     return data?.updateProfile || null
   },
 
-  async getFriendRequests(currentUserId: string | number) {
+  async getFriendRequests(currentUserId: string | number, fetchPolicy: 'cache-first' | 'network-only' | 'no-cache' = 'cache-first') {
     const data = await apiClient.query<{ getFriendRequests: any[] }>(
       GET_FRIEND_REQUESTS_QUERY,
       { currentUserId: String(currentUserId) },
-      { fetchPolicy: 'network-only' }
+      { fetchPolicy }
     )
     return data?.getFriendRequests || []
   },
