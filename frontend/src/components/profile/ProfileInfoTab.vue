@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, inject, onMounted, watch } from 'vue'
+import { ref, computed, inject } from 'vue'
 import { useRoute, useRouter } from 'nuxt/app'
 import { useI18n } from 'vue-i18n'
-import FriendsSection from '@/components/friends/FriendsSection.vue'
-import { usersApi } from '@/api/users'
 
 const route = useRoute()
 const router = useRouter()
@@ -64,50 +62,6 @@ function setActiveTab(tabKey: string) {
   const basePath = userId ? `/profile/${userId}/info` : '/profile/info'
   router.push(`${basePath}/${tabKey}`)
 }
-
-const friendsList = ref<any[]>([])
-const isLoadingFriends = ref(false)
-
-const loadFriends = async () => {
-  const targetUserId = (profileUser?.value?.id || route.params.userId) as string
-  if (!targetUserId) return
-  isLoadingFriends.value = true
-  try {
-    const list = await usersApi.getFriends(targetUserId)
-    if (list && Array.isArray(list) && list.length > 0) {
-      friendsList.value = list.map((f: any) => ({
-        id: f.id,
-        name: [f.firstName, f.lastName].filter(Boolean).join(' ') || 'Użytkownik',
-        avatar: f.avatar || '',
-        birthDate: f.birthDate || '',
-        city: f.city || '',
-        location: f.location || '',
-        hometown: f.hometown || '',
-        school: f.school || '',
-        highSchool: f.highSchool || '',
-        work: f.work || f.job || '',
-        isFriend: true,
-        mutual: f.mutualCount ?? 0,
-        imageId: 35,
-      }))
-    } else {
-      friendsList.value = []
-    }
-  } catch (err) {
-    console.error('Failed to load friends in ProfileInfoTab:', err)
-    friendsList.value = []
-  } finally {
-    isLoadingFriends.value = false
-  }
-}
-
-onMounted(() => {
-  loadFriends()
-})
-
-watch(() => profileUser?.value?.id || route.params.userId, () => {
-  loadFriends()
-})
 </script>
 
 <template>
@@ -145,11 +99,5 @@ watch(() => profileUser?.value?.id || route.params.userId, () => {
     <div v-else class="p-8 text-center text-gray-500 bg-theme-bg-secondary rounded-lg shadow-lg">
       {{ $t('profile.info.userNotFound') }}
     </div>
-
-    <FriendsSection
-      :friends-list="friendsList"
-      :is-full-view="false"
-      class="mt-4 border-none shadow-none p-0 bg-transparent"
-    />
   </div>
 </template>
