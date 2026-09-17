@@ -41,130 +41,130 @@ export const mapGraphQLGroupToGroup = (g: any): Group => ({
 })
 
 export const groupsApi = {
-  async getGroups(limit = 100, offset = 0): Promise<Group[]> {
+  async getGroups(limit = 100, offset = 0, fetchPolicy: 'cache-first' | 'network-only' | 'no-cache' = 'cache-first'): Promise<Group[]> {
     const data = await apiClient.query<{ getGroups: any[] }>(
       GET_GROUPS,
       { limit, offset },
-      { fetchPolicy: 'network-only' }
+      { fetchPolicy }
     )
     return (data?.getGroups || []).map(mapGraphQLGroupToGroup)
   },
 
-  async getUserGroups(userId: string): Promise<Group[]> {
+  async getUserGroups(userId: string, fetchPolicy: 'cache-first' | 'network-only' | 'no-cache' = 'cache-first'): Promise<Group[]> {
     const data = await apiClient.query<{ getUserGroups: any[] }>(
       GET_USER_GROUPS,
       { userId },
-      { fetchPolicy: 'network-only' }
+      { fetchPolicy }
     )
     return (data?.getUserGroups || []).map(mapGraphQLGroupToGroup)
   },
 
-  async getGroupById(id: string): Promise<Group | null> {
+  async getGroupById(id: string, fetchPolicy: 'cache-first' | 'network-only' | 'no-cache' = 'cache-first'): Promise<Group | null> {
     const data = await apiClient.query<{ getGroupById: any }>(
       GET_GROUP_BY_ID,
       { id },
-      { fetchPolicy: 'network-only' }
+      { fetchPolicy }
     )
     return data?.getGroupById ? mapGraphQLGroupToGroup(data.getGroupById) : null
   },
 
-  async createGroup(input: { name: string; description?: string; privacy: string; image?: string; creatorId?: string }): Promise<Group | null> {
+  async createGroup(input: { name: string; description?: string; privacy: string; image?: string; creatorId?: string | number }): Promise<Group | null> {
     const data = await apiClient.mutate<{ createGroup: any }>(
       CREATE_GROUP,
-      { input }
+      { input: { ...input, creatorId: input.creatorId ? String(input.creatorId) : undefined } }
     )
     return data?.createGroup ? mapGraphQLGroupToGroup(data.createGroup) : null
   },
 
-  async joinGroup(groupId: string, userId?: string): Promise<boolean> {
+  async joinGroup(groupId: string | number, userId?: string | number): Promise<boolean> {
     const data = await apiClient.mutate<{ joinGroup: boolean }>(
       JOIN_GROUP,
-      { groupId, userId }
+      { groupId: String(groupId), userId: userId ? String(userId) : undefined }
     )
     return !!data?.joinGroup
   },
 
-  async leaveGroup(groupId: string, userId?: string): Promise<boolean> {
+  async leaveGroup(groupId: string | number, userId?: string | number): Promise<boolean> {
     const data = await apiClient.mutate<{ leaveGroup: boolean }>(
       LEAVE_GROUP,
-      { groupId, userId }
+      { groupId: String(groupId), userId: userId ? String(userId) : undefined }
     )
     return !!data?.leaveGroup
   },
 
-  async getMembership(groupId: string, userId: string): Promise<string> {
+  async getMembership(groupId: string | number, userId: string | number, fetchPolicy: 'cache-first' | 'network-only' | 'no-cache' = 'cache-first'): Promise<string> {
     const data = await apiClient.query<{ getGroupMembership: string }>(
       GET_GROUP_MEMBERSHIP,
-      { groupId, userId },
-      { fetchPolicy: 'network-only' }
+      { groupId: String(groupId), userId: String(userId) },
+      { fetchPolicy }
     )
     return data?.getGroupMembership || ''
   },
 
-  async getPendingRequests(groupId: string): Promise<any[]> {
+  async getPendingRequests(groupId: string | number, fetchPolicy: 'cache-first' | 'network-only' | 'no-cache' = 'cache-first'): Promise<any[]> {
     const data = await apiClient.query<{ getPendingRequests: any[] }>(
       GET_PENDING_REQUESTS,
-      { groupId },
-      { fetchPolicy: 'network-only' }
+      { groupId: String(groupId) },
+      { fetchPolicy }
     )
     return data?.getPendingRequests || []
   },
 
-  async approveRequest(groupId: string, userId: string, adminId?: string): Promise<boolean> {
+  async approveRequest(groupId: string | number, userId: string | number, adminId?: string | number): Promise<boolean> {
     const data = await apiClient.mutate<{ approveGroupRequest: boolean }>(
       APPROVE_GROUP_REQUEST,
-      { groupId, userId, adminId }
+      { groupId: String(groupId), userId: String(userId), adminId: adminId ? String(adminId) : undefined }
     )
     return !!data?.approveGroupRequest
   },
 
-  async rejectRequest(groupId: string, userId: string, adminId?: string): Promise<boolean> {
+  async rejectRequest(groupId: string | number, userId: string | number, adminId?: string | number): Promise<boolean> {
     const data = await apiClient.mutate<{ rejectGroupRequest: boolean }>(
       REJECT_GROUP_REQUEST,
-      { groupId, userId, adminId }
+      { groupId: String(groupId), userId: String(userId), adminId: adminId ? String(adminId) : undefined }
     )
     return !!data?.rejectGroupRequest
   },
 
-  async getMembers(groupId: string): Promise<any[]> {
+  async getMembers(groupId: string | number, fetchPolicy: 'cache-first' | 'network-only' | 'no-cache' = 'cache-first'): Promise<any[]> {
     const data = await apiClient.query<{ getGroupMembers: any[] }>(
       GET_GROUP_MEMBERS,
-      { groupId },
-      { fetchPolicy: 'network-only' }
+      { groupId: String(groupId) },
+      { fetchPolicy }
     )
     return data?.getGroupMembers || []
   },
 
-  async removeMember(groupId: string, userId: string, adminId?: string): Promise<boolean> {
+  async removeMember(groupId: string | number, userId: string | number, adminId?: string | number): Promise<boolean> {
     const data = await apiClient.mutate<{ removeGroupMember: boolean }>(
       REMOVE_GROUP_MEMBER,
-      { groupId, userId, adminId }
+      { groupId: String(groupId), userId: String(userId), adminId: adminId ? String(adminId) : undefined }
     )
     return !!data?.removeGroupMember
   },
 
-  async updateMemberRole(groupId: string, userId: string, role: GroupRole | string, adminId?: string): Promise<boolean> {
+  async updateMemberRole(groupId: string | number, userId: string | number, role: GroupRole | string, adminId?: string | number): Promise<boolean> {
     const data = await apiClient.mutate<{ updateGroupMemberRole: boolean }>(
       UPDATE_GROUP_MEMBER_ROLE,
-      { groupId, userId, role, adminId }
+      { groupId: String(groupId), userId: String(userId), role, adminId: adminId ? String(adminId) : undefined }
     )
     return !!data?.updateGroupMemberRole
   },
 
-  async getOverview(groupId: string): Promise<any> {
+  async getOverview(groupId: string, fetchPolicy: 'cache-first' | 'network-only' | 'no-cache' = 'cache-first'): Promise<any> {
     const data = await apiClient.query<{ getGroupOverview: any }>(
       GET_GROUP_OVERVIEW,
       { groupId },
-      { fetchPolicy: 'network-only' }
+      { fetchPolicy }
     )
     return data?.getGroupOverview || null
   },
 
-  async getRules(groupId: string): Promise<any[]> {
+  async getRules(groupId: string, fetchPolicy: 'cache-first' | 'network-only' | 'no-cache' = 'cache-first'): Promise<any[]> {
     const data = await apiClient.query<{ getGroupRules: any[] }>(
       GET_GROUP_RULES,
       { groupId },
-      { fetchPolicy: 'network-only' }
+      { fetchPolicy }
     )
     return data?.getGroupRules || []
   },
@@ -193,11 +193,11 @@ export const groupsApi = {
     return !!data?.deleteGroupRule
   },
 
-  async getActivityLogs(groupId: string): Promise<any[]> {
+  async getActivityLogs(groupId: string, fetchPolicy: 'cache-first' | 'network-only' | 'no-cache' = 'cache-first'): Promise<any[]> {
     const data = await apiClient.query<{ getGroupActivityLogs: any[] }>(
       GET_GROUP_ACTIVITY_LOGS,
       { groupId },
-      { fetchPolicy: 'network-only' }
+      { fetchPolicy }
     )
     return data?.getGroupActivityLogs || []
   },
@@ -216,11 +216,11 @@ export const groupsApi = {
     return data?.logGroupActivity || null
   },
 
-  async getGroupFeed(groupId: string, limit = 20, offset = 0): Promise<any[]> {
+  async getGroupFeed(groupId: string, limit = 20, offset = 0, fetchPolicy: 'cache-first' | 'network-only' | 'no-cache' = 'cache-first'): Promise<any[]> {
     const data = await apiClient.query<{ getGroupFeed: any[] }>(
       GET_GROUP_FEED,
       { groupId: String(groupId), limit, offset },
-      { fetchPolicy: 'network-only' }
+      { fetchPolicy }
     )
     return data?.getGroupFeed || []
   }
