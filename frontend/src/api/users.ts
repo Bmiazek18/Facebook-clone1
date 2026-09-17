@@ -216,10 +216,10 @@ export const ACCEPT_FRIEND_REQUEST_MUTATION = gql`
 `
 
 export const usersApi = {
-  async searchUsers(query: string, currentUserId: string | number) {
+  async searchUsers(query: string, currentUserId?: string | number) {
     const data = await apiClient.query<{ searchUsers: any[] }>(
       SEARCH_USERS,
-      { query, currentUserId: String(currentUserId) },
+      { query, currentUserId: currentUserId ? String(currentUserId) : undefined },
       { fetchPolicy: 'network-only' }
     )
     return data?.searchUsers || []

@@ -29,31 +29,37 @@ export interface TelemetryPayload {
 const impressionBuffer: ImpressionPayload[] = []
 const eventBuffer: TelemetryPayload[] = []
 let flushTimer: any = null
+let lastFailedTime = 0
+const FAILURE_BACKOFF_MS = 60000
 
 export function useImpressionTracker() {
   const authStore = useAuthStore()
   const apiUrl = ''
 
   const flushBuffer = async () => {
+    if (Date.now() - lastFailedTime < FAILURE_BACKOFF_MS) {
+      if (impressionBuffer.length > 50) impressionBuffer.length = 0
+      if (eventBuffer.length > 50) eventBuffer.length = 0
+      return
+    }
+
     // 1. Flush impressions
     if (impressionBuffer.length > 0) {
       const batch = [...impressionBuffer]
       impressionBuffer.length = 0
 
       try {
-        if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-          const blob = new Blob([JSON.stringify(batch)], { type: 'application/json' })
-          navigator.sendBeacon(`${apiUrl}/api/analytics/impressions/batch`, blob)
-        } else {
-          fetch(`${apiUrl}/api/analytics/impressions/batch`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(batch),
-            keepalive: true
-          }).catch(() => {})
+        const res = await fetch(`${apiUrl}/api/analytics/impressions/batch`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(batch),
+          keepalive: true
+        }).catch(() => null)
+        if (res && !res.ok) {
+          lastFailedTime = Date.now()
         }
       } catch (err) {
-        console.warn('Analytics impression batch send failed:', err)
+        lastFailedTime = Date.now()
       }
     }
 
@@ -63,27 +69,25 @@ export function useImpressionTracker() {
       eventBuffer.length = 0
 
       try {
-        if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-          const blob = new Blob([JSON.stringify(eventBatch)], { type: 'application/json' })
-          navigator.sendBeacon(`${apiUrl}/api/analytics/events/batch`, blob)
-        } else {
-          fetch(`${apiUrl}/api/analytics/events/batch`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(eventBatch),
-            keepalive: true
-          }).catch(() => {})
+        const res = await fetch(`${apiUrl}/api/analytics/events/batch`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(eventBatch),
+          keepalive: true
+        }).catch(() => null)
+        if (res && !res.ok) {
+          lastFailedTime = Date.now()
         }
       } catch (err) {
-        console.warn('Analytics event batch send failed:', err)
+        lastFailedTime = Date.now()
       }
     }
   }
 
   // Periodic flush
   if (!flushTimer && import.meta.client) {
-    flushTimer = setInterval(flushBuffer, 5000)
-    window.addEventListener('beforeunload', flushBuffer)
+    flushTimer = setInterval(flushBuffer, 10000)
+    window.addEventListener('beforeunload', () => { flushBuffer() })
   }
 
   const activeViews = new Map<string, number>()

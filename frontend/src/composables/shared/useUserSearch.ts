@@ -2,10 +2,12 @@ import { ref, watch } from 'vue'
 import type { Ref } from 'vue'
 import type { User } from '@/utils/users'
 import { usersApi } from '@/api/users'
+import { useAuthStore } from '@/stores/auth'
 
 export function useUserSearch(searchTerm: Ref<string>) {
   const matchingUsers = ref<User[]>([])
   const isLoading = ref(false)
+  const authStore = useAuthStore()
 
   watch(
     searchTerm,
@@ -17,7 +19,7 @@ export function useUserSearch(searchTerm: Ref<string>) {
 
       isLoading.value = true
       try {
-        const users = await usersApi.searchUsers(newSearchTerm, '')
+        const users = await usersApi.searchUsers(newSearchTerm, authStore.currentUserId || undefined)
         if (users) {
           matchingUsers.value = users.map((u: any) => ({
             id: u.id,

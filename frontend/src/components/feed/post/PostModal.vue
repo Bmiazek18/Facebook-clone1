@@ -63,7 +63,7 @@ loadAllComments()
   <div class="flex flex-col w-full lg:w-[700px] h-[90vh] lg:h-[90vh] bg-theme-bg-secondary overflow-hidden">
 
     <HoverScrollbar class="flex-1 min-h-0 w-full">
-      <PostItem v-if="post && post.id" :post="props.post" :hide-close-button="true" :is-in-modal="true" :shouldPostActionVisible="false" />
+      <PostItem v-if="post && post.id" :post="props.post" :hide-close-button="true" :is-in-modal="true"  />
 
       <div class="p-2 sm:p-3 md:p-4">
 
