@@ -20,6 +20,7 @@ const props = defineProps<{
   /** Gdy ustawione — klik (bez story) otwiera /photo z tym src */
   viewPhotoSrc?: string
   viewPhotoType?: 'avatar' | 'cover' | 'photo'
+  disablePopper?: boolean
 }>()
 
 const router = useRouter()
@@ -88,7 +89,7 @@ const toggleModal = () => {
 </script>
 
 <template>
-  <ProfilePopper :userId="user?.id" :name="user?.name" :disabled="disableLink">
+  <ProfilePopper :userId="user?.id" :name="user?.name" :disabled="disableLink || disablePopper">
     <div class="relative inline-flex flex-col items-center">
 
       <!-- Dymek z notatką -->

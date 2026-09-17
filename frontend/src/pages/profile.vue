@@ -10,10 +10,10 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import EditProfileImgModal from '@/components/profile/modals/EditProfileImgModal.vue'
 import UserAvatar from '@/components/common/UserAvatar.vue'
 import SelectProfileImgModal from '@/components/profile/modals/SelectProfileImgModal.vue'
-// --- IMPORTY IKON (Vue Material Design Icons) ---
+import { Dropdown as VDropdown } from 'floating-vue'
 import MapMarker from 'vue-material-design-icons/MapMarker.vue'
 import Domain from 'vue-material-design-icons/Domain.vue'
-import Camera from 'vue-material-design-icons/Camera.vue'
+import CameraOutline from 'vue-material-design-icons/CameraOutline.vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
@@ -272,7 +272,13 @@ const fetchProfileFriends = async () => {
     >
       <div class="max-w-[1200px] flex items-center justify-between w-full mx-auto lg:px-0">
         <div class="flex items-center space-x-3">
-          <UserAvatar :user="profileUser" :size="40" :hide-story-ring="true" :is-owner="isOwner" />
+          <UserAvatar
+            :user="profileUser"
+            :size="40"
+            :hide-story-ring="true"
+            :is-owner="isOwner"
+            :disable-popper="true"
+          />
           <div class="text-[17px] text-theme-text leading-5">
             {{ profileUser.name }}
           </div>
@@ -301,21 +307,52 @@ const fetchProfileFriends = async () => {
             <!-- Avatar -->
             <div class="relative z-10 flex-shrink-0">
               <div class="relative group p-1 bg-theme-bg-secondary rounded-full">
+                <VDropdown
+                  v-if="isOwner"
+                  placement="bottom-start"
+                  :distance="10"
+                  :triggers="['click']"
+                  :auto-hide="true"
+                >
+                  <div class="cursor-pointer">
+                    <UserAvatar
+                      :user="profileUser"
+                      :size="168"
+                      :is-owner="isOwner"
+                      :disable-link="true"
+                      :disable-popper="true"
+                      class="relative block"
+                    />
+                  </div>
+                  <template #popper="{ hide }">
+                    <div class="bg-theme-bg-secondary border border-theme-border rounded-xl shadow-xl py-2 px-1 w-64 z-50 text-theme-text">
+                      <button
+                        @click="() => { hide(); openProfilePhoto('avatar'); }"
+                        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-theme-bg-hover text-left text-[15px] font-medium transition-colors cursor-pointer"
+                      >
+                        <AccountCircleOutline :size="20" class="text-theme-text-secondary" />
+                        <span>{{ $t('profile.viewProfilePhoto') || 'Zobacz zdjęcie profilowe' }}</span>
+                      </button>
+                      <button
+                        @click="() => { hide(); isPickerOpen = true; }"
+                        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-theme-bg-hover text-left text-[15px] font-medium transition-colors cursor-pointer"
+                      >
+                        <CameraOutline :size="20" class="text-theme-text-secondary" />
+                        <span>{{ $t('profile.selectProfilePhoto') || 'Wybierz zdjęcie profilowe' }}</span>
+                      </button>
+                    </div>
+                  </template>
+                </VDropdown>
                 <UserAvatar
+                  v-else
                   :user="profileUser"
                   :size="168"
                   :is-owner="isOwner"
                   :view-photo-src="profileUser.avatar"
                   view-photo-type="avatar"
+                  :disable-popper="true"
                   class="relative block"
                 />
-                <button
-                  v-if="isOwner"
-                  @click.stop="isPickerOpen = true"
-                  class="absolute bottom-4 right-4 bg-gray-200 hover:bg-gray-300 text-black p-2 rounded-full cursor-pointer transition-colors z-20"
-                >
-                  <Camera :size="22" fillColor="currentColor" class="text-theme-text" />
-                </button>
               </div>
             </div>
 

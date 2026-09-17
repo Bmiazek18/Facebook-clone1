@@ -424,6 +424,8 @@
     "friendsCount": "{count} friends",
     "mutualFriendsCount": "{count} mutual friends",
     "editProfileImage": "Edit profile image",
+    "viewProfilePhoto": "See profile picture",
+    "selectProfilePhoto": "Choose profile picture",
     "noPostsAvailable": "No posts available",
     "noPhotos": "No photos to display",
     "noFriends": "No friends to display",
