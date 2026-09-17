@@ -168,10 +168,23 @@ const likesCount = computed(() => {
   return currentPost.value.reactions.reduce((sum: number, r: any) => sum + (r.userIds?.length || 0), 0)
 })
 
+const cleanSignedUrl = (url: string) => {
+  if (!url) return ''
+  const qIdx = url.indexOf('?')
+  if (qIdx !== -1) {
+    const query = url.substring(qIdx)
+    if (query.includes('signature=') || query.includes('expires=')) {
+      return url.substring(0, qIdx)
+    }
+  }
+  return url
+}
+
 // Rozwiązanie adresu URL multimediów
 const config = useRuntimeConfig()
 const getMediaUrl = (src: string) => {
   if (!src) return ''
+  src = cleanSignedUrl(src)
   if (/^(http:\/\/|https:\/\/|blob:|data:)/.test(src)) return src
   if (src.startsWith('/default') || src.startsWith('/_nuxt') || src.startsWith('/assets') || src.startsWith('/images') || src.startsWith('/icons')) {
     return src

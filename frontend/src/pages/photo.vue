@@ -461,8 +461,21 @@ const currentImage = computed(():
   return currentPost.value?.media?.[currentImageIndex.value]
 })
 
+const cleanSignedUrl = (url: string) => {
+  if (!url) return ''
+  const qIdx = url.indexOf('?')
+  if (qIdx !== -1) {
+    const query = url.substring(qIdx)
+    if (query.includes('signature=') || query.includes('expires=')) {
+      return url.substring(0, qIdx)
+    }
+  }
+  return url
+}
+
 const getMediaUrl = (src: string) => {
   if (!src) return ''
+  src = cleanSignedUrl(src)
   if (
     src.startsWith('http://localhost/files/') ||
     src.startsWith('http://localhost/videos/') ||
