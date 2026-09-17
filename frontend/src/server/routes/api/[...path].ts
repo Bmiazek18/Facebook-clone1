@@ -45,7 +45,7 @@ const ROUTE_RULES: RouteRule[] = [
   },
 ]
 
-const LOCAL_HANDLER_PREFIXES = ['auth/', 'hsm/']
+const LOCAL_HANDLER_PREFIXES = ['auth/', 'hsm/', 'friend-lists']
 
 export default defineEventHandler(async (event) => {
   const path = event.context.params?.path || ''
