@@ -10,6 +10,7 @@ const props = defineProps<{
   title: string
   subtitle?: string
   actionText?: string
+  emptyText?: string
   items: GalleryItem[]
 }>()
 
@@ -29,7 +30,7 @@ const emit = defineEmits<{
         </div>
       </div>
       <button
-        v-if="actionText"
+        v-if="actionText && items?.length > 0"
         @click="emit('click-action')"
         class="text-blue-500 text-[15px] hover:underline cursor-pointer bg-transparent border-none p-0 outline-none"
       >
@@ -37,7 +38,7 @@ const emit = defineEmits<{
       </button>
     </div>
 
-    <div class="grid grid-cols-3 gap-2.5 mt-4">
+    <div v-if="items && items.length > 0" class="grid grid-cols-3 gap-2.5 mt-4">
       <div
         v-for="item in items"
         :key="item.id"
@@ -66,6 +67,9 @@ const emit = defineEmits<{
           class="text-[13px] text-theme-text-secondary text-wrap"
         >{{ $t('profile.itemMutualfriendscountWspolnychZnajomych') }}</div>
       </div>
+    </div>
+    <div v-else class="text-sm text-theme-text-secondary py-4 text-center">
+      {{ emptyText || $t('profile.noPhotos') || 'Brak zdjęć do wyświetlenia' }}
     </div>
   </div>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import CreateBox from '@/components/create/createPost/CreateBox.vue'
 import ProfileMiniGallery from '@/components/profile/ProfileMiniGallery.vue'
 import PostItem from '@/components/feed/post/PostItem.vue'
@@ -25,7 +25,8 @@ const props = defineProps({
   },
   miniPhotosList: {
     type: Array,
-    required: true,
+    required: false,
+    default: () => [],
   },
   userName: {
     type: String,
@@ -37,11 +38,81 @@ const props = defineProps({
   },
 })
 
+const route = useRoute()
+const router = useRouter()
+const postsStore = usePostsStore()
+const activeView = ref('list')
+
+const HEADER_OFFSET = 110
+const BOTTOM_OFFSET = 16
+const leftSectionRef = ref<HTMLElement | null>(null)
+const { stickyTop } = useStickySidebar(leftSectionRef, HEADER_OFFSET, BOTTOM_OFFSET)
+
+const targetId = computed(() => route.params.userId as string)
+const effectiveTargetId = computed(() => {
+  if (profileUser?.value?.id) return String(profileUser.value.id)
+  return (route.params.userId as string) || '1'
+})
+
+const userPosts = computed(() => {
+  const targetIdNum = Number(effectiveTargetId.value)
+  const targetIdStr = String(effectiveTargetId.value)
+  return postsStore.posts.filter(
+    (p) =>
+      p.authorId === targetIdNum ||
+      String(p.authorId) === targetIdStr ||
+      (p.targetType === 'User' && String(p.targetId) === targetIdStr),
+  )
+})
+
 const photoItems = computed(() => {
-  return ((props.miniPhotosList as number[]) || []).slice(0, 9).map((id) => ({
-    id,
-    imageUrl: `https://picsum.photos/id/${id}/200/200`,
-  }))
+  const photos: { id: string | number; imageUrl: string; postId?: string | number }[] = []
+
+  for (const post of userPosts.value) {
+    if (Array.isArray(post.media)) {
+      post.media.forEach((m: any, idx: number) => {
+        const url = typeof m === 'string' ? m : m?.src || m?.url || m?.imageUrl
+        if (url && typeof url === 'string') {
+          const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(url.split('?')[0])
+          if (!isVideo) {
+            photos.push({
+              id: `${post.id}-media-${idx}`,
+              imageUrl: url,
+              postId: post.id,
+            })
+          }
+        }
+      })
+    }
+    if (Array.isArray((post as any).images)) {
+      (post as any).images.forEach((img: any, idx: number) => {
+        const url = typeof img === 'string' ? img : img?.url || img?.imageUrl || img?.src
+        if (url && typeof url === 'string') {
+          photos.push({
+            id: `${post.id}-img-${idx}`,
+            imageUrl: url,
+            postId: post.id,
+          })
+        }
+      })
+    }
+    if ((post as any).image && typeof (post as any).image === 'string') {
+      photos.push({
+        id: `${post.id}-img`,
+        imageUrl: (post as any).image,
+        postId: post.id,
+      })
+    }
+  }
+
+  const seen = new Set<string>()
+  const uniquePhotos = photos.filter((p) => {
+    if (seen.has(p.imageUrl)) return false
+    seen.add(p.imageUrl)
+    return true
+  })
+
+  return uniquePhotos.slice(0, 9)
 })
 
 const friendItems = computed(() => {
@@ -52,18 +123,6 @@ const friendItems = computed(() => {
     mutualFriendsCount: friend.mutualFriendsCount,
   }))
 })
-
-const route = useRoute()
-const postsStore = usePostsStore()
-const activeView = ref('list')
-
-const HEADER_OFFSET = 110
-const BOTTOM_OFFSET = 16
-const leftSectionRef = ref<HTMLElement | null>(null)
-const { stickyTop } = useStickySidebar(leftSectionRef, HEADER_OFFSET, BOTTOM_OFFSET)
-
-const targetId = computed(() => route.params.userId as string)
-const effectiveTargetId = computed(() => (route.params.userId as string) || '1')
 
 const selectedPost = ref<any | null>(null)
 const selectedGroupPosts = ref<any[] | null>(null)
@@ -78,13 +137,27 @@ const openGroupModal = (postsList: any[], title: string) => {
   selectedGroupTitle.value = title
 }
 
+const handlePhotoClick = (item: any) => {
+  if (item.postId) {
+    const post = postsStore.posts.find((p) => String(p.id) === String(item.postId))
+    if (post) {
+      openPostModal(post)
+    }
+  }
+}
+
+const goToPhotos = () => {
+  const base = route.params.userId ? `/profile/${route.params.userId}` : '/profile'
+  router.push(`${base}/photos`)
+}
+
+const goToFriends = () => {
+  const base = route.params.userId ? `/profile/${route.params.userId}` : '/profile'
+  router.push(`${base}/friends_all`)
+}
+
 const groupedPostsByMonth = computed(() => {
-  const userPosts = postsStore.posts.filter(
-    (p) =>
-      p.authorId === parseInt(effectiveTargetId.value) ||
-      (p.targetType === 'User' && p.targetId === effectiveTargetId.value),
-  )
-  const grouped = userPosts.reduce(
+  const grouped = userPosts.value.reduce(
     (acc, post) => {
       const date = new Date(post.date)
       const monthYear = date.toLocaleString('pl-PL', { month: 'long', year: 'numeric' })
@@ -94,7 +167,7 @@ const groupedPostsByMonth = computed(() => {
       acc[monthYear].push(post)
       return acc
     },
-    {} as Record<string, typeof userPosts>,
+    {} as Record<string, typeof userPosts.value>,
   )
   return grouped
 })
@@ -217,12 +290,7 @@ const hasBirthdayPosts = computed(() => {
 })
 
 const filteredListPosts = computed(() => {
-  return postsStore.posts.filter(
-    (p) =>
-      !p.isBirthday &&
-      (p.authorId === parseInt(effectiveTargetId.value) ||
-        (p.targetType === 'User' && p.targetId === effectiveTargetId.value)),
-  )
+  return userPosts.value.filter((p) => !p.isBirthday)
 })
 
 const handleViewChanged = (view: string) => {
@@ -251,8 +319,17 @@ const handleDeletePost = (postId: number) => {
         :subtitle="`${friendsList?.length || 0} znajomych`"
         action-text="Pokaż wszystkich znajomych"
         :items="friendItems"
+        :empty-text="$t('profile.noFriends') || 'Brak znajomych do wyświetlenia'"
+        @click-action="goToFriends"
       />
-      <ProfileMiniGallery :title="$t('profile.tabs.photos')" action-text="Zobacz wszystkie" :items="photoItems" />
+      <ProfileMiniGallery
+        :title="$t('profile.tabs.photos')"
+        action-text="Zobacz wszystkie"
+        :items="photoItems"
+        :empty-text="$t('profile.noPhotos') || 'Brak zdjęć do wyświetlenia'"
+        @click-action="goToPhotos"
+        @click-item="handlePhotoClick"
+      />
 
       <div class="mt-4 text-[13px] text-gray-500 px-2 pb-4">{{ $t('profile.prywatnoscRegulaminReklamaPliki') }}</div>
     </div>
@@ -262,18 +339,28 @@ const handleDeletePost = (postId: number) => {
       <PostFilter @view-changed="handleViewChanged" :is-owner="isOwner" />
 
       <template v-if="activeView === 'list'">
-        <PostItem
-          v-for="post in filteredListPosts"
-          :key="post.id"
-          class="mt-4"
-          :post="post"
-          @delete="handleDeletePost"
-        />
-        <BirthdayPostFeed v-if="hasBirthdayPosts" />
+        <template v-if="filteredListPosts.length > 0">
+          <PostItem
+            v-for="post in filteredListPosts"
+            :key="post.id"
+            class="mt-4"
+            :post="post"
+            @delete="handleDeletePost"
+          />
+          <BirthdayPostFeed v-if="hasBirthdayPosts" />
+        </template>
+        <div
+          v-else
+          class="mt-4 bg-theme-bg-secondary p-8 rounded-xl shadow-sm border border-theme-border text-center"
+        >
+          <h3 class="text-[20px] font-bold text-theme-text">
+            {{ $t('profile.noPostsAvailable') || 'Brak dostępnych postów' }}
+          </h3>
+        </div>
       </template>
 
       <template v-else-if="activeView === 'grid'">
-        <div class="space-y-6 mt-4">
+        <div v-if="sortedGridMonths.length > 0" class="space-y-6 mt-4">
           <div
             v-for="{ monthYear, items } in sortedGridMonths"
             :key="monthYear"
@@ -294,6 +381,14 @@ const handleDeletePost = (postId: number) => {
               </div>
             </div>
           </div>
+        </div>
+        <div
+          v-else
+          class="mt-4 bg-theme-bg-secondary p-8 rounded-xl shadow-sm border border-theme-border text-center"
+        >
+          <h3 class="text-[20px] font-bold text-theme-text">
+            {{ $t('profile.noPostsAvailable') || 'Brak dostępnych postów' }}
+          </h3>
         </div>
       </template>
 

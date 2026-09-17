@@ -424,6 +424,9 @@
     "friendsCount": "{count} friends",
     "mutualFriendsCount": "{count} mutual friends",
     "editProfileImage": "Edit profile image",
+    "noPostsAvailable": "No posts available",
+    "noPhotos": "No photos to display",
+    "noFriends": "No friends to display",
     "info": {
       "overview": "Overview",
       "work_edu": "Work and education",

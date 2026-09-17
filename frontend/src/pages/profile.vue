@@ -261,8 +261,6 @@ const fetchProfileFriends = async () => {
     console.warn('Failed to fetch profile friends:', err)
   }
 }
-
-const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109]
 </script>
 
 <template>
@@ -453,7 +451,6 @@ const miniPhotosList = [101, 102, 103, 104, 105, 106, 107, 108, 109]
     <div class="max-w-312.5 mx-auto md:px-0 px-2">
       <NuxtPage
         :friends-list="friendsList"
-        :mini-photos-list="miniPhotosList"
         :user-name="profileUser.name"
         :user-image="profileUser.avatar"
       />
