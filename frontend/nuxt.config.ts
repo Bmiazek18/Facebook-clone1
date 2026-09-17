@@ -64,6 +64,29 @@ export default defineNuxtConfig({
   vite: {
     build: {
       target: 'es2022',
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('three') || id.includes('fabric') || id.includes('@mediapipe')) {
+                return 'vendor-canvas-3d'
+              }
+              if (id.includes('apexcharts') || id.includes('vue3-apexcharts')) {
+                return 'vendor-charts'
+              }
+              if (id.includes('leaflet')) {
+                return 'vendor-maps'
+              }
+              if (id.includes('agora-rtc-sdk-ng')) {
+                return 'vendor-agora'
+              }
+              if (id.includes('emoji-mart-vue-fast')) {
+                return 'vendor-emoji'
+              }
+            }
+          },
+        },
+      },
     },
     plugins: [
       tailwindcss(), // Tylko Tailwind

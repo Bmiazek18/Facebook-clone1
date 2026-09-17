@@ -1,33 +1,31 @@
 <script setup lang="ts">
-import { ref, computed, inject, toRef, type Ref, onMounted, watch } from 'vue'
+import { ref, computed, inject, toRef, type Ref, onMounted, watch, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import 'floating-vue/dist/style.css'
 
 import BaseModal from '@/components/common/BaseModal.vue'
-import PostModal from './PostModal.vue'
-import ShareAsPostModal from '@/components/feed/modals/ShareAsPostModal.vue'
 import PostHeader from './PostHeader.vue'
 import PostFooter from './PostFooter.vue'
 import PostContent from './PostContent.vue'
 import PostLinkPreview from './PostLinkPreview.vue'
 import PostSharedContent from './PostSharedContent.vue'
-import PostMarketplaceCard from './PostMarketplaceCard.vue'
 import PostMediaDisplay from './PostMediaDisplay.vue'
-import MapPreview from '@/components/common/MapPreview.vue'
 import { useStoryShareStore } from '@/stores/storyShare'
 import { useComments } from '@/composables/feed/useComments'
 import { useAuthStore } from '@/stores/auth'
 import { useGroupsStore } from '@/stores/groups'
 import { useImpressionTracker } from '@/composables/analytics/useImpressionTracker'
-import PostPoll from '@/components/common/PostPoll.vue'
 import Briefcase from 'vue-material-design-icons/Briefcase.vue'
 import School from 'vue-material-design-icons/School.vue'
 import Heart from 'vue-material-design-icons/Heart.vue'
 import Home from 'vue-material-design-icons/Home.vue'
 import Airplane from 'vue-material-design-icons/Airplane.vue'
 import Flag from 'vue-material-design-icons/Flag.vue'
+import type { Post } from '@/types/Post'
+import CommentItem from '../comment/CommentItem.vue'
+import CommentReplyInput from '../comment/CommentReplyInput.vue'
 
 const getLifeEventCategory = (category?: string) => {
   switch (category) {
@@ -46,11 +44,14 @@ const getLifeEventCategory = (category?: string) => {
   }
 }
 
-import type { Post } from '@/types/Post'
-import ShareAsMessageModal from '@/components/feed/modals/ShareAsMessageModal.vue'
-import ReactionPanel from '../ReactionPanel.vue'
-import CommentItem from '../comment/CommentItem.vue'
-import CommentReplyInput from '../comment/CommentReplyInput.vue'
+// Async lazy-loaded heavy sub-components and modals
+const PostModal = defineAsyncComponent(() => import('./PostModal.vue'))
+const ShareAsPostModal = defineAsyncComponent(() => import('@/components/feed/modals/ShareAsPostModal.vue'))
+const ShareAsMessageModal = defineAsyncComponent(() => import('@/components/feed/modals/ShareAsMessageModal.vue'))
+const ReactionPanel = defineAsyncComponent(() => import('../ReactionPanel.vue'))
+const MapPreview = defineAsyncComponent(() => import('@/components/common/MapPreview.vue'))
+const PostPoll = defineAsyncComponent(() => import('@/components/common/PostPoll.vue'))
+const PostMarketplaceCard = defineAsyncComponent(() => import('./PostMarketplaceCard.vue'))
 
 const config = useRuntimeConfig()
 
@@ -339,7 +340,7 @@ onMounted(() => {
 <template>
   <div
     ref="postElementRef"
-    class="w-full bg-theme-bg-secondary rounded-lg shadow-sm"
+    class="post-card w-full bg-theme-bg-secondary rounded-lg shadow-sm"
     :class="{ 'border border-theme-border': isShared, 's dark:shadow-lg': !props.post }"
   >
     <template v-if="!isShared">
@@ -517,6 +518,11 @@ onMounted(() => {
   </div>
 </template>
 <style scoped>
+.post-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 450px;
+}
+
 .animate-marquee {
   display: inline-block;
   white-space: nowrap;

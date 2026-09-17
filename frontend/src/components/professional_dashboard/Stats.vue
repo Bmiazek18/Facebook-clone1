@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import VueApexCharts from 'vue3-apexcharts'
+import { ref, computed, defineAsyncComponent } from 'vue'
 import DateInput from './DateInput.vue'
+
+const VueApexCharts = defineAsyncComponent(() => import('vue3-apexcharts'))
 
 const monthsPL = ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru']
 

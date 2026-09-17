@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, markRaw, onMounted } from 'vue'
+import { ref, markRaw, onMounted, defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import { useGroupsStore } from '@/stores/groups'
-import VueApexCharts from 'vue3-apexcharts'
+
+const VueApexCharts = defineAsyncComponent(() => import('vue3-apexcharts'))
 
 // Importy ikon dla sekcji "Do sprawdzenia"
 import MessageAlertOutlineIcon from 'vue-material-design-icons/MessageAlertOutline.vue'

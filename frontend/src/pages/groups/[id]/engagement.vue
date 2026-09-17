@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import VueApexCharts from 'vue3-apexcharts'
+import { ref, defineAsyncComponent } from 'vue'
+
+const VueApexCharts = defineAsyncComponent(() => import('vue3-apexcharts'))
 
 // Import ikony z vue-material-design-icons
 import InformationIcon from 'vue-material-design-icons/Information.vue'

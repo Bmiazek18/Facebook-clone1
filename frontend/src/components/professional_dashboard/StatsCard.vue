@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import VueApexCharts from 'vue3-apexcharts'
+import { ref, computed, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import DateInput from './DateInput.vue'
+
+const VueApexCharts = defineAsyncComponent(() => import('vue3-apexcharts'))
 
 import EyeOutlineIcon from 'vue-material-design-icons/EyeOutline.vue'
 import CommentProcessingOutlineIcon from 'vue-material-design-icons/CommentProcessingOutline.vue'

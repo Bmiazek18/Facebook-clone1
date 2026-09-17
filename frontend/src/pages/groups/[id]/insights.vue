@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import VueApexCharts from 'vue3-apexcharts'
+import { ref, defineAsyncComponent } from 'vue'
+
+const VueApexCharts = defineAsyncComponent(() => import('vue3-apexcharts'))
 
 // Importy ikon
 import ChevronDownIcon from 'vue-material-design-icons/ChevronDown.vue'
