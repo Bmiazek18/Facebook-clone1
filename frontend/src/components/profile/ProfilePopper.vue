@@ -129,35 +129,49 @@ const onShow = async () => {
     await fetchFullUserData()
   }
 }
+
+const prefetchOnHover = () => {
+  if (cleanUserId.value && cleanUserId.value !== '0' && cleanUserId.value !== '00000000-0000-4000-8000-000000000000') {
+    getOrFetchUser(cleanUserId.value)
+    if (!fullUserData.value && !isLoading.value) {
+      fetchFullUserData()
+    }
+  }
+}
 </script>
 
 <template>
-  <VMenu
-    placement="top-start"
-    :delay="{ show: 400, hide: 250 }"
-    :distance="12"
-    :skidding="0"
-    container="body"
-    :disabled="disabled || !cleanUserId || cleanUserId === '0'"
-    @show="onShow"
+  <div
+    class="inline-flex items-center"
+    @mouseenter="prefetchOnHover"
+    @pointerenter="prefetchOnHover"
   >
-    <slot>
-      <div
-        @click="handleViewProfile"
-        :class="[
-          'cursor-pointer hover:underline inline-block leading-5 w-fit theme-text',
-          comment
-            ? 'text-[15px] font-medium'
-            : mention
-              ? 'text-[13px]'
-              : 'text-[17px] font-semibold',
-        ]"
-      >
-        {{ displayName }}
-      </div>
-    </slot>
+    <VMenu
+      placement="top-start"
+      :delay="{ show: 400, hide: 250 }"
+      :distance="12"
+      :skidding="0"
+      container="body"
+      :disabled="disabled || !cleanUserId || cleanUserId === '0'"
+      @show="onShow"
+    >
+      <slot>
+        <div
+          @click="handleViewProfile"
+          :class="[
+            'cursor-pointer hover:underline inline-block leading-5 w-fit theme-text',
+            comment
+              ? 'text-[15px] font-medium'
+              : mention
+                ? 'text-[13px]'
+                : 'text-[17px] font-semibold',
+          ]"
+        >
+          {{ displayName }}
+        </div>
+      </slot>
 
-    <template #popper="{ hide }">
+      <template #popper="{ hide }">
       <div
         v-if="isInteracted && user"
         class="relative bg-white dark:bg-[#242526] rounded-2xl shadow-[0_12px_28px_0_rgba(0,0,0,0.2),0_2px_4px_0_rgba(0,0,0,0.1)] w-[380px] p-4 text-[#050505] dark:text-white border border-gray-200 dark:border-gray-700/80 antialiased"
@@ -259,6 +273,7 @@ const onShow = async () => {
       </div>
     </template>
   </VMenu>
+</div>
 </template>
 
 <style scoped>

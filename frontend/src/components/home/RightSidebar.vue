@@ -183,6 +183,7 @@ watch(
             <div
               v-for="contact in activeContacts"
               :key="contact.id"
+              v-prefetch-user="contact.id"
               @click="openChatBox(contact.id)"
               class="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer transition-colors group relative"
             >

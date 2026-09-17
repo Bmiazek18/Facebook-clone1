@@ -80,9 +80,17 @@ export function useUserCache() {
     await Promise.allSettled(uniqueIds.map(id => getOrFetchUser(id)))
   }
 
+  function prefetchUser(userId: string | number | undefined | null) {
+    if (!userId) return
+    const cleanId = String(userId).replace('user_', '').trim()
+    if (!cleanId || cleanId === '0' || cleanId === '00000000-0000-4000-8000-000000000000') return
+    preloadUsers([cleanId])
+  }
+
   return {
     usersCache,
     getOrFetchUser,
-    preloadUsers
+    preloadUsers,
+    prefetchUser,
   }
 }

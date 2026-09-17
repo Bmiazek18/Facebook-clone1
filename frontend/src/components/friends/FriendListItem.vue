@@ -36,6 +36,7 @@ const openListModal = () => {
 <template>
   <div class="w-full md:w-1/2 px-2 mb-4">
     <div
+      v-prefetch-user="friend.id"
       class="flex items-center justify-between p-3 bg-theme-bg-secondary shadow-sm h-full rounded-lg transition-shadow duration-200"
     >
       <div class="flex items-center">
