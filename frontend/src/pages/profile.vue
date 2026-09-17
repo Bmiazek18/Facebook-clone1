@@ -278,6 +278,7 @@ const fetchProfileFriends = async () => {
             :hide-story-ring="true"
             :is-owner="isOwner"
             :disable-popper="true"
+            :hide-note="true"
           />
           <div class="text-[17px] text-theme-text leading-5">
             {{ profileUser.name }}

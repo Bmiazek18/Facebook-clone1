@@ -21,6 +21,7 @@ const props = defineProps<{
   viewPhotoSrc?: string
   viewPhotoType?: 'avatar' | 'cover' | 'photo'
   disablePopper?: boolean
+  hideNote?: boolean
 }>()
 
 const router = useRouter()
@@ -94,7 +95,7 @@ const toggleModal = () => {
 
       <!-- Dymek z notatką -->
       <div
-        v-if="user?.note || isOwner"
+        v-if="!hideNote && (user?.note || isOwner)"
         @click="isOwner ? toggleModal() : null"
         class="absolute z-20 bottom-full cursor-pointer -mb-2 left-1/2 transform -translate-x-1/2 ml-[-50px]"
       >
