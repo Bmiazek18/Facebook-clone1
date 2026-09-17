@@ -339,8 +339,82 @@ public class DatabaseSeeder implements CommandLineRunner {
                 .mediaJson("[]")
                 .build();
 
-        postRepository.saveAll(List.of(post1, post2, post3, post4, post5, post6, post7, post8, post9, post10, post11, post12, post13, post14, post15, postGroup1, postGroup2, postGroup3));
-        log.info("Successfully seeded 18 initial posts (including 3 group posts).");
+        PostEntity postReel1 = PostEntity.builder()
+                .id("post_seed_reel_1")
+                .authorId(getUuidStr(18L))
+                .content("Niesamowita podróż przez kaniony i bezdroża! 🌄🚙 #podroze #adventure #reel")
+                .date(Instant.now().minusSeconds(3600 * 4).toString())
+                .timestamp(System.currentTimeMillis() - (1000L * 3600 * 4))
+                .isAnonymous(false)
+                .targetId("")
+                .targetType("")
+                .mediaJson(media("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"))
+                .commentCount(5)
+                .shareCount(3)
+                .build();
+
+        PostEntity postReel2 = PostEntity.builder()
+                .id("post_seed_reel_2")
+                .authorId(getUuidStr(19L))
+                .content("Spokojny poranek nad jeziorem 🛶🌲 #chillout #nature #natura")
+                .date(Instant.now().minusSeconds(3600 * 7).toString())
+                .timestamp(System.currentTimeMillis() - (1000L * 3600 * 7))
+                .isAnonymous(false)
+                .targetId("")
+                .targetType("")
+                .mediaJson(media("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"))
+                .commentCount(12)
+                .shareCount(8)
+                .build();
+
+        PostEntity postReel3 = PostEntity.builder()
+                .id("post_seed_reel_3")
+                .authorId(getUuidStr(30L))
+                .content("Mega energia na treningu! Kto dzisiaj ćwiczył? 💪🔥 #workout #fitness #motywacja")
+                .date(Instant.now().minusSeconds(3600 * 9).toString())
+                .timestamp(System.currentTimeMillis() - (1000L * 3600 * 9))
+                .isAnonymous(false)
+                .targetId("")
+                .targetType("")
+                .mediaJson(media("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4"))
+                .commentCount(24)
+                .shareCount(15)
+                .build();
+
+        PostEntity postReel4 = PostEntity.builder()
+                .id("post_seed_reel_4")
+                .authorId(getUuidStr(31L))
+                .content("Testy offroadu w trudnym terenie! Błoto, piasek i adrenalina 🏎️💨 #offroad #4x4")
+                .date(Instant.now().minusSeconds(3600 * 14).toString())
+                .timestamp(System.currentTimeMillis() - (1000L * 3600 * 14))
+                .isAnonymous(false)
+                .targetId("")
+                .targetType("")
+                .mediaJson(media("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"))
+                .commentCount(8)
+                .shareCount(4)
+                .build();
+
+        PostEntity postReel5 = PostEntity.builder()
+                .id("post_seed_reel_5")
+                .authorId(getUuidStr(32L))
+                .content("Wyprawa przez pustynię – niezapomniane widoki! 🏜️☀️ #desert #roadtrip #travel")
+                .date(Instant.now().minusSeconds(3600 * 16).toString())
+                .timestamp(System.currentTimeMillis() - (1000L * 3600 * 16))
+                .isAnonymous(false)
+                .targetId("")
+                .targetType("")
+                .mediaJson(media("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4"))
+                .commentCount(19)
+                .shareCount(11)
+                .build();
+
+        postRepository.saveAll(List.of(
+                post1, post2, post3, post4, post5, post6, post7, post8, post9, post10,
+                post11, post12, post13, post14, post15, postGroup1, postGroup2, postGroup3,
+                postReel1, postReel2, postReel3, postReel4, postReel5
+        ));
+        log.info("Successfully seeded 23 initial posts (including 5 dedicated video reels).");
 
         log.info("Seeding initial reactions...");
         // Seed some reactions
