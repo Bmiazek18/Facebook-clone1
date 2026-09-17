@@ -1,28 +1,7 @@
 <template>
   <Teleport to="body">
-    <!-- Ekran ładowania danych z GraphQL (tylko tryb posta) -->
-    <div
-      v-if="!isStandalone && loadingFeed"
-      class="fixed inset-0 z-[500] flex items-center justify-center bg-black text-white"
-    >
-      <p class="text-xl animate-pulse">{{ $t('media.ladowanieGalerii') }}</p>
-    </div>
-
-    <!-- Jeśli zapytanie się wykonało, ale brak posta -->
-    <div
-      v-else-if="!isStandalone && !currentPost && postResult"
-      class="fixed inset-0 z-[500] flex flex-col items-center justify-center gap-4 bg-black text-white"
-    >
-      <p class="text-xl text-red-400">{{ $t('media.nieZnalezionoZdjeciaW') }}</p>
-      <button
-        @click="router.back()"
-        class="px-4 py-2 bg-gray-800 rounded hover:bg-gray-700 transition-colors"
-      >{{ $t('common.close') }}</button>
-    </div>
-
     <!-- GŁÓWNY WIDOK GALERII -->
     <div
-      v-else-if="galleryReady"
       class="fixed inset-0 z-[500] flex bg-black overflow-hidden select-none text-theme-text"
     >
       <div
