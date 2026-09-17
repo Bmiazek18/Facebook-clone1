@@ -55,8 +55,19 @@
       </v-dropdown>
     </div>
 
-    <!-- Reszta Twojego menu bez zmian -->
-    <div class="flex flex-col gap-1">
+    <!-- Skeleton Loading -->
+    <div v-if="friendsStore.isLoading && !friendsStore.isLoaded" class="flex flex-col gap-2 px-1 animate-pulse">
+      <div v-for="i in 5" :key="i" class="flex items-center gap-3 px-2 py-2 rounded-lg">
+        <div class="w-9 h-9 rounded-full bg-theme-bg-tertiary shrink-0"></div>
+        <div class="flex-1">
+          <div class="h-4 bg-theme-bg-tertiary rounded w-36 mb-1.5"></div>
+          <div class="h-3 bg-theme-bg-tertiary/60 rounded w-24"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menu Items -->
+    <div v-else class="flex flex-col gap-1">
       <NuxtLink
         v-for="(item, index) in menuItems"
         :key="index"
@@ -90,6 +101,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useFriendsStore } from '@/stores/friends'
 
 // Icons
 import CogIcon from 'vue-material-design-icons/Cog.vue'
@@ -99,6 +111,7 @@ import ChevronRightIcon from 'vue-material-design-icons/ChevronRight.vue'
 import BellOutlineIcon from 'vue-material-design-icons/BellOutline.vue'
 
 const { t } = useI18n()
+const friendsStore = useFriendsStore()
 
 // Zostawiamy tylko stan samego przełącznika kropki
 const showNotificationDots = ref(true)

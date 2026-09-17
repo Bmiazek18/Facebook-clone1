@@ -59,13 +59,7 @@ const activeBtnClass = 'bg-[#E7F3FF] dark:bg-[#263951] text-[#1877F2] dark:text-
 
 <template>
   <div ref="navTarget" class="flex items-center justify-end w-[300px] relative">
-    <NuxtLink
-      to="/meta-ai"
-      v-tooltip.bottom.no-arrow="{ content: 'Meta AI', triggers: ['hover'] }"
-      class="rounded-full p-2 mx-1 transition-all flex items-center justify-center bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 hover:opacity-90 text-white shadow-sm"
-    >
-      <span class="text-sm font-bold leading-none px-0.5">✦</span>
-    </NuxtLink>
+
 
     <button
       @click="toggleMenu('main')"

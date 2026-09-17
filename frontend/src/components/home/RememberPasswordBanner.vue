@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="isVisible"
-    class="w-full max-w-[500px] bg-theme-bg-secondary border border-theme-border rounded-xl shadow-md p-5 relative mx-auto my-4 transition-all duration-200"
+    class="w-full  bg-theme-bg-secondary  rounded-xl shadow-md p-5 relative mx-auto my-3 transition-all duration-200"
   >
     <!-- Top Bar: Facebook Icon, Center Screen & Close Button -->
     <div class="flex items-start justify-between mb-1">

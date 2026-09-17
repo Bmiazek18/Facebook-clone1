@@ -75,6 +75,10 @@
                 </span>
               </template>
 
+              <div v-else-if="person.commonFriends > 0" class="text-[#E4E6EB] text-[12px] py-1">
+                {{ commonFriendsLabel }}
+              </div>
+
               <div v-else class="text-[#B0B3B8] text-[12px] py-1">
                 {{ $t('profile.noCommonFriends') || 'Brak wspólnych znajomych' }}
               </div>
@@ -183,16 +187,16 @@ const loadMutualFriends = async () => {
 
   try {
     const [myFriends, targetFriends] = await Promise.all([
-      usersApi.getFriends(myId),
-      usersApi.getFriends(targetId),
+      usersApi.getFriends(myId).catch(() => []),
+      usersApi.getFriends(targetId).catch(() => []),
     ])
 
-    const myFriendIds = new Set((myFriends || []).map((f: any) => cleanId(f.id)))
-    let mutual = (targetFriends || []).filter((tf: any) => myFriendIds.has(cleanId(tf.id)))
+    const myFriendIds = new Set((myFriends || []).map((f: any) => cleanId(f.id || f.userId)))
+    let mutual = (targetFriends || []).filter((tf: any) => myFriendIds.has(cleanId(tf.id || tf.userId)))
 
     if (mutual.length === 0 && (myFriends || []).length > 0) {
-      const targetFriendIds = new Set((targetFriends || []).map((tf: any) => cleanId(tf.id)))
-      mutual = (myFriends || []).filter((mf: any) => targetFriendIds.has(cleanId(mf.id)))
+      const targetFriendIds = new Set((targetFriends || []).map((tf: any) => cleanId(tf.id || tf.userId)))
+      mutual = (myFriends || []).filter((mf: any) => targetFriendIds.has(cleanId(mf.id || mf.userId)))
     }
 
     if (mutual.length === 0 && (myFriends || []).length > 0 && (props.person.commonFriends || 0) > 0) {
@@ -201,7 +205,7 @@ const loadMutualFriends = async () => {
 
     const resolvedList: MutualFriendItem[] = []
     for (const f of mutual) {
-      const id = cleanId(f.id)
+      const id = cleanId(f.id || f.userId)
       let name = `${f.firstName || ''} ${f.lastName || ''}`.trim()
       let avatar = f.avatar || ''
 
