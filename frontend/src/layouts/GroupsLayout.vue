@@ -74,6 +74,14 @@ const isStandaloneAdminRoute = computed(() => {
   return paths.some(path => route.path.includes(path))
 })
 
+const initialGroupId = route.params.id ? String(route.params.id) : ''
+if (initialGroupId) {
+  const loaded = await groupsStore.loadGroupDetails(initialGroupId)
+  if (loaded?.role) {
+    groupsStore.setCachedMembership(initialGroupId, String(loaded.role))
+  }
+}
+
 const getInitialRole = () => {
   const groupId = route.params.id as string
   if (isStandaloneAdminRoute.value) return 'ADMIN'
@@ -129,8 +137,7 @@ watch(
         await fetchMembership()
       }
     }
-  },
-  { immediate: true }
+  }
 )
 
 const groupDetails = computed<GroupType | undefined>(() => {

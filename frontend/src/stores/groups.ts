@@ -4,55 +4,12 @@ import { groupsApi } from '@/api/groups'
 import { useAuthStore } from '@/stores/auth'
 import type { Group, GroupRole } from '@/types/Group'
 
-const MEMBERSHIPS_STORAGE_KEY = 'fb_group_memberships'
-const GROUPS_STORAGE_KEY = 'fb_cached_groups'
-
-const loadSavedMemberships = (): Record<string, string> => {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    try {
-      const saved = localStorage.getItem(MEMBERSHIPS_STORAGE_KEY)
-      return saved ? JSON.parse(saved) : {}
-    } catch {
-      return {}
-    }
-  }
-  return {}
-}
-
-const loadSavedGroups = (): Group[] => {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    try {
-      const saved = localStorage.getItem(GROUPS_STORAGE_KEY)
-      return saved ? JSON.parse(saved) : []
-    } catch {
-      return []
-    }
-  }
-  return []
-}
-
 export const useGroupsStore = defineStore('groups', () => {
-  const groups = ref<Group[]>(loadSavedGroups())
+  const groups = ref<Group[]>([])
   const userGroups = ref<Group[]>([])
   const authStore = useAuthStore()
 
-  const memberships = ref<Record<string, string>>(loadSavedMemberships())
-
-  const persistMemberships = () => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      try {
-        localStorage.setItem(MEMBERSHIPS_STORAGE_KEY, JSON.stringify(memberships.value))
-      } catch {}
-    }
-  }
-
-  const persistGroups = () => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      try {
-        localStorage.setItem(GROUPS_STORAGE_KEY, JSON.stringify(groups.value.slice(0, 50)))
-      } catch {}
-    }
-  }
+  const memberships = ref<Record<string, string>>({})
 
   const getCachedMembership = (groupId: string): string => {
     if (!groupId) return ''
@@ -62,13 +19,11 @@ export const useGroupsStore = defineStore('groups', () => {
     const userGroup = userGroups.value.find((g) => g.id === groupId)
     if (userGroup?.role) {
       memberships.value[groupId] = String(userGroup.role)
-      persistMemberships()
       return String(userGroup.role)
     }
     const group = groups.value.find((g) => g.id === groupId)
     if (group?.role) {
       memberships.value[groupId] = String(group.role)
-      persistMemberships()
       return String(group.role)
     }
     return ''
@@ -77,20 +32,17 @@ export const useGroupsStore = defineStore('groups', () => {
   const setCachedMembership = (groupId: string, role: string) => {
     if (!groupId) return
     memberships.value[groupId] = role
-    persistMemberships()
   }
 
   const fetchGroups = async () => {
     try {
       const result = await groupsApi.getGroups(100, 0, 'cache-first')
       groups.value = result
-      persistGroups()
       result.forEach((g) => {
         if (g.role) {
           memberships.value[g.id] = String(g.role)
         }
       })
-      persistMemberships()
     } catch (e) {
       console.error('Failed to fetch groups:', e)
     }
@@ -107,7 +59,6 @@ export const useGroupsStore = defineStore('groups', () => {
           memberships.value[g.id] = String(g.role)
         }
       })
-      persistMemberships()
       return result
     } catch (e) {
       console.error('Failed to fetch user groups:', e)
@@ -130,10 +81,8 @@ export const useGroupsStore = defineStore('groups', () => {
         } else {
           groups.value.push(groupObj)
         }
-        persistGroups()
         if (groupObj.role) {
           memberships.value[groupObj.id] = String(groupObj.role)
-          persistMemberships()
         }
         return groupObj
       }
