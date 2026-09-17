@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 public class UserMediaGrpcHandler {
 
     private final UserMediaService userMediaService;
+    private final MediaUrlSigner mediaUrlSigner;
 
     public void getUserMedia(GetUserMediaRequest request, StreamObserver<GetUserMediaResponse> responseObserver) {
         try {
@@ -33,7 +34,7 @@ public class UserMediaGrpcHandler {
                         .setId(item.getId() != null ? item.getId() : 0)
                         .setUserId(item.getUserId() != null ? item.getUserId() : "")
                         .setPostId(item.getPostId() != null ? item.getPostId() : "")
-                        .setMediaUrl(item.getMediaUrl() != null ? item.getMediaUrl() : "")
+                        .setMediaUrl(item.getMediaUrl() != null ? mediaUrlSigner.reconstructUrl(item.getMediaUrl()) : "")
                         .setMediaType(item.getMediaType() != null ? item.getMediaType() : "IMAGE")
                         .setAlbumName(item.getAlbumName() != null ? item.getAlbumName() : "")
                         .setAltText(item.getAltText() != null ? item.getAltText() : "")
@@ -60,7 +61,7 @@ public class UserMediaGrpcHandler {
                 responseBuilder.addAlbums(UserAlbumDto.newBuilder()
                         .setName(a.name())
                         .setCount((int) a.count())
-                        .setCoverUrl(a.coverUrl() != null ? a.coverUrl() : "")
+                        .setCoverUrl(a.coverUrl() != null ? mediaUrlSigner.reconstructUrl(a.coverUrl()) : "")
                         .build());
             }
 

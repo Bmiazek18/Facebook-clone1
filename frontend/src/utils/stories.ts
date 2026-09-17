@@ -1,8 +1,21 @@
 import type { UserStories, StoryItem } from '@/types/Story'
 import { parseStoryMetadata } from '@/utils/storyMetadata'
 
+const cleanSignedUrl = (url: string) => {
+  if (!url) return ''
+  const qIdx = url.indexOf('?')
+  if (qIdx !== -1) {
+    const query = url.substring(qIdx)
+    if (query.includes('signature=') || query.includes('expires=')) {
+      return url.substring(0, qIdx)
+    }
+  }
+  return url
+}
+
 export function getMediaUrl(src: string) {
   if (!src) return ''
+  src = cleanSignedUrl(src)
   const config = useRuntimeConfig()
   const API_URL = config.public.apiUrl
   if (src.startsWith('http://localhost/')) {

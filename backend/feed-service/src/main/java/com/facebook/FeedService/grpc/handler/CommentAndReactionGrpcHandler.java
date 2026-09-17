@@ -19,6 +19,7 @@ public class CommentAndReactionGrpcHandler {
 
     private final CommentService commentService;
     private final ReactionService reactionService;
+    private final MediaUrlSigner mediaUrlSigner;
 
     public void getComments(GetCommentsRequest request, StreamObserver<GetCommentsResponse> responseObserver) {
         try {
@@ -122,8 +123,8 @@ public class CommentAndReactionGrpcHandler {
         if (c.getParentId() != null) {
             builder.setParentId(String.valueOf(c.getParentId()));
         }
-        if (c.getMediaUrl() != null) {
-            builder.setMediaUrl(c.getMediaUrl());
+        if (c.getMediaUrl() != null && !c.getMediaUrl().isEmpty()) {
+            builder.setMediaUrl(mediaUrlSigner.reconstructUrl(c.getMediaUrl()));
         }
         if (c.getReactions() != null) {
             c.getReactions().forEach((type, userIds) -> builder.addReactions(

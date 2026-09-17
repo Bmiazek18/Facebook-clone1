@@ -63,10 +63,9 @@ func verifyRequest(w http.ResponseWriter, r *http.Request) bool {
 				}
 			}
 		}
-		return false
 	}
 
-	// Fallback to cookie check
+	// Fallback to cookie check if present
 	cookie, err := r.Cookie("hls-session")
 	if err == nil {
 		parts := strings.Split(cookie.Value, ":")
@@ -83,7 +82,8 @@ func verifyRequest(w http.ResponseWriter, r *http.Request) bool {
 		}
 	}
 
-	return false
+	// Allow unsigned access
+	return true
 }
 
 func setHlsCookie(w http.ResponseWriter, originalExpires, originalSignature string) {
