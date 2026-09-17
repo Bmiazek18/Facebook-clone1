@@ -112,6 +112,8 @@ const props = withDefaults(
     isShared?: boolean
     isGroup?: boolean
     hideCloseButton?: boolean
+    /** Wyłącza otwieranie modalu posta przy kliknięciu w komentarze (gdy post jest już osadzony w modalu) */
+    disablePostModal?: boolean
     isInModal?: boolean
     shouldPostActionVisible?: boolean
   }>(),
@@ -141,7 +143,7 @@ const isShareAsPostModalOpen = ref(false)
 const isReactionModalOpen = ref(false)
 
 const toggleModal = async () => {
-  if (props.isInModal) return
+  if (props.disablePostModal || props.isInModal) return
   isModalOpen.value = !isModalOpen.value
 
   if (isModalOpen.value && props.post?.id) {

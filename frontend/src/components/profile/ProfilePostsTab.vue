@@ -411,7 +411,7 @@ const handleDeletePost = (postId: number) => {
             v-for="post in selectedGroupPosts"
             :key="post.id"
             :post="post"
-            :is-in-modal="true"
+            :disable-post-modal="true"
           />
         </div>
       </BaseModal>
