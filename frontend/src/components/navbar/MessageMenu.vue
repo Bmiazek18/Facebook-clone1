@@ -180,12 +180,12 @@
             <MessageTextOutlineIcon v-else :size="32" />
           </div>
           <h3 class="text-[16px] font-bold text-theme-text mb-1">
-            {{ activeTab === 'unread' ? ($t('chat.noUnreadMessages') || 'Brak nieprzeczytanych wiadomości') : ($t('chat.noMessages') || 'Brak wiadomości') }}
+            {{ activeTab === 'unread' ? ($t('chat.noUnreadMessages') || 'Brak nieprzeczytanych wiadomości') : ($t('chat.noChats') || 'Brak czatów') }}
           </h3>
           <p class="text-[13px] text-theme-text-secondary max-w-[240px] leading-relaxed">
             {{ activeTab === 'unread'
               ? ($t('chat.noUnreadMessagesDesc') || 'Gdy ktoś wyśle nową wiadomość, pojawi się ona w tej sekcji.')
-              : ($t('chat.noMessagesDesc') || 'Rozpocznij nową konwersację ze znajomymi lub grupami.')
+              : ($t('chat.noChatsDesc') || 'Gdy będziesz mieć czaty, zobaczysz je tutaj.')
             }}
           </p>
         </div>

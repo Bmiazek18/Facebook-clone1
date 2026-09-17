@@ -144,6 +144,7 @@
     "leaveChannel": "Opuść kanał",
     "goToChat": "Przejdź do czatu",
     "noChats": "Brak czatów",
+    "noChatsDesc": "Gdy będziesz mieć czaty, zobaczysz je tutaj.",
     "searchPlaceholder": "Szukaj po nazwach",
     "emptyState": "Brak wiadomości",
     "typing": "pisze...",

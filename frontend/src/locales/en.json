@@ -144,6 +144,7 @@
     "leaveChannel": "Leave channel",
     "goToChat": "Go to chat",
     "noChats": "No chats",
+    "noChatsDesc": "When you have chats, you'll see them here.",
     "searchPlaceholder": "Search by name",
     "emptyState": "No messages",
     "typing": "typing...",
